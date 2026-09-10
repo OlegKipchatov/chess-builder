@@ -1,16 +1,16 @@
-import {TYPES, PIECE_NAMES, STYLES, ITEMS, rarityNames, itemById, pieceId, boardId, craftCost} from './catalog.js?v=4';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=4';
+import {TYPES, PIECE_NAMES, STYLES, ITEMS, rarityNames, itemById, pieceId, boardId, craftCost} from './catalog.js?v=5';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=5';
 export const escapeHTML = value => String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 export const presetEquipment = style => ({pieces:Object.fromEntries(TYPES.map(type=>[type,pieceId(style,type)])),board:boardId(style)});
 export const canEquipPreset = (state,style) => [...Object.values(presetEquipment(style).pieces),boardId(style)].every(id=>state.owned.includes(id));
 const isEquipped = (state,item) => item.kind === 'board' ? state.equipped.board === item.id : state.equipped.pieces[item.type] === item.id;
 const sameEquipment = (first,second) => first.board===second.board&&TYPES.every(type=>first.pieces[type]===second.pieces[type]);
-const renderItem = (state,item) => {
+const renderItem = (state,item,craft=false) => {
   const owned=state.owned.includes(item.id), equipped=isEquipped(state,item), cost=craftCost(item);
   const style=STYLES.find(style=>style.id===item.style);
-  const action=owned?`data-equip="${item.id}"`:`data-craft="${item.id}"`;
-  const disabled=equipped||!owned&&state.shards<cost;
-  const label=equipped?'✓ Выбрано':owned?'Выбрать':`${cost} ✧ · создать`;
+  const action=craft?`data-craft="${item.id}"`:owned?`data-equip="${item.id}"`:`data-craft-link="${item.id}"`;
+  const disabled=craft?(owned||state.shards<cost):equipped;
+  const label=craft?(owned?'Уже получен':`${cost} ✧ · создать`):equipped?'✓ Выбрано':owned?'Выбрать':'Перейти в крафт';
   return `<article class="compact-item ${equipped?'equipped':''}"><div class="compact-item-art" style="--item-accent:${style.accent}">${itemPreview(item)}</div><div class="compact-item-copy"><span class="rarity ${item.rarity}">${rarityNames[item.rarity]}</span><h3>${style.name}</h3><span class="item-ownership">${owned?'В коллекции':'Ещё не получен'}</span></div><button class="${equipped?'equipped-button':'quiet'}" ${action} ${disabled?'disabled':''}>${label}</button></article>`;
 };
 const presetCard = (state,style) => {
@@ -33,4 +33,10 @@ export const renderCollection = (root,state,view='sets',type='k',ownedOnly=false
   const slots=[...TYPES,'board'].map(slot=>{const item=itemById(slot==='board'?state.equipped.board:state.equipped.pieces[slot]);return `<button class="equipment-slot" data-piece-type="${slot}" title="${item.name}" aria-label="Настроить: ${slot==='board'?'доска':PIECE_NAMES[slot]}">${slot==='board'?itemPreview(item):pieceSVG(slot,'w',item.style)}<span>${slot==='board'?'Доска':PIECE_NAMES[slot]}</span></button>`;}).join('');
   const content=view==='saved'?renderSaved(state):view==='items'?renderItems(state,type,ownedOnly):`<p class="catalog-note">Выберите всю коллекцию одним нажатием. Полупрозрачные предметы ещё не получены.</p><div class="compact-sets-grid">${STYLES.map(style=>presetCard(state,style)).join('')}</div>`;
   root.innerHTML=`<article class="equipment-strip"><div class="strip-label"><p class="eyebrow">ВЫБРАННЫЙ НАБОР</p><button class="text-button" data-save-set>Сохранить набор</button></div><div class="equipment-slots">${slots}</div></article><div class="collection-toolbar"><div class="segmented" role="group" aria-label="Раздел коллекции">${[['sets','Коллекции'],['items','Фигуры и доски'],['saved','Мои наборы']].map(([id,label])=>`<button data-collection-view="${id}" class="${view===id?'active':''}" aria-pressed="${view===id}">${label}</button>`).join('')}</div><span class="muted">${state.owned.length}/${ITEMS.length} предметов · ${state.shards} ✧</span></div>${content}`;
+};
+
+export const renderCraft = (root,state,type='k') => {
+  const items=ITEMS.filter(item=>type==='board'?item.kind==='board':item.kind==='piece'&&item.type===type);
+  const filters=[...TYPES,'board'].map(slot=>`<button data-craft-type="${slot}" class="${slot===type?'active':''}" aria-pressed="${slot===type}">${slot==='board'?'Доски':PIECE_NAMES[slot]}</button>`).join('');
+  root.innerHTML=`<div class="craft-balance"><span>Доступно осколков</span><strong>${state.shards} ✧</strong></div><div class="item-type-filter" role="group" aria-label="Тип создаваемого предмета">${filters}</div><p class="catalog-note">Создайте недостающий предмет без случайности. Осколки выпадают из сундуков и начисляются за повторы.</p><div class="compact-items-grid">${items.map(item=>renderItem(state,item,true)).join('')}</div>`;
 };

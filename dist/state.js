@@ -1,11 +1,11 @@
-import {initialRating, normalizeRating, validRatingSnapshot} from './rating.js?v=4';
-import {Chess} from './chess.js?v=4';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=4';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=5';
+import {Chess} from './chess.js?v=5';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=5';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
-export const newGame = (mode='bot', difficulty='normal') => ({pgn:'', mode, difficulty, started:false, settled:false, resigned:false});
-export const initialState = () => ({version:3, rating:initialRating(), settings:{mode:'bot',difficulty:'normal'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
+export const newGame = (mode='bot', difficulty='adaptive') => ({pgn:'', mode, difficulty, playerColor:'w', started:false, settled:false, resigned:false});
+export const initialState = () => ({version:3, rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
 const integer = (value, fallback=0) => Number.isSafeInteger(value) && value >= 0 ? value : fallback;
 export const validEquipment = (candidate, owned) => {
   const equipped = defaultEquipment();
@@ -36,6 +36,12 @@ export const migrateState = input => {
   next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
+  next.settings.difficulty = 'adaptive';
+  next.game.playerColor = input.game?.playerColor === 'b' ? 'b' : 'w';
+  if(next.game.mode==='bot' && !next.game.settled){
+    next.game.difficulty='adaptive';
+    if(next.game.started && !next.game.rating)next.game.rating=ratingSnapshot(next.rating);
+  }
   next.sets = (Array.isArray(input.sets) ? input.sets : []).filter(s => typeof s?.id === 'string' && typeof s.name === 'string').slice(0,12).map(s => ({id:s.id, name:s.name.trim().slice(0,32)||'Мой набор', ...validEquipment(s,next.owned)}));
   return next;
 };

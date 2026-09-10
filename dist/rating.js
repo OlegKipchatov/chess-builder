@@ -18,7 +18,7 @@ export const settleRating = (state,game) => {
   const match=state.game;
   if(!match.started||match.settled||match.mode!=='bot'||match.difficulty!=='adaptive'||!validRatingSnapshot(match.rating)||(!match.resigned&&!game.isGameOver()))return null;
   const {before,opponent,k}=match.rating;
-  const score=match.resigned?0:game.isDraw()?0.5:game.turn()==='b'?1:0;
+  const score=match.resigned?0:game.isDraw()?0.5:game.turn()!==(match.playerColor||'w')?1:0;
   const expected=1/(1+10**((opponent-before)/400));
   const value=clamp(Math.round(before+k*(score-expected)),100,2400);
   return {value,games:normalizeRating(state.rating).games+1,lastDelta:value-before};

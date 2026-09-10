@@ -1,13 +1,13 @@
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=4';
-import {Chess} from './chess.js?v=4';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=4';
-import {openChest, craftItem} from './economy.js?v=4';
-import {KEY, loadState, initialState, newGame} from './state.js?v=4';
-import {DIFFICULTIES, rewardFor} from './engine.js?v=4';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=4';
-import {renderBoard, snapshotBoard, animateMove} from './board.js?v=4';
-import {renderCollection, presetEquipment, canEquipPreset} from './collection.js?v=4';
-import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=4';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=5';
+import {Chess} from './chess.js?v=5';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=5';
+import {openChest, craftItem} from './economy.js?v=5';
+import {KEY, loadState, initialState, newGame} from './state.js?v=5';
+import {DIFFICULTIES, rewardFor} from './engine.js?v=5';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=5';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=5';
+import {renderCollection, renderCraft, presetEquipment, canEquipPreset} from './collection.js?v=5';
+import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=5';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -15,7 +15,7 @@ try {state=loadState(localStorage);} catch {state=initialState();storageError=tr
 const game = new Chess();
 try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.game=newGame();storageError=true;}
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, toastTimer, installPrompt=null;
-let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='profile', reviewCursor=null;
+let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, craftType='k', pendingBotMove=null;
 const toast = message => {
   $('#toast').textContent=message;
   $('#toast').style.display='block';
@@ -46,7 +46,7 @@ const statusText = () => {
 };
 const settle = () => {
   if(!ended() || state.game.settled)return;
-  const reward=rewardFor(game,state.game.resigned,state.game.mode);
+  const reward=rewardFor(game,state.game.resigned,state.game.mode,state.game.playerColor);
   const rating=settleRating(state,game);
   const next={...state,rating:rating||state.rating,coins:state.coins+reward,played:state.played+1,game:{...state.game,settled:true}};
   if(!persist(next))return;
@@ -54,7 +54,7 @@ const settle = () => {
 };
 const drawBoard = () => {
   const equipped=state.game.started ? state.game.equipped : state.equipped;
-  renderBoard($('#board'),positionAt(game,reviewCursor),equipped,reviewCursor===null?selected:null);
+  renderBoard($('#board'),positionAt(game,reviewCursor),equipped,reviewCursor===null?selected:null,state.game.started?state.game.playerColor:'w');
   $('#board').classList.toggle('reviewing',reviewCursor!==null);
   $('#board').setAttribute('aria-label',reviewCursor!==null?'Просмотр прежней позиции':'Шахматная доска');
   $('#board').querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled',String(!canPlayPosition(state,game,reviewCursor))));
@@ -69,18 +69,16 @@ const syncNavigation = () => {
     button.title=button.disabled?'Доступно после завершения партии':'';
     button.setAttribute('aria-current',button.dataset.tab===currentScreen?'page':'false');
   });
-  $('#navigation-lock').hidden=!active();
-  $('#match-profile').hidden=active();
+  $('#app-nav').hidden=active();
+  $('#profile-avatar').disabled=active();
+
   document.body.classList.toggle('match-active',active());
   $('.brand').setAttribute('aria-disabled',String(active()));
 };
 const renderProfile = () => {
   $('#mode').value=state.settings.mode;
   $('#mode').disabled=active();
-  $('#difficulty').value=state.settings.difficulty;
-  $('#difficulty').disabled=active();
-  $('#difficulty-field').hidden=state.settings.mode!=='bot';
-  $('#difficulty-hint').textContent=DIFFICULTIES[state.settings.difficulty].description;
+
   $('#rating-value').textContent=state.rating.value;
   $('#rating-delta').textContent=state.rating.games?`${signedDelta(state.rating.lastDelta)} за последнюю партию`:'Начальный рейтинг';
   $('#rating-progress').value=Math.min(state.rating.games,10);
@@ -108,6 +106,12 @@ const renderHistory = () => {
 const renderGameInfo = () => {
   const config=state.game.started?state.game:state.settings;
   const levelName=DIFFICULTIES[config.difficulty].name+(config.difficulty==='adaptive'?` · ${config.rating?.opponent??opponentFor(state.rating.value)}`:'');
+  const color=state.game.started?state.game.playerColor:'w';
+  $('#player-color').textContent=state.game.started?(color==='w'?'Белые фигуры':'Чёрные фигуры'):'Случайная сторона';
+  $('#opponent-color').textContent=state.game.started?(color==='w'?'Чёрные фигуры':'Белые фигуры'):'Сторона определится при старте';
+  $('#player-name').textContent=config.mode==='bot'?'Вы':'Игрок 1';
+  $('#opponent-avatar').innerHTML=pieceSVG('n',color==='w'?'b':'w');
+  $('#player-avatar').innerHTML=pieceSVG('p',color);
   $('#opponent').textContent=config.mode==='bot'?`Компьютер · ${levelName}`:'Второй игрок';
   $('#play .reward-card p').textContent=config.mode==='local'?'Завершённая партия +40 монет':'Победа +60 · ничья +40 · поражение +25';
   $('#status').textContent=reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
@@ -117,17 +121,17 @@ const renderGameInfo = () => {
   $('#hint').textContent=reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?(busy?'Компьютер выбирает ответ.':'Выберите фигуру, чтобы увидеть доступные ходы.'):state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
   $('#skin-name').textContent=styleById(itemById((state.game.started?state.game.equipped:state.equipped).board).style).name;
   $('#game-ready').hidden=active();
-  $('#match-title').textContent=active()?'Партия идёт.':state.game.started?'Партия завершена.':'Ваша следующая партия.';
+  $('#match-title').textContent=active()?'В игре':state.game.started?'Итоги партии':'Игра';
   $('#match-settings').textContent=`${config.mode==='bot'?levelName:'Вдвоём'} · без таймера`;
-  $('#ready-title').textContent=state.game.started?'Готовы к новой партии?':'Всё готово к первому ходу';
-  $('#ready-description').textContent=state.game.started?'История остаётся доступной до старта следующей партии. Настройки меняются в профиле.':'После старта доступны только доска, история и сдача.';
+  $('#ready-title').textContent=state.game.started?'Готовы к новой партии?':'Сыграем?';
+  $('#ready-description').textContent=state.game.started?'История остаётся доступной до старта следующей партии. Настройки меняются в профиле.':'Сторона выбирается случайно. Уровень — по вашему рейтингу.';
   $('#start-game').textContent=state.game.started?'Начать новую партию':'Начать партию';
   $('#start-game').disabled=active()||animating;
   renderHistory();
 };
 const render = () => {
   if(!animating)drawBoard();
-  drawCollection();renderProfile();renderGameInfo();syncNavigation();
+  drawCollection();renderCraft($('#craft-content'),state,craftType);renderProfile();renderGameInfo();syncNavigation();
   $('#coins').textContent=state.coins;
   $('#shards').textContent=state.shards;
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
@@ -136,7 +140,7 @@ const render = () => {
   $('#pity').textContent=`До гарантии эпического или легендарного предмета: ${10-state.pity}`;
   $('#pity-progress').value=state.pity;
 };
-const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;};
+const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
 const botFailure = () => {
   stopBot();renderGameInfo();
   showModal('<h2>Компьютер не смог ответить</h2><p>Партия сохранена. Можно повторить расчёт или сдаться, чтобы завершить игру.</p><button class="quiet" data-retry-bot>Повторить расчёт</button>');
@@ -154,15 +158,17 @@ const applyMove = async move => {
   settle();render();requestBot();
 };
 const requestBot = () => {
-  if(!active()||state.game.mode!=='bot'||game.turn()!=='b'||locked())return;
+  if(!active()||state.game.mode!=='bot'||game.turn()===state.game.playerColor||locked())return;
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=new Worker('./bot-worker.js?v=4',{type:'module'});
+    worker??=new Worker('./bot-worker.js?v=5',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
-      busy=false;void applyMove(data.move);
+      busy=false;
+      if(animating){pendingBotMove=data.move;return;}
+      void applyMove(data.move);
     };
     worker.onerror=botFailure;
     worker.postMessage({id,fen:game.fen(),difficulty:state.game.difficulty,rating:state.game.rating?.opponent});
@@ -175,7 +181,7 @@ const showPromotion = (from,to) => {
 };
 $('#board').addEventListener('click',event=>{
   const square=event.target.closest('[data-square]')?.dataset.square;
-  if(!square||!canPlayPosition(state,game,reviewCursor)||locked()||ended()||(state.game.mode==='bot'&&game.turn()==='b'))return;
+  if(!square||!canPlayPosition(state,game,reviewCursor)||locked()||ended()||(state.game.mode==='bot'&&game.turn()!==state.game.playerColor))return;
   const piece=game.get(square);
   if(selected){
     const moves=game.moves({square:selected,verbose:true}).filter(move=>move.to===square);
@@ -203,12 +209,18 @@ const changeTab = tab => {
   window.history.replaceState(null,'','#'+target);
   syncNavigation();
 };
-const showHistory = cursor => {
+const showHistory = async cursor => {
   if(animating)return;
-  const total=game.history().length;
-  reviewCursor=cursor===null||cursor>=total?null:Math.max(0,cursor);
-  selected=null;
+  const total=game.history().length, from=reviewCursor??total;
+  const target=cursor===null||cursor>=total?total:Math.max(0,cursor);
+  if(from===target)return;
+  const before=snapshotBoard($('#board')), steps=historyMoves(game,from,target);
+  reviewCursor=target===total?null:target;selected=null;animating=true;
   drawBoard();renderGameInfo();
+  try {await animateTransition($('#board'),steps,before);} finally {animating=false;}
+  render();
+  if(pendingBotMove){const move=pendingBotMove;pendingBotMove=null;void applyMove(move);}
+  else requestBot();
 };
 $('#history-back').onclick=()=>showHistory(historyCursor(reviewCursor,-1,game.history().length));
 $('#history-forward').onclick=()=>showHistory(historyCursor(reviewCursor,1,game.history().length));
@@ -219,7 +231,7 @@ $('#moves').addEventListener('click',event=>{
 });
 document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>changeTab(button.dataset.tab));
 document.querySelectorAll('[data-go]').forEach(button=>button.onclick=()=>changeTab(button.dataset.go));
-$('.brand').onclick=event=>{event.preventDefault();changeTab('profile');};
+$('.brand').onclick=event=>{event.preventDefault();changeTab('play');};
 window.addEventListener('hashchange',()=>changeTab(location.hash.slice(1)));
 window.addEventListener('popstate',()=>changeTab(location.hash.slice(1)));
 const useItem = id => {
@@ -249,7 +261,7 @@ $('#collection-content').addEventListener('click',event=>{
   if(button.dataset.collectionView){collectionView=button.dataset.collectionView;drawCollection();}
   if(animating)return;
   if(button.dataset.equip)useItem(button.dataset.equip);
-  if(button.dataset.craft)confirmCraft(button.dataset.craft);
+  if(button.dataset.craftLink){craftType=pieceType;changeTab('craft');renderCraft($('#craft-content'),state,craftType);}
   if(button.hasAttribute('data-save-set'))showSaveSet();
   if(button.dataset.preset&&canEquipPreset(state,button.dataset.preset)){
     if(persist({...state,equipped:presetEquipment(button.dataset.preset)})){render();toast('Коллекция выбрана.');}
@@ -261,6 +273,12 @@ $('#collection-content').addEventListener('click',event=>{
   if(button.dataset.deleteSet&&confirm('Удалить сохранённый набор? Все предметы останутся в коллекции.')){
     if(persist({...state,sets:state.sets.filter(set=>set.id!==button.dataset.deleteSet)}))drawCollection();
   }
+});
+$('#craft-content').addEventListener('click',event=>{
+  const button=event.target.closest('button');
+  if(active()||!button||button.disabled)return;
+  if(button.dataset.craftType){craftType=button.dataset.craftType;renderCraft($('#craft-content'),state,craftType);}
+  if(button.dataset.craft)confirmCraft(button.dataset.craft);
 });
 $('#modal-content').addEventListener('submit',event=>{
   if(active()||event.target.id!=='save-set-form')return;
@@ -312,11 +330,10 @@ $('#resign').onclick=()=>{
   else requestBot();
 };
 const savePreferences = () => {
-  const next=updatePreferences(state,game,{mode:$('#mode').value,difficulty:$('#difficulty').value});
+  const next=updatePreferences(state,game,{mode:$('#mode').value});
   if(next&&persist(next))render();else renderProfile();
 };
 $('#mode').onchange=savePreferences;
-$('#difficulty').onchange=savePreferences;
 $('#install').onclick=async()=>{
   if(active())return;
   if(installPrompt){await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;}
@@ -343,10 +360,8 @@ if('serviceWorker' in navigator){
   }).catch(()=>toast('Офлайн-режим недоступен. Игра работает при подключении к сети.'));
 }
 $('.brand>span:first-child').innerHTML=pieceSVG('n','w');
-$('.avatar').innerHTML=pieceSVG('n','b');
-$('.avatar.light').innerHTML=pieceSVG('p','w');
 $('#chest-art').innerHTML=pieceSVG('q','w','gold');
 $('#status').setAttribute('aria-live','polite');
-currentScreen=navigationTarget(state,game,location.hash.slice(1)||'profile');
+currentScreen=navigationTarget(state,game,location.hash.slice(1)||'play');
 changeTab(currentScreen);render();settle();render();requestBot();
 if(storageError)toast('Сохранение не удалось прочитать. Старые данные оставлены в браузере.');

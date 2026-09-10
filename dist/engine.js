@@ -1,17 +1,17 @@
-import {adaptiveLevel} from './rating.js?v=4';
-import {Chess} from './chess.js?v=4';
+import {adaptiveLevel} from './rating.js?v=5';
+import {Chess} from './chess.js?v=5';
 export const DIFFICULTIES = {
   adaptive:{name:'Адаптивный',description:'Подбирает силу по вашему внутреннему рейтингу. Уровень фиксируется на всю партию.'},
   easy:{name:'Новичок', depth:1, milliseconds:250, noise:110, description:'Видит ближайший ход и иногда ошибается.'},
   normal:{name:'Обычный', depth:2, milliseconds:700, noise:8, description:'Проверяет ответ соперника. Для спокойной игры.'},
   hard:{name:'Сложный', depth:4, milliseconds:1800, noise:0, description:'Считает до четырёх полуходов в пределах времени. Не Stockfish.'}
 };
-export const rewardFor = (game, resigned=false, mode='bot') => {
+export const rewardFor = (game, resigned=false, mode='bot', playerColor='w') => {
   if (!game.isGameOver() && !resigned) return 0;
   if (game.history().length < 10 && !game.isCheckmate()) return 0;
   if (game.isDraw() && !resigned) return 40;
   if (mode === 'local') return 40;
-  return resigned || game.turn() === 'w' ? 25 : 60;
+  return resigned || game.turn() === playerColor ? 25 : 60;
 };
 const weights = {p:100,n:320,b:335,r:500,q:900,k:0};
 const evaluate = (game, ply) => {

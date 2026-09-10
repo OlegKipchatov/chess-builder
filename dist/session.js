@@ -1,14 +1,14 @@
-import {ratingSnapshot} from './rating.js?v=4';
-import {Chess} from './chess.js?v=4';
-import {newGame} from './state.js?v=4';
-export const SCREENS = ['profile','collection','play','chests'];
+import {ratingSnapshot} from './rating.js?v=5';
+import {Chess} from './chess.js?v=5';
+import {newGame} from './state.js?v=5';
+export const SCREENS = ['profile','collection','play','chests','craft'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
-export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'profile';
-export const createStartedGame = state => ({...newGame(state.settings.mode,state.settings.difficulty),started:true,rating:state.settings.mode==='bot'&&state.settings.difficulty==='adaptive'?ratingSnapshot(state.rating):null,equipped:structuredClone(state.equipped)});
+export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
+export const createStartedGame = (state,rng=Math.random) => ({...newGame(state.settings.mode,'adaptive'),started:true,playerColor:rng()<0.5?'w':'b',rating:state.settings.mode==='bot'?ratingSnapshot(state.rating):null,equipped:structuredClone(state.equipped)});
 export const updatePreferences = (state, game, settings) => {
   if (isMatchActive(state,game)) return null;
   const mode = settings.mode === 'local' ? 'local' : 'bot';
-  const difficulty = ['easy','normal','hard','adaptive'].includes(settings.difficulty) ? settings.difficulty : 'normal';
+  const difficulty = 'adaptive';
   return {...state,settings:{mode,difficulty}};
 };
 export const positionAt = (liveGame, cursor) => {
