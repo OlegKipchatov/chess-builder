@@ -1,4 +1,4 @@
-import {ITEMS, CHEST_COST, EMPTY_SHARDS, itemById, craftCost, duplicateRefund} from './catalog.js?v=6';
+import {ITEMS, CHEST_COST, EMPTY_SHARDS, itemById, craftCost, duplicateRefund} from './catalog.js?v=7';
 export const random = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296;
 const select = (items, rng) => items[Math.min(items.length - 1, Math.floor(rng() * items.length))];
 export const rollChest = (owned, pity, rng = random) => {

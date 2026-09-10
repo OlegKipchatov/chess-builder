@@ -1,6 +1,7 @@
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=6';
-import {Chess} from './chess.js?v=6';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=6';
+import {validEngineProfile} from './strength.js?v=7';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=7';
+import {Chess} from './chess.js?v=7';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=7';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
@@ -34,6 +35,7 @@ export const migrateState = input => {
   next.settings = {mode:input.settings?.mode === 'local' ? 'local' : input.settings?.mode === 'bot' ? 'bot' : next.game.mode, difficulty:['easy','normal','hard','adaptive'].includes(input.settings?.difficulty) ? input.settings.difficulty : next.game.difficulty};
   next.rating = normalizeRating(input.rating);
   next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
+  next.game.engineProfile = validEngineProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
   next.settings.difficulty = 'adaptive';

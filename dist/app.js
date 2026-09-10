@@ -1,13 +1,14 @@
-import {capturePoints, completedMatch} from './archive.js?v=6';
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=6';
-import {Chess} from './chess.js?v=6';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=6';
-import {openChest, craftItem} from './economy.js?v=6';
-import {KEY, loadState, initialState, newGame} from './state.js?v=6';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=6';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=6';
-import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=6';
-import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=6';
+import {createStockfishClient} from './stockfish-client.js?v=7';
+import {capturePoints, completedMatch} from './archive.js?v=7';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=7';
+import {Chess} from './chess.js?v=7';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=7';
+import {openChest, craftItem} from './economy.js?v=7';
+import {KEY, loadState, initialState, newGame} from './state.js?v=7';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=7';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=7';
+import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=7';
+import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=7';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -166,7 +167,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=new Worker('./bot-worker.js?v=6',{type:'module'});
+    worker??=state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=7',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
@@ -174,8 +175,8 @@ const requestBot = () => {
       if(animating){pendingBotMove=data.move;return;}
       void applyMove(data.move);
     };
-    worker.onerror=botFailure;
-    worker.postMessage({id,fen:game.fen(),difficulty:state.game.difficulty,rating:state.game.rating?.opponent});
+    worker.onerror=()=>{if(id===taskId)botFailure();};
+    worker.postMessage({id,fen:game.fen(),pgn:game.pgn(),engineProfile:state.game.engineProfile,difficulty:state.game.difficulty,rating:state.game.rating?.opponent});
   } catch {botFailure();}
 };
 const showPromotion = (from,to) => {

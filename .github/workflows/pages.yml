@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Fetch and verify pinned Stockfish release
+        run: npm run prepare:engine
       - name: Test chess rules and rewards
         run: npm test
       - name: Check JavaScript syntax
@@ -56,6 +58,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch and verify pinned Stockfish release
+        run: npm run prepare:engine
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static app

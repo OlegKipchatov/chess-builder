@@ -1,5 +1,5 @@
-import {adaptiveLevel} from './rating.js?v=6';
-import {Chess} from './chess.js?v=6';
+import {adaptiveLevel} from './rating.js?v=7';
+import {Chess} from './chess.js?v=7';
 export const DIFFICULTIES = {
   adaptive:{name:'Адаптивный',description:'Подбирает силу по вашему внутреннему рейтингу. Уровень фиксируется на всю партию.'},
   easy:{name:'Новичок', depth:1, milliseconds:250, noise:110, description:'Видит ближайший ход и иногда ошибается.'},

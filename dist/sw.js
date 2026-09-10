@@ -1,6 +1,6 @@
-const CACHE='chess-vault-v6';
-const ASSETS=['./','./index.html','./style.css','./app.js','./catalog.js','./economy.js','./state.js','./session.js','./rating.js','./archive.js','./pieces.js','./board.js','./collection.js','./engine.js','./chess.js','./bot-worker.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable.png'];
-const VERSIONED=ASSETS.filter(path=>path.endsWith('.js')||path.endsWith('.css')).map(path=>path+'?v=6');
+const CACHE='chess-vault-v7';
+const ASSETS=['./','./index.html','./style.css','./app.js','./catalog.js','./economy.js','./state.js','./session.js','./rating.js','./archive.js','./stockfish-client.js','./strength.js','./vendor/stockfish-18-lite-single.js','./vendor/stockfish-18-lite-single.wasm','./engine-info.html','./stockfish-license.txt','./pieces.js','./board.js','./collection.js','./engine.js','./chess.js','./bot-worker.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable.png'];
+const VERSIONED=ASSETS.filter(path=>path.endsWith('.js')||path.endsWith('.css')).map(path=>path+'?v=7');
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([...ASSETS,...VERSIONED]))));
 self.addEventListener('message',event=>{if(event.data?.type==='ACTIVATE_UPDATE')self.skipWaiting();});
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('chess-vault-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
