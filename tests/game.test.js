@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Chess} from '../dist/chess.js';
+import {rollChest,rewardFor,chooseMove} from '../dist/engine.js';
+test('Сундуки соблюдают границы редкостей',()=>{for(const [r,rarity] of [[0,'common'],[.599,'common'],[.6,'rare'],[.9,'epic'],[.99,'legendary']])assert.equal(rollChest([],0,()=>r).skin.rarity,rarity);});
+test('Десятый сундук гарантирует эпический или легендарный набор',()=>{assert.equal(rollChest([],9,()=>0).skin.rarity,'epic');assert.equal(rollChest([],9,()=>.95).skin.rarity,'legendary');});
+test('Повтор определяется и счётчик гарантии сбрасывается',()=>{const result=rollChest(['gold'],8,()=>.999);assert.equal(result.duplicate,true);assert.equal(result.pity,0);});
+test('Незавершённая партия и быстрая сдача не дают награды',()=>{const game=new Chess();game.move('e4');assert.equal(rewardFor(game),0);assert.equal(rewardFor(game,true),0);});
+test('Мат раньше десяти полуходов даёт награду проигравшему',()=>{const game=new Chess();['f3','e5','g4','Qh4#'].forEach(m=>game.move(m));assert.equal(rewardFor(game),25);});
+test('Победа белых даёт 60 монет',()=>{const game=new Chess();['e4','e5','Bc4','Nc6','Qh5','Nf6','Qxf7#'].forEach(m=>game.move(m));assert.equal(rewardFor(game),60);});
+test('Компьютер выбирает мат в один ход',()=>{const game=new Chess();['f3','e5','g4'].forEach(m=>game.move(m));game.move(chooseMove(game.fen(),()=>0));assert.equal(game.isCheckmate(),true);});
+test('Рокировка, взятие на проходе и превращение поддерживаются',()=>{const castle=new Chess('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');castle.move('O-O');assert.equal(castle.get('f1').type,'r');const ep=new Chess();['e4','a6','e5','d5','exd6'].forEach(m=>ep.move(m));assert.equal(ep.get('d5'),undefined);const promo=new Chess('7k/P7/8/8/8/8/8/7K w - - 0 1');promo.move({from:'a7',to:'a8',promotion:'n'});assert.equal(promo.get('a8').type,'n');});
+test('PGN сохраняет историю для повтора позиции',()=>{const game=new Chess();['Nf3','Nf6','Ng1','Ng8','Nf3','Nf6','Ng1','Ng8'].forEach(m=>game.move(m));const restored=new Chess();restored.loadPgn(game.pgn());assert.equal(restored.isThreefoldRepetition(),true);});

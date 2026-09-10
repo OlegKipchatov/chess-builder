@@ -1,0 +1,67 @@
+name: Test and publish Chess Vault
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test chess rules and rewards
+        run: npm test
+      - name: Check JavaScript syntax
+        run: |
+          node --check dist/app.js
+          node --check dist/sw.js
+          node --check dist/bot-worker.js
+      - name: Validate installable PWA assets
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('dist')
+          manifest = json.loads((root / 'manifest.webmanifest').read_text())
+          assert manifest['display'] == 'standalone'
+          for icon in manifest['icons']:
+              assert (root / icon['src']).is_file(), icon['src']
+          for name in ['index.html', 'app.js', 'engine.js', 'chess.js', 'bot-worker.js', 'sw.js', 'style.css']:
+              assert (root / name).is_file(), name
+          PY
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static app
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v4
