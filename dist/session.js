@@ -1,6 +1,6 @@
-import {ratingSnapshot} from './rating.js?v=5';
-import {Chess} from './chess.js?v=5';
-import {newGame} from './state.js?v=5';
+import {ratingSnapshot} from './rating.js?v=6';
+import {Chess} from './chess.js?v=6';
+import {newGame} from './state.js?v=6';
 export const SCREENS = ['profile','collection','play','chests','craft'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';

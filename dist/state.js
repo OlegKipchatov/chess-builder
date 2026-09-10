@@ -1,11 +1,11 @@
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=5';
-import {Chess} from './chess.js?v=5';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=5';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=6';
+import {Chess} from './chess.js?v=6';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=6';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
 export const newGame = (mode='bot', difficulty='adaptive') => ({pgn:'', mode, difficulty, playerColor:'w', started:false, settled:false, resigned:false});
-export const initialState = () => ({version:3, rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
+export const initialState = () => ({version:3, archive:[], rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
 const integer = (value, fallback=0) => Number.isSafeInteger(value) && value >= 0 ? value : fallback;
 export const validEquipment = (candidate, owned) => {
   const equipped = defaultEquipment();
@@ -42,6 +42,13 @@ export const migrateState = input => {
     next.game.difficulty='adaptive';
     if(next.game.started && !next.game.rating)next.game.rating=ratingSnapshot(next.rating);
   }
+  next.archive = (Array.isArray(input.archive)?input.archive:[]).filter(entry=>typeof entry?.id==='string'&&typeof entry.pgn==='string').map(entry=>({
+    id:entry.id,pgn:entry.pgn,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
+    mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
+    result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),
+    playerRating:integer(entry.playerRating,1000),opponentRating:Number.isSafeInteger(entry.opponentRating)?entry.opponentRating:null,
+    ratingDelta:Number.isSafeInteger(entry.ratingDelta)?entry.ratingDelta:null
+  }));
   next.sets = (Array.isArray(input.sets) ? input.sets : []).filter(s => typeof s?.id === 'string' && typeof s.name === 'string').slice(0,12).map(s => ({id:s.id, name:s.name.trim().slice(0,32)||'Мой набор', ...validEquipment(s,next.owned)}));
   return next;
 };

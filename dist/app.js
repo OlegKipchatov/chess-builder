@@ -1,13 +1,13 @@
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=5';
-import {Chess} from './chess.js?v=5';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=5';
-import {openChest, craftItem} from './economy.js?v=5';
-import {KEY, loadState, initialState, newGame} from './state.js?v=5';
-import {DIFFICULTIES, rewardFor} from './engine.js?v=5';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=5';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=5';
-import {renderCollection, renderCraft, presetEquipment, canEquipPreset} from './collection.js?v=5';
-import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=5';
+import {capturePoints, completedMatch} from './archive.js?v=6';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=6';
+import {Chess} from './chess.js?v=6';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=6';
+import {openChest, craftItem} from './economy.js?v=6';
+import {KEY, loadState, initialState, newGame} from './state.js?v=6';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=6';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=6';
+import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=6';
+import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=6';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -22,8 +22,8 @@ const toast = message => {
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>$('#toast').style.display='none',5000);
 };
-const persist = next => {
-  const snapshot={...next, game:{...next.game,pgn:game.pgn()}};
+const persist = (next,reset=false) => {
+  const snapshot={...next, game:{...next.game,pgn:reset?'':game.pgn()}};
   try {localStorage.setItem(KEY,JSON.stringify(snapshot));state=snapshot;return true;}
   catch {toast('Не удалось сохранить прогресс. Освободите место или разрешите хранение данных.');return false;}
 };
@@ -45,12 +45,13 @@ const statusText = () => {
   return `${game.isCheck()?'Шах! ':''}Ход ${game.turn()==='w'?'белых':'чёрных'}`;
 };
 const settle = () => {
-  if(!ended() || state.game.settled)return;
-  const reward=rewardFor(game,state.game.resigned,state.game.mode,state.game.playerColor);
-  const rating=settleRating(state,game);
-  const next={...state,rating:rating||state.rating,coins:state.coins+reward,played:state.played+1,game:{...state.game,settled:true}};
-  if(!persist(next))return;
-  showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${statusText()}</h2><div class="coin-reveal">◈</div><h2>+${reward} монет</h2>${rating?`<p class="rating-result">Рейтинг: ${state.game.rating.before} → <strong>${rating.value}</strong> (${signedDelta(rating.lastDelta)})</p><p>Следующий соперник: ${opponentFor(rating.value)} · ${rating.games<10?`Калибровка ${rating.games}/10`:'Калибровка завершена'}</p>`:''}<p>${reward?'Загляните в хранилище за новым предметом.':'Награда начисляется после 10 полуходов или при мате.'}</p>`);
+  if(!ended()||!state.game.started)return;
+  const wasSettled=state.game.settled, title=statusText();
+  const result=completedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
+  if(!result||!persist(result.state,true))return;
+  const {entry,reward,rating}=result;
+  stopBot();game.reset();reviewCursor=null;selected=null;
+  if(!wasSettled)showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${title}</h2><h2>+${reward} монет</h2><p>Взято фигур на ${entry.points} очков</p>${rating?`<p class="rating-result">Рейтинг: ${entry.playerRating} → <strong>${rating.value}</strong> (${signedDelta(rating.lastDelta)})</p>`:''}<p>Партия сохранена в истории профиля.</p>`);
 };
 const drawBoard = () => {
   const equipped=state.game.started ? state.game.equipped : state.equipped;
@@ -84,6 +85,7 @@ const renderProfile = () => {
   $('#rating-progress').value=Math.min(state.rating.games,10);
   $('#rating-calibration').textContent=state.rating.games<10?`Калибровка: ${state.rating.games} из 10 партий`:`Рейтинговых партий: ${state.rating.games}`;
   $('#rating-opponent').textContent=`Следующий уровень: ${opponentFor(state.rating.value)}${state.rating.value>=1600?' · максимум движка':''}`;
+  $('#match-archive').innerHTML=state.archive.length?state.archive.map(entry=>`<button class="archive-entry" data-archive="${escapeHTML(entry.id)}"><span><strong>${escapeHTML(entry.result)}</strong><small>${entry.mode==='bot'?'ИИ':'Вдвоём'} · ${entry.playerColor==='w'?'Белые':'Чёрные'} · ${Number.isNaN(Date.parse(entry.finishedAt))?'Дата неизвестна':new Date(entry.finishedAt).toLocaleDateString('ru-RU')}</small></span><span>${entry.points} очк.<small>${entry.ratingDelta===null?'Без изменения рейтинга':`${signedDelta(entry.ratingDelta)} рейтинга`}</small></span></button>`).join(''):'<p class="muted">Здесь появятся завершённые партии.</p>';
   $('#profile-played').textContent=state.played;
   $('#profile-owned').textContent=state.owned.length;
   $('#profile-opened').textContent=state.opened;
@@ -105,26 +107,28 @@ const renderHistory = () => {
 };
 const renderGameInfo = () => {
   const config=state.game.started?state.game:state.settings;
-  const levelName=DIFFICULTIES[config.difficulty].name+(config.difficulty==='adaptive'?` · ${config.rating?.opponent??opponentFor(state.rating.value)}`:'');
   const color=state.game.started?state.game.playerColor:'w';
   $('#player-color').textContent=state.game.started?(color==='w'?'Белые фигуры':'Чёрные фигуры'):'Случайная сторона';
   $('#opponent-color').textContent=state.game.started?(color==='w'?'Чёрные фигуры':'Белые фигуры'):'Сторона определится при старте';
   $('#player-name').textContent=config.mode==='bot'?'Вы':'Игрок 1';
   $('#opponent-avatar').innerHTML=pieceSVG('n',color==='w'?'b':'w');
   $('#player-avatar').innerHTML=pieceSVG('p',color);
-  $('#opponent').textContent=config.mode==='bot'?`Компьютер · ${levelName}`:'Второй игрок';
+  $('#opponent').textContent=config.mode==='bot'?'ИИ':'Второй игрок';
+  $('#opponent-rating').textContent=config.mode==='bot'?`Рейтинг ${config.rating?.opponent??opponentFor(state.rating.value)}`:'';
+  $('#player-rating').textContent=`Рейтинг ${config.rating?.before??state.rating.value}`;
+  $('#match-points').textContent=`${capturePoints(game,color)} очк.`;
+  $('#match-surface').hidden=!state.game.started;
   $('#play .reward-card p').textContent=config.mode==='local'?'Завершённая партия +40 монет':'Победа +60 · ничья +40 · поражение +25';
   $('#status').textContent=reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
-  $('#thinking').textContent=busy?'Обдумывает ход…':active()?'Партия идёт':state.game.started?'Партия завершена':'Ожидает начала';
   $('#resign').disabled=!active()||animating;
   $('#resign').hidden=!active();
-  $('#hint').textContent=reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?(busy?'Компьютер выбирает ответ.':'Выберите фигуру, чтобы увидеть доступные ходы.'):state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
+  $('#hint').textContent=reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
   $('#skin-name').textContent=styleById(itemById((state.game.started?state.game.equipped:state.equipped).board).style).name;
   $('#game-ready').hidden=active();
   $('#match-title').textContent=active()?'В игре':state.game.started?'Итоги партии':'Игра';
-  $('#match-settings').textContent=`${config.mode==='bot'?levelName:'Вдвоём'} · без таймера`;
+  $('#match-settings').textContent=state.game.started?`${capturePoints(game,color)} очк.`:config.mode==='bot'?'ИИ · по вашему рейтингу':'Вдвоём';
   $('#ready-title').textContent=state.game.started?'Готовы к новой партии?':'Сыграем?';
-  $('#ready-description').textContent=state.game.started?'История остаётся доступной до старта следующей партии. Настройки меняются в профиле.':'Сторона выбирается случайно. Уровень — по вашему рейтингу.';
+  $('#ready-description').textContent=state.game.started?'Завершённые партии хранятся в профиле.':'Сторона выбирается случайно. Уровень — по вашему рейтингу.';
   $('#start-game').textContent=state.game.started?'Начать новую партию':'Начать партию';
   $('#start-game').disabled=active()||animating;
   renderHistory();
@@ -162,7 +166,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=new Worker('./bot-worker.js?v=5',{type:'module'});
+    worker??=new Worker('./bot-worker.js?v=6',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
@@ -279,6 +283,35 @@ $('#craft-content').addEventListener('click',event=>{
   if(active()||!button||button.disabled)return;
   if(button.dataset.craftType){craftType=button.dataset.craftType;renderCraft($('#craft-content'),state,craftType);}
   if(button.dataset.craft)confirmCraft(button.dataset.craft);
+});
+let archivedGame=null, archivedEntry=null, archivedCursor=null, archiveAnimating=false;
+const drawArchive = () => {
+  const total=archivedGame.history().length;
+  renderBoard($('#archive-board'),positionAt(archivedGame,archivedCursor),archivedEntry.equipped,null,archivedEntry.playerColor);
+  $('#archive-position').textContent=`Позиция ${archivedCursor??total} из ${total}`;
+  $('#archive-back').disabled=archiveAnimating||(archivedCursor??total)===0;
+  $('#archive-forward').disabled=archiveAnimating||archivedCursor===null;
+  $('#archive-live').disabled=archiveAnimating||archivedCursor===null;
+};
+const moveArchive = async direction => {
+  if(archiveAnimating||!archivedGame)return;
+  const total=archivedGame.history().length,from=archivedCursor??total;
+  const next=direction===null?null:historyCursor(archivedCursor,direction,total);
+  if((next??total)===from)return;
+  const before=snapshotBoard($('#archive-board')),steps=historyMoves(archivedGame,from,next??total);
+  archivedCursor=next;archiveAnimating=true;drawArchive();
+  try {await animateTransition($('#archive-board'),steps,before);} finally {archiveAnimating=false;}
+  if($('#archive-board'))drawArchive();
+};
+$('#match-archive').addEventListener('click',event=>{
+  if(active()||archiveAnimating)return;
+  const id=event.target.closest('[data-archive]')?.dataset.archive;
+  const entry=state.archive.find(entry=>entry.id===id);if(!entry)return;
+  const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось прочитать запись партии.');return;}
+  archivedEntry=entry;archivedGame=replay;archivedCursor=null;
+  const controls=[['back','Предыдущая позиция'],['forward','Следующая позиция'],['live','К последнему ходу']].map(([key,label])=>`<button id="archive-${key}" class="quiet icon-button" aria-label="${label}" title="${label}">${$('#history-'+key).innerHTML}</button>`).join('');
+  showModal(`<h2>${escapeHTML(entry.result)}</h2><p>Вы: ${entry.playerRating}${entry.opponentRating===null?'':` · ИИ: ${entry.opponentRating}`} · ${entry.points} очк.</p><div id="archive-board" class="board" aria-label="Просмотр завершённой партии"></div><div class="history-buttons">${controls}</div><p id="archive-position" aria-live="polite"></p>`);
+  drawArchive();$('#archive-back').onclick=()=>moveArchive(-1);$('#archive-forward').onclick=()=>moveArchive(1);$('#archive-live').onclick=()=>moveArchive(null);
 });
 $('#modal-content').addEventListener('submit',event=>{
   if(active()||event.target.id!=='save-set-form')return;

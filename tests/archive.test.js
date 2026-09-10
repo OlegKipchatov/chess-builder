@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Chess} from '../dist/chess.js';
+import {initialState,migrateState} from '../dist/state.js';
+import {createStartedGame} from '../dist/session.js';
+import {capturePoints,completedMatch} from '../dist/archive.js';
+const match = () => {const state=initialState();state.game=createStartedGame(state,()=>0.9);return state;};
+const meta={id:'one',finishedAt:'2026-09-10T20:00:00.000Z'};
+test('Завершение сохраняет PGN, начисляет награды и освобождает главный экран',()=>{const state=match(),game=new Chess();['f3','e5','g4','Qh4#'].forEach(move=>game.move(move));const result=completedMatch(state,game,meta);assert.equal(result.entry.result,'Победа');assert.equal(result.reward,60);assert.equal(result.state.rating.value,1032);assert.equal(result.state.game.started,false);assert.equal(result.state.game.pgn,'');const replay=new Chess();replay.loadPgn(result.entry.pgn);assert.equal(replay.fen(),game.fen());assert.equal(result.state.archive.length,1);assert.equal(completedMatch(result.state,game,meta),null);});
+test('История переживает миграцию, быстрые сдачи тоже сохраняются',()=>{const state=match();state.game.resigned=true;const result=completedMatch(state,new Chess(),meta);assert.equal(result.reward,0);assert.equal(result.entry.result,'Поражение');const restored=migrateState(JSON.parse(JSON.stringify(result.state)));assert.deepEqual(restored.archive,result.state.archive);assert.equal(restored.game.started,false);});
+test('Старая уже оплаченная партия архивируется без повторной выплаты',()=>{const state=match();state.game.resigned=true;state.game.settled=true;state.played=5;const result=completedMatch(state,new Chess(),meta);assert.equal(result.state.coins,state.coins);assert.equal(result.state.played,5);assert.deepEqual(result.state.rating,state.rating);});
+test('Незавершённая партия не переносится в архив',()=>{assert.equal(completedMatch(match(),new Chess(),meta),null);});
+test('Очки учитывают взятия и сторону, включая взятие на проходе',()=>{const game=new Chess();['e4','a6','e5','d5','exd6'].forEach(move=>game.move(move));assert.equal(capturePoints(game,'w'),1);assert.equal(capturePoints(game,'b'),0);});
