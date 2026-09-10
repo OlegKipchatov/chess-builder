@@ -1,10 +1,11 @@
-import {Chess} from './chess.js?v=3';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=3';
+import {initialRating, normalizeRating, validRatingSnapshot} from './rating.js?v=4';
+import {Chess} from './chess.js?v=4';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=4';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
 export const newGame = (mode='bot', difficulty='normal') => ({pgn:'', mode, difficulty, started:false, settled:false, resigned:false});
-export const initialState = () => ({version:3, settings:{mode:'bot',difficulty:'normal'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
+export const initialState = () => ({version:3, rating:initialRating(), settings:{mode:'bot',difficulty:'normal'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
 const integer = (value, fallback=0) => Number.isSafeInteger(value) && value >= 0 ? value : fallback;
 export const validEquipment = (candidate, owned) => {
   const equipped = defaultEquipment();
@@ -29,8 +30,10 @@ export const migrateState = input => {
   const style = STYLES.some(s => s.id === input.skin) ? input.skin : 'classic';
   const equipment = legacy ? {pieces:Object.fromEntries(TYPES.map(type => [type,pieceId(style,type)])), board:boardId(style)} : input.equipped;
   next.equipped = validEquipment(equipment,next.owned);
-  next.game = {...newGame(), pgn:typeof input.game?.pgn === 'string' ? input.game.pgn : '', mode:input.game?.mode === 'local' ? 'local' : 'bot', difficulty:['easy','normal','hard'].includes(input.game?.difficulty) ? input.game.difficulty : 'normal', settled:input.game?.settled === true, resigned:input.game?.resigned === true};
-  next.settings = {mode:input.settings?.mode === 'local' ? 'local' : input.settings?.mode === 'bot' ? 'bot' : next.game.mode, difficulty:['easy','normal','hard'].includes(input.settings?.difficulty) ? input.settings.difficulty : next.game.difficulty};
+  next.game = {...newGame(), pgn:typeof input.game?.pgn === 'string' ? input.game.pgn : '', mode:input.game?.mode === 'local' ? 'local' : 'bot', difficulty:['easy','normal','hard','adaptive'].includes(input.game?.difficulty) ? input.game.difficulty : 'normal', settled:input.game?.settled === true, resigned:input.game?.resigned === true};
+  next.settings = {mode:input.settings?.mode === 'local' ? 'local' : input.settings?.mode === 'bot' ? 'bot' : next.game.mode, difficulty:['easy','normal','hard','adaptive'].includes(input.settings?.difficulty) ? input.settings.difficulty : next.game.difficulty};
+  next.rating = normalizeRating(input.rating);
+  next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
   next.sets = (Array.isArray(input.sets) ? input.sets : []).filter(s => typeof s?.id === 'string' && typeof s.name === 'string').slice(0,12).map(s => ({id:s.id, name:s.name.trim().slice(0,32)||'Мой набор', ...validEquipment(s,next.owned)}));

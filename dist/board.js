@@ -1,5 +1,5 @@
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=3';
-import {pieceSVG} from './pieces.js?v=3';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=4';
+import {pieceSVG} from './pieces.js?v=4';
 export const renderBoard = (root, game, equipped, selected) => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);

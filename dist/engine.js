@@ -1,5 +1,7 @@
-import {Chess} from './chess.js?v=3';
+import {adaptiveLevel} from './rating.js?v=4';
+import {Chess} from './chess.js?v=4';
 export const DIFFICULTIES = {
+  adaptive:{name:'Адаптивный',description:'Подбирает силу по вашему внутреннему рейтингу. Уровень фиксируется на всю партию.'},
   easy:{name:'Новичок', depth:1, milliseconds:250, noise:110, description:'Видит ближайший ход и иногда ошибается.'},
   normal:{name:'Обычный', depth:2, milliseconds:700, noise:8, description:'Проверяет ответ соперника. Для спокойной игры.'},
   hard:{name:'Сложный', depth:4, milliseconds:1800, noise:0, description:'Считает до четырёх полуходов в пределах времени. Не Stockfish.'}
@@ -51,10 +53,10 @@ const searchRoot = (game, moves, depth, level, context, rng) => {
   }
   return chosen;
 };
-export const chooseMove = (fen, difficulty='normal', rng=Math.random) => {
+export const chooseMove = (fen, difficulty='normal', rng=Math.random, rating=1000) => {
   const game = new Chess(fen);
   if (game.isGameOver()) return null;
-  const level = DIFFICULTIES[difficulty] || DIFFICULTIES.normal;
+  const level = difficulty==='adaptive'?adaptiveLevel(rating):DIFFICULTIES[difficulty] || DIFFICULTIES.normal;
   const context = {deadline:performance.now()+level.milliseconds, nodes:0, timeout:Symbol('timeout')};
   const moves = orderedMoves(game);
   let chosen = moves[0];

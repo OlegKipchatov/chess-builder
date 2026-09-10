@@ -1,12 +1,13 @@
-import {Chess} from './chess.js?v=3';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=3';
-import {openChest, craftItem} from './economy.js?v=3';
-import {KEY, loadState, initialState, newGame} from './state.js?v=3';
-import {DIFFICULTIES, rewardFor} from './engine.js?v=3';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=3';
-import {renderBoard, snapshotBoard, animateMove} from './board.js?v=3';
-import {renderCollection, presetEquipment, canEquipPreset} from './collection.js?v=3';
-import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=3';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=4';
+import {Chess} from './chess.js?v=4';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=4';
+import {openChest, craftItem} from './economy.js?v=4';
+import {KEY, loadState, initialState, newGame} from './state.js?v=4';
+import {DIFFICULTIES, rewardFor} from './engine.js?v=4';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=4';
+import {renderBoard, snapshotBoard, animateMove} from './board.js?v=4';
+import {renderCollection, presetEquipment, canEquipPreset} from './collection.js?v=4';
+import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=4';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -46,9 +47,10 @@ const statusText = () => {
 const settle = () => {
   if(!ended() || state.game.settled)return;
   const reward=rewardFor(game,state.game.resigned,state.game.mode);
-  const next={...state,coins:state.coins+reward,played:state.played+1,game:{...state.game,settled:true}};
+  const rating=settleRating(state,game);
+  const next={...state,rating:rating||state.rating,coins:state.coins+reward,played:state.played+1,game:{...state.game,settled:true}};
   if(!persist(next))return;
-  showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${statusText()}</h2><div class="coin-reveal">◈</div><h2>+${reward} монет</h2><p>${reward?'Загляните в хранилище за новым предметом.':'Награда начисляется после 10 полуходов или при мате.'}</p>`);
+  showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${statusText()}</h2><div class="coin-reveal">◈</div><h2>+${reward} монет</h2>${rating?`<p class="rating-result">Рейтинг: ${state.game.rating.before} → <strong>${rating.value}</strong> (${signedDelta(rating.lastDelta)})</p><p>Следующий соперник: ${opponentFor(rating.value)} · ${rating.games<10?`Калибровка ${rating.games}/10`:'Калибровка завершена'}</p>`:''}<p>${reward?'Загляните в хранилище за новым предметом.':'Награда начисляется после 10 полуходов или при мате.'}</p>`);
 };
 const drawBoard = () => {
   const equipped=state.game.started ? state.game.equipped : state.equipped;
@@ -79,6 +81,11 @@ const renderProfile = () => {
   $('#difficulty').disabled=active();
   $('#difficulty-field').hidden=state.settings.mode!=='bot';
   $('#difficulty-hint').textContent=DIFFICULTIES[state.settings.difficulty].description;
+  $('#rating-value').textContent=state.rating.value;
+  $('#rating-delta').textContent=state.rating.games?`${signedDelta(state.rating.lastDelta)} за последнюю партию`:'Начальный рейтинг';
+  $('#rating-progress').value=Math.min(state.rating.games,10);
+  $('#rating-calibration').textContent=state.rating.games<10?`Калибровка: ${state.rating.games} из 10 партий`:`Рейтинговых партий: ${state.rating.games}`;
+  $('#rating-opponent').textContent=`Следующий уровень: ${opponentFor(state.rating.value)}${state.rating.value>=1600?' · максимум движка':''}`;
   $('#profile-played').textContent=state.played;
   $('#profile-owned').textContent=state.owned.length;
   $('#profile-opened').textContent=state.opened;
@@ -100,7 +107,8 @@ const renderHistory = () => {
 };
 const renderGameInfo = () => {
   const config=state.game.started?state.game:state.settings;
-  $('#opponent').textContent=config.mode==='bot'?`Компьютер · ${DIFFICULTIES[config.difficulty].name}`:'Второй игрок';
+  const levelName=DIFFICULTIES[config.difficulty].name+(config.difficulty==='adaptive'?` · ${config.rating?.opponent??opponentFor(state.rating.value)}`:'');
+  $('#opponent').textContent=config.mode==='bot'?`Компьютер · ${levelName}`:'Второй игрок';
   $('#play .reward-card p').textContent=config.mode==='local'?'Завершённая партия +40 монет':'Победа +60 · ничья +40 · поражение +25';
   $('#status').textContent=reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
   $('#thinking').textContent=busy?'Обдумывает ход…':active()?'Партия идёт':state.game.started?'Партия завершена':'Ожидает начала';
@@ -110,7 +118,7 @@ const renderGameInfo = () => {
   $('#skin-name').textContent=styleById(itemById((state.game.started?state.game.equipped:state.equipped).board).style).name;
   $('#game-ready').hidden=active();
   $('#match-title').textContent=active()?'Партия идёт.':state.game.started?'Партия завершена.':'Ваша следующая партия.';
-  $('#match-settings').textContent=`${config.mode==='bot'?DIFFICULTIES[config.difficulty].name:'Вдвоём'} · без таймера`;
+  $('#match-settings').textContent=`${config.mode==='bot'?levelName:'Вдвоём'} · без таймера`;
   $('#ready-title').textContent=state.game.started?'Готовы к новой партии?':'Всё готово к первому ходу';
   $('#ready-description').textContent=state.game.started?'История остаётся доступной до старта следующей партии. Настройки меняются в профиле.':'После старта доступны только доска, история и сдача.';
   $('#start-game').textContent=state.game.started?'Начать новую партию':'Начать партию';
@@ -150,14 +158,14 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=new Worker('./bot-worker.js?v=3',{type:'module'});
+    worker??=new Worker('./bot-worker.js?v=4',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
       busy=false;void applyMove(data.move);
     };
     worker.onerror=botFailure;
-    worker.postMessage({id,fen:game.fen(),difficulty:state.game.difficulty});
+    worker.postMessage({id,fen:game.fen(),difficulty:state.game.difficulty,rating:state.game.rating?.opponent});
   } catch {botFailure();}
 };
 const showPromotion = (from,to) => {
