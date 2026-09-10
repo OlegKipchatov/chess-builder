@@ -1,4 +1,4 @@
-import {Chess} from './chess.js?v=2';
+import {Chess} from './chess.js?v=3';
 export const DIFFICULTIES = {
   easy:{name:'Новичок', depth:1, milliseconds:250, noise:110, description:'Видит ближайший ход и иногда ошибается.'},
   normal:{name:'Обычный', depth:2, milliseconds:700, noise:8, description:'Проверяет ответ соперника. Для спокойной игры.'},

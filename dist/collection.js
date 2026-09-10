@@ -1,28 +1,36 @@
-import {TYPES, PIECE_NAMES, STYLES, ITEMS, rarityNames, itemById, pieceId, boardId, craftCost, duplicateRefund} from './catalog.js?v=2';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=2';
+import {TYPES, PIECE_NAMES, STYLES, ITEMS, rarityNames, itemById, pieceId, boardId, craftCost} from './catalog.js?v=3';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=3';
 export const escapeHTML = value => String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 export const presetEquipment = style => ({pieces:Object.fromEntries(TYPES.map(type=>[type,pieceId(style,type)])),board:boardId(style)});
-export const canEquipPreset = (state, style) => [...Object.values(presetEquipment(style).pieces),boardId(style)].every(id=>state.owned.includes(id));
+export const canEquipPreset = (state,style) => [...Object.values(presetEquipment(style).pieces),boardId(style)].every(id=>state.owned.includes(id));
 const isEquipped = (state,item) => item.kind === 'board' ? state.equipped.board === item.id : state.equipped.pieces[item.type] === item.id;
-const renderItem = (state, item) => {
-  const owned = state.owned.includes(item.id);
-  const equipped = isEquipped(state,item);
-  const cost = craftCost(item);
-  const button = owned
-    ? `<button class="${equipped?'equipped-button':'quiet'}" data-equip="${item.id}" ${equipped?'disabled':''}>${equipped?'✓ На доске':'Использовать'}</button>`
-    : `<button class="quiet" data-craft="${item.id}" ${state.shards<cost?'disabled':''}>Создать за ${cost} ✧</button>`;
-  return `<article class="item-card ${owned?'owned':'locked'} ${equipped?'equipped':''}"><div class="item-art" style="--item-accent:${STYLES.find(style=>style.id===item.style).accent}">${itemPreview(item)}<span class="item-state">${equipped?'Используется':owned?'В коллекции':'Не получен'}</span></div><div class="item-body"><span class="rarity ${item.rarity}">${rarityNames[item.rarity]}</span><h3>${STYLES.find(style=>style.id===item.style).name}</h3><p>${item.kind==='board'?'Доска 8 × 8':PIECE_NAMES[item.type]+' · обе стороны'}</p>${button}${!owned?`<small>Повтор: +${duplicateRefund(item)} ✧</small>`:'<small>Можно включать в свои наборы</small>'}</div></article>`;
+const sameEquipment = (first,second) => first.board===second.board&&TYPES.every(type=>first.pieces[type]===second.pieces[type]);
+const renderItem = (state,item) => {
+  const owned=state.owned.includes(item.id), equipped=isEquipped(state,item), cost=craftCost(item);
+  const style=STYLES.find(style=>style.id===item.style);
+  const action=owned?`data-equip="${item.id}"`:`data-craft="${item.id}"`;
+  const disabled=equipped||!owned&&state.shards<cost;
+  const label=equipped?'✓ Выбрано':owned?'Выбрать':`${cost} ✧ · создать`;
+  return `<article class="compact-item ${equipped?'equipped':''}"><div class="compact-item-art" style="--item-accent:${style.accent}">${itemPreview(item)}</div><div class="compact-item-copy"><span class="rarity ${item.rarity}">${rarityNames[item.rarity]}</span><h3>${style.name}</h3><span class="item-ownership">${owned?'В коллекции':'Ещё не получен'}</span></div><button class="${equipped?'equipped-button':'quiet'}" ${action} ${disabled?'disabled':''}>${label}</button></article>`;
 };
-const renderSets = state => {
-  const saved = state.sets.map(set=>`<article class="set-card"><div class="set-preview">${equipmentPreview(set)}</div><h3>${escapeHTML(set.name)}</h3><p>Сохранённый набор</p><div class="actions"><button class="quiet" data-load-set="${escapeHTML(set.id)}">Использовать</button><button class="text-button" data-delete-set="${escapeHTML(set.id)}" aria-label="Удалить набор ${escapeHTML(set.name)}">Удалить</button></div></article>`).join('');
-  const presets = STYLES.map(style=>{
-    const equipment=presetEquipment(style.id);
-    const total=[...Object.values(equipment.pieces),equipment.board].filter(id=>state.owned.includes(id)).length;
-    return `<article class="set-card"><div class="set-preview">${equipmentPreview(equipment)}</div><span class="rarity ${style.rarity}">${rarityNames[style.rarity]}</span><h3>${style.name}</h3><p>${total}/7 предметов · 6 фигур и доска</p><button class="quiet" data-preset="${style.id}" ${total<7?'disabled':''}>${total===7?'Использовать набор':'Соберите все предметы'}</button></article>`;
-  }).join('');
-  return `<div class="section-title"><h2>Мои наборы</h2><button class="primary" data-save-set>Сохранить текущий</button></div>${saved?`<div class="sets-grid">${saved}</div>`:'<p class="empty-note">Выберите скин для каждого типа фигур и доску, затем сохраните сочетание.</p>'}<h2 class="preset-heading">Готовые коллекции</h2><div class="sets-grid">${presets}</div>`;
+const presetCard = (state,style) => {
+  const equipment=presetEquipment(style.id), ids=[...Object.values(equipment.pieces),equipment.board];
+  const total=ids.filter(id=>state.owned.includes(id)).length, equipped=sameEquipment(state.equipped,equipment);
+  const missing=ids.filter(id=>!state.owned.includes(id));
+  const preview=ids.map(id=>{const item=itemById(id);return `<span class="preset-part ${state.owned.includes(id)?'':'missing'}" title="${item.name}${state.owned.includes(id)?' · получен':' · не получен'}">${item.kind==='piece'?pieceSVG(item.type,'w',item.style):itemPreview(item)}</span>`;}).join('');
+  return `<article class="compact-set ${equipped?'equipped':''}"><div class="row"><h3>${style.name}</h3><span class="rarity ${style.rarity}">${rarityNames[style.rarity]}</span></div><div class="preset-parts">${preview}</div><div class="row set-completion"><span>${total}/7 получено</span><span>${equipped?'Сейчас выбрана':total===7?'Коллекция собрана':'Соберите недостающие'}</span></div><progress max="7" value="${total}" aria-label="${style.name}: ${total} из 7"></progress>${missing.length?`<details><summary>Что осталось собрать?</summary><ul>${missing.map(id=>{const item=itemById(id);return `<li><button class="text-button" data-piece-type="${item.kind==='board'?'board':item.type}">${item.kind==='board'?'Доска':PIECE_NAMES[item.type]} →</button></li>`;}).join('')}</ul></details>`:''}<button class="${equipped?'equipped-button':'quiet'}" data-preset="${style.id}" ${total<7||equipped?'disabled':''}>${equipped?'✓ Выбрана':total===7?'Выбрать коллекцию':'Не все предметы получены'}</button></article>`;
 };
-export const renderCollection = (root,state,view,type) => {
-  const board = itemById(state.equipped.board);
-  root.innerHTML = `<article class="loadout"><div><p class="eyebrow">ВАШ НАБОР</p><h2>Шесть фигур. Ваше сочетание.</h2><p>Доска: ${STYLES.find(style=>style.id===board.style).name}</p><button class="text-button" data-save-set>Сохранить сочетание ↗</button></div><div class="loadout-pieces">${TYPES.map(pieceType=>`<button data-piece-type="${pieceType}" class="loadout-slot ${type===pieceType&&view==='pieces'?'active':''}" aria-label="Настроить: ${PIECE_NAMES[pieceType]}">${pieceSVG(pieceType,'w',itemById(state.equipped.pieces[pieceType]).style)}<span>${PIECE_NAMES[pieceType]}</span></button>`).join('')}</div></article><div class="collection-toolbar"><div class="segmented" role="group" aria-label="Тип коллекции">${[['pieces','Фигуры'],['boards','Доски'],['sets','Наборы']].map(([id,label])=>`<button data-collection-view="${id}" class="${view===id?'active':''}" aria-pressed="${view===id}">${label}</button>`).join('')}</div><span class="muted">${state.owned.length}/${ITEMS.length} предметов · ${state.shards} ✧</span></div>${view==='sets'?renderSets(state):`<p class="catalog-note">${view==='pieces'?`${PIECE_NAMES[type]}: скин применяется ко всем фигурам этого типа. Белые остаются светлыми, чёрные — тёмными.`:'Доска выбирается отдельно от фигур. Любую полученную доску можно включить в свой набор.'}</p><div class="items-grid">${ITEMS.filter(item=>view==='boards'?item.kind==='board':item.kind==='piece'&&item.type===type).map(item=>renderItem(state,item)).join('')}</div>`}`;
+const renderSaved = state => {
+  const cards=state.sets.map(set=>`<article class="compact-set"><div class="row"><h3>${escapeHTML(set.name)}</h3><span class="saved-label">Свой набор</span></div><div class="set-preview">${equipmentPreview(set)}</div><p class="saved-board">Доска: ${STYLES.find(style=>style.id===itemById(set.board).style).name}</p><div class="actions"><button class="quiet" data-load-set="${escapeHTML(set.id)}">Использовать</button><button class="text-button" data-delete-set="${escapeHTML(set.id)}" aria-label="Удалить набор ${escapeHTML(set.name)}">Удалить</button></div></article>`).join('');
+  return `<div class="section-title"><h2>Мои наборы <span class="muted">${state.sets.length}/12</span></h2><button class="quiet" data-save-set>Сохранить текущий</button></div>${cards?`<div class="compact-sets-grid">${cards}</div>`:'<p class="empty-note">Здесь будут ваши сочетания. Выберите фигурки и доску, затем нажмите «Сохранить набор».</p>'}`;
+};
+const renderItems = (state,type,ownedOnly) => {
+  const items=ITEMS.filter(item=>(type==='board'?item.kind==='board':item.kind==='piece'&&item.type===type)&&(!ownedOnly||state.owned.includes(item.id)));
+  const filters=[...TYPES,'board'].map(slot=>`<button data-piece-type="${slot}" class="${slot===type?'active':''}" aria-pressed="${slot===type}">${slot==='board'?'Доски':PIECE_NAMES[slot]}</button>`).join('');
+  return `<div class="item-type-filter" role="group" aria-label="Тип предмета">${filters}</div><div class="catalog-heading"><p>${type==='board'?'Доска выбирается независимо от фигур.':`${PIECE_NAMES[type]} · скин применяется к обеим сторонам.`}</p><button class="filter-toggle" data-owned-only aria-pressed="${ownedOnly}">${ownedOnly?'✓ Только полученные':'Все предметы'}</button></div><div class="compact-items-grid">${items.map(item=>renderItem(state,item)).join('')}</div>`;
+};
+export const renderCollection = (root,state,view='sets',type='k',ownedOnly=false) => {
+  const slots=[...TYPES,'board'].map(slot=>{const item=itemById(slot==='board'?state.equipped.board:state.equipped.pieces[slot]);return `<button class="equipment-slot" data-piece-type="${slot}" title="${item.name}" aria-label="Настроить: ${slot==='board'?'доска':PIECE_NAMES[slot]}">${slot==='board'?itemPreview(item):pieceSVG(slot,'w',item.style)}<span>${slot==='board'?'Доска':PIECE_NAMES[slot]}</span></button>`;}).join('');
+  const content=view==='saved'?renderSaved(state):view==='items'?renderItems(state,type,ownedOnly):`<p class="catalog-note">Выберите всю коллекцию одним нажатием. Полупрозрачные предметы ещё не получены.</p><div class="compact-sets-grid">${STYLES.map(style=>presetCard(state,style)).join('')}</div>`;
+  root.innerHTML=`<article class="equipment-strip"><div class="strip-label"><p class="eyebrow">ВЫБРАННЫЙ НАБОР</p><button class="text-button" data-save-set>Сохранить набор</button></div><div class="equipment-slots">${slots}</div></article><div class="collection-toolbar"><div class="segmented" role="group" aria-label="Раздел коллекции">${[['sets','Коллекции'],['items','Фигуры и доски'],['saved','Мои наборы']].map(([id,label])=>`<button data-collection-view="${id}" class="${view===id?'active':''}" aria-pressed="${view===id}">${label}</button>`).join('')}</div><span class="muted">${state.owned.length}/${ITEMS.length} предметов · ${state.shards} ✧</span></div>${content}`;
 };
