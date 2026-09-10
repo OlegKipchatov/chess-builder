@@ -26,9 +26,9 @@ jobs:
         run: npm test
       - name: Check JavaScript syntax
         run: |
-          node --check dist/app.js
-          node --check dist/sw.js
-          node --check dist/bot-worker.js
+          for source in dist/*.js; do
+            node --check "$source"
+          done
       - name: Validate installable PWA assets
         run: |
           python3 - <<'PY'

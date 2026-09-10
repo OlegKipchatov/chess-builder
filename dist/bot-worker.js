@@ -1,2 +1,5 @@
-import {chooseMove} from './engine.js';
-self.onmessage = ({data}) => self.postMessage({id:data.id,move:chooseMove(data.fen)});
+import {chooseMove} from './engine.js?v=2';
+self.onmessage = ({data}) => {
+  try {self.postMessage({id:data.id,move:chooseMove(data.fen,data.difficulty)});}
+  catch {self.postMessage({id:data.id,error:'Не удалось рассчитать ход'});}
+};
