@@ -3,7 +3,7 @@ import {Chess} from '../dist/chess.js';
 import {createStockfishClient} from '../dist/stockfish-client.js';
 import {stockfishProfile} from '../dist/strength.js';
 import {spawnStockfish} from './stockfish-process.mjs';
-const clients=[createStockfishClient(spawnStockfish),createStockfishClient(spawnStockfish)];
+const clients=[createStockfishClient(()=>spawnStockfish(19)),createStockfishClient(()=>spawnStockfish(19))];
 const ask=(client,game,rating)=>new Promise((resolve,reject)=>{client.onmessage=event=>resolve(event.data.move);client.onerror=reject;client.postMessage({id:1,fen:game.fen(),pgn:game.pgn(),engineProfile:stockfishProfile(rating)});});
 const results=[];
 try {
@@ -15,4 +15,4 @@ try {
   console.log(JSON.stringify(results.at(-1)));
  }
 }finally{clients.forEach(client=>client.terminate());}
-await writeFile(new URL('../strength-report.json',import.meta.url),JSON.stringify({engine:'Stockfish.js 18.0.0 lite single',profile:'stockfish18-v1',note:'Small paired smoke tournament, not human Elo calibration. Capped games are not adjudicated.',results},null,2)+'\n');
+await writeFile(new URL('../strength19-report.json',import.meta.url),JSON.stringify({engine:'Stockfish 19 smallnet (stockfish-web 0.5.0)',profile:'stockfish19-v1',note:'Small paired smoke tournament, not human Elo calibration. Capped games are not adjudicated.',results},null,2)+'\n');

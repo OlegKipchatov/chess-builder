@@ -1,7 +1,7 @@
-import {validEngineProfile} from './strength.js?v=8';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=8';
-import {Chess} from './chess.js?v=8';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=8';
+import {validEngineProfile} from './strength.js?v=9';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=9';
+import {Chess} from './chess.js?v=9';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=9';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
@@ -38,7 +38,7 @@ export const migrateState = input => {
   next.game.engineProfile = validEngineProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
-  next.settings.difficulty = 'adaptive';
+  next.settings = {mode:'bot',difficulty:'adaptive'};
   next.game.playerColor = input.game?.playerColor === 'b' ? 'b' : 'w';
   if(next.game.mode==='bot' && !next.game.settled){
     next.game.difficulty='adaptive';

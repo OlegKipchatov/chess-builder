@@ -1,4 +1,4 @@
-import {styleById, itemById} from './catalog.js?v=8';
+import {styleById, itemById} from './catalog.js?v=9';
 // Functional chess icons: a single silhouette language, independent of fonts/emoji.
 const shapes = {
   p:'<circle cx="32" cy="18" r="8"/><path d="M27 27h10l-2 12 7 9H22l7-9z"/>',

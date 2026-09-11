@@ -30,3 +30,7 @@ test('Браузерная ветка Stockfish загружает WASM из о�
  const client=createStockfishClient(()=>worker);
  try{const game=new Chess();const move=await Promise.race([ask(client,game,1000),new Promise((_,reject)=>timeout(()=>reject(Error('No reply; fetches: '+requests.join(','))),5000))]);assert.ok(game.move(move));assert.equal(requests.length,1);}finally{client.terminate();}
 });
+test('Stockfish 19 smallnet реально запускается и делает легальные ходы', {timeout:20000},async()=>{
+ const client=createStockfishClient(()=>spawnStockfish(19));
+ try{const game=new Chess();for(let ply=0;ply<4;ply++){assert.ok(game.move(await ask(client,game,1000)));}}finally{client.terminate();}
+});

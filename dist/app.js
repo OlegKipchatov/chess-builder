@@ -1,14 +1,14 @@
-import {createStockfishClient} from './stockfish-client.js?v=8';
-import {capturePoints, completedMatch, materialBalance} from './archive.js?v=8';
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=8';
-import {Chess} from './chess.js?v=8';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=8';
-import {openChest, craftItem} from './economy.js?v=8';
-import {KEY, loadState, initialState, newGame} from './state.js?v=8';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=8';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=8';
-import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=8';
-import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=8';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=9';
+import {capturePoints, completedMatch, materialBalance} from './archive.js?v=9';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=9';
+import {Chess} from './chess.js?v=9';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=9';
+import {openChest, craftItem} from './economy.js?v=9';
+import {KEY, loadState, initialState, newGame} from './state.js?v=9';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=9';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=9';
+import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=9';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=9';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -17,7 +17,7 @@ const game = new Chess();
 try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.game=newGame();storageError=true;}
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, toastTimer, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, craftType='k', pendingBotMove=null;
-let displayMatch=null, pendingResult=false;
+let displayMatch=null, pendingResult=false, replayRunning=false, replayTimer=null;
 const viewedGame = () => displayMatch?.game||game;
 const viewedConfig = () => displayMatch?.config||(state.game.started?state.game:state.settings);
 const toast = message => {
@@ -84,8 +84,6 @@ const syncNavigation = () => {
   $('.brand').setAttribute('aria-disabled',String(active()));
 };
 const renderProfile = () => {
-  $('#mode').value=state.settings.mode;
-  $('#mode').disabled=active();
 
   $('#rating-value').textContent=state.rating.value;
   $('#rating-delta').textContent=state.rating.games?`${signedDelta(state.rating.lastDelta)} за последнюю партию`:'Начальный рейтинг';
@@ -102,6 +100,10 @@ const renderProfile = () => {
 };
 const renderHistory = () => {
   const moves=viewedGame().history(), cursor=reviewCursor??moves.length;
+  $('#replay-start').hidden=displayMatch?.kind!=='archive'||replayRunning;
+  $('#replay-pause').hidden=displayMatch?.kind!=='archive'||!replayRunning;
+  $('#replay-start').disabled=animating||!moves.length;
+  $('#history-live').setAttribute('aria-label',displayMatch?.kind==='archive'?'К последнему ходу':'К текущему ходу');
   $('#history-back').disabled=animating||cursor===0;
   $('#history-forward').disabled=animating||reviewCursor===null;
   $('#history-live').disabled=animating||reviewCursor===null;
@@ -152,14 +154,13 @@ const render = () => {
   $('#shards').textContent=state.shards;
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
   $('#open-chest').disabled=active()||state.coins<100;
-  $('#chest-hint').textContent=state.coins<100?`Не хватает ${100-state.coins} монет. Сыграйте партию.`:'Фигурка, доска или осколки. Подробнее — в FAQ.';
-  $('#pity').textContent=`До гарантии эпического или легендарного предмета: ${10-state.pity}`;
+  $('#pity').textContent=`Гарантированный предмет через ${10-state.pity}`;
   $('#pity-progress').value=state.pity;
 };
 const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
 const botFailure = () => {
   stopBot();renderGameInfo();
-  showModal('<h2>Компьютер не смог ответить</h2><p>Партия сохранена. Можно повторить расчёт или сдаться, чтобы завершить игру.</p><button class="quiet" data-retry-bot>Повторить расчёт</button>');
+  showModal('<h2>Компьютер не смог ответить</h2><p>Партия сохранена. Повторите расчёт. Если движок только обновился, перезагрузите приложение для его активации.</p><button class="quiet" data-retry-bot>Повторить расчёт</button>');
 };
 const applyMove = async move => {
   if(!active()||animating)return;
@@ -178,7 +179,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=8',{type:'module'});
+    worker??=state.game.engineProfile?.id==='stockfish19-v1'?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=9',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
@@ -219,6 +220,7 @@ $('#board').addEventListener('keydown',event=>{
   event.preventDefault();cells[Math.max(0,Math.min(63,index+delta))].focus();
 });
 const changeTab = tab => {
+  stopReplay();
   if(animating||pendingResult)return;
   const target=navigationTarget(state,game,tab);
   if(displayMatch?.kind==='archive'&&target!=='play'){displayMatch=null;reviewCursor=null;render();}
@@ -227,7 +229,8 @@ const changeTab = tab => {
   window.history.replaceState(null,'','#'+target);
   syncNavigation();
 };
-const showHistory = async cursor => {
+const showHistory = async (cursor,automatic=false) => {
+  if(!automatic)stopReplay();
   if(animating)return;
   const total=viewedGame().history().length, from=reviewCursor??total;
   const target=cursor===null||cursor>=total?total:Math.max(0,cursor);
@@ -240,6 +243,25 @@ const showHistory = async cursor => {
   if(pendingBotMove){const move=pendingBotMove;pendingBotMove=null;void applyMove(move);}
   else requestBot();
 };
+const stopReplay = () => {
+  replayRunning=false;clearTimeout(replayTimer);replayTimer=null;
+  if($('#replay-start'))renderHistory();
+};
+const replayStep = async () => {
+  if(!replayRunning||displayMatch?.kind!=='archive'||currentScreen!=='play')return;
+  const total=viewedGame().history().length;
+  await showHistory(historyCursor(reviewCursor,1,total),true);
+  if(!replayRunning)return;
+  if(reviewCursor===null){stopReplay();return;}
+  replayTimer=setTimeout(()=>void replayStep(),800);
+};
+$('#replay-start').onclick=async()=>{
+  if(animating||replayRunning||displayMatch?.kind!=='archive')return;
+  if(reviewCursor===null)await showHistory(0);
+  replayRunning=true;renderHistory();replayTimer=setTimeout(()=>void replayStep(),500);
+};
+$('#replay-pause').onclick=stopReplay;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopReplay();});
 $('#history-back').onclick=()=>showHistory(historyCursor(reviewCursor,-1,viewedGame().history().length));
 $('#history-forward').onclick=()=>showHistory(historyCursor(reviewCursor,1,viewedGame().history().length));
 $('#history-live').onclick=()=>showHistory(null);
@@ -304,7 +326,7 @@ $('#match-archive').addEventListener('click',event=>{
   const entry=state.archive.find(entry=>entry.id===id);if(!entry)return;
   const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось прочитать запись партии.');return;}
   displayMatch={game:replay,kind:'archive',title:entry.result,config:{...entry,started:true,rating:{before:entry.playerRating,opponent:entry.opponentRating}}};
-  reviewCursor=null;selected=null;changeTab('play');render();
+  reviewCursor=replay.history().length?0:null;selected=null;changeTab('play');render();
 });
 $('#archive-return').onclick=()=>changeTab('profile');
 $('#modal-content').addEventListener('submit',event=>{
@@ -359,11 +381,6 @@ $('#resign').onclick=()=>{
   if(persist({...state,game:{...state.game,resigned:true}})){settle();render();}
   else requestBot();
 };
-const savePreferences = () => {
-  const next=updatePreferences(state,game,{mode:$('#mode').value});
-  if(next&&persist(next))render();else renderProfile();
-};
-$('#mode').onchange=savePreferences;
 $('#install').onclick=async()=>{
   if(active())return;
   if(installPrompt){await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;}

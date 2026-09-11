@@ -1,11 +1,11 @@
-import {stockfishProfile} from './strength.js?v=8';
-import {ratingSnapshot} from './rating.js?v=8';
-import {Chess} from './chess.js?v=8';
-import {newGame} from './state.js?v=8';
+import {stockfishProfile} from './strength.js?v=9';
+import {ratingSnapshot} from './rating.js?v=9';
+import {Chess} from './chess.js?v=9';
+import {newGame} from './state.js?v=9';
 export const SCREENS = ['profile','collection','play','chests','craft','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
-export const createStartedGame = (state,rng=Math.random) => ({...newGame(state.settings.mode,'adaptive'),started:true,engineProfile:state.settings.mode==='bot'?stockfishProfile(ratingSnapshot(state.rating).opponent):null,playerColor:rng()<0.5?'w':'b',rating:state.settings.mode==='bot'?ratingSnapshot(state.rating):null,equipped:structuredClone(state.equipped)});
+export const createStartedGame = (state,rng=Math.random) => ({...newGame('bot','adaptive'),started:true,engineProfile:stockfishProfile(ratingSnapshot(state.rating).opponent),playerColor:rng()<0.5?'w':'b',rating:ratingSnapshot(state.rating),equipped:structuredClone(state.equipped)});
 export const updatePreferences = (state, game, settings) => {
   if (isMatchActive(state,game)) return null;
   const mode = settings.mode === 'local' ? 'local' : 'bot';

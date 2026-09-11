@@ -1,0 +1,20 @@
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {gunzipSync} from 'node:zlib';
+const root=new URL('../dist/vendor/sf19/',import.meta.url);
+await mkdir(root,{recursive:true});
+const url='https://registry.npmjs.org/@lichess-org/stockfish-web/-/stockfish-web-0.5.0.tgz';
+const integrity='4p+bnJKr+ufCanyaqUFJkvajVf443sg51+OPnDKjAi91kiY8DGAbfjj5WlmWybwILOF7ouPEjeCYwlPUV3EU3g==';
+const fetchBytes=async url=>{const response=await fetch(url,{signal:AbortSignal.timeout(120000)});if(!response.ok)throw Error(`${response.status}: ${url}`);return Buffer.from(await response.arrayBuffer());};
+let compressed=await readFile(new URL('package.tgz',root)).catch(()=>null);
+if(!compressed||createHash('sha512').update(compressed).digest('base64')!==integrity)compressed=await fetchBytes(url);
+if(createHash('sha512').update(compressed).digest('base64')!==integrity)throw Error('Stockfish 19 package integrity mismatch');
+await writeFile(new URL('package.tgz',root),compressed);
+const tar=gunzipSync(compressed),required=new Set(['sf_19_smallnet.js','sf_19_smallnet.wasm']);
+for(let offset=0;offset+512<=tar.length;){const name=tar.subarray(offset,offset+100).toString().split('\0')[0];const size=parseInt(tar.subarray(offset+124,offset+136).toString().replace(/\0/g,'').trim(),8)||0;const short=name.replace(/^package\//,'');if(required.has(short)){await writeFile(new URL(short,root),tar.subarray(offset+512,offset+512+size));required.delete(short);}offset+=512+Math.ceil(size/512)*512;}
+if(required.size)throw Error('Stockfish 19 files missing');
+const name='nn-61e7af4bb97d.nnue';let net=await readFile(new URL(name,root)).catch(()=>null);
+if(!net||!createHash('sha256').update(net).digest('hex').startsWith('61e7af4bb97d'))net=await fetchBytes(`https://tests.stockfishchess.org/api/nn/${name}`);
+if(!createHash('sha256').update(net).digest('hex').startsWith('61e7af4bb97d'))throw Error('Stockfish 19 network integrity mismatch');
+await writeFile(new URL(name,root),net);await writeFile(new URL('package.json',root),'{"type":"module"}\n');
+console.log('Verified Stockfish 19 smallnet and NNUE.');

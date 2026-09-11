@@ -20,3 +20,5 @@ for(const [name,hash] of Object.entries(assets)){
 // Node tests use CommonJS; the browser loads the unchanged classic worker.
 await writeFile(new URL('package.json',root),' {"type":"commonjs"}\n');
 console.log('Stockfish 18 lite single: verified JS and WASM (7.3 MB).');
+
+await import('./prepare-stockfish19.mjs');
