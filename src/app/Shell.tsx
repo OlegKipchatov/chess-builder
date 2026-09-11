@@ -12,8 +12,8 @@ export const Shell=({children}:{children:ReactNode})=>{
  const [update,setUpdate]=useState<ServiceWorker|null>(null);
  useEffect(()=>{document.body.classList.toggle('match-active',locked);return()=>document.body.classList.remove('match-active');},[locked]);
  useEffect(()=>{if(state.ready&&locked&&path!=='/')void navigate({to:'/',replace:true});},[state.ready,locked,path,navigate]);
- useEffect(()=>{if(!('serviceWorker' in navigator)||import.meta.env.DEV)return;let disposed=false;let refreshing=false;
-  const change=()=>{if(!refreshing){refreshing=true;location.reload();}};navigator.serviceWorker.addEventListener('controllerchange',change);
+ useEffect(()=>{if(!('serviceWorker' in navigator)||import.meta.env.DEV)return;let disposed=false;let refreshing=false;let controlled=!!navigator.serviceWorker.controller;
+  const change=()=>{const replacing=controlled;controlled=true;if(!refreshing&&(replacing||!crossOriginIsolated)){refreshing=true;location.reload();}};navigator.serviceWorker.addEventListener('controllerchange',change);
   void navigator.serviceWorker.register('/sw.js').then(reg=>{const show=()=>{if(!disposed)setUpdate(reg.waiting);};show();reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',show));});
   return()=>{disposed=true;navigator.serviceWorker.removeEventListener('controllerchange',change);};
  },[]);

@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-const ready=async(page:import('@playwright/test').Page)=>{await page.goto('/');await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await page.reload();await expect(page.getByRole('button',{name:'Начать партию',exact:true})).toBeVisible();};
+const ready=async(page:import('@playwright/test').Page)=>{await page.goto('/');await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await expect(page.getByRole('button',{name:'Начать партию',exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('button',{name:'Начать партию',exact:true})).toBeVisible();};
 test('Мобильные экраны имеют стили и не выходят за ширину',async({page})=>{
  await ready(page);
  for(const route of ['/','/collection','/craft','/chests','/profile','/faq']){
@@ -27,4 +27,15 @@ test('Stockfish, блокировки, итоговый диалог и архи
  const pause=page.getByRole('button',{name:'Приостановить воспроизведение'});if(await pause.isVisible())await pause.click();
  await page.getByRole('link',{name:'К истории партий'}).click();await expect(page).toHaveURL(/\/profile$/);
 });
-test('Офлайн-кэш содержит маршруты и стили',async({page,context})=>{await ready(page);await context.setOffline(true);await page.goto('/collection');await expect(page.locator('.collection-row')).toHaveCount(8);expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');await context.setOffline(false);});
+test('Офлайн-кэш содержит маршруты и стили',async({page,request})=>{
+ await ready(page);
+ await page.waitForFunction(async()=>!!await caches.match('/index.html'));
+ // Disconnect the HTTP origin rather than relying on browser-specific offline emulation.
+ await request.post('/__test/network/off');
+ try{
+  await page.goto('/collection');
+  await expect(page.locator('.collection-row')).toHaveCount(8);
+  expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+  expect(await page.evaluate(async()=>{try{await fetch('/uncached-offline-probe');return false;}catch{return true;}})).toBe(true);
+ }finally{await request.post('/__test/network/on');}
+});
