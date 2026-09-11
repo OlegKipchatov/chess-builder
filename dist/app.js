@@ -1,14 +1,14 @@
-import {createStockfishClient} from './stockfish-client.js?v=7';
-import {capturePoints, completedMatch} from './archive.js?v=7';
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=7';
-import {Chess} from './chess.js?v=7';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=7';
-import {openChest, craftItem} from './economy.js?v=7';
-import {KEY, loadState, initialState, newGame} from './state.js?v=7';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=7';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=7';
-import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=7';
-import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=7';
+import {createStockfishClient} from './stockfish-client.js?v=8';
+import {capturePoints, completedMatch, materialBalance} from './archive.js?v=8';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=8';
+import {Chess} from './chess.js?v=8';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=8';
+import {openChest, craftItem} from './economy.js?v=8';
+import {KEY, loadState, initialState, newGame} from './state.js?v=8';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=8';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=8';
+import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=8';
+import {isMatchActive, navigationTarget, createStartedGame, updatePreferences, positionAt, historyCursor, canPlayPosition} from './session.js?v=8';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -17,6 +17,9 @@ const game = new Chess();
 try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.game=newGame();storageError=true;}
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, toastTimer, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, craftType='k', pendingBotMove=null;
+let displayMatch=null, pendingResult=false;
+const viewedGame = () => displayMatch?.game||game;
+const viewedConfig = () => displayMatch?.config||(state.game.started?state.game:state.settings);
 const toast = message => {
   $('#toast').textContent=message;
   $('#toast').style.display='block';
@@ -48,33 +51,36 @@ const statusText = () => {
 const settle = () => {
   if(!ended()||!state.game.started)return;
   const wasSettled=state.game.settled, title=statusText();
+  const finishedGame=new Chess();finishedGame.loadPgn(game.pgn());
+  const finishedConfig=structuredClone(state.game);
   const result=completedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
   if(!result||!persist(result.state,true))return;
   const {entry,reward,rating}=result;
   stopBot();game.reset();reviewCursor=null;selected=null;
+  if(!wasSettled){displayMatch={game:finishedGame,config:finishedConfig,kind:'result'};pendingResult=true;}
   if(!wasSettled)showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${title}</h2><h2>+${reward} монет</h2><p>Взято фигур на ${entry.points} очков</p>${rating?`<p class="rating-result">Рейтинг: ${entry.playerRating} → <strong>${rating.value}</strong> (${signedDelta(rating.lastDelta)})</p>`:''}<p>Партия сохранена в истории профиля.</p>`);
 };
 const drawBoard = () => {
-  const equipped=state.game.started ? state.game.equipped : state.equipped;
-  renderBoard($('#board'),positionAt(game,reviewCursor),equipped,reviewCursor===null?selected:null,state.game.started?state.game.playerColor:'w');
+  const config=viewedConfig(),equipped=config.equipped||state.equipped;
+  renderBoard($('#board'),positionAt(viewedGame(),reviewCursor),equipped,!displayMatch&&reviewCursor===null?selected:null,config.playerColor||'w');
   $('#board').classList.toggle('reviewing',reviewCursor!==null);
   $('#board').setAttribute('aria-label',reviewCursor!==null?'Просмотр прежней позиции':'Шахматная доска');
-  $('#board').querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled',String(!canPlayPosition(state,game,reviewCursor))));
+  $('#board').querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled',String(!!displayMatch||!canPlayPosition(state,game,reviewCursor))));
 };
 const drawCollection = () => renderCollection($('#collection-content'),state,collectionView,pieceType,ownedOnly);
 const syncNavigation = () => {
-  currentScreen=navigationTarget(state,game,currentScreen);
+  currentScreen=pendingResult?'play':navigationTarget(state,game,currentScreen);
   document.querySelectorAll('.tab').forEach(section=>section.hidden=section.id!==currentScreen);
   document.querySelectorAll('[data-tab]').forEach(button=>{
     button.classList.toggle('active',button.dataset.tab===currentScreen);
-    button.disabled=active()&&button.dataset.tab!=='play';
+    button.disabled=(active()||pendingResult)&&button.dataset.tab!=='play';
     button.title=button.disabled?'Доступно после завершения партии':'';
     button.setAttribute('aria-current',button.dataset.tab===currentScreen?'page':'false');
   });
-  $('#app-nav').hidden=active();
-  $('#profile-avatar').disabled=active();
+  $('#app-nav').hidden=active()||pendingResult;
+  $('#profile-avatar').disabled=active()||pendingResult;
 
-  document.body.classList.toggle('match-active',active());
+  document.body.classList.toggle('match-active',active()||pendingResult);
   $('.brand').setAttribute('aria-disabled',String(active()));
 };
 const renderProfile = () => {
@@ -95,39 +101,44 @@ const renderProfile = () => {
   $('#profile-rewards').textContent=state.settings.mode==='local'?'Завершённая партия +40 монет':'Победа +60 · ничья +40 · поражение +25';
 };
 const renderHistory = () => {
-  const moves=game.history(), cursor=reviewCursor??moves.length;
+  const moves=viewedGame().history(), cursor=reviewCursor??moves.length;
   $('#history-back').disabled=animating||cursor===0;
   $('#history-forward').disabled=animating||reviewCursor===null;
   $('#history-live').disabled=animating||reviewCursor===null;
   $('#history-position').textContent=reviewCursor===null?`Текущая позиция · ${moves.length} полуходов`:`Позиция ${cursor} из ${moves.length}`;
-  $('#history-notice').hidden=reviewCursor===null;
+  $('#history-notice').hidden=reviewCursor===null||!!displayMatch;
   $('#move-count').textContent=moves.length;
   const moveButton=(index)=>moves[index]?`<button data-history-ply="${index+1}" class="history-move ${cursor===index+1?'selected-move':''}" aria-current="${cursor===index+1?'step':'false'}" ${animating?'disabled':''}>${moves[index]}</button>`:'<span>—</span>';
   $('#moves').innerHTML=moves.length?Array.from({length:Math.ceil(moves.length/2)},(_,i)=>`<div class="move-row"><span class="muted">${i+1}.</span>${moveButton(i*2)}${moveButton(i*2+1)}</div>`).join(''):'<p class="muted">Здесь появится история партии.</p>';
   if(reviewCursor===null)$('#moves').scrollTop=$('#moves').scrollHeight;
 };
 const renderGameInfo = () => {
-  const config=state.game.started?state.game:state.settings;
-  const color=state.game.started?state.game.playerColor:'w';
-  $('#player-color').textContent=state.game.started?(color==='w'?'Белые фигуры':'Чёрные фигуры'):'Случайная сторона';
-  $('#opponent-color').textContent=state.game.started?(color==='w'?'Чёрные фигуры':'Белые фигуры'):'Сторона определится при старте';
+  const config=viewedConfig(),hasBoard=!!displayMatch||state.game.started;
+  const color=config.playerColor||'w';
+  const points=materialBalance(positionAt(viewedGame(),reviewCursor),color);
+  const pointsText=`${signedDelta(points)} очк.`;
+  for(const node of [$('#match-points'),$('#match-settings')])node.dataset.balance=points>0?'positive':points<0?'negative':'zero';
+  $('#player-color').textContent=hasBoard?(color==='w'?'Белые фигуры':'Чёрные фигуры'):'Случайная сторона';
+  $('#opponent-color').textContent=hasBoard?(color==='w'?'Чёрные фигуры':'Белые фигуры'):'Сторона определится при старте';
   $('#player-name').textContent=config.mode==='bot'?'Вы':'Игрок 1';
   $('#opponent-avatar').innerHTML=pieceSVG('n',color==='w'?'b':'w');
   $('#player-avatar').innerHTML=pieceSVG('p',color);
   $('#opponent').textContent=config.mode==='bot'?'ИИ':'Второй игрок';
   $('#opponent-rating').textContent=config.mode==='bot'?`Рейтинг ${config.rating?.opponent??opponentFor(state.rating.value)}`:'';
   $('#player-rating').textContent=`Рейтинг ${config.rating?.before??state.rating.value}`;
-  $('#match-points').textContent=`${capturePoints(game,color)} очк.`;
-  $('#match-surface').hidden=!state.game.started;
-  $('#play .reward-card p').textContent=config.mode==='local'?'Завершённая партия +40 монет':'Победа +60 · ничья +40 · поражение +25';
-  $('#status').textContent=reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
+  $('#match-points').textContent=pointsText;
+  $('#match-surface').hidden=!hasBoard;
+  $('#archive-return').hidden=displayMatch?.kind!=='archive';
+  $('#archive-return').disabled=animating;
+  $('#play-rewards').hidden=hasBoard;
+  $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
   $('#resign').disabled=!active()||animating;
   $('#resign').hidden=!active();
-  $('#hint').textContent=reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
-  $('#skin-name').textContent=styleById(itemById((state.game.started?state.game.equipped:state.equipped).board).style).name;
-  $('#game-ready').hidden=active();
-  $('#match-title').textContent=active()?'В игре':state.game.started?'Итоги партии':'Игра';
-  $('#match-settings').textContent=state.game.started?`${capturePoints(game,color)} очк.`:config.mode==='bot'?'ИИ · по вашему рейтингу':'Вдвоём';
+  $('#hint').textContent=displayMatch?'Просматривайте партию стрелками или выберите ход в журнале.':reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
+  $('#skin-name').textContent=styleById(itemById((config.equipped||state.equipped).board).style).name;
+  $('#game-ready').hidden=hasBoard;
+  $('#match-title').textContent=displayMatch?'История партии':active()?'В игре':state.game.started?'Итоги партии':'Игра';
+  $('#match-settings').textContent=hasBoard?pointsText:config.mode==='bot'?'ИИ · по вашему рейтингу':'Вдвоём';
   $('#ready-title').textContent=state.game.started?'Готовы к новой партии?':'Сыграем?';
   $('#ready-description').textContent=state.game.started?'Завершённые партии хранятся в профиле.':'Сторона выбирается случайно. Уровень — по вашему рейтингу.';
   $('#start-game').textContent=state.game.started?'Начать новую партию':'Начать партию';
@@ -141,7 +152,7 @@ const render = () => {
   $('#shards').textContent=state.shards;
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
   $('#open-chest').disabled=active()||state.coins<100;
-  $('#chest-hint').textContent=state.coins<100?`Не хватает ${100-state.coins} монет. Сыграйте партию.`:'Один сундук — одно открытие. Вероятности указаны рядом.';
+  $('#chest-hint').textContent=state.coins<100?`Не хватает ${100-state.coins} монет. Сыграйте партию.`:'Фигурка, доска или осколки. Подробнее — в FAQ.';
   $('#pity').textContent=`До гарантии эпического или легендарного предмета: ${10-state.pity}`;
   $('#pity-progress').value=state.pity;
 };
@@ -167,7 +178,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=7',{type:'module'});
+    worker??=state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=8',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
@@ -186,7 +197,7 @@ const showPromotion = (from,to) => {
 };
 $('#board').addEventListener('click',event=>{
   const square=event.target.closest('[data-square]')?.dataset.square;
-  if(!square||!canPlayPosition(state,game,reviewCursor)||locked()||ended()||(state.game.mode==='bot'&&game.turn()!==state.game.playerColor))return;
+  if(!square||displayMatch||!canPlayPosition(state,game,reviewCursor)||locked()||ended()||(state.game.mode==='bot'&&game.turn()!==state.game.playerColor))return;
   const piece=game.get(square);
   if(selected){
     const moves=game.moves({square:selected,verbose:true}).filter(move=>move.to===square);
@@ -208,7 +219,9 @@ $('#board').addEventListener('keydown',event=>{
   event.preventDefault();cells[Math.max(0,Math.min(63,index+delta))].focus();
 });
 const changeTab = tab => {
+  if(animating||pendingResult)return;
   const target=navigationTarget(state,game,tab);
+  if(displayMatch?.kind==='archive'&&target!=='play'){displayMatch=null;reviewCursor=null;render();}
   if(target!==tab&&active())toast('Другие экраны доступны после завершения партии.');
   currentScreen=target;
   window.history.replaceState(null,'','#'+target);
@@ -216,10 +229,10 @@ const changeTab = tab => {
 };
 const showHistory = async cursor => {
   if(animating)return;
-  const total=game.history().length, from=reviewCursor??total;
+  const total=viewedGame().history().length, from=reviewCursor??total;
   const target=cursor===null||cursor>=total?total:Math.max(0,cursor);
   if(from===target)return;
-  const before=snapshotBoard($('#board')), steps=historyMoves(game,from,target);
+  const before=snapshotBoard($('#board')), steps=historyMoves(viewedGame(),from,target);
   reviewCursor=target===total?null:target;selected=null;animating=true;
   drawBoard();renderGameInfo();
   try {await animateTransition($('#board'),steps,before);} finally {animating=false;}
@@ -227,8 +240,8 @@ const showHistory = async cursor => {
   if(pendingBotMove){const move=pendingBotMove;pendingBotMove=null;void applyMove(move);}
   else requestBot();
 };
-$('#history-back').onclick=()=>showHistory(historyCursor(reviewCursor,-1,game.history().length));
-$('#history-forward').onclick=()=>showHistory(historyCursor(reviewCursor,1,game.history().length));
+$('#history-back').onclick=()=>showHistory(historyCursor(reviewCursor,-1,viewedGame().history().length));
+$('#history-forward').onclick=()=>showHistory(historyCursor(reviewCursor,1,viewedGame().history().length));
 $('#history-live').onclick=()=>showHistory(null);
 $('#moves').addEventListener('click',event=>{
   const value=event.target.closest('[data-history-ply]')?.dataset.historyPly;
@@ -285,35 +298,15 @@ $('#craft-content').addEventListener('click',event=>{
   if(button.dataset.craftType){craftType=button.dataset.craftType;renderCraft($('#craft-content'),state,craftType);}
   if(button.dataset.craft)confirmCraft(button.dataset.craft);
 });
-let archivedGame=null, archivedEntry=null, archivedCursor=null, archiveAnimating=false;
-const drawArchive = () => {
-  const total=archivedGame.history().length;
-  renderBoard($('#archive-board'),positionAt(archivedGame,archivedCursor),archivedEntry.equipped,null,archivedEntry.playerColor);
-  $('#archive-position').textContent=`Позиция ${archivedCursor??total} из ${total}`;
-  $('#archive-back').disabled=archiveAnimating||(archivedCursor??total)===0;
-  $('#archive-forward').disabled=archiveAnimating||archivedCursor===null;
-  $('#archive-live').disabled=archiveAnimating||archivedCursor===null;
-};
-const moveArchive = async direction => {
-  if(archiveAnimating||!archivedGame)return;
-  const total=archivedGame.history().length,from=archivedCursor??total;
-  const next=direction===null?null:historyCursor(archivedCursor,direction,total);
-  if((next??total)===from)return;
-  const before=snapshotBoard($('#archive-board')),steps=historyMoves(archivedGame,from,next??total);
-  archivedCursor=next;archiveAnimating=true;drawArchive();
-  try {await animateTransition($('#archive-board'),steps,before);} finally {archiveAnimating=false;}
-  if($('#archive-board'))drawArchive();
-};
 $('#match-archive').addEventListener('click',event=>{
-  if(active()||archiveAnimating)return;
+  if(active()||animating||pendingResult)return;
   const id=event.target.closest('[data-archive]')?.dataset.archive;
   const entry=state.archive.find(entry=>entry.id===id);if(!entry)return;
   const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось прочитать запись партии.');return;}
-  archivedEntry=entry;archivedGame=replay;archivedCursor=null;
-  const controls=[['back','Предыдущая позиция'],['forward','Следующая позиция'],['live','К последнему ходу']].map(([key,label])=>`<button id="archive-${key}" class="quiet icon-button" aria-label="${label}" title="${label}">${$('#history-'+key).innerHTML}</button>`).join('');
-  showModal(`<h2>${escapeHTML(entry.result)}</h2><p>Вы: ${entry.playerRating}${entry.opponentRating===null?'':` · ИИ: ${entry.opponentRating}`} · ${entry.points} очк.</p><div id="archive-board" class="board" aria-label="Просмотр завершённой партии"></div><div class="history-buttons">${controls}</div><p id="archive-position" aria-live="polite"></p>`);
-  drawArchive();$('#archive-back').onclick=()=>moveArchive(-1);$('#archive-forward').onclick=()=>moveArchive(1);$('#archive-live').onclick=()=>moveArchive(null);
+  displayMatch={game:replay,kind:'archive',title:entry.result,config:{...entry,started:true,rating:{before:entry.playerRating,opponent:entry.opponentRating}}};
+  reviewCursor=null;selected=null;changeTab('play');render();
 });
+$('#archive-return').onclick=()=>changeTab('profile');
 $('#modal-content').addEventListener('submit',event=>{
   if(active()||event.target.id!=='save-set-form')return;
   event.preventDefault();
@@ -334,6 +327,9 @@ $('#modal-content').addEventListener('click',event=>{
   if(button.hasAttribute('data-retry-bot')){$('#modal').close();requestBot();}
 });
 $('#modal').addEventListener('cancel',()=>{promotion=null;selected=null;if(!animating)drawBoard();});
+$('#modal').addEventListener('close',()=>{
+  if(pendingResult&&!$('#modal').open){pendingResult=false;displayMatch=null;reviewCursor=null;render();}
+});
 $('#close-modal').onclick=()=>$('#modal').close();
 $('#open-chest').onclick=()=>{
   if(active())return;
@@ -347,7 +343,7 @@ $('#open-chest').onclick=()=>{
   showModal(`<p class="eyebrow">${title}</p><div class="result-art reveal">${artwork}</div>${item?`<span class="rarity ${item.rarity}">${rarityNames[item.rarity]}</span><h2>${item.name}</h2>`:''}${shards?`<h2>+${shards} осколков</h2>`:''}<p>${copy}</p>${item&&!duplicate?`<button class="quiet" data-use-reward="${item.id}">Использовать</button>`:''}`);
 };
 $('#start-game').onclick=()=>{
-  if(active()||animating)return;
+  if(active()||animating||pendingResult||displayMatch)return;
   const previousPGN=game.pgn();
   stopBot();game.reset();
   if(!persist({...state,game:createStartedGame(state)})){

@@ -1,5 +1,5 @@
-import {Chess} from './chess.js?v=7';
-import {stockfishProfile,validEngineProfile} from './strength.js?v=7';
+import {Chess} from './chess.js?v=8';
+import {stockfishProfile,validEngineProfile} from './strength.js?v=8';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
