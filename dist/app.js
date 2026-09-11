@@ -1,14 +1,14 @@
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=9';
-import {capturePoints, completedMatch, materialBalance} from './archive.js?v=9';
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=9';
-import {Chess} from './chess.js?v=9';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=9';
-import {openChest, craftItem} from './economy.js?v=9';
-import {KEY, loadState, initialState, newGame} from './state.js?v=9';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=9';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=9';
-import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=9';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=9';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=10';
+import {capturePoints, completedMatch, materialBalance} from './archive.js?v=10';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=10';
+import {Chess} from './chess.js?v=10';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=10';
+import {openChest, craftItem} from './economy.js?v=10';
+import {KEY, loadState, initialState, newGame} from './state.js?v=10';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=10';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=10';
+import {renderCollection, renderCraft, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=10';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=10';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -179,7 +179,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=state.game.engineProfile?.id==='stockfish19-v1'?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=9',{type:'module'});
+    worker??=state.game.engineProfile?.id==='stockfish19-v1'?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=10',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}

@@ -1,7 +1,7 @@
-import {stockfishProfile} from './strength.js?v=9';
-import {ratingSnapshot} from './rating.js?v=9';
-import {Chess} from './chess.js?v=9';
-import {newGame} from './state.js?v=9';
+import {stockfishProfile} from './strength.js?v=10';
+import {ratingSnapshot} from './rating.js?v=10';
+import {Chess} from './chess.js?v=10';
+import {newGame} from './state.js?v=10';
 export const SCREENS = ['profile','collection','play','chests','craft','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';

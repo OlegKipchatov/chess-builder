@@ -1,5 +1,5 @@
-import {Chess} from './chess.js?v=9';
-import {stockfishProfile,validEngineProfile} from './strength.js?v=9';
+import {Chess} from './chess.js?v=10';
+import {stockfishProfile,validEngineProfile} from './strength.js?v=10';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -47,4 +47,4 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
  watchdog(60000);send('uci');return client;
 };
 
-export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=9',{type:'module'}));
+export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=10',{type:'module'}));
