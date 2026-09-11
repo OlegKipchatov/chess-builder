@@ -3,3 +3,10 @@ node_modules/
 .DS_Store
 
 dist/vendor/
+
+build/
+public/engine/vendor/
+.tanstack/
+.output/
+playwright-report/
+test-results/

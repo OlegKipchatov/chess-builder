@@ -1,0 +1,1 @@
+.loading{padding:4rem;text-align:center}.environment{color:var(--accent);font-size:10px}.error{position:fixed;bottom:85px;left:50%;transform:translateX(-50%);padding:16px;background:#422c30;border:1px solid #ff9292;border-radius:12px;width:min(92vw,500px);z-index:80}.error p{margin-top:0}

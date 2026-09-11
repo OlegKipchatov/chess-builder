@@ -1,13 +1,35 @@
 {
   "name": "chess-vault",
-  "version": "10.0.0",
+  "version": "11.0.0-preprod.1",
   "private": true,
   "type": "module",
   "scripts": {
     "prepare:engine": "node scripts/prepare-stockfish.mjs",
     "prestart": "node scripts/prepare-stockfish.mjs",
     "test": "node --test tests/*.test.js",
-    "start": "python3 -m http.server 8080 --directory dist"
+    "start": "python3 -m http.server 8080 --directory dist",
+    "dev": "vite --host 0.0.0.0",
+    "build": "npm run prepare:assets && vite build && node scripts/finalize-build.mjs",
+    "typecheck": "tsc --noEmit",
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "preview": "node scripts/serve-preview.mjs",
+    "test:browser": "playwright test",
+    "test:store": "node --experimental-strip-types --test tests/store.test.ts"
   },
-  "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами"
+  "description": "\u0423\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u043c\u044b\u0435 \u043e\u0444\u043b\u0430\u0439\u043d-\u0448\u0430\u0445\u043c\u0430\u0442\u044b \u0441 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u043e\u043d\u043d\u044b\u043c\u0438 \u0441\u043a\u0438\u043d\u0430\u043c\u0438",
+  "dependencies": {
+    "@tanstack/react-router": "1.170.35",
+    "@tanstack/react-start": "1.168.52",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.20.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.0"
+  }
 }

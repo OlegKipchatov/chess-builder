@@ -1,0 +1,11 @@
+export type Color='w'|'b';
+export type PieceType='k'|'q'|'r'|'b'|'n'|'p';
+export type Equipment={pieces:Record<PieceType,string>;board:string};
+export type EngineProfile={id:string;skill:number;nodes:number;milliseconds:number};
+export type Match={pgn:string;mode:string;difficulty:string;playerColor:Color;started:boolean;settled:boolean;resigned:boolean;equipped?:Equipment;engineProfile?:EngineProfile|null;rating?:{before:number;opponent:number;k:number}|null};
+export type Entry={id:string;pgn:string;finishedAt:string;mode:string;playerColor:Color;equipped:Equipment;result:string;points:number;playerRating:number;opponentRating:number|null;ratingDelta:number|null};
+export type State={version:number;archive:Entry[];rating:{value:number;games:number;lastDelta:number};settings:{mode:string;difficulty:string};coins:number;shards:number;owned:string[];equipped:Equipment;sets:(Equipment&{id:string;name:string})[];pity:number;played:number;opened:number;game:Match};
+export type Result={entry:Entry;reward:number;config:Match};
+export type Notice={title:string;body:string};
+export type Snapshot={data:State;ready:boolean;error:string|null;busy:boolean;result:Result|null;notice:Notice|null};
+export type MoveInput={from:string;to:string;promotion?:string};

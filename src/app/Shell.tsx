@@ -1,0 +1,23 @@
+import {useEffect,useState,type ReactNode} from 'react';
+import {Link,useLocation,useNavigate} from '@tanstack/react-router';
+import {useSnapshot,useStore} from './context';
+import {Piece} from '../shared/ui/Piece';
+import {Icon,type IconName} from '../shared/ui/Icon';
+import {Dialog} from '../shared/ui/Dialog';
+import styles from './Shell.module.css';
+const tabs:[string,string,IconName][]=[['/','Игра','game'],['/collection','Коллекция','collection'],['/chests','Сундуки','chest'],['/craft','Крафт','craft']];
+export const Shell=({children}:{children:ReactNode})=>{
+ const state=useSnapshot(),store=useStore(),path=useLocation({select:location=>location.pathname}),navigate=useNavigate();
+ const locked=state.data.game.started||!!state.result;
+ const [update,setUpdate]=useState<ServiceWorker|null>(null);
+ useEffect(()=>{document.body.classList.toggle('match-active',locked);return()=>document.body.classList.remove('match-active');},[locked]);
+ useEffect(()=>{if(state.ready&&locked&&path!=='/')void navigate({to:'/',replace:true});},[state.ready,locked,path,navigate]);
+ useEffect(()=>{if(!('serviceWorker' in navigator)||import.meta.env.DEV)return;let disposed=false;let refreshing=false;
+  const change=()=>{if(!refreshing){refreshing=true;location.reload();}};navigator.serviceWorker.addEventListener('controllerchange',change);
+  void navigator.serviceWorker.register('/sw.js').then(reg=>{const show=()=>{if(!disposed)setUpdate(reg.waiting);};show();reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',show));});
+  return()=>{disposed=true;navigator.serviceWorker.removeEventListener('controllerchange',change);};
+ },[]);
+ useEffect(()=>{const hash=location.hash.slice(1);const next=hash==='play'?'/':['profile','collection','chests','craft','faq'].includes(hash)?`/${hash}`:null;if(next)void navigate({to:next,replace:true});},[navigate]);
+ if(!state.ready)return <main className={styles.loading}>Восстанавливаем игру…</main>;
+ return <><header><Link to="/" className="brand"><span><Piece type="n"/></span> CHESS<span className="muted">VAULT</span></Link><small className={styles.environment}>PREPROD</small><div className="balances"><div className="wallet">◈ <strong>{state.data.coins}</strong></div><div className="wallet shards">✧ <strong>{state.data.shards}</strong></div></div>{!locked&&<Link to="/profile" className="profile-avatar" aria-label="Открыть профиль"><Icon name="profile"/></Link>}</header><main>{!locked&&<nav id="app-nav" aria-label="Разделы">{tabs.map(([to,label,icon])=><Link key={to} to={to} className={path===to?'active':''}><Icon name={icon}/><span>{label}</span></Link>)}</nav>}{locked&&path!=='/'?<p>Возвращаемся к партии…</p>:children}</main>{state.result&&<Dialog title={state.result.entry.result} onClose={store.dismissResult}><p>Партия завершена и сохранена в истории.</p><h2>+{state.result.reward} монет</h2><p>Взято фигур на {state.result.entry.points} очков</p>{state.result.entry.ratingDelta!==null&&<p>Рейтинг: {state.result.entry.playerRating} → {state.data.rating.value}</p>}</Dialog>}{state.notice&&<Dialog title={state.notice.title} onClose={store.dismissNotice}><p>{state.notice.body}</p></Dialog>}{state.error&&<div className={styles.error} role="alert"><p>{state.error}</p><button className="quiet" onClick={store.clearError}>Повторить</button></div>}{update&&!locked&&<button className="primary update-app" onClick={()=>update.postMessage({type:'ACTIVATE_UPDATE'})}>Доступно обновление · применить</button>}</>;
+};

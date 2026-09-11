@@ -1,0 +1,3 @@
+import {useSnapshot,useStore} from '../app/context';
+import {Piece} from '../shared/ui/Piece';
+export const ChestsScreen=()=>{const {data}=useSnapshot(),store=useStore();return <section id="chests"><h1>Сундуки</h1><div className="chest-layout"><article className="chest-card"><div className="chest-symbol"><Piece type="q" style="gold"/></div><span className="badge">Предмет для вашей коллекции</span><h2>Сундук хранилища</h2><button className="primary" disabled={data.coins<100} onClick={store.openChest}>Открыть за 100 ◈</button><div className="pity-meter"><span>Гарантированный предмет через {10-data.pity}</span><progress max={10} value={data.pity} aria-label="Прогресс гарантии"/></div></article></div></section>;};

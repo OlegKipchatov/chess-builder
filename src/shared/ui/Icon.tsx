@@ -1,0 +1,5 @@
+import type {ButtonHTMLAttributes} from 'react';
+const paths={back:'m15 5-7 7 7 7',forward:'m9 5 7 7-7 7',last:'m5 5 9 7-9 7zM19 5v14',play:'m7 4 13 8-13 8z',pause:'M8 4v16M16 4v16',profile:'M4 21v-2a8 8 0 0 1 16 0v2M16 8a4 4 0 1 0-8 0 4 4 0 0 0 8 0',game:'M8 4h8l-1 5 3 10H6L9 9zM9 9h6M5 21h14M12 2v4',collection:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',chest:'M3 10h18v10H3zM3 10V7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v3M10 10v4h4v-4',craft:'m14 5 5 5M3 21l9-9M14 3l7 7-4 4-7-7zM3 15l6 6'};
+export type IconName=keyof typeof paths;
+export const Icon=({name}:{name:IconName})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]}/></svg>;
+export const IconButton=({icon,label,...props}:ButtonHTMLAttributes<HTMLButtonElement>&{icon:IconName;label:string})=><button {...props} className={`quiet icon-button ${props.className||''}`} aria-label={label} title={label}><Icon name={icon}/></button>;

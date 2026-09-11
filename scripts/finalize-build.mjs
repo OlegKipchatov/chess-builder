@@ -1,0 +1,21 @@
+import {readdir,readFile,writeFile,copyFile,cp,rm,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+const root='build/client';
+const list=async directory=>(await Promise.all((await readdir(directory,{withFileTypes:true})).map(entry=>entry.isDirectory()?list(`${directory}/${entry.name}`):`${directory}/${entry.name}`))).flat();
+const files=(await list(root)).filter(file=>!file.endsWith('.tgz')&&!file.endsWith('/sw.js')&&!file.endsWith('/_headers')&&!file.endsWith('/_redirects'));
+const version=createHash('sha256');for(const file of files)version.update(await readFile(file));
+const cache=`chess-vault-preprod-${version.digest('hex').slice(0,12)}`;
+await copyFile(`${root}/index.html`,`${root}/404.html`);
+const assets=files.map(file=>'/'+file.slice(root.length+1));
+await writeFile(`${root}/sw.js`,`const CACHE=${JSON.stringify(cache)};const ASSETS=${JSON.stringify(assets)};
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
+self.addEventListener('message',event=>{if(event.data?.type==='ACTIVATE_UPDATE')self.skipWaiting();});
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('chess-vault-preprod-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+const isolated=response=>{if(!response||response.status===0)return response;const headers=new Headers(response.headers);headers.set('Cross-Origin-Opener-Policy','same-origin');headers.set('Cross-Origin-Embedder-Policy','require-corp');headers.set('Cross-Origin-Resource-Policy','same-origin');return new Response(response.body,{status:response.status,statusText:response.statusText,headers});};
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;if(event.request.cache==='only-if-cached'&&event.request.mode!=='same-origin')return;event.respondWith(caches.open(CACHE).then(cache=>cache.match(event.request.mode==='navigate'?'/index.html':event.request)).then(response=>response||fetch(event.request)).then(isolated));});
+`);
+await writeFile(`${root}/_headers`,'/*\n  Cross-Origin-Opener-Policy: same-origin\n  Cross-Origin-Embedder-Policy: require-corp\n  Cross-Origin-Resource-Policy: same-origin\n');
+await writeFile(`${root}/_redirects`,'/* /index.html 200\n');
+console.log(`Preprod bundle: ${assets.length} assets, ${cache}`);
+
+await rm('.output/public',{recursive:true,force:true});await mkdir('.output/public',{recursive:true});await cp(root,'.output/public',{recursive:true});
