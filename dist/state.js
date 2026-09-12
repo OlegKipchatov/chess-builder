@@ -1,12 +1,13 @@
-import {validEngineProfile} from './strength.js?v=13';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=13';
-import {Chess} from './chess.js?v=13';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=13';
+import {initialActivity, normalizeActivity} from './activity.js?v=14';
+import {validEngineProfile} from './strength.js?v=14';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=14';
+import {Chess} from './chess.js?v=14';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=14';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
 export const newGame = (mode='bot', difficulty='adaptive') => ({pgn:'', mode, difficulty, playerColor:'w', started:false, settled:false, resigned:false});
-export const initialState = () => ({version:3, archive:[], rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
+export const initialState = () => ({version:3, activity:initialActivity(), archive:[], rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
 const integer = (value, fallback=0) => Number.isSafeInteger(value) && value >= 0 ? value : fallback;
 export const validEquipment = (candidate, owned) => {
   const equipped = defaultEquipment();
@@ -33,6 +34,7 @@ export const migrateState = input => {
   next.equipped = validEquipment(equipment,next.owned);
   next.game = {...newGame(), pgn:typeof input.game?.pgn === 'string' ? input.game.pgn : '', mode:input.game?.mode === 'local' ? 'local' : 'bot', difficulty:['easy','normal','hard','adaptive'].includes(input.game?.difficulty) ? input.game.difficulty : 'normal', settled:input.game?.settled === true, resigned:input.game?.resigned === true};
   next.settings = {mode:input.settings?.mode === 'local' ? 'local' : input.settings?.mode === 'bot' ? 'bot' : next.game.mode, difficulty:['easy','normal','hard','adaptive'].includes(input.settings?.difficulty) ? input.settings.difficulty : next.game.difficulty};
+  next.activity = normalizeActivity(input.activity);
   next.rating = normalizeRating(input.rating);
   next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
   next.game.engineProfile = validEngineProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
@@ -56,7 +58,7 @@ export const migrateState = input => {
 };
 export const loadState = storage => {
   const saved = storage.getItem(KEY);
-  if (saved !== null) return migrateState(JSON.parse(saved));
+  if (saved !== null) {const input=JSON.parse(saved),next=migrateState(input);if(!input.activity)storage.setItem(KEY,JSON.stringify(next));return next;}
   const legacy = storage.getItem(PREVIOUS_KEY) ?? storage.getItem(LEGACY_KEY);
   const next = migrateState(legacy ? JSON.parse(legacy) : null);
   storage.setItem(KEY,JSON.stringify(next));

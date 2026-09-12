@@ -1,14 +1,15 @@
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=13';
-import {capturePoints, completedMatch, materialBalance} from './archive.js?v=13';
-import {opponentFor, settleRating, signedDelta} from './rating.js?v=13';
-import {Chess} from './chess.js?v=13';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=13';
-import {openChest, craftItem} from './economy.js?v=13';
-import {KEY, loadState, initialState, newGame} from './state.js?v=13';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=13';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=13';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=13';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=13';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=14';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=14';
+import {capturePoints, completedMatch, materialBalance} from './archive.js?v=14';
+import {opponentFor, settleRating, signedDelta} from './rating.js?v=14';
+import {Chess} from './chess.js?v=14';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=14';
+import {openChest, craftItem} from './economy.js?v=14';
+import {KEY, loadState, initialState, newGame} from './state.js?v=14';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=14';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=14';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=14';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=14';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -18,6 +19,7 @@ try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, toastTimer, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
+let pendingActivity=null;
 let displayMatch=null, pendingResult=false, replayRunning=false, replayTimer=null;
 const viewedGame = () => displayMatch?.game||game;
 const viewedConfig = () => displayMatch?.config||(state.game.started?state.game:state.settings);
@@ -49,13 +51,16 @@ const statusText = () => {
   if(game.isDraw())return 'Ничья';
   return `${game.isCheck()?'Шах! ':''}Ход ${game.turn()==='w'?'белых':'чёрных'}`;
 };
-const settle = () => {
+const settle = (notifyActivity=true) => {
   if(!ended()||!state.game.started)return;
   const wasSettled=state.game.settled, title=statusText();
   const finishedGame=new Chess();finishedGame.loadPgn(game.pgn());
   const finishedConfig=structuredClone(state.game);
   const result=completedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
-  if(!result||!persist(result.state,true))return;
+  if(!result)return;
+  const closed=closeActivityDay(state.activity,{counted:!!result.entry&&!wasSettled,finishedAt:result.entry?.finishedAt});
+  if(!persist({...result.state,activity:closed.activity},true))return;
+  pendingActivity=notifyActivity?closed.event:null;
   const {entry,reward,rating}=result;
   stopBot();game.reset();reviewCursor=null;queuedCursor=undefined;selected=null;
   if(!wasSettled){displayMatch={game:finishedGame,config:finishedConfig,kind:'result'};pendingResult=true;}
@@ -102,6 +107,9 @@ const renderStatistics = () => {
 };
 $('#match-archive').addEventListener('scroll',renderArchive,{passive:true});
 window.addEventListener('resize',()=>{if(currentScreen==='archive')renderArchive();});
+const renderCalendar = () => {$('#activity-calendar').innerHTML=calendarHTML(state.activity);};
+setInterval(()=>{if(currentScreen==='calendar')renderCalendar();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentScreen==='calendar')renderCalendar();});
 const renderProfile = () => {
 
   $('#rating-value').textContent=state.rating.value;
@@ -167,7 +175,7 @@ const renderGameInfo = () => {
 };
 const render = () => {
   if(!animating)drawBoard();
-  drawCollection();renderProfile();renderGameInfo();syncNavigation();
+  drawCollection();renderProfile();renderCalendar();renderGameInfo();syncNavigation();
   $('#coins').textContent=state.coins;
   $('#shards').textContent=state.shards;
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
@@ -197,7 +205,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=state.game.engineProfile?.id==='stockfish19-v1'?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=13',{type:'module'});
+    worker??=state.game.engineProfile?.id==='stockfish19-v1'?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=14',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
@@ -245,7 +253,7 @@ const changeTab = tab => {
   if(target!==tab&&active())toast('Другие экраны доступны после завершения партии.');
   currentScreen=target;
   window.history.replaceState(null,'','#'+target);
-  syncNavigation();if(target==='archive')renderArchive();
+  syncNavigation();if(target==='archive')renderArchive();if(target==='calendar')renderCalendar();
 };
 const showHistory = async (cursor,automatic=false) => {
   if(!automatic)stopReplay();
@@ -374,7 +382,10 @@ $('#modal-content').addEventListener('click',event=>{
 });
 $('#modal').addEventListener('cancel',()=>{promotion=null;selected=null;if(!animating)drawBoard();});
 $('#modal').addEventListener('close',()=>{
-  if(pendingResult&&!$('#modal').open){pendingResult=false;displayMatch=null;reviewCursor=null;render();}
+  if(pendingResult&&!$('#modal').open){pendingResult=false;displayMatch=null;reviewCursor=null;render();
+    const event=pendingActivity;pendingActivity=null;
+    if(event)showModal(`<div class="day-closed-mark" aria-hidden="true">✓</div><h2>День закрыт</h2><p>${event.streak===1?'Началась новая серия.':`Вы играете ${dayLabel(event.streak)} подряд.`}</p><strong class="streak-value">${dayLabel(event.streak)}</strong>`);
+  }
 });
 $('#close-modal').onclick=()=>$('#modal').close();
 $('#open-chest').onclick=()=>{
@@ -434,5 +445,5 @@ $('.brand>span:first-child').innerHTML=pieceSVG('n','w');
 $('#chest-art').innerHTML=pieceSVG('q','w','gold');
 $('#status').setAttribute('aria-live','polite');
 currentScreen=navigationTarget(state,game,location.hash.slice(1)||'play');
-changeTab(currentScreen);render();settle();render();requestBot();
+changeTab(currentScreen);render();settle(false);render();requestBot();
 if(storageError)toast('Сохранение не удалось прочитать. Старые данные оставлены в браузере.');
