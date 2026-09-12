@@ -1,9 +1,10 @@
-import {newGame} from './state.js?v=10';
-import {settleRating} from './rating.js?v=10';
-import {rewardFor} from './engine.js?v=10';
+import {newGame} from './state.js?v=13';
+import {settleRating} from './rating.js?v=13';
+import {rewardFor} from './engine.js?v=13';
 export const capturePoints = (game,color) => game.history({verbose:true}).reduce((sum,move)=>sum+(move.color===color?({p:1,n:3,b:3,r:5,q:9}[move.captured]||0):0),0);
 export const completedMatch = (state,game,{id,finishedAt}) => {
   if(!state.game.started||(!state.game.resigned&&!game.isGameOver()))return null;
+  if(state.game.resigned&&!game.history({verbose:true}).some(move=>move.color===(state.game.playerColor||'w')))return {cancelled:true,entry:null,reward:0,rating:null,state:{...state,game:newGame(state.settings.mode)}};
   const rating=settleRating(state,game);
   const reward=state.game.settled?0:rewardFor(game,state.game.resigned,state.game.mode,state.game.playerColor);
   const winner=state.game.resigned?(game.turn()==='w'?'b':'w'):game.isDraw()?null:game.turn()==='w'?'b':'w';

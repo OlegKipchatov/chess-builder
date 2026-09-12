@@ -1,8 +1,8 @@
-import {stockfishProfile} from './strength.js?v=10';
-import {ratingSnapshot} from './rating.js?v=10';
-import {Chess} from './chess.js?v=10';
-import {newGame} from './state.js?v=10';
-export const SCREENS = ['profile','collection','play','chests','craft','faq'];
+import {stockfishProfile} from './strength.js?v=13';
+import {ratingSnapshot} from './rating.js?v=13';
+import {Chess} from './chess.js?v=13';
+import {newGame} from './state.js?v=13';
+export const SCREENS = ['profile','collection','play','chests','archive','statistics','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
 export const createStartedGame = (state,rng=Math.random) => ({...newGame('bot','adaptive'),started:true,engineProfile:stockfishProfile(ratingSnapshot(state.rating).opponent),playerColor:rng()<0.5?'w':'b',rating:ratingSnapshot(state.rating),equipped:structuredClone(state.equipped)});

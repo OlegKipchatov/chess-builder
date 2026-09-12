@@ -17,6 +17,7 @@ export const adaptiveLevel = (rating=1000) => {
 export const settleRating = (state,game) => {
   const match=state.game;
   if(!match.started||match.settled||match.mode!=='bot'||match.difficulty!=='adaptive'||!validRatingSnapshot(match.rating)||(!match.resigned&&!game.isGameOver()))return null;
+  if(match.resigned&&!game.history({verbose:true}).some(move=>move.color===(match.playerColor||'w')))return null;
   const {before,opponent,k}=match.rating;
   const score=match.resigned?0:game.isDraw()?0.5:game.turn()!==(match.playerColor||'w')?1:0;
   const expected=1/(1+10**((opponent-before)/400));

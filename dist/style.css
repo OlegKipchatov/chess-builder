@@ -47,3 +47,18 @@ body.match-active main{padding-bottom:24px}body.match-active .profile-avatar{vis
  .profile-grid{display:block}.profile-overview{display:block}
  .game-heading h1{font-size:28px}.game-heading .badge{flex-shrink:0}
 }
+
+/* GachaChess 0.2: compact match identity and unified collection. */
+.app-version{font-size:12px;color:var(--muted);letter-spacing:0;margin-left:7px}.brand{letter-spacing:0;white-space:nowrap}
+body.match-active .profile-avatar{visibility:visible;opacity:1}body.match-active .game-heading{display:none}#match-settings:empty{display:none}
+.player,.player:last-child{min-height:42px;padding:6px 0;gap:8px}.player .avatar{width:28px;height:28px;flex-shrink:0;border-radius:8px}.player>div{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px}.player small{font-size:14px}#player-color,#opponent-color,#skin-name{display:none}.player-right{margin-left:auto}#match-points{font-size:14px}#match-points[data-balance=positive]{color:#a5df92}#match-points[data-balance=negative]{color:#f18d8d}#match-points[data-balance=zero]{color:#fff}
+.play-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:600px;margin:16px auto}.play-stats article,.statistics-grid article{background:var(--panel);border:1px solid #ffffff12;border-radius:14px;padding:16px}.play-stats strong,.statistics-grid strong{display:block;font-size:26px;font-variant-numeric:tabular-nums}.play-stats span,.statistics-grid span{font-size:14px;color:var(--muted)}.statistics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.profile-links{display:grid;gap:12px;margin-top:16px}.archive-viewport{height:min(65dvh,624px);overflow:auto;overscroll-behavior:contain;border:1px solid #ffffff12;border-radius:14px;padding:0 12px;overflow-anchor:none}.archive-viewport .archive-entry{height:104px;box-sizing:border-box}.archive-entry small{font-size:14px}.collection-items-list{display:flex;flex-direction:column;gap:8px}.collection-items-list .compact-item{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px}.collection-items-list .compact-item-art{height:58px}.collection-items-list .compact-item>button{grid-column:auto;width:auto;margin:0;font-size:14px}.equipment-slot.active{background:#38452d;outline:1px solid var(--accent)}.preset-part:disabled{opacity:1;cursor:default}.preset-part.missing:disabled{opacity:.35}#app-nav{grid-template-columns:repeat(3,1fr)}#faq .panel{margin-bottom:16px}#faq .compensation button{width:100%}
+@media(max-width:400px){.brand{font-size:12px}.brand>span:first-child{margin-right:4px}.app-version{margin-left:4px}.collection-items-list .compact-item{grid-template-columns:46px minmax(0,1fr) auto;gap:8px;padding:10px}.collection-items-list .compact-item>button{padding:10px 8px}.wallet,.wallet.shards{padding:6px}.player>div{gap:4px 6px}}
+
+/* Keep selection and keyboard focus inside the scrollable equipment strip. */
+.equipment-slots{min-width:0;padding:4px}
+.equipment-slot.active{outline:none;box-shadow:inset 0 0 0 1px var(--accent)}
+.equipment-slot:focus-visible,.preset-part:focus-visible{outline-offset:-3px}
+.equipment-slot>.piece-icon{flex-shrink:0;object-fit:contain}
+.collection-items-list .compact-item.focused-item{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);outline:none;scroll-margin-block:16px}
+.preset-part:hover{background:#35412f}

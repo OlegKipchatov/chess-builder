@@ -1,7 +1,7 @@
-import {validEngineProfile} from './strength.js?v=10';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=10';
-import {Chess} from './chess.js?v=10';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=10';
+import {validEngineProfile} from './strength.js?v=13';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=13';
+import {Chess} from './chess.js?v=13';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=13';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
