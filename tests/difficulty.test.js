@@ -18,6 +18,16 @@ test('Облегчение повышает вероятность ошибок 
  }
 });
 const candidates=[0,.2,.5,1.2,2.2].map((evaluationLoss,i)=>({move:String(i),evaluationLoss,evaluation:-evaluationLoss}));
+test('Ослабленная защита оставляет больше оценённых зевков, но продолжает спасать часть ходов',()=>{
+ const pool=[{move:'safe',evaluationLoss:0,guardWeight:1},{move:'hanging-rook',evaluationLoss:2,guardWeight:.15}];
+ const choose=(rescueProbability,ticket)=>{
+  const values=[.999,.5,ticket,.5];
+  return selectCandidate(pool,600,{},()=>values.shift(),{...DIFFICULTY,guard:{...DIFFICULTY.guard,rescueProbability}}).move;
+ };
+ assert.equal(choose(.85,.25),'safe');
+ assert.equal(choose(DIFFICULTY.guard.rescueProbability,.25),'hanging-rook');
+ assert.equal(choose(DIFFICULTY.guard.rescueProbability,.9),'safe');
+});
 test('Непрерывный skill, clamp, target и фиксируемая variance',()=>{
  assert.equal(skillFor(100),0);assert.equal(skillFor(2000),1);assert.equal(targetFor(1000),900);
  let previous=-1;for(let elo=400;elo<=1600;elo++){assert.ok(skillFor(elo)>=previous);previous=skillFor(elo);}
@@ -67,7 +77,8 @@ test('Защита от пустой категории не заставляе�
  const pool=[{move:'safe',evaluationLoss:0,guardWeight:1},{move:'queen-drop',evaluationLoss:7,guardWeight:.15}];
  const rng=seededRandom(9);let drops=0;
  for(let i=0;i<10000;i++)drops+=selectCandidate(pool,400,{},rng).move==='queen-drop'?1:0;
- assert.ok(drops<400);assert.ok(drops>0);
+ // Even with only one safe move and one queen blunder, more than 90% of choices stay safe.
+ assert.ok(drops<900);assert.ok(drops>0);
 });
 test('Смешанные повторные PV одной глубины не образуют ложный комплект',()=>{
  const row=(index,move)=>({depth:5,index,move});

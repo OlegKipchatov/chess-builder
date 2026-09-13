@@ -10,6 +10,6 @@ export const DIFFICULTY = Object.freeze({
   phase:{opening:.75,middlegame:1,endgame:1.15,openingPlies:16,endgameMaterial:16},
   winning:{evaluation:3,maxBonus:.25,fadeStart:600,fadeEnd:1200},
   mate:{one:{min:.65,power:3.4},two:{min:.20,power:1.65},base:100,distance:.1,maxDistance:50,cpBound:50},
-  temperature:{min:.5,gain:2.5},guard:{majorValue:5,lossThreshold:1.8,weight:.15},
+  temperature:{min:.5,gain:2.5},guard:{majorValue:5,lossThreshold:1.8,weight:.15,rescueProbability:.60},
   pieceValue:{p:1,n:3,b:3,r:5,q:9,k:0},seedMax:4294967295
 });

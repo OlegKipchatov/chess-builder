@@ -1,4 +1,4 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=16';
+import {DIFFICULTY as C} from './difficulty-config.js?v=17';
 // Versioned internal levels. These numbers are not calibrated human Elo.
 export const stockfishProfile = (rating=1000) => {
  const value=Math.max(400,Math.min(1600,Number.isFinite(rating)?rating:1000));

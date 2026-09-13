@@ -1,4 +1,4 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=16';
+import {DIFFICULTY as C} from './difficulty-config.js?v=17';
 /** @typedef {()=>number} RandomSource */
 export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};
@@ -44,7 +44,7 @@ export const selectCandidate = (candidates,elo,context={},rng=Math.random,config
   if(!eligible.length){const best=Math.min(...pool.map(c=>c.evaluationLoss));eligible=pool.filter(c=>c.evaluationLoss===best);}
   const minimum=Math.min(...eligible.map(c=>c.evaluationLoss)),temperature=config.temperature.min+config.temperature.gain*skillFor(elo,config);
   const chosen=weightedChoice(eligible,c=>Math.exp(-(c.evaluationLoss-minimum)*temperature)*(c.guardWeight??1),rng);
-  if((chosen.guardWeight??1)<1&&rng()>chosen.guardWeight){
+  if((chosen.guardWeight??1)<1&&rng()>1-config.guard.rescueProbability){
     const safer=pool.filter(c=>c.evaluationLoss<chosen.evaluationLoss&&(c.guardWeight??1)===1);
     if(safer.length){const bestLoss=Math.min(...safer.map(c=>c.evaluationLoss));return weightedChoice(safer,c=>Math.exp(-(c.evaluationLoss-bestLoss)*temperature),rng);}
   }
