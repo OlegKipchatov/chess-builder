@@ -1,0 +1,91 @@
+{
+  "seed": 20260912,
+  "choicesPerEloPerModel": 42000,
+  "errorMultiplier": 1.15,
+  "rows": [
+    {
+      "elo": 400,
+      "before": {
+        "loss": 3.473788333333377,
+        "guardedRate": 0.004071428571428571
+      },
+      "after": {
+        "loss": 3.955479285714348,
+        "guardedRate": 0.004071428571428571
+      },
+      "lossIncreasePercent": 13.866445107170655
+    },
+    {
+      "elo": 600,
+      "before": {
+        "loss": 1.879766190476186,
+        "guardedRate": 0.002904761904761905
+      },
+      "after": {
+        "loss": 2.1238149999999933,
+        "guardedRate": 0.0030952380952380953
+      },
+      "lossIncreasePercent": 12.982934301099668
+    },
+    {
+      "elo": 800,
+      "before": {
+        "loss": 0.9417857142857171,
+        "guardedRate": 0.0015
+      },
+      "after": {
+        "loss": 1.0663764285714321,
+        "guardedRate": 0.0016190476190476191
+      },
+      "lossIncreasePercent": 13.229199848312522
+    },
+    {
+      "elo": 1000,
+      "before": {
+        "loss": 0.44396952380952426,
+        "guardedRate": 0.0005
+      },
+      "after": {
+        "loss": 0.5015109523809527,
+        "guardedRate": 0.0006428571428571428
+      },
+      "lossIncreasePercent": 12.960670831116627
+    },
+    {
+      "elo": 1200,
+      "before": {
+        "loss": 0.21523333333333403,
+        "guardedRate": 0.00011904761904761903
+      },
+      "after": {
+        "loss": 0.22496452380952442,
+        "guardedRate": 0.00011904761904761903
+      },
+      "lossIncreasePercent": 4.521228345759809
+    },
+    {
+      "elo": 1400,
+      "before": {
+        "loss": 0.14385214285714357,
+        "guardedRate": 0.00004761904761904762
+      },
+      "after": {
+        "loss": 0.14762452380952445,
+        "guardedRate": 0.00007142857142857143
+      },
+      "lossIncreasePercent": 2.6224016392492278
+    },
+    {
+      "elo": 1600,
+      "before": {
+        "loss": 0.127041428571429,
+        "guardedRate": 0
+      },
+      "after": {
+        "loss": 0.127041428571429,
+        "guardedRate": 0
+      },
+      "lossIncreasePercent": 0
+    }
+  ]
+}

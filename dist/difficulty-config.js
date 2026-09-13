@@ -4,6 +4,7 @@ export const DIFFICULTY = Object.freeze({
   hashMb:16,watchdogMs:15000,initializationMs:60000,
   thresholds:[0.15,0.40,0.90,1.80],
   errors:{inaccuracy:{max:.35,power:1.2},mistake:{max:.28,power:2.3},blunder:{max:.16,power:3}},
+  errorMultiplier:1.15,
   best:{base:.10,gain:.45,power:1.3},maxErrorMass:.95,
   complexity:{min:.75,max:1.5,manyMoves:30,manyBonus:.10,equalLoss:.15,equalCount:3,equalBonus:.10,tactics:5,tacticalBonus:.20,forcedMoves:2,forcedDiscount:.25},
   phase:{opening:.75,middlegame:1,endgame:1.15,openingPlies:16,endgameMaterial:16},

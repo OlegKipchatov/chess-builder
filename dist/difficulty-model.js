@@ -1,4 +1,4 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=15';
+import {DIFFICULTY as C} from './difficulty-config.js?v=16';
 /** @typedef {()=>number} RandomSource */
 export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};
@@ -16,7 +16,7 @@ export const probabilitiesFor = (elo,context={},config=C) => {
   const skill=skillFor(elo,config),complexity=clamp(context.complexity??1,config.complexity.min,config.complexity.max);
   const phase=config.phase[context.phase||'middlegame'];
   const win=context.bestEvaluation>config.winning.evaluation?1+config.winning.maxBonus*(1-clamp((elo-config.winning.fadeStart)/(config.winning.fadeEnd-config.winning.fadeStart),0,1)):1;
-  const errors=Object.fromEntries(Object.entries(config.errors).map(([name,p])=>[name,p.max*(1-skill)**p.power*complexity*phase*win]));
+  const errors=Object.fromEntries(Object.entries(config.errors).map(([name,p])=>[name,p.max*(1-skill)**p.power*complexity*phase*win*config.errorMultiplier]));
   const mass=Object.values(errors).reduce((sum,p)=>sum+p,0),scale=mass>config.maxErrorMass?config.maxErrorMass/mass:1;
   for(const key of Object.keys(errors))errors[key]*=scale;
   const remaining=1-Object.values(errors).reduce((sum,p)=>sum+p,0),best=Math.min(remaining,config.best.base+config.best.gain*skill**config.best.power);
@@ -26,7 +26,7 @@ export const weightedChoice = (items,weight,rng) => {
   const weights=items.map(weight),total=weights.reduce((sum,value)=>sum+value,0);let ticket=rng()*total;
   return items.find((item,index)=>(ticket-=weights[index])<0)||items.at(-1);
 };
-export const mateProbability = (distance,elo,config=C) => {const p=distance===1?config.mate.one:config.mate.two;return 1-(1-p.min)*(1-skillFor(elo,config))**p.power;};
+export const mateProbability = (distance,elo,config=C) => {const p=distance===1?config.mate.one:config.mate.two;return clamp(1-(1-p.min)*(1-skillFor(elo,config))**p.power*config.errorMultiplier,0,1);};
 /** Pure decision over evaluated, legal candidates; no engine calls and no random legal fallback. */
 export const selectCandidate = (candidates,elo,context={},rng=Math.random,config=C) => {
   if(!candidates.length)throw Error('No evaluated legal candidates');

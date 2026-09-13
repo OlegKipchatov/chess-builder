@@ -1,7 +1,7 @@
-import {createDifficultyProfile} from './difficulty-model.js?v=15';
-import {ratingSnapshot} from './rating.js?v=15';
-import {Chess} from './chess.js?v=15';
-import {newGame} from './state.js?v=15';
+import {createDifficultyProfile} from './difficulty-model.js?v=16';
+import {ratingSnapshot} from './rating.js?v=16';
+import {Chess} from './chess.js?v=16';
+import {newGame} from './state.js?v=16';
 export const SCREENS = ['profile','collection','play','chests','archive','statistics','calendar','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';

@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {readFile,writeFile} from 'node:fs/promises';
 import {selectCandidate,seededRandom,positionSeed,qualityFor} from '../../dist/difficulty-model.js';
-export const simulate = ({position,fen,botElo,iterations=1000,seed=20260912}) => {
+export const simulate = ({position,fen,botElo,iterations=1000,seed=20260912,config}) => {
  position??=JSON.parse(readFileSync(new URL('../../docs/ai/results/candidates.json',import.meta.url))).positions.find(item=>item.fen===fen);
  if(!position)throw Error('Collect this FEN before simulating');
  if(!Number.isSafeInteger(iterations)||iterations<1)throw RangeError('iterations must be a positive integer');
@@ -9,7 +9,7 @@ export const simulate = ({position,fen,botElo,iterations=1000,seed=20260912}) =>
  const referenceCounts={...counts};let loss=0,referenceLoss=0,guarded=0,mates=0;
  const moves={};
  for(let i=0;i<iterations;i++){
-  const candidate=selectCandidate(position.candidates,botElo,position.context,rng),reference=position.reference.candidates.find(c=>c.move===candidate.move);
+  const candidate=selectCandidate(position.candidates,botElo,position.context,rng,config),reference=position.reference.candidates.find(c=>c.move===candidate.move);
   if(!reference)throw Error('Missing reference move '+candidate.move+' '+position.id);
   counts[qualityFor(candidate.evaluationLoss)]++;referenceCounts[qualityFor(reference.evaluationLoss)]++;
   loss+=candidate.evaluationLoss;referenceLoss+=reference.evaluationLoss;guarded+=candidate.guardWeight<1?1:0;mates+=candidate.mate===1?1:0;

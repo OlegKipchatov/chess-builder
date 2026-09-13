@@ -3,6 +3,20 @@ import assert from 'node:assert/strict';
 import {skillFor,targetFor,createDifficultyProfile,probabilitiesFor,qualityFor,selectCandidate,seededRandom,mateProbability} from '../dist/difficulty-model.js';
 import {normalizeScore,parseInfo,completeCandidates,prepareCandidates} from '../dist/candidate-analysis.js';
 import {Chess} from '../dist/chess.js';
+import {DIFFICULTY} from '../dist/difficulty-config.js';
+test('Облегчение повышает вероятность ошибок и пропуска мата на 15%, сохраняя пределы',()=>{
+ const previous={...DIFFICULTY,errorMultiplier:1};
+ for(const elo of [600,800,1000,1200,1400]){
+  const before=probabilitiesFor(elo,{},previous),after=probabilitiesFor(elo);
+  for(const quality of ['inaccuracy','mistake','blunder'])assert.ok(Math.abs(after[quality]/before[quality]-1.15)<1e-12);
+  for(const distance of [1,2])assert.ok(Math.abs((1-mateProbability(distance,elo))/(1-mateProbability(distance,elo,previous))-1.15)<1e-10);
+ }
+ for(const elo of [400,1600]){
+  const p=probabilitiesFor(elo,{complexity:1.5,phase:'endgame',bestEvaluation:5});
+  assert.ok(Object.values(p).every(value=>value>=0&&value<=1));
+  assert.ok(Math.abs(Object.values(p).reduce((a,b)=>a+b,0)-1)<1e-12);
+ }
+});
 const candidates=[0,.2,.5,1.2,2.2].map((evaluationLoss,i)=>({move:String(i),evaluationLoss,evaluation:-evaluationLoss}));
 test('Непрерывный skill, clamp, target и фиксируемая variance',()=>{
  assert.equal(skillFor(100),0);assert.equal(skillFor(2000),1);assert.equal(targetFor(1000),900);
