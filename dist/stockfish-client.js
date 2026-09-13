@@ -1,5 +1,8 @@
-import {Chess} from './chess.js?v=14';
-import {stockfishProfile,validEngineProfile} from './strength.js?v=14';
+import {DIFFICULTY as C} from './difficulty-config.js?v=15';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=15';
+import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=15';
+import {Chess} from './chess.js?v=15';
+import {stockfishProfile,validEngineProfile} from './strength.js?v=15';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -20,10 +23,14 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
    const {game,command}=uciPosition(current),profile=current.engineProfile||stockfishProfile(current.rating);
    if(!validEngineProfile(profile))throw Error('Invalid engine profile');
    if(game.isGameOver()){const id=current.id;current=null;client.onmessage?.({data:{id,move:null}});return;}
-   current.position=game;
-   send('setoption name Hash value 16');send('setoption name UCI_LimitStrength value false');
-   send(`setoption name Skill Level value ${profile.skill}`);send('ucinewgame');send(command);
-   watchdog(15000);send(`go nodes ${profile.nodes} movetime ${profile.milliseconds}`);
+   current.position=game;current.info=[];current.startedAt=performance.now();
+   current.humanized=profile.id==='humanized19-v1';
+   current.profile=profile;
+   send(`setoption name Hash value ${C.hashMb}`);send('setoption name Threads value 1');send('setoption name UCI_LimitStrength value false');
+   send(`setoption name Skill Level value ${current.humanized?20:profile.skill}`);
+   current.expected=Math.min(current.analysis?.multiPv||C.multiPv,game.moves().length);
+   send(`setoption name MultiPV value ${current.humanized?current.expected:1}`);send('ucinewgame');send(command);
+   watchdog(C.watchdogMs);send(current.humanized?`go depth ${current.analysis?.depth||C.analysisDepth} nodes ${current.analysis?.nodes||C.analysisNodes}${current.analysis?.milliseconds?` movetime ${current.analysis.milliseconds}`:''}`:`go nodes ${profile.nodes} movetime ${profile.milliseconds}`);
   } catch(error){fail(error.message);}
  };
  worker.onmessage=event=>{
@@ -31,20 +38,29 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
   for(const line of String(event.data).split('\n')){
    if(line.trim()==='uciok'){send('isready');continue;}
    if(line.trim()==='readyok'){ready=true;clearTimeout(timer);search();continue;}
+   if(current?.humanized){const info=parseInfo(line);if(info)current.info.push(info);}
    if(!line.startsWith('bestmove ')||!current)continue;
-   const token=line.split(/\s+/)[1],id=current.id;
+   let token=line.split(/\s+/)[1];const id=current.id;
    try {
+    let analysis=null;
+    if(current.humanized){
+     const rows=completeCandidates(current.info,current.expected);
+     analysis=prepareCandidates(current.position,rows);
+     if(!analysis.candidates.length)throw Error('Incomplete Stockfish analysis');
+     token=selectCandidate(analysis.candidates,current.profile.effectiveElo,analysis.context,seededRandom(positionSeed(current.profile.seed,current.position.fen()))).move;
+    }
+    const durationMs=performance.now()-current.startedAt,analysisOnly=current.analysisOnly;
     if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token))throw Error('Missing bestmove');
     const move={from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})};
     current.position.move(move);clearTimeout(timer);current=null;
-    client.onmessage?.({data:{id,move}});
+    client.onmessage?.({data:{id,move,...(analysisOnly?{analysis,durationMs}: {})}});
    }catch(error){fail(error.message);}
   }
  };
  worker.onerror=()=>fail('Stockfish worker failed');
  client.postMessage=data=>{if(dead)throw Error('Stockfish terminated');if(current)throw Error('Search already running');current={...data};search();};
  client.terminate=()=>{dead=true;current=null;clearTimeout(timer);worker.terminate();};
- watchdog(60000);send('uci');return client;
+ watchdog(C.initializationMs);send('uci');return client;
 };
 
-export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=14',{type:'module'}));
+export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=15',{type:'module'}));

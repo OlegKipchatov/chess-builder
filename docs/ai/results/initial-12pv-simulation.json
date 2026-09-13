@@ -1,0 +1,3427 @@
+{
+  "seed": 20260912,
+  "rows": [
+    {
+      "elo": 400,
+      "choices": 14000,
+      "best": 51.9,
+      "good": 18.392857142857146,
+      "inaccuracy": 15.935714285714287,
+      "mistake": 4.9,
+      "blunder": 8.871428571428572,
+      "bestGood": 70.29285714285714,
+      "averageEvaluationLoss": 5.053125000000018,
+      "reference": {
+        "best": 58.471428571428575,
+        "good": 21.099999999999998,
+        "inaccuracy": 12.014285714285714,
+        "mistake": 0.3214285714285714,
+        "blunder": 8.092857142857143,
+        "bestGood": 79.57142857142857,
+        "averageEvaluationLoss": 4.988522857142875
+      }
+    },
+    {
+      "elo": 600,
+      "choices": 14000,
+      "best": 59.378571428571426,
+      "good": 20.77857142857143,
+      "inaccuracy": 11.357142857142858,
+      "mistake": 3.271428571428572,
+      "blunder": 5.214285714285714,
+      "bestGood": 80.15714285714286,
+      "averageEvaluationLoss": 2.782607142857148,
+      "reference": {
+        "best": 65.06428571428572,
+        "good": 20.849999999999998,
+        "inaccuracy": 9.35,
+        "mistake": 0.2142857142857143,
+        "blunder": 4.521428571428571,
+        "bestGood": 85.91428571428571,
+        "averageEvaluationLoss": 2.7427157142857146
+      }
+    },
+    {
+      "elo": 800,
+      "choices": 14000,
+      "best": 65.69285714285714,
+      "good": 21.97142857142857,
+      "inaccuracy": 7.85,
+      "mistake": 2.0142857142857142,
+      "blunder": 2.471428571428571,
+      "bestGood": 87.66428571428571,
+      "averageEvaluationLoss": 1.4025135714285701,
+      "reference": {
+        "best": 70.42142857142856,
+        "good": 20.185714285714283,
+        "inaccuracy": 7.128571428571428,
+        "mistake": 0.15714285714285714,
+        "blunder": 2.107142857142857,
+        "bestGood": 90.60714285714285,
+        "averageEvaluationLoss": 1.3806035714285707
+      }
+    },
+    {
+      "elo": 1000,
+      "choices": 14000,
+      "best": 70.85714285714285,
+      "good": 22.05,
+      "inaccuracy": 5.0928571428571425,
+      "mistake": 1.0714285714285714,
+      "blunder": 0.9285714285714286,
+      "bestGood": 92.90714285714284,
+      "averageEvaluationLoss": 0.5781992857142851,
+      "reference": {
+        "best": 74.77857142857142,
+        "good": 19.05,
+        "inaccuracy": 5.192857142857143,
+        "mistake": 0.15,
+        "blunder": 0.8285714285714285,
+        "bestGood": 93.82857142857142,
+        "averageEvaluationLoss": 0.5701071428571423
+      }
+    },
+    {
+      "elo": 1200,
+      "choices": 14000,
+      "best": 75.89285714285714,
+      "good": 20.87857142857143,
+      "inaccuracy": 2.7714285714285714,
+      "mistake": 0.2714285714285714,
+      "blunder": 0.18571428571428572,
+      "bestGood": 96.77142857142857,
+      "averageEvaluationLoss": 0.16083142857142838,
+      "reference": {
+        "best": 78.56428571428572,
+        "good": 17.642857142857142,
+        "inaccuracy": 3.5214285714285714,
+        "mistake": 0.12857142857142856,
+        "blunder": 0.14285714285714285,
+        "bestGood": 96.20714285714286,
+        "averageEvaluationLoss": 0.16369571428571397
+      }
+    },
+    {
+      "elo": 1400,
+      "choices": 14000,
+      "best": 80.15,
+      "good": 18.70714285714286,
+      "inaccuracy": 1.042857142857143,
+      "mistake": 0.07142857142857142,
+      "blunder": 0.028571428571428574,
+      "bestGood": 98.85714285714286,
+      "averageEvaluationLoss": 0.08008642857142848,
+      "reference": {
+        "best": 81.57142857142857,
+        "good": 16.157142857142855,
+        "inaccuracy": 2.192857142857143,
+        "mistake": 0.05714285714285715,
+        "blunder": 0.02142857142857143,
+        "bestGood": 97.72857142857143,
+        "averageEvaluationLoss": 0.08704357142857118
+      }
+    },
+    {
+      "elo": 1600,
+      "choices": 14000,
+      "best": 83.78571428571429,
+      "good": 16.214285714285715,
+      "inaccuracy": 0,
+      "mistake": 0,
+      "blunder": 0,
+      "bestGood": 100,
+      "averageEvaluationLoss": 0.04825142857142858,
+      "reference": {
+        "best": 84.22142857142858,
+        "good": 14.457142857142857,
+        "inaccuracy": 1.3214285714285714,
+        "mistake": 0,
+        "blunder": 0,
+        "bestGood": 98.67857142857143,
+        "averageEvaluationLoss": 0.05637357142857121
+      }
+    }
+  ],
+  "old": [
+    {
+      "elo": 600,
+      "choices": 112,
+      "averageEvaluationLoss": 0.27687499999999954,
+      "best": 83.92857142857143,
+      "good": 7.142857142857142,
+      "inaccuracy": 0.8928571428571428,
+      "mistake": 2.6785714285714284,
+      "blunder": 5.357142857142857,
+      "averageMs": 7.53085154464282
+    },
+    {
+      "elo": 800,
+      "choices": 112,
+      "averageEvaluationLoss": 0.15214285714285689,
+      "best": 89.28571428571429,
+      "good": 5.357142857142857,
+      "inaccuracy": 0.8928571428571428,
+      "mistake": 2.6785714285714284,
+      "blunder": 1.7857142857142856,
+      "averageMs": 8.373332955357107
+    },
+    {
+      "elo": 1000,
+      "choices": 112,
+      "averageEvaluationLoss": 0.15205357142857126,
+      "best": 89.28571428571429,
+      "good": 2.6785714285714284,
+      "inaccuracy": 0.8928571428571428,
+      "mistake": 7.142857142857142,
+      "blunder": 0,
+      "averageMs": 10.588188955357191
+    },
+    {
+      "elo": 1200,
+      "choices": 112,
+      "averageEvaluationLoss": 0.108125,
+      "best": 84.82142857142857,
+      "good": 8.928571428571429,
+      "inaccuracy": 2.6785714285714284,
+      "mistake": 3.571428571428571,
+      "blunder": 0,
+      "averageMs": 13.648436205357276
+    }
+  ],
+  "details": [
+    {
+      "elo": 400,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 104,
+        "good": 245,
+        "inaccuracy": 651,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 136,
+        "good": 431,
+        "inaccuracy": 433,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.3436999999999998,
+      "referenceLoss": 0.375599999999998,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "a2a4": 330,
+        "b1c3": 44,
+        "e2e4": 23,
+        "b2b3": 321,
+        "h2h3": 63,
+        "d2d4": 18,
+        "a2a3": 49,
+        "g1f3": 24,
+        "c2c3": 44,
+        "g2g3": 45,
+        "c2c4": 13,
+        "e2e3": 26
+      }
+    },
+    {
+      "elo": 400,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 100,
+        "good": 900,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 685,
+        "good": 315,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2217999999999998,
+      "referenceLoss": 0.11831999999999998,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d4f3": 93,
+        "f1d3": 120,
+        "d4b3": 109,
+        "f2f4": 34,
+        "f1c4": 102,
+        "f2f3": 86,
+        "h2h3": 103,
+        "a2a4": 100,
+        "f1e2": 95,
+        "c1e3": 31,
+        "g2g3": 92,
+        "c1g5": 35
+      }
+    },
+    {
+      "elo": 400,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 46,
+        "good": 954,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 38,
+        "good": 962,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2203499999999986,
+      "referenceLoss": 0.2282099999999997,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 160,
+        "c2c3": 150,
+        "h2h3": 155,
+        "d3e2": 166,
+        "g1h1": 167,
+        "a1b1": 156,
+        "a1c1": 8,
+        "a2a4": 10,
+        "c2c4": 8,
+        "d1e2": 8,
+        "a2a3": 8,
+        "f3e5": 4
+      }
+    },
+    {
+      "elo": 400,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 229,
+        "good": 0,
+        "inaccuracy": 618,
+        "mistake": 0,
+        "blunder": 153
+      },
+      "referenceCounts": {
+        "best": 229,
+        "good": 0,
+        "inaccuracy": 618,
+        "mistake": 0,
+        "blunder": 153
+      },
+      "averageEvaluationLoss": 0.9883899999999897,
+      "referenceLoss": 0.8312900000000115,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d5e6": 618,
+        "e5f7": 21,
+        "d5d6": 16,
+        "g2g4": 11,
+        "e5d7": 8,
+        "e2a6": 229,
+        "e5g6": 12,
+        "c3d1": 15,
+        "c3b5": 16,
+        "g2h3": 18,
+        "d2c1": 21,
+        "h1g1": 15
+      }
+    },
+    {
+      "elo": 400,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 98,
+        "good": 222,
+        "inaccuracy": 680,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 98,
+        "good": 883,
+        "inaccuracy": 19,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.35471000000000297,
+      "referenceLoss": 0.29497000000000173,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c1g5": 23,
+        "c4b5": 680,
+        "h2h3": 28,
+        "d1e2": 19,
+        "a1b1": 21,
+        "e1g1": 24,
+        "c3a4": 98,
+        "c3d5": 24,
+        "c4b3": 20,
+        "c1d2": 14,
+        "a2a3": 20,
+        "a2a4": 29
+      }
+    },
+    {
+      "elo": 400,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 400,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 89,
+        "good": 254,
+        "inaccuracy": 282,
+        "mistake": 375,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 89,
+        "good": 254,
+        "inaccuracy": 612,
+        "mistake": 45,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.6016400000000032,
+      "referenceLoss": 0.5405100000000023,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c4e2": 185,
+        "a2a3": 34,
+        "c4b3": 190,
+        "c2c3": 39,
+        "b1c3": 254,
+        "a2a4": 39,
+        "f3e5": 45,
+        "b2b3": 34,
+        "h2h3": 35,
+        "f3d4": 52,
+        "e1g1": 37,
+        "d2d3": 56
+      }
+    },
+    {
+      "elo": 400,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 656,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 344
+      },
+      "referenceCounts": {
+        "best": 656,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 344
+      },
+      "averageEvaluationLoss": 31.742080000000144,
+      "referenceLoss": 31.684580000000114,
+      "guarded": 0,
+      "mateOne": 0.656,
+      "moves": {
+        "d1d8": 656,
+        "f2f4": 286,
+        "d1d7": 6,
+        "d1a4": 5,
+        "d1e1": 9,
+        "d1b1": 4,
+        "d1c1": 7,
+        "h2h3": 12,
+        "d1a1": 4,
+        "g2g3": 4,
+        "g2g4": 4,
+        "g1f1": 3
+      }
+    },
+    {
+      "elo": 400,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 489,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 311,
+        "blunder": 200
+      },
+      "referenceCounts": {
+        "best": 800,
+        "good": 109,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 91
+      },
+      "averageEvaluationLoss": 1.2106400000000055,
+      "referenceLoss": 0.3342400000000003,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 489,
+        "h2h3": 311,
+        "f2f4": 42,
+        "h2h4": 27,
+        "f2f3": 109,
+        "g2g4": 22
+      }
+    },
+    {
+      "elo": 400,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.03390000000000289,
+      "referenceLoss": 0.03390000000000289,
+      "guarded": 0,
+      "mateOne": 0.661,
+      "moves": {
+        "g6g8": 171,
+        "g6d6": 34,
+        "g6h5": 155,
+        "g6h6": 179,
+        "g6g7": 156,
+        "g6g1": 50,
+        "g6f6": 40,
+        "g6e6": 45,
+        "g6c6": 42,
+        "g6g3": 45,
+        "g6g5": 43,
+        "g6g4": 40
+      }
+    },
+    {
+      "elo": 400,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.07979999999999546,
+      "referenceLoss": 0.07979999999999546,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2d2": 106,
+        "c2f5": 111,
+        "c2b1": 34,
+        "c2c5": 113,
+        "c2a4": 142,
+        "c2b3": 42,
+        "c2g2": 111,
+        "c2c3": 101,
+        "c6c7": 59,
+        "c2f2": 114,
+        "c2h7": 31,
+        "c2b2": 36
+      }
+    },
+    {
+      "elo": 400,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.007789999999999879,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 187,
+        "e3f3": 221,
+        "e3f2": 194,
+        "e3e2": 206,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 400,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 805,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 195
+      },
+      "referenceCounts": {
+        "best": 805,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 195
+      },
+      "averageEvaluationLoss": 1.1507399999999992,
+      "referenceLoss": 1.3870199999999997,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 805,
+        "b1b4": 40,
+        "b1b5": 30,
+        "b1b6": 27,
+        "b1b7": 19,
+        "b1b8": 26,
+        "b1b3": 21,
+        "b1b2": 29,
+        "f3e3": 3
+      }
+    },
+    {
+      "elo": 400,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 650,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 350
+      },
+      "referenceCounts": {
+        "best": 650,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 350
+      },
+      "averageEvaluationLoss": 33.78821000000012,
+      "referenceLoss": 33.93088000000013,
+      "guarded": 0,
+      "mateOne": 0.65,
+      "moves": {
+        "d8h4": 650,
+        "d7d5": 307,
+        "a7a5": 4,
+        "h7h5": 6,
+        "f8c5": 6,
+        "d8e7": 5,
+        "a7a6": 6,
+        "f8e7": 3,
+        "h7h6": 4,
+        "b8c6": 5,
+        "c7c6": 4
+      }
+    },
+    {
+      "elo": 600,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 148,
+        "good": 390,
+        "inaccuracy": 462,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 195,
+        "good": 418,
+        "inaccuracy": 387,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.31100000000000017,
+      "referenceLoss": 0.3415199999999986,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "a2a4": 238,
+        "b1c3": 80,
+        "e2e4": 31,
+        "b2b3": 224,
+        "h2h3": 92,
+        "d2d4": 29,
+        "a2a3": 71,
+        "c2c3": 80,
+        "g1f3": 33,
+        "c2c4": 20,
+        "g2g3": 67,
+        "e2e3": 35
+      }
+    },
+    {
+      "elo": 600,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 140,
+        "good": 860,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 695,
+        "good": 305,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2143199999999997,
+      "referenceLoss": 0.11485000000000006,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d4f3": 83,
+        "f1d3": 114,
+        "d4b3": 106,
+        "f2f4": 44,
+        "c1e3": 45,
+        "f2f3": 82,
+        "h2h3": 104,
+        "a2a4": 98,
+        "f1e2": 90,
+        "g2g3": 87,
+        "f1c4": 96,
+        "c1g5": 51
+      }
+    },
+    {
+      "elo": 600,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 137,
+        "good": 863,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 118,
+        "good": 882,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.20337999999999917,
+      "referenceLoss": 0.21297999999999953,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 142,
+        "a2a3": 19,
+        "h2h3": 143,
+        "c2c3": 135,
+        "d3e2": 153,
+        "g1h1": 144,
+        "a1c1": 18,
+        "d1e2": 27,
+        "a2a4": 28,
+        "c2c4": 27,
+        "a1b1": 146,
+        "f3e5": 18
+      }
+    },
+    {
+      "elo": 600,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 471,
+        "good": 0,
+        "inaccuracy": 434,
+        "mistake": 0,
+        "blunder": 95
+      },
+      "referenceCounts": {
+        "best": 471,
+        "good": 0,
+        "inaccuracy": 434,
+        "mistake": 0,
+        "blunder": 95
+      },
+      "averageEvaluationLoss": 0.6445399999999939,
+      "referenceLoss": 0.5325699999999997,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e2a6": 471,
+        "e5f7": 14,
+        "d5e6": 434,
+        "d5d6": 12,
+        "g2g4": 5,
+        "e5g6": 8,
+        "e5d7": 8,
+        "c3b5": 12,
+        "g2h3": 9,
+        "h1g1": 7,
+        "d2c1": 12,
+        "c3d1": 8
+      }
+    },
+    {
+      "elo": 600,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 135,
+        "good": 406,
+        "inaccuracy": 459,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 135,
+        "good": 827,
+        "inaccuracy": 38,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.31265000000000126,
+      "referenceLoss": 0.28164000000000144,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c1g5": 43,
+        "d1e2": 38,
+        "c4b5": 459,
+        "c3d5": 34,
+        "h2h3": 52,
+        "e1g1": 38,
+        "c3a4": 135,
+        "a1b1": 37,
+        "c4b3": 43,
+        "a2a3": 43,
+        "c1d2": 33,
+        "a2a4": 45
+      }
+    },
+    {
+      "elo": 600,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 600,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 130,
+        "good": 390,
+        "inaccuracy": 235,
+        "mistake": 245,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 130,
+        "good": 390,
+        "inaccuracy": 450,
+        "mistake": 30,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.4740199999999985,
+      "referenceLoss": 0.45192000000000065,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d2d3": 41,
+        "b1c3": 390,
+        "h2h3": 34,
+        "c4b3": 131,
+        "c4e2": 114,
+        "a2a4": 39,
+        "c2c3": 34,
+        "e1g1": 54,
+        "f3e5": 30,
+        "f3d4": 76,
+        "a2a3": 21,
+        "b2b3": 36
+      }
+    },
+    {
+      "elo": 600,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 813,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 187
+      },
+      "referenceCounts": {
+        "best": 813,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 187
+      },
+      "averageEvaluationLoss": 17.251620000000045,
+      "referenceLoss": 17.22848999999996,
+      "guarded": 0,
+      "mateOne": 0.813,
+      "moves": {
+        "d1d8": 813,
+        "f2f4": 164,
+        "d1d7": 3,
+        "d1a4": 3,
+        "g2g3": 2,
+        "h2h3": 8,
+        "g1f1": 2,
+        "d1e1": 1,
+        "d1c1": 2,
+        "g2g4": 1,
+        "d1a1": 1
+      }
+    },
+    {
+      "elo": 600,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 664,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 213,
+        "blunder": 123
+      },
+      "referenceCounts": {
+        "best": 877,
+        "good": 97,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 26
+      },
+      "averageEvaluationLoss": 0.7138800000000048,
+      "referenceLoss": 0.15998000000000145,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 664,
+        "h2h3": 213,
+        "f2f3": 97,
+        "g2g4": 8,
+        "f2f4": 13,
+        "h2h4": 5
+      }
+    },
+    {
+      "elo": 600,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.018600000000001587,
+      "referenceLoss": 0.018600000000001587,
+      "guarded": 0,
+      "mateOne": 0.814,
+      "moves": {
+        "g6g8": 209,
+        "g6d6": 21,
+        "g6h5": 200,
+        "g6h6": 216,
+        "g6g7": 189,
+        "g6g1": 26,
+        "g6f6": 27,
+        "g6c6": 20,
+        "g6g3": 29,
+        "g6g5": 25,
+        "g6e6": 25,
+        "g6g4": 13
+      }
+    },
+    {
+      "elo": 600,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.06009999999999659,
+      "referenceLoss": 0.06009999999999659,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2d2": 77,
+        "c2f5": 86,
+        "c2b1": 70,
+        "c2c5": 82,
+        "c6c7": 104,
+        "c2b2": 76,
+        "c2b3": 75,
+        "c2a4": 107,
+        "c2g2": 90,
+        "c2h7": 74,
+        "c2f2": 84,
+        "c2c3": 75
+      }
+    },
+    {
+      "elo": 600,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.007779999999999878,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 186,
+        "e3f3": 222,
+        "e3f2": 194,
+        "e3e2": 206,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 600,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 861,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 139
+      },
+      "referenceCounts": {
+        "best": 861,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 139
+      },
+      "averageEvaluationLoss": 0.8071600000000001,
+      "referenceLoss": 0.973,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 861,
+        "b1b6": 21,
+        "b1b7": 15,
+        "b1b4": 28,
+        "b1b5": 21,
+        "b1b3": 15,
+        "b1b8": 20,
+        "b1b2": 19
+      }
+    },
+    {
+      "elo": 600,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 814,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 186
+      },
+      "referenceCounts": {
+        "best": 814,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 186
+      },
+      "averageEvaluationLoss": 17.937450000000037,
+      "referenceLoss": 18.02237000000004,
+      "guarded": 0,
+      "mateOne": 0.814,
+      "moves": {
+        "d8h4": 814,
+        "d7d5": 174,
+        "f8c5": 2,
+        "c7c6": 2,
+        "f8e7": 1,
+        "h7h5": 4,
+        "h7h6": 2,
+        "b8c6": 1
+      }
+    },
+    {
+      "elo": 800,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 213,
+        "good": 482,
+        "inaccuracy": 305,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 261,
+        "good": 402,
+        "inaccuracy": 337,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2766200000000002,
+      "referenceLoss": 0.30681999999999954,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "a2a4": 155,
+        "b1c3": 110,
+        "e2e4": 46,
+        "b2b3": 150,
+        "h2h3": 105,
+        "d2d4": 35,
+        "a2a3": 82,
+        "c2c3": 100,
+        "g1f3": 48,
+        "c2c4": 37,
+        "g2g3": 85,
+        "e2e3": 47
+      }
+    },
+    {
+      "elo": 800,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 188,
+        "good": 812,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 694,
+        "good": 306,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.20535999999999976,
+      "referenceLoss": 0.11216000000000013,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d4f3": 76,
+        "f1d3": 108,
+        "d4b3": 102,
+        "f2f4": 60,
+        "c1e3": 60,
+        "f2f3": 77,
+        "h2h3": 96,
+        "a2a4": 97,
+        "f1e2": 86,
+        "g2g3": 77,
+        "f1c4": 93,
+        "c1g5": 68
+      }
+    },
+    {
+      "elo": 800,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 203,
+        "good": 797,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 172,
+        "good": 828,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.19098999999999935,
+      "referenceLoss": 0.20331999999999945,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 132,
+        "a2a3": 31,
+        "f3e5": 28,
+        "c2c3": 120,
+        "d3e2": 146,
+        "g1h1": 126,
+        "a1c1": 21,
+        "d1e2": 42,
+        "a2a4": 45,
+        "c2c4": 36,
+        "h2h3": 137,
+        "a1b1": 136
+      }
+    },
+    {
+      "elo": 800,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 641,
+        "good": 0,
+        "inaccuracy": 314,
+        "mistake": 0,
+        "blunder": 45
+      },
+      "referenceCounts": {
+        "best": 641,
+        "good": 0,
+        "inaccuracy": 314,
+        "mistake": 0,
+        "blunder": 45
+      },
+      "averageEvaluationLoss": 0.3749599999999988,
+      "referenceLoss": 0.29802999999999946,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e2a6": 641,
+        "e5f7": 4,
+        "d5e6": 314,
+        "e5g6": 3,
+        "c3d1": 8,
+        "g2h3": 7,
+        "e5d7": 6,
+        "c3b5": 7,
+        "d2c1": 4,
+        "h1g1": 3,
+        "d5d6": 2,
+        "g2g4": 1
+      }
+    },
+    {
+      "elo": 800,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 195,
+        "good": 501,
+        "inaccuracy": 304,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 195,
+        "good": 755,
+        "inaccuracy": 50,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2715400000000002,
+      "referenceLoss": 0.2614500000000015,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c1g5": 62,
+        "d1e2": 50,
+        "c4b3": 57,
+        "c4b5": 304,
+        "c3d5": 45,
+        "h2h3": 49,
+        "e1g1": 47,
+        "c3a4": 195,
+        "a1b1": 48,
+        "a2a4": 52,
+        "a2a3": 53,
+        "c1d2": 38
+      }
+    },
+    {
+      "elo": 800,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 800,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 197,
+        "good": 484,
+        "inaccuracy": 176,
+        "mistake": 143,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 197,
+        "good": 484,
+        "inaccuracy": 297,
+        "mistake": 22,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.35770999999999786,
+      "referenceLoss": 0.3709299999999987,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1c3": 484,
+        "c2c3": 29,
+        "c4e2": 63,
+        "c4b3": 80,
+        "e1g1": 86,
+        "f3e5": 22,
+        "f3d4": 111,
+        "a2a4": 35,
+        "h2h3": 23,
+        "b2b3": 27,
+        "d2d3": 25,
+        "a2a3": 15
+      }
+    },
+    {
+      "elo": 800,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 907,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 93
+      },
+      "referenceCounts": {
+        "best": 907,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 93
+      },
+      "averageEvaluationLoss": 8.576619999999993,
+      "referenceLoss": 8.573070000000003,
+      "guarded": 0,
+      "mateOne": 0.907,
+      "moves": {
+        "d1d8": 907,
+        "f2f4": 89,
+        "d1d7": 1,
+        "h2h3": 1,
+        "d1c1": 1,
+        "g1f1": 1
+      }
+    },
+    {
+      "elo": 800,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 804,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 139,
+        "blunder": 57
+      },
+      "referenceCounts": {
+        "best": 943,
+        "good": 51,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 6
+      },
+      "averageEvaluationLoss": 0.38633000000000156,
+      "referenceLoss": 0.09794999999999875,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 804,
+        "h2h3": 139,
+        "f2f3": 51,
+        "f2f4": 4,
+        "h2h4": 1,
+        "g2g4": 1
+      }
+    },
+    {
+      "elo": 800,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.009800000000000836,
+      "referenceLoss": 0.009800000000000836,
+      "guarded": 0,
+      "mateOne": 0.902,
+      "moves": {
+        "g6g8": 237,
+        "g6h6": 233,
+        "g6h5": 221,
+        "g6g7": 211,
+        "g6g3": 12,
+        "g6d6": 14,
+        "g6f6": 15,
+        "g6e6": 15,
+        "g6g4": 7,
+        "g6g1": 16,
+        "g6c6": 9,
+        "g6g5": 10
+      }
+    },
+    {
+      "elo": 800,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.0404999999999977,
+      "referenceLoss": 0.0404999999999977,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2b2": 113,
+        "c2b1": 103,
+        "c2c5": 53,
+        "c6c7": 151,
+        "c2d2": 49,
+        "c2b3": 115,
+        "c2f5": 61,
+        "c2g2": 61,
+        "c2a4": 69,
+        "c2h7": 113,
+        "c2c3": 52,
+        "c2f2": 60
+      }
+    },
+    {
+      "elo": 800,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.007779999999999878,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 187,
+        "e3f3": 222,
+        "e3e2": 206,
+        "e3f2": 193,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 800,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 938,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 62
+      },
+      "referenceCounts": {
+        "best": 938,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 62
+      },
+      "averageEvaluationLoss": 0.36007999999999973,
+      "referenceLoss": 0.434,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 938,
+        "b1b5": 11,
+        "b1b3": 8,
+        "b1b8": 7,
+        "b1b6": 9,
+        "b1b4": 14,
+        "b1b2": 8,
+        "b1b7": 5
+      }
+    },
+    {
+      "elo": 800,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 911,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 89
+      },
+      "referenceCounts": {
+        "best": 911,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 89
+      },
+      "averageEvaluationLoss": 8.576899999999991,
+      "referenceLoss": 8.62041999999999,
+      "guarded": 0,
+      "mateOne": 0.911,
+      "moves": {
+        "d8h4": 911,
+        "d7d5": 88,
+        "h7h5": 1
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 281,
+        "good": 538,
+        "inaccuracy": 181,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 341,
+        "good": 383,
+        "inaccuracy": 276,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.24518000000000006,
+      "referenceLoss": 0.2686600000000001,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h2h3": 94,
+        "b1c3": 121,
+        "e2e4": 64,
+        "b2b3": 92,
+        "g2g3": 107,
+        "c2c3": 126,
+        "a2a4": 89,
+        "d2d4": 44,
+        "e2e3": 59,
+        "g1f3": 67,
+        "c2c4": 47,
+        "a2a3": 90
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 252,
+        "good": 748,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 703,
+        "good": 297,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.19347999999999976,
+      "referenceLoss": 0.10752000000000024,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d4f3": 72,
+        "f1d3": 99,
+        "d4b3": 93,
+        "f2f4": 75,
+        "c1e3": 84,
+        "f2f3": 70,
+        "h2h3": 87,
+        "a2a4": 91,
+        "c1g5": 93,
+        "f1e2": 84,
+        "g2g3": 72,
+        "f1c4": 80
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 278,
+        "good": 722,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 232,
+        "good": 768,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.1770599999999995,
+      "referenceLoss": 0.19081999999999946,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 119,
+        "a2a3": 46,
+        "f3e5": 40,
+        "c2c3": 103,
+        "d3e2": 133,
+        "g1h1": 113,
+        "a1c1": 33,
+        "d1e2": 50,
+        "a2a4": 58,
+        "c2c4": 51,
+        "a1b1": 126,
+        "h2h3": 128
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 778,
+        "good": 0,
+        "inaccuracy": 203,
+        "mistake": 0,
+        "blunder": 19
+      },
+      "referenceCounts": {
+        "best": 778,
+        "good": 0,
+        "inaccuracy": 203,
+        "mistake": 0,
+        "blunder": 19
+      },
+      "averageEvaluationLoss": 0.20360000000000072,
+      "referenceLoss": 0.15815999999999963,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e2a6": 778,
+        "d5e6": 203,
+        "g2h3": 5,
+        "e5d7": 4,
+        "e5g6": 2,
+        "c3b5": 2,
+        "c3d1": 3,
+        "e5f7": 1,
+        "d2c1": 2
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 247,
+        "good": 568,
+        "inaccuracy": 185,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 247,
+        "good": 694,
+        "inaccuracy": 59,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2374999999999996,
+      "referenceLoss": 0.243160000000001,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c3a4": 247,
+        "a2a4": 59,
+        "d1e2": 59,
+        "c4b5": 185,
+        "c3d5": 45,
+        "e1g1": 57,
+        "c1g5": 76,
+        "a1b1": 51,
+        "c4b3": 57,
+        "a2a3": 64,
+        "h2h3": 60,
+        "c1d2": 40
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 279,
+        "good": 511,
+        "inaccuracy": 144,
+        "mistake": 66,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 279,
+        "good": 511,
+        "inaccuracy": 189,
+        "mistake": 21,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.2711699999999979,
+      "referenceLoss": 0.3083999999999976,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1c3": 511,
+        "d2d3": 15,
+        "e1g1": 121,
+        "c4b3": 43,
+        "a2a3": 16,
+        "f3d4": 158,
+        "a2a4": 29,
+        "f3e5": 21,
+        "c4e2": 23,
+        "c2c3": 27,
+        "h2h3": 17,
+        "b2b3": 19
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 960,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 40
+      },
+      "referenceCounts": {
+        "best": 960,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 40
+      },
+      "averageEvaluationLoss": 3.687999999999998,
+      "referenceLoss": 3.688799999999997,
+      "guarded": 0,
+      "mateOne": 0.96,
+      "moves": {
+        "d1d8": 960,
+        "f2f4": 40
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 901,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 84,
+        "blunder": 15
+      },
+      "referenceCounts": {
+        "best": 985,
+        "good": 14,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 1
+      },
+      "averageEvaluationLoss": 0.18181999999999993,
+      "referenceLoss": 0.07939999999999879,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 901,
+        "f2f3": 14,
+        "h2h3": 84,
+        "f2f4": 1
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.0027000000000002304,
+      "referenceLoss": 0.0027000000000002304,
+      "guarded": 0,
+      "mateOne": 0.973,
+      "moves": {
+        "g6g8": 250,
+        "g6h6": 255,
+        "g6h5": 234,
+        "g6g7": 234,
+        "g6g3": 6,
+        "g6d6": 5,
+        "g6e6": 5,
+        "g6g5": 3,
+        "g6g1": 3,
+        "g6c6": 2,
+        "g6f6": 2,
+        "g6g4": 1
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.025799999999998532,
+      "referenceLoss": 0.025799999999998532,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2b2": 137,
+        "c2b1": 137,
+        "c2c5": 36,
+        "c6c7": 182,
+        "c2b3": 146,
+        "c2g2": 39,
+        "c2a4": 50,
+        "c2h7": 140,
+        "c2f5": 34,
+        "c2c3": 30,
+        "c2f2": 39,
+        "c2d2": 30
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.007779999999999878,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 189,
+        "e3f3": 222,
+        "e3e2": 205,
+        "e3f2": 192,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 972,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 28
+      },
+      "referenceCounts": {
+        "best": 972,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 28
+      },
+      "averageEvaluationLoss": 0.16261999999999996,
+      "referenceLoss": 0.196,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 972,
+        "b1b5": 5,
+        "b1b4": 6,
+        "b1b2": 5,
+        "b1b6": 5,
+        "b1b3": 4,
+        "b1b7": 1,
+        "b1b8": 2
+      }
+    },
+    {
+      "elo": 1000,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 972,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 28
+      },
+      "referenceCounts": {
+        "best": 972,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 28
+      },
+      "averageEvaluationLoss": 2.69808,
+      "referenceLoss": 2.71208,
+      "guarded": 0,
+      "mateOne": 0.972,
+      "moves": {
+        "d8h4": 972,
+        "d7d5": 28
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 370,
+        "good": 536,
+        "inaccuracy": 94,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 406,
+        "good": 362,
+        "inaccuracy": 232,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.21510000000000004,
+      "referenceLoss": 0.23775000000000043,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h2h3": 95,
+        "e2e4": 83,
+        "b2b3": 55,
+        "g1f3": 84,
+        "g2g3": 106,
+        "c2c3": 130,
+        "b1c3": 123,
+        "a2a3": 82,
+        "d2d4": 60,
+        "e2e3": 73,
+        "c2c4": 70,
+        "a2a4": 39
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 329,
+        "good": 671,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 705,
+        "good": 295,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.1785399999999999,
+      "referenceLoss": 0.1031600000000004,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d4f3": 65,
+        "f1d3": 88,
+        "d4b3": 84,
+        "f2f4": 96,
+        "c1e3": 101,
+        "f2f3": 60,
+        "h2h3": 79,
+        "a2a4": 79,
+        "c1g5": 132,
+        "f1e2": 74,
+        "g2g3": 68,
+        "f1c4": 74
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 381,
+        "good": 619,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 324,
+        "good": 676,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.15799999999999967,
+      "referenceLoss": 0.17232999999999965,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 98,
+        "a2a3": 57,
+        "f3e5": 61,
+        "d3e2": 109,
+        "g1h1": 93,
+        "c2c3": 94,
+        "a1c1": 50,
+        "d1e2": 64,
+        "a2a4": 76,
+        "c2c4": 73,
+        "a1b1": 111,
+        "h2h3": 114
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 888,
+        "good": 0,
+        "inaccuracy": 108,
+        "mistake": 0,
+        "blunder": 4
+      },
+      "referenceCounts": {
+        "best": 888,
+        "good": 0,
+        "inaccuracy": 108,
+        "mistake": 0,
+        "blunder": 4
+      },
+      "averageEvaluationLoss": 0.0855600000000001,
+      "referenceLoss": 0.06144999999999991,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e2a6": 888,
+        "d5e6": 108,
+        "c3d1": 1,
+        "e5g6": 1,
+        "c3b5": 1,
+        "d2c1": 1
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 343,
+        "good": 563,
+        "inaccuracy": 94,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 343,
+        "good": 597,
+        "inaccuracy": 60,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.19532999999999942,
+      "referenceLoss": 0.21071000000000004,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c3a4": 343,
+        "a2a4": 61,
+        "d1e2": 60,
+        "a2a3": 63,
+        "c3d5": 38,
+        "e1g1": 62,
+        "c1g5": 81,
+        "c4b3": 57,
+        "c4b5": 94,
+        "c1d2": 34,
+        "a1b1": 49,
+        "h2h3": 58
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 355,
+        "good": 534,
+        "inaccuracy": 92,
+        "mistake": 19,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 355,
+        "good": 534,
+        "inaccuracy": 93,
+        "mistake": 18,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.19960999999999893,
+      "referenceLoss": 0.2541199999999972,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1c3": 534,
+        "e1g1": 152,
+        "a2a4": 21,
+        "a2a3": 11,
+        "f3d4": 203,
+        "c2c3": 19,
+        "f3e5": 18,
+        "h2h3": 8,
+        "c4b3": 9,
+        "d2d3": 7,
+        "c4e2": 10,
+        "b2b3": 8
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 993,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 7
+      },
+      "referenceCounts": {
+        "best": 993,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 7
+      },
+      "averageEvaluationLoss": 0.6454000000000001,
+      "referenceLoss": 0.6455400000000001,
+      "guarded": 0,
+      "mateOne": 0.993,
+      "moves": {
+        "d1d8": 993,
+        "f2f4": 7
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 975,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 19,
+        "blunder": 6
+      },
+      "referenceCounts": {
+        "best": 994,
+        "good": 6,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.04683999999999997,
+      "referenceLoss": 0.07997999999999868,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 975,
+        "h2h3": 19,
+        "f2f3": 6
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.0007000000000000597,
+      "referenceLoss": 0.0007000000000000597,
+      "guarded": 0,
+      "mateOne": 0.993,
+      "moves": {
+        "g6g8": 256,
+        "g6h6": 261,
+        "g6h5": 236,
+        "g6g7": 240,
+        "g6g3": 1,
+        "g6g5": 2,
+        "g6c6": 1,
+        "g6g1": 2,
+        "g6e6": 1
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.013699999999999221,
+      "referenceLoss": 0.013699999999999221,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2b2": 160,
+        "c2b1": 154,
+        "c2h7": 163,
+        "c6c7": 213,
+        "c2b3": 173,
+        "c2g2": 17,
+        "c2a4": 23,
+        "c2f5": 21,
+        "c2c5": 19,
+        "c2d2": 15,
+        "c2c3": 14,
+        "c2f2": 28
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.0077699999999998786,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 188,
+        "e3f3": 223,
+        "e3e2": 205,
+        "e3f2": 192,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 996,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 4
+      },
+      "referenceCounts": {
+        "best": 996,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 4
+      },
+      "averageEvaluationLoss": 0.023289999999999998,
+      "referenceLoss": 0.028,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 996,
+        "b1b3": 1,
+        "b1b4": 1,
+        "b1b2": 1,
+        "b1b5": 1
+      }
+    },
+    {
+      "elo": 1200,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 995,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 5
+      },
+      "referenceCounts": {
+        "best": 995,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 5
+      },
+      "averageEvaluationLoss": 0.4818,
+      "referenceLoss": 0.4843,
+      "guarded": 0,
+      "mateOne": 0.995,
+      "moves": {
+        "d8h4": 995,
+        "d7d5": 5
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 454,
+        "good": 512,
+        "inaccuracy": 34,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 471,
+        "good": 347,
+        "inaccuracy": 182,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.18859999999999977,
+      "referenceLoss": 0.20853000000000022,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h2h3": 86,
+        "e2e4": 105,
+        "b1c3": 125,
+        "g1f3": 102,
+        "g2g3": 104,
+        "c2c3": 122,
+        "a2a3": 75,
+        "d2d4": 77,
+        "e2e3": 83,
+        "c2c4": 87,
+        "a2a4": 13,
+        "b2b3": 21
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 444,
+        "good": 556,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 699,
+        "good": 301,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.15634999999999966,
+      "referenceLoss": 0.09788000000000048,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "a2a4": 69,
+        "f1d3": 75,
+        "d4f3": 58,
+        "d4b3": 70,
+        "f2f4": 132,
+        "c1e3": 127,
+        "f2f3": 50,
+        "c1g5": 185,
+        "h2h3": 60,
+        "f1e2": 57,
+        "g2g3": 56,
+        "f1c4": 61
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 476,
+        "good": 524,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 400,
+        "good": 600,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.14077999999999985,
+      "referenceLoss": 0.15725999999999968,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 87,
+        "a2a3": 76,
+        "f3e5": 87,
+        "d3e2": 96,
+        "d1e2": 73,
+        "c2c3": 77,
+        "a1c1": 60,
+        "c2c4": 92,
+        "g1h1": 78,
+        "a2a4": 88,
+        "a1b1": 98,
+        "h2h3": 88
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 955,
+        "good": 0,
+        "inaccuracy": 45,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 955,
+        "good": 0,
+        "inaccuracy": 45,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.029249999999999974,
+      "referenceLoss": 0.019799999999999998,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e2a6": 955,
+        "d5e6": 45
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 454,
+        "good": 512,
+        "inaccuracy": 34,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 454,
+        "good": 498,
+        "inaccuracy": 48,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.1536799999999995,
+      "referenceLoss": 0.17347999999999994,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c3a4": 454,
+        "a2a4": 52,
+        "d1e2": 48,
+        "a2a3": 52,
+        "c1g5": 75,
+        "c3d5": 43,
+        "e1g1": 71,
+        "c4b5": 34,
+        "c1d2": 30,
+        "a1b1": 42,
+        "h2h3": 50,
+        "c4b3": 49
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 445,
+        "good": 515,
+        "inaccuracy": 33,
+        "mistake": 7,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 445,
+        "good": 515,
+        "inaccuracy": 32,
+        "mistake": 8,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.15262000000000045,
+      "referenceLoss": 0.19644999999999765,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1c3": 515,
+        "e1g1": 195,
+        "f3d4": 250,
+        "a2a4": 9,
+        "a2a3": 3,
+        "c4b3": 2,
+        "b2b3": 1,
+        "c2c3": 6,
+        "f3e5": 8,
+        "h2h3": 3,
+        "d2d3": 3,
+        "c4e2": 5
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 998,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 2
+      },
+      "referenceCounts": {
+        "best": 998,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 2
+      },
+      "averageEvaluationLoss": 0.1844,
+      "referenceLoss": 0.18444,
+      "guarded": 0,
+      "mateOne": 0.998,
+      "moves": {
+        "d1d8": 998,
+        "f2f4": 2
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 996,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 3,
+        "blunder": 1
+      },
+      "referenceCounts": {
+        "best": 999,
+        "good": 1,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.007519999999999999,
+      "referenceLoss": 0.08000999999999865,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 996,
+        "h2h3": 3,
+        "f2f3": 1
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 1,
+      "moves": {
+        "g6g8": 258,
+        "g6h6": 263,
+        "g6h5": 238,
+        "g6g7": 241
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.003899999999999778,
+      "referenceLoss": 0.003899999999999778,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2b2": 174,
+        "c2b1": 181,
+        "c2h7": 182,
+        "c6c7": 237,
+        "c2b3": 187,
+        "c2g2": 6,
+        "c2a4": 8,
+        "c2c5": 6,
+        "c2f2": 6,
+        "c2d2": 5,
+        "c2c3": 3,
+        "c2f5": 5
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.007749999999999879,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 186,
+        "e3f3": 225,
+        "e3e2": 205,
+        "e3f2": 192,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 1000
+      }
+    },
+    {
+      "elo": 1400,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 999,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 1
+      },
+      "referenceCounts": {
+        "best": 999,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 1
+      },
+      "averageEvaluationLoss": 0.09636,
+      "referenceLoss": 0.09686,
+      "guarded": 0,
+      "mateOne": 0.999,
+      "moves": {
+        "d8h4": 999,
+        "d7d5": 1
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "opening-simple",
+      "iterations": 1000,
+      "counts": {
+        "best": 548,
+        "good": 452,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 529,
+        "good": 324,
+        "inaccuracy": 147,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.16401999999999964,
+      "referenceLoss": 0.1835700000000001,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h2h3": 79,
+        "e2e4": 132,
+        "b1c3": 115,
+        "g1f3": 112,
+        "g2g3": 90,
+        "c2c3": 100,
+        "a2a3": 68,
+        "d2d4": 101,
+        "e2e3": 94,
+        "c2c4": 109
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "opening-complex",
+      "iterations": 1000,
+      "counts": {
+        "best": 544,
+        "good": 456,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 707,
+        "good": 293,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.13692999999999952,
+      "referenceLoss": 0.09154000000000054,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "a2a4": 60,
+        "f1d3": 59,
+        "d4f3": 43,
+        "d4b3": 60,
+        "f2f4": 157,
+        "c1e3": 153,
+        "f2f3": 44,
+        "c1g5": 234,
+        "f1e2": 46,
+        "g2g3": 44,
+        "h2h3": 51,
+        "f1c4": 49
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "quiet-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 560,
+        "good": 440,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 477,
+        "good": 523,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.12487000000000005,
+      "referenceLoss": 0.1414599999999998,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "d3b5": 75,
+        "a2a3": 83,
+        "f3e5": 102,
+        "a1c1": 82,
+        "d3e2": 77,
+        "d1e2": 82,
+        "c2c3": 66,
+        "c2c4": 112,
+        "g1h1": 66,
+        "a2a4": 99,
+        "a1b1": 76,
+        "h2h3": 80
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "tactical-middle",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e2a6": 1000
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "several-good",
+      "iterations": 1000,
+      "counts": {
+        "best": 547,
+        "good": 453,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 547,
+        "good": 415,
+        "inaccuracy": 38,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.12163999999999969,
+      "referenceLoss": 0.1425799999999997,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c3a4": 547,
+        "d1e2": 38,
+        "a2a3": 42,
+        "c1g5": 72,
+        "a2a4": 50,
+        "e1g1": 70,
+        "c1d2": 28,
+        "a1b1": 35,
+        "h2h3": 45,
+        "c4b3": 36,
+        "c3d5": 37
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "only-best",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "h1g2": 1000
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "obvious-tactic",
+      "iterations": 1000,
+      "counts": {
+        "best": 531,
+        "good": 469,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 531,
+        "good": 469,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.12032000000000129,
+      "referenceLoss": 0.15007999999999821,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1c3": 469,
+        "e1g1": 221,
+        "f3d4": 310
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "winning",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 1,
+      "moves": {
+        "d1d8": 1000
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "losing",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0.07999999999999866,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "g2g3": 1000
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "mate-one",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 1,
+      "moves": {
+        "g6g8": 258,
+        "g6h6": 263,
+        "g6h5": 238,
+        "g6g7": 241
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "mate-two",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "c2b2": 179,
+        "c2b1": 187,
+        "c2h7": 190,
+        "c6c7": 249,
+        "c2b3": 195
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "pawn-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0.00773999999999988,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "e3d2": 185,
+        "e3f3": 226,
+        "e3e2": 205,
+        "e3f2": 192,
+        "e3d3": 192
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "rook-ending",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 0,
+      "moves": {
+        "b1g1": 1000
+      }
+    },
+    {
+      "elo": 1600,
+      "position": "black-tactical",
+      "iterations": 1000,
+      "counts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "referenceCounts": {
+        "best": 1000,
+        "good": 0,
+        "inaccuracy": 0,
+        "mistake": 0,
+        "blunder": 0
+      },
+      "averageEvaluationLoss": 0,
+      "referenceLoss": 0,
+      "guarded": 0,
+      "mateOne": 1,
+      "moves": {
+        "d8h4": 1000
+      }
+    }
+  ],
+  "performance": {
+    "newAverageMs": 106.8121835714286,
+    "newMaxMs": 235.9693259999999
+  }
+}

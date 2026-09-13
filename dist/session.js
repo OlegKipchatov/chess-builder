@@ -1,11 +1,14 @@
-import {stockfishProfile} from './strength.js?v=14';
-import {ratingSnapshot} from './rating.js?v=14';
-import {Chess} from './chess.js?v=14';
-import {newGame} from './state.js?v=14';
+import {createDifficultyProfile} from './difficulty-model.js?v=15';
+import {ratingSnapshot} from './rating.js?v=15';
+import {Chess} from './chess.js?v=15';
+import {newGame} from './state.js?v=15';
 export const SCREENS = ['profile','collection','play','chests','archive','statistics','calendar','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
-export const createStartedGame = (state,rng=Math.random) => ({...newGame('bot','adaptive'),started:true,engineProfile:stockfishProfile(ratingSnapshot(state.rating).opponent),playerColor:rng()<0.5?'w':'b',rating:ratingSnapshot(state.rating),equipped:structuredClone(state.equipped)});
+export const createStartedGame = (state,rng=Math.random) => {
+  const playerColor=rng()<0.5?'w':'b',engineProfile=createDifficultyProfile(state.rating.value,rng);
+  return {...newGame('bot','adaptive'),started:true,engineProfile,playerColor,rating:{...ratingSnapshot(state.rating),opponent:engineProfile.targetElo},equipped:structuredClone(state.equipped)};
+};
 export const updatePreferences = (state, game, settings) => {
   if (isMatchActive(state,game)) return null;
   const mode = settings.mode === 'local' ? 'local' : 'bot';
