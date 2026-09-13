@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {skillFor,targetFor,createDifficultyProfile,probabilitiesFor,qualityFor,selectCandidate,seededRandom,mateProbability} from '../dist/difficulty-model.js';
+import {skillFor,targetFor,createDifficultyProfile,probabilitiesFor,qualityFor,selectCandidate,seededRandom,mateProbability,guardFor} from '../dist/difficulty-model.js';
 import {normalizeScore,parseInfo,completeCandidates,prepareCandidates} from '../dist/candidate-analysis.js';
 import {Chess} from '../dist/chess.js';
 import {DIFFICULTY} from '../dist/difficulty-config.js';
 test('Облегчение повышает вероятность ошибок и пропуска мата на 15%, сохраняя пределы',()=>{
- const previous={...DIFFICULTY,errorMultiplier:1};
+ const current={...DIFFICULTY,noviceErrors:{...DIFFICULTY.noviceErrors,maxBonus:0}},previous={...current,errorMultiplier:1};
  for(const elo of [600,800,1000,1200,1400]){
-  const before=probabilitiesFor(elo,{},previous),after=probabilitiesFor(elo);
+  const before=probabilitiesFor(elo,{},previous),after=probabilitiesFor(elo,{},current);
   for(const quality of ['inaccuracy','mistake','blunder'])assert.ok(Math.abs(after[quality]/before[quality]-1.15)<1e-12);
   for(const distance of [1,2])assert.ok(Math.abs((1-mateProbability(distance,elo))/(1-mateProbability(distance,elo,previous))-1.15)<1e-10);
  }
@@ -22,7 +22,7 @@ test('Ослабленная защита оставляет больше оце
  const pool=[{move:'safe',evaluationLoss:0,guardWeight:1},{move:'hanging-rook',evaluationLoss:2,guardWeight:.15}];
  const choose=(rescueProbability,ticket)=>{
   const values=[.999,.5,ticket,.5];
-  return selectCandidate(pool,600,{},()=>values.shift(),{...DIFFICULTY,guard:{...DIFFICULTY.guard,rescueProbability}}).move;
+  return selectCandidate(pool,600,{},()=>values.shift(),{...DIFFICULTY,guard:{...DIFFICULTY.guard,rescueProbability,noviceRescue:rescueProbability}}).move;
  };
  assert.equal(choose(.85,.25),'safe');
  assert.equal(choose(DIFFICULTY.guard.rescueProbability,.25),'hanging-rook');
@@ -77,11 +77,24 @@ test('Защита от пустой категории не заставляе�
  const pool=[{move:'safe',evaluationLoss:0,guardWeight:1},{move:'queen-drop',evaluationLoss:7,guardWeight:.15}];
  const rng=seededRandom(9);let drops=0;
  for(let i=0;i<10000;i++)drops+=selectCandidate(pool,400,{},rng).move==='queen-drop'?1:0;
- // Even with only one safe move and one queen blunder, more than 90% of choices stay safe.
- assert.ok(drops<900);assert.ok(drops>0);
+ // Artificial pool: guard must still reduce drops versus disabling rescue entirely.
+ const unguardedRng=seededRandom(9);let unguardedDrops=0;
+ const config={...DIFFICULTY,guard:{...DIFFICULTY.guard,noviceRescue:0,rescueProbability:0}};
+ for(let i=0;i<10000;i++)unguardedDrops+=selectCandidate(pool,400,{},unguardedRng,config).move==='queen-drop'?1:0;
+ assert.ok(drops<unguardedDrops*.9);assert.ok(drops>0);
 });
 test('Смешанные повторные PV одной глубины не образуют ложный комплект',()=>{
  const row=(index,move)=>({depth:5,index,move});
  const result=completeCandidates([row(1,'e2e4'),row(2,'d2d4'),row(1,'d2d4'),row(2,'d2d4')],2);
  assert.deepEqual(result.map(r=>r.move),['e2e4','d2d4']);
+});
+
+test('Защита плавно усиливается с Elo и достигает прежней силы на 1200',()=>{
+ assert.ok(Math.abs(guardFor(600).rescueProbability-.3)<1e-12);
+ assert.ok(Math.abs(guardFor(600).weight-.4875)<1e-12);
+ let previous=guardFor(400);
+ for(let elo=401;elo<=1600;elo++){
+  const next=guardFor(elo);assert.ok(next.weight<=previous.weight+1e-12);assert.ok(next.rescueProbability>=previous.rescueProbability-1e-12);previous=next;
+ }
+ assert.ok(Math.abs(guardFor(1200).rescueProbability-.6)<1e-12);
 });

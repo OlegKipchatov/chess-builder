@@ -1,8 +1,8 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=17';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=17';
-import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=17';
-import {Chess} from './chess.js?v=17';
-import {stockfishProfile,validEngineProfile} from './strength.js?v=17';
+import {DIFFICULTY as C} from './difficulty-config.js?v=18';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=18';
+import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=18';
+import {Chess} from './chess.js?v=18';
+import {stockfishProfile,validEngineProfile} from './strength.js?v=18';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -63,4 +63,4 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
  watchdog(C.initializationMs);send('uci');return client;
 };
 
-export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=17',{type:'module'}));
+export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=18',{type:'module'}));

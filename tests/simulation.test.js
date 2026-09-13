@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {simulate} from '../scripts/simulation/simulate.mjs';
 import {DIFFICULTY} from '../dist/difficulty-config.js';
+import {previousConfiguration,compareSelection} from '../scripts/simulation/novice-selection.mjs';
 const fixtures=JSON.parse(readFileSync(new URL('../docs/ai/results/candidates.json',import.meta.url))).positions;
 test('Облегчение заметно увеличивает loss низких Elo без всплеска искусственных зевков',()=>{
  for(const botElo of [600,800,1000]){
   const measure=config=>fixtures.map(position=>simulate({position,botElo,iterations:3000,config}));
-  const before=measure({...DIFFICULTY,errorMultiplier:1}),after=measure(DIFFICULTY);
+  const before=measure({...previousConfiguration,errorMultiplier:1}),after=measure(previousConfiguration);
   const loss=rows=>rows.reduce((sum,r)=>sum+r.referenceLoss,0)/rows.length;
   const ratio=loss(after)/loss(before);
   assert.ok(ratio>1.08&&ratio<1.20,`Unexpected softening at ${botElo}: ${ratio}`);
@@ -28,5 +29,14 @@ test('Реальные MultiPV fixtures: loss и серьёзные ошибки
    if(botElo===600)assert.ok(good<.75,'Слабый бот слишком близок к идеальному');
    previous={loss,reference,good,mistake,blunder,cpLoss};
   }
+ }
+});
+
+test('Новая настройка слабее опубликованной на низких Elo без постоянных потерь крупных фигур',()=>{
+ for(const seed of [20260912,7,91])for(const elo of [600,800,1000]){
+  const {before,after}=compareSelection(fixtures,elo,3000,seed);
+  assert.ok(after.cpLoss>before.cpLoss*1.02,`CP loss ${elo}, seed ${seed}`);
+  assert.ok(after.bestGood<before.bestGood,`Quality ${elo}, seed ${seed}`);
+  assert.ok(after.guardedRate<.03,`Major-piece drops ${elo}, seed ${seed}`);
  }
 });

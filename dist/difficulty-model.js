@@ -1,4 +1,4 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=17';
+import {DIFFICULTY as C} from './difficulty-config.js?v=18';
 /** @typedef {()=>number} RandomSource */
 export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};
@@ -16,7 +16,8 @@ export const probabilitiesFor = (elo,context={},config=C) => {
   const skill=skillFor(elo,config),complexity=clamp(context.complexity??1,config.complexity.min,config.complexity.max);
   const phase=config.phase[context.phase||'middlegame'];
   const win=context.bestEvaluation>config.winning.evaluation?1+config.winning.maxBonus*(1-clamp((elo-config.winning.fadeStart)/(config.winning.fadeEnd-config.winning.fadeStart),0,1)):1;
-  const errors=Object.fromEntries(Object.entries(config.errors).map(([name,p])=>[name,p.max*(1-skill)**p.power*complexity*phase*win*config.errorMultiplier]));
+  const novice=1+config.noviceErrors.maxBonus*(1-clamp((elo-config.minHumanElo)/(config.noviceErrors.fadeElo-config.minHumanElo),0,1))**config.noviceErrors.power;
+  const errors=Object.fromEntries(Object.entries(config.errors).map(([name,p])=>[name,p.max*(1-skill)**p.power*complexity*phase*win*config.errorMultiplier*novice]));
   const mass=Object.values(errors).reduce((sum,p)=>sum+p,0),scale=mass>config.maxErrorMass?config.maxErrorMass/mass:1;
   for(const key of Object.keys(errors))errors[key]*=scale;
   const remaining=1-Object.values(errors).reduce((sum,p)=>sum+p,0),best=Math.min(remaining,config.best.base+config.best.gain*skill**config.best.power);
@@ -27,6 +28,10 @@ export const weightedChoice = (items,weight,rng) => {
   return items.find((item,index)=>(ticket-=weights[index])<0)||items.at(-1);
 };
 export const mateProbability = (distance,elo,config=C) => {const p=distance===1?config.mate.one:config.mate.two;return clamp(1-(1-p.min)*(1-skillFor(elo,config))**p.power*config.errorMultiplier,0,1);};
+export const guardFor = (elo,config=C) => {
+  const progress=clamp((elo-config.minHumanElo)/(config.guard.fadeElo-config.minHumanElo),0,1);
+  return {weight:config.guard.noviceWeight+(config.guard.weight-config.guard.noviceWeight)*progress,rescueProbability:config.guard.noviceRescue+(config.guard.rescueProbability-config.guard.noviceRescue)*progress};
+};
 /** Pure decision over evaluated, legal candidates; no engine calls and no random legal fallback. */
 export const selectCandidate = (candidates,elo,context={},rng=Math.random,config=C) => {
   if(!candidates.length)throw Error('No evaluated legal candidates');
@@ -42,9 +47,9 @@ export const selectCandidate = (candidates,elo,context={},rng=Math.random,config
   for(let index=order.indexOf(quality);index>=0&&!eligible.length;index--)eligible=pool.filter(c=>qualityFor(c.evaluationLoss,config)===order[index]);
   // Excluding a recognised mate can leave only lower-quality candidates. Select the best evaluated remainder, never an unevaluated move.
   if(!eligible.length){const best=Math.min(...pool.map(c=>c.evaluationLoss));eligible=pool.filter(c=>c.evaluationLoss===best);}
-  const minimum=Math.min(...eligible.map(c=>c.evaluationLoss)),temperature=config.temperature.min+config.temperature.gain*skillFor(elo,config);
-  const chosen=weightedChoice(eligible,c=>Math.exp(-(c.evaluationLoss-minimum)*temperature)*(c.guardWeight??1),rng);
-  if((chosen.guardWeight??1)<1&&rng()>1-config.guard.rescueProbability){
+  const minimum=Math.min(...eligible.map(c=>c.evaluationLoss)),temperature=config.temperature.min+config.temperature.gain*skillFor(elo,config)**config.temperature.power,guard=guardFor(elo,config);
+  const chosen=weightedChoice(eligible,c=>Math.exp(-(c.evaluationLoss-minimum)*temperature)*((c.guardWeight??1)<1?guard.weight:1),rng);
+  if((chosen.guardWeight??1)<1&&rng()>1-guard.rescueProbability){
     const safer=pool.filter(c=>c.evaluationLoss<chosen.evaluationLoss&&(c.guardWeight??1)===1);
     if(safer.length){const bestLoss=Math.min(...safer.map(c=>c.evaluationLoss));return weightedChoice(safer,c=>Math.exp(-(c.evaluationLoss-bestLoss)*temperature),rng);}
   }

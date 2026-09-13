@@ -1,16 +1,16 @@
-import {targetFor as opponentFor} from './difficulty-model.js?v=17';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=17';
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=17';
-import {capturePoints, completedMatch, materialBalance} from './archive.js?v=17';
-import {settleRating, signedDelta} from './rating.js?v=17';
-import {Chess} from './chess.js?v=17';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=17';
-import {openChest, craftItem} from './economy.js?v=17';
-import {KEY, loadState, initialState, newGame} from './state.js?v=17';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=17';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=17';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=17';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=17';
+import {targetFor as opponentFor} from './difficulty-model.js?v=18';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=18';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=18';
+import {capturePoints, completedMatch, materialBalance} from './archive.js?v=18';
+import {settleRating, signedDelta} from './rating.js?v=18';
+import {Chess} from './chess.js?v=18';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=18';
+import {openChest, craftItem} from './economy.js?v=18';
+import {KEY, loadState, initialState, newGame} from './state.js?v=18';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=18';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=18';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=18';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=18';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -206,7 +206,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=17',{type:'module'});
+    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=18',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure();return;}
