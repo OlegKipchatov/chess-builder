@@ -1,8 +1,8 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=18';
-import {validEngineProfile} from './strength.js?v=18';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=18';
-import {Chess} from './chess.js?v=18';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=18';
+import {initialActivity, normalizeActivity} from './activity.js?v=19';
+import {validEngineProfile} from './strength.js?v=19';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=19';
+import {Chess} from './chess.js?v=19';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=19';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
@@ -47,7 +47,7 @@ export const migrateState = input => {
     if(next.game.started && !next.game.rating)next.game.rating=ratingSnapshot(next.rating);
   }
   next.archive = (Array.isArray(input.archive)?input.archive:[]).filter(entry=>typeof entry?.id==='string'&&typeof entry.pgn==='string').map(entry=>({
-    id:entry.id,pgn:entry.pgn,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
+    id:entry.id,pgn:entry.pgn,engineProfile:validEngineProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
     mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
     result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),
     playerRating:integer(entry.playerRating,1000),opponentRating:Number.isSafeInteger(entry.opponentRating)?entry.opponentRating:null,

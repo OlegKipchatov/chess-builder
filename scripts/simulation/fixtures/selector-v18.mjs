@@ -1,4 +1,5 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=19';
+// Frozen published selector for offline comparison only. Never imported by the app.
+import {DIFFICULTY as C} from '../../../dist/difficulty-config.js';
 /** @typedef {()=>number} RandomSource */
 export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};
@@ -33,7 +34,6 @@ export const guardFor = (elo,config=C) => {
   return {weight:config.guard.noviceWeight+(config.guard.weight-config.guard.noviceWeight)*progress,rescueProbability:config.guard.noviceRescue+(config.guard.rescueProbability-config.guard.noviceRescue)*progress};
 };
 /** Pure decision over evaluated, legal candidates; no engine calls and no random legal fallback. */
-export const hiddenCandidates = (candidates,config=C) => candidates.filter(c=>c.mate===null&&Number.isFinite(c.shallowLoss)&&c.shallowLoss<=config.perception.maxShallowLoss&&c.evaluationLoss>=config.perception.minHiddenLoss&&c.evaluationLoss<=config.perception.maxHiddenLoss&&c.evaluationLoss-c.shallowLoss>=config.perception.minGap&&(c.guardWeight??1)===1);
 export const selectCandidate = (candidates,elo,context={},rng=Math.random,config=C) => {
   if(!candidates.length)throw Error('No evaluated legal candidates');
   if(candidates.length===1)return candidates[0];
@@ -41,9 +41,7 @@ export const selectCandidate = (candidates,elo,context={},rng=Math.random,config
   const distance=candidates.some(c=>c.mate===1)?1:candidates.some(c=>c.mate===2)?2:null;
   if(distance){
     const mating=candidates.filter(c=>c.mate>0&&c.mate<=distance),other=candidates.filter(c=>!mating.includes(c));
-    const recognized=!other.length||rng()<mateProbability(distance,elo,config);
-    pool=recognized?mating:other;
-    if(!recognized){const best=Math.max(...pool.map(c=>c.evaluation));pool=pool.map(c=>({...c,evaluationLoss:best-c.evaluation}));}
+    pool=!other.length||rng()<mateProbability(distance,elo,config)?mating:other;
   }
   const distribution=probabilitiesFor(elo,context,config),order=['best','good','inaccuracy','mistake','blunder'];
   const quality=weightedChoice(order,name=>distribution[name],rng);let eligible=[];
@@ -51,12 +49,10 @@ export const selectCandidate = (candidates,elo,context={},rng=Math.random,config
   // Excluding a recognised mate can leave only lower-quality candidates. Select the best evaluated remainder, never an unevaluated move.
   if(!eligible.length){const best=Math.min(...pool.map(c=>c.evaluationLoss));eligible=pool.filter(c=>c.evaluationLoss===best);}
   const minimum=Math.min(...eligible.map(c=>c.evaluationLoss)),temperature=config.temperature.min+config.temperature.gain*skillFor(elo,config)**config.temperature.power,guard=guardFor(elo,config);
-  let chosen=weightedChoice(eligible,c=>Math.exp(-(c.evaluationLoss-minimum)*temperature)*((c.guardWeight??1)<1?guard.weight:1),rng);
+  const chosen=weightedChoice(eligible,c=>Math.exp(-(c.evaluationLoss-minimum)*temperature)*((c.guardWeight??1)<1?guard.weight:1),rng);
   if((chosen.guardWeight??1)<1&&rng()>1-guard.rescueProbability){
     const safer=pool.filter(c=>c.evaluationLoss<chosen.evaluationLoss&&(c.guardWeight??1)===1);
-    if(safer.length){const bestLoss=Math.min(...safer.map(c=>c.evaluationLoss));chosen=weightedChoice(safer,c=>Math.exp(-(c.evaluationLoss-bestLoss)*temperature),rng);}
+    if(safer.length){const bestLoss=Math.min(...safer.map(c=>c.evaluationLoss));return weightedChoice(safer,c=>Math.exp(-(c.evaluationLoss-bestLoss)*temperature),rng);}
   }
-  const hidden=!distance?hiddenCandidates(candidates,config).filter(c=>c.evaluationLoss>=chosen.evaluationLoss+config.perception.minGap):[];
-  if(hidden.length&&rng()<config.perception.maxRate*(1-skillFor(elo,config))**config.perception.power)chosen=weightedChoice(hidden,c=>Math.exp(-c.shallowLoss),rng);
-  return candidates.find(c=>c.move===chosen.move);
+  return chosen;
 };

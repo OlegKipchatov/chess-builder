@@ -1,8 +1,8 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=18';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=18';
-import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=18';
-import {Chess} from './chess.js?v=18';
-import {stockfishProfile,validEngineProfile} from './strength.js?v=18';
+import {DIFFICULTY as C} from './difficulty-config.js?v=19';
+import {parseInfo,completeCandidates,prepareCandidates,attachPerception} from './candidate-analysis.js?v=19';
+import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=19';
+import {Chess} from './chess.js?v=19';
+import {stockfishProfile,validEngineProfile} from './strength.js?v=19';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -45,9 +45,8 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
     let analysis=null;
     if(current.humanized){
      const rows=completeCandidates(current.info,current.expected);
-     analysis=prepareCandidates(current.position,rows);
-     if(!analysis.candidates.length)throw Error('Incomplete Stockfish analysis');
-     token=selectCandidate(analysis.candidates,current.profile.effectiveElo,analysis.context,seededRandom(positionSeed(current.profile.seed,current.position.fen()))).move;
+     analysis=attachPerception(prepareCandidates(current.position,rows),completeCandidates(current.info.filter(row=>row.depth<=C.perception.depth),current.expected));
+     if(analysis.candidates.length)token=selectCandidate(analysis.candidates,current.profile.effectiveElo,analysis.context,seededRandom(positionSeed(current.profile.seed,current.position.fen()))).move;
     }
     const durationMs=performance.now()-current.startedAt,analysisOnly=current.analysisOnly;
     if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token))throw Error('Missing bestmove');
@@ -63,4 +62,4 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
  watchdog(C.initializationMs);send('uci');return client;
 };
 
-export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=18',{type:'module'}));
+export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=19',{type:'module'}));

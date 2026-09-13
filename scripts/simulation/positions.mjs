@@ -14,5 +14,9 @@ export const POSITIONS = [
  {id:'mate-two',fen:'k7/8/2K5/8/8/8/2Q5/8 w - - 0 1',purpose:'Ферзь и король против короля: подтверждённый движком мат в два.'},
  {id:'pawn-ending',fen:'8/5k2/4p3/3pPp2/3P1P2/4K3/8/8 w - - 0 40',purpose:'Пешечный эндшпиль, оппозиция и темпы.'},
  {id:'rook-ending',fen:'8/5pk1/6p1/7p/7P/5KP1/r4P2/1R6 w - - 0 40',purpose:'Ладейный эндшпиль: активность, шахи, безопасность пешек.'},
+ {id:'pawn-opposition',fen:'8/4k3/8/4K3/4P3/8/8/8 w - - 0 40',purpose:'Пешечный эндшпиль: потеря темпа при нескольких легальных продолжениях.'},
+ {id:'queen-knight-fork',fen:fromMoves('e4 e5 Nf3 Nc6 Bc4 Nd4 Nxe5 Qg5'),purpose:'Блэкберн: угроза ферзём и продолжения конём, глубокая тактика.'},
+ {id:'pinned-defender',fen:fromMoves('d4 d5 c4 e6 Nc3 Nf6 Bg5 Nbd7 Nf3 c6 e3 Qa5'),purpose:'Связанный конь: внешне естественные ходы развития под давлением.'},
+ {id:'central-fork',fen:fromMoves('e4 e5 Nf3 Nc6 Bc4 Nf6 Nc3 Nxe4'),purpose:'Центральная вилка: взятие коня выглядит естественно, но требует расчёта ответа d5.'},
  {id:'black-tactical',fen:fromMoves('f3 e5 g4'),purpose:'Чёрные могут поставить мат; проверка перспективы оценок.'}
 ];

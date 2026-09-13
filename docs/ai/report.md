@@ -1,3 +1,5 @@
+> Актуальная модель расчёта и экспорт партий: [perception-and-export.md](perception-and-export.md).
+
 > Актуальная настройка низких Elo: [novice-selection.md](novice-selection.md).
 
 > Последующая настройка защиты описана в [guard-softening.md](guard-softening.md).

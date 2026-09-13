@@ -1,16 +1,17 @@
-import {targetFor as opponentFor} from './difficulty-model.js?v=18';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=18';
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=18';
-import {capturePoints, completedMatch, materialBalance} from './archive.js?v=18';
-import {settleRating, signedDelta} from './rating.js?v=18';
-import {Chess} from './chess.js?v=18';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=18';
-import {openChest, craftItem} from './economy.js?v=18';
-import {KEY, loadState, initialState, newGame} from './state.js?v=18';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=18';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=18';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=18';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=18';
+import {exportPgn,sharePgn} from './pgn-export.js?v=19';
+import {targetFor as opponentFor} from './difficulty-model.js?v=19';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=19';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=19';
+import {capturePoints, completedMatch, materialBalance} from './archive.js?v=19';
+import {settleRating, signedDelta} from './rating.js?v=19';
+import {Chess} from './chess.js?v=19';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=19';
+import {openChest, craftItem} from './economy.js?v=19';
+import {KEY, loadState, initialState, newGame} from './state.js?v=19';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=19';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=19';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=19';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=19';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -20,6 +21,8 @@ try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, toastTimer, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
+let lastBotError=null;
+const exportViewedMatch = () => sharePgn(exportPgn(viewedGame(),viewedConfig(),!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null)).catch(()=>toast('Не удалось сохранить PGN. Попробуйте ещё раз.'));
 let pendingActivity=null;
 let displayMatch=null, pendingResult=false, replayRunning=false, replayTimer=null;
 const viewedGame = () => displayMatch?.game||game;
@@ -185,9 +188,10 @@ const render = () => {
   $('#pity-progress').value=state.pity;
 };
 const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
-const botFailure = () => {
+const botFailure = (error) => {
+  lastBotError={message:error?.message||String(error||'Unknown engine error'),fen:game.fen()};
   stopBot();renderGameInfo();
-  showModal('<h2>Компьютер не смог ответить</h2><p>Партия сохранена. Повторите расчёт. Если движок только обновился, перезагрузите приложение для его активации.</p><button class="quiet" data-retry-bot>Повторить расчёт</button>');
+  showModal('<h2>Компьютер не смог ответить</h2><p>Партия сохранена. Повторите расчёт. Если движок только обновился, перезагрузите приложение для его активации.</p><button class="quiet" data-retry-bot>Повторить расчёт</button><button class="quiet" data-export-pgn>Экспорт PGN</button>');
 };
 const applyMove = async move => {
   if(!active()||animating)return;
@@ -206,17 +210,17 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=18',{type:'module'});
+    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=19',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
-      if(data.error||!data.move){botFailure();return;}
+      if(data.error||!data.move){botFailure(data.error||'Missing engine move');return;}
       busy=false;
       if(animating){pendingBotMove=data.move;return;}
       void applyMove(data.move);
     };
-    worker.onerror=()=>{if(id===taskId)botFailure();};
+    worker.onerror=error=>{if(id===taskId)botFailure(error);};
     worker.postMessage({id,fen:game.fen(),pgn:game.pgn(),engineProfile:state.game.engineProfile,difficulty:state.game.difficulty,rating:state.game.rating?.opponent});
-  } catch {botFailure();}
+  } catch(error) {botFailure(error);}
 };
 const showPromotion = (from,to) => {
   promotion={from,to};
@@ -362,6 +366,7 @@ $('#match-archive').addEventListener('click',event=>{
   reviewCursor=replay.history().length?0:null;selected=null;changeTab('play');render();
 });
 $('#archive-return').onclick=()=>changeTab('archive');
+$('#export-pgn').onclick=exportViewedMatch;
 $('#modal-content').addEventListener('submit',event=>{
   if(active()||event.target.id!=='save-set-form')return;
   event.preventDefault();
@@ -379,6 +384,7 @@ $('#modal-content').addEventListener('click',event=>{
     if(next&&persist(next)){$('#modal').close();render();toast('Предмет создан и добавлен в коллекцию.');}
   }
   if(button.dataset.useReward){useItem(button.dataset.useReward);$('#modal').close();}
+  if(button.hasAttribute('data-export-pgn'))void exportViewedMatch();
   if(button.hasAttribute('data-retry-bot')){$('#modal').close();requestBot();}
 });
 $('#modal').addEventListener('cancel',()=>{promotion=null;selected=null;if(!animating)drawBoard();});

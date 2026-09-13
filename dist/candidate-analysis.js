@@ -1,7 +1,7 @@
 /** @typedef {{move:string,evaluation:number,evaluationLoss:number,mate:number|null,depth:number,guardWeight:number}} EvaluatedCandidate */
-import {Chess} from './chess.js?v=18';
-import {DIFFICULTY as C} from './difficulty-config.js?v=18';
-import {clamp} from './difficulty-model.js?v=18';
+import {Chess} from './chess.js?v=19';
+import {DIFFICULTY as C} from './difficulty-config.js?v=19';
+import {clamp} from './difficulty-model.js?v=19';
 /** UCI scores are relative to the ROOT side to move. At a bot turn rootSide === botSide, including Black. */
 export const normalizeScore = (type,value,rootSide,botSide,config=C) => {
   const sign=rootSide===botSide?1:-1;
@@ -43,4 +43,16 @@ export const prepareCandidates = (game,rows,config=C) => {
   const t=config.complexity;
   const complexity=clamp(1+(legal.length>=t.manyMoves?t.manyBonus:0)+(candidates.filter(c=>c.evaluationLoss<t.equalLoss).length>=t.equalCount?t.equalBonus:0)+(legal.filter(m=>m.captured||/[+#]/.test(m.san)).length>=t.tactics?t.tacticalBonus:0)-(legal.length<=t.forcedMoves?t.forcedDiscount:0),t.min,t.max);
   return {candidates,context:{phase,complexity,bestEvaluation:best,inCheck:game.isCheck(),legalCount:legal.length}};
+};
+
+// Preserve the early snapshot from the same search; compare only CP candidates shared by both depths.
+export const attachPerception = (analysis,rows) => {
+ const cp=rows.filter(row=>row.scoreType==='cp');
+ if(!cp.length||cp.length!==rows.length)return analysis;
+ const best=Math.max(...cp.map(row=>row.scoreValue/100)),byMove=new Map(cp.map(row=>[row.move,row]));
+ for(const candidate of analysis.candidates){
+  const row=byMove.get(candidate.move);
+  if(row&&candidate.mate===null&&row.depth<candidate.depth){candidate.shallowEvaluation=row.scoreValue/100;candidate.shallowLoss=best-candidate.shallowEvaluation;candidate.shallowDepth=row.depth;}
+ }
+ return analysis;
 };

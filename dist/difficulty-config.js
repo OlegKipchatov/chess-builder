@@ -1,5 +1,6 @@
 export const DIFFICULTY = Object.freeze({
   minHumanElo:400,maxHumanElo:1600,targetEloOffset:100,sessionSigma:40,varianceLimit:120,
+  perception:{depth:2,maxShallowLoss:.90,minGap:.50,minHiddenLoss:.90,maxHiddenLoss:3,maxRate:.45,power:2},
   multiPv:32,analysisDepth:10,analysisNodes:500000,
   hashMb:16,watchdogMs:15000,initializationMs:60000,
   thresholds:[0.15,0.40,0.90,1.80],
