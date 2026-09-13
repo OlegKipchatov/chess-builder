@@ -1,17 +1,17 @@
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=20';
-import {targetFor as opponentFor} from './difficulty-model.js?v=20';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=20';
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=20';
-import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=20';
-import {settleRating, signedDelta} from './rating.js?v=20';
-import {Chess} from './chess.js?v=20';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=20';
-import {openChest, craftItem} from './economy.js?v=20';
-import {KEY, loadState, initialState, newGame} from './state.js?v=20';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=20';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=20';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=20';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=20';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=21';
+import {targetFor as opponentFor} from './difficulty-model.js?v=21';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=21';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=21';
+import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=21';
+import {settleRating, signedDelta} from './rating.js?v=21';
+import {Chess} from './chess.js?v=21';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=21';
+import {openChest, craftItem} from './economy.js?v=21';
+import {KEY, loadState, initialState, newGame} from './state.js?v=21';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=21';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=21';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=21';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=21';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -221,7 +221,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=20',{type:'module'});
+    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=21',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure(data.error||'Missing engine move');return;}

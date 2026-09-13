@@ -46,5 +46,5 @@ test('Humanized отправляет один поиск, MultiPV и макси�
  client.postMessage({id:1,fen:new Chess().fen(),engineProfile:profile});worker.onmessage({data:'uciok\nreadyok'});
  assert.ok(commands.includes('setoption name Skill Level value 20'));assert.ok(commands.includes('setoption name UCI_LimitStrength value false'));
  assert.ok(commands.includes('setoption name MultiPV value 20'));assert.equal(commands.filter(c=>c.startsWith('go ')).length,1);
- assert.ok(!commands.some(c=>c.includes('UCI_Elo')));assert.ok(!commands.find(c=>c.startsWith('go ')).includes('movetime'));client.terminate();
+ assert.ok(!commands.some(c=>c.includes('UCI_Elo')));assert.ok(commands.find(c=>c.startsWith('go ')).includes('movetime 2500'));client.terminate();
 });

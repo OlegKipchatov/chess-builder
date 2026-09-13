@@ -1,7 +1,7 @@
 /** @typedef {{move:string,evaluation:number,evaluationLoss:number,mate:number|null,depth:number,guardWeight:number}} EvaluatedCandidate */
-import {Chess} from './chess.js?v=20';
-import {DIFFICULTY as C} from './difficulty-config.js?v=20';
-import {clamp} from './difficulty-model.js?v=20';
+import {Chess} from './chess.js?v=21';
+import {DIFFICULTY as C} from './difficulty-config.js?v=21';
+import {clamp} from './difficulty-model.js?v=21';
 /** UCI scores are relative to the ROOT side to move. At a bot turn rootSide === botSide, including Black. */
 export const normalizeScore = (type,value,rootSide,botSide,config=C) => {
   const sign=rootSide===botSide?1:-1;
