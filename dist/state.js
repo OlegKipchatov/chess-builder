@@ -1,8 +1,8 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=19';
-import {validEngineProfile} from './strength.js?v=19';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=19';
-import {Chess} from './chess.js?v=19';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=19';
+import {initialActivity, normalizeActivity} from './activity.js?v=20';
+import {validEngineProfile} from './strength.js?v=20';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=20';
+import {Chess} from './chess.js?v=20';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=20';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
@@ -37,6 +37,7 @@ export const migrateState = input => {
   next.activity = normalizeActivity(input.activity);
   next.rating = normalizeRating(input.rating);
   next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
+  next.game.engineFailure = typeof input.game?.engineFailure?.fen==='string'&&typeof input.game.engineFailure.message==='string'?{fen:input.game.engineFailure.fen.slice(0,120),message:input.game.engineFailure.message.slice(0,240)}:null;
   next.game.engineProfile = validEngineProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
@@ -47,6 +48,8 @@ export const migrateState = input => {
     if(next.game.started && !next.game.rating)next.game.rating=ratingSnapshot(next.rating);
   }
   next.archive = (Array.isArray(input.archive)?input.archive:[]).filter(entry=>typeof entry?.id==='string'&&typeof entry.pgn==='string').map(entry=>({
+    ...(entry.counted===false?{counted:false}:{}),
+    ...(typeof entry.engineFailure?.fen==='string'&&typeof entry.engineFailure.message==='string'?{engineFailure:{fen:entry.engineFailure.fen.slice(0,120),message:entry.engineFailure.message.slice(0,240)}}:{}),
     id:entry.id,pgn:entry.pgn,engineProfile:validEngineProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
     mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
     result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),

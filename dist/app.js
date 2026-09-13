@@ -1,17 +1,17 @@
-import {exportPgn,sharePgn} from './pgn-export.js?v=19';
-import {targetFor as opponentFor} from './difficulty-model.js?v=19';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=19';
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=19';
-import {capturePoints, completedMatch, materialBalance} from './archive.js?v=19';
-import {settleRating, signedDelta} from './rating.js?v=19';
-import {Chess} from './chess.js?v=19';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=19';
-import {openChest, craftItem} from './economy.js?v=19';
-import {KEY, loadState, initialState, newGame} from './state.js?v=19';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=19';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=19';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=19';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=19';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=20';
+import {targetFor as opponentFor} from './difficulty-model.js?v=20';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=20';
+import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=20';
+import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=20';
+import {settleRating, signedDelta} from './rating.js?v=20';
+import {Chess} from './chess.js?v=20';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=20';
+import {openChest, craftItem} from './economy.js?v=20';
+import {KEY, loadState, initialState, newGame} from './state.js?v=20';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=20';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=20';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=20';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=20';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -22,7 +22,11 @@ let selected=null, promotion=null, busy=false, animating=false, worker=null, tas
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
 let lastBotError=null;
-const exportViewedMatch = () => sharePgn(exportPgn(viewedGame(),viewedConfig(),!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null)).catch(()=>toast('Не удалось сохранить PGN. Попробуйте ещё раз.'));
+const exportViewedMatch = () => {
+ const config=viewedConfig(),error=config.engineFailure||(!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null);
+ const pgn=exportPgn(viewedGame(),config,error);
+ showModal(`<h2>Экспорт партии</h2><p>Скачайте файл или скопируйте весь текст для анализа.</p><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="actions"><button class="quiet" data-download-pgn>Скачать PGN</button><button class="quiet" data-copy-pgn>Скопировать PGN</button><button class="quiet" data-share-pgn>Поделиться</button></div>`);
+};
 let pendingActivity=null;
 let displayMatch=null, pendingResult=false, replayRunning=false, replayTimer=null;
 const viewedGame = () => displayMatch?.game||game;
@@ -102,7 +106,7 @@ const renderArchive = () => {
   root.innerHTML=`<div style="height:${start*rowHeight}px" aria-hidden="true"></div>${state.archive.slice(start,end).map((entry,index)=>`<button class="archive-entry" data-archive="${escapeHTML(entry.id)}" aria-label="Партия ${start+index+1} из ${total}: ${escapeHTML(entry.result)}"><span><strong>${escapeHTML(entry.result)}</strong><small>${entry.playerColor==='w'?'Белые':'Чёрные'} · ${Number.isNaN(Date.parse(entry.finishedAt))?'Дата неизвестна':new Date(entry.finishedAt).toLocaleDateString('ru-RU')}</small></span><span>${entry.points} очк.<small>${entry.ratingDelta===null?'Без рейтинга':signedDelta(entry.ratingDelta)+' рейтинга'}</small></span></button>`).join('')}<div style="height:${(total-end)*rowHeight}px" aria-hidden="true"></div>`;
 };
 const renderStatistics = () => {
-  const entries=state.archive.filter(entry=>entry.mode==='bot'), wins=entries.filter(entry=>entry.result==='Победа').length;
+  const entries=state.archive.filter(entry=>entry.mode==='bot'&&entry.counted!==false), wins=entries.filter(entry=>entry.result==='Победа').length;
   const draws=entries.filter(entry=>entry.result==='Ничья').length, losses=entries.length-wins-draws;
   const percent=entries.length?Math.round(wins/entries.length*100)+'%':'—';
   const card=(value,label)=>`<article><strong>${value}</strong><span>${label}</span></article>`;
@@ -166,6 +170,10 @@ const renderGameInfo = () => {
   $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
   $('#resign').disabled=!active()||animating;
   $('#resign').hidden=!active();
+  $('#abort-failed').hidden=!canAbortFailedMatch(state,game)||!!displayMatch;
+  $('#abort-failed').disabled=animating;
+  $('#retry-failed').hidden=$('#abort-failed').hidden;
+  $('#retry-failed').disabled=locked();
   $('#hint').textContent=displayMatch?'Просматривайте партию стрелками или выберите ход в журнале.':reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
   $('#skin-name').textContent=styleById(itemById((config.equipped||state.equipped).board).style).name;
   $('#game-ready').hidden=hasBoard;
@@ -190,8 +198,10 @@ const render = () => {
 const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
 const botFailure = (error) => {
   lastBotError={message:error?.message||String(error||'Unknown engine error'),fen:game.fen()};
-  stopBot();renderGameInfo();
-  showModal('<h2>Компьютер не смог ответить</h2><p>Партия сохранена. Повторите расчёт. Если движок только обновился, перезагрузите приложение для его активации.</p><button class="quiet" data-retry-bot>Повторить расчёт</button><button class="quiet" data-export-pgn>Экспорт PGN</button>');
+  stopBot();
+  const failed={...state,game:{...state.game,engineFailure:lastBotError}};if(!persist(failed))state=failed;
+  renderGameInfo();
+  showModal('<h2>Компьютер не смог ответить</h2><p>Повторите расчёт или завершите партию без изменения рейтинга. История ходов сохранится.</p><button class="quiet" data-retry-bot>Повторить расчёт</button><button class="quiet" data-export-pgn>Экспорт PGN</button><button class="quiet" data-abort-failed>Завершить без рейтинга</button>');
 };
 const applyMove = async move => {
   if(!active()||animating)return;
@@ -199,7 +209,8 @@ const applyMove = async move => {
   const before=snapshotBoard($('#board'));
   let played;
   try {played=game.move(move);} catch {toast('Этот ход недоступен.');return;}
-  if(!persist(state)){game.undo();drawBoard();return;}
+  if(!persist({...state,game:{...state.game,engineFailure:null}})){game.undo();drawBoard();return;}
+  lastBotError=null;
   selected=null;promotion=null;animating=followLive;
   drawBoard();renderGameInfo();
   try {if(followLive)await animateMove($('#board'),played,before);} finally {animating=false;}
@@ -210,7 +221,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=19',{type:'module'});
+    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=20',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure(data.error||'Missing engine move');return;}
@@ -384,6 +395,10 @@ $('#modal-content').addEventListener('click',event=>{
     if(next&&persist(next)){$('#modal').close();render();toast('Предмет создан и добавлен в коллекцию.');}
   }
   if(button.dataset.useReward){useItem(button.dataset.useReward);$('#modal').close();}
+  if(button.hasAttribute('data-abort-failed'))abortAfterFailure();
+  if(button.hasAttribute('data-download-pgn'))downloadPgn($('#pgn-text').value);
+  if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось передать PGN. Используйте скачивание или копирование.'));
+  if(button.hasAttribute('data-copy-pgn')){const field=$('#pgn-text');field.focus();field.select();if(navigator.clipboard?.writeText)navigator.clipboard.writeText(field.value).then(()=>toast('PGN скопирован')).catch(()=>toast('Текст выделен. Выберите «Копировать».'));else toast('Текст выделен. Выберите «Копировать».');}
   if(button.hasAttribute('data-export-pgn'))void exportViewedMatch();
   if(button.hasAttribute('data-retry-bot')){$('#modal').close();requestBot();}
 });
@@ -417,6 +432,15 @@ $('#start-game').onclick=()=>{
   currentScreen='play';
   changeTab('play');render();requestBot();
 };
+const abortAfterFailure = () => {
+  const next=abortFailedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
+  if(!next)return;
+  stopBot();if(!persist(next,true)){renderGameInfo();return;}
+  game.reset();displayMatch=null;pendingResult=false;pendingActivity=null;reviewCursor=null;queuedCursor=undefined;selected=null;promotion=null;lastBotError=null;
+  $('#modal').close();render();toast('Партия сохранена в истории. Рейтинг не изменился.');
+};
+$('#abort-failed').onclick=abortAfterFailure;
+$('#retry-failed').onclick=requestBot;
 $('#resign').onclick=()=>{
   if(!active()||animating||!confirm('Сдаться и завершить текущую партию? Просмотр истории не меняет её результат.'))return;
   stopBot();

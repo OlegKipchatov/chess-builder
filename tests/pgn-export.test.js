@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
-import {exportPgn} from '../dist/pgn-export.js';
+import {exportPgn,sharePgn} from '../dist/pgn-export.js';
+test('Системная передача содержит полный PGN и в файле, и в тексте',async()=>{
+ const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');let payload;
+ Object.defineProperty(globalThis,'navigator',{configurable:true,value:{canShare:()=>true,share:async data=>{payload=data;}}});
+ try{
+  const pgn=exportPgn(new Chess());await sharePgn(pgn,new Date(2026,8,13,14,32,5));assert.equal(payload.text,pgn);assert.equal(await payload.files[0].text(),pgn);assert.equal(payload.files[0].name,'GachaChess_2026-09-13_14-32-05.pgn');
+ }finally{if(descriptor)Object.defineProperty(globalThis,'navigator',descriptor);else delete globalThis.navigator;}
+});
 test('Экспорт текущей партии сохраняет все ходы, FEN, рейтинг и seed без изменения игры',()=>{
  const game=new Chess();['e4','e5','Nf3'].forEach(move=>game.move(move));const before=game.pgn();
  const pgn=exportPgn(game,{playerColor:'b',rating:{before:586,opponent:486},engineProfile:{id:'humanized19-v1',targetElo:486,effectiveElo:474,seed:123}},{message:'Stockfish timeout',fen:game.fen()});

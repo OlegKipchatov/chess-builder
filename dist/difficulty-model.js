@@ -1,4 +1,4 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=19';
+import {DIFFICULTY as C} from './difficulty-config.js?v=20';
 /** @typedef {()=>number} RandomSource */
 export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};

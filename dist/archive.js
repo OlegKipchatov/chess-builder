@@ -1,6 +1,6 @@
-import {newGame} from './state.js?v=19';
-import {settleRating} from './rating.js?v=19';
-import {rewardFor} from './engine.js?v=19';
+import {newGame} from './state.js?v=20';
+import {settleRating} from './rating.js?v=20';
+import {rewardFor} from './engine.js?v=20';
 export const capturePoints = (game,color) => game.history({verbose:true}).reduce((sum,move)=>sum+(move.color===color?({p:1,n:3,b:3,r:5,q:9}[move.captured]||0):0),0);
 export const completedMatch = (state,game,{id,finishedAt}) => {
   if(!state.game.started||(!state.game.resigned&&!game.isGameOver()))return null;
@@ -14,3 +14,10 @@ export const completedMatch = (state,game,{id,finishedAt}) => {
 };
 
 export const materialBalance = (game,color) => game.board().flat().filter(Boolean).reduce((sum,piece)=>sum+(piece.color===color?1:-1)*({p:1,n:3,b:3,r:5,q:9,k:0}[piece.type]||0),0);
+
+export const canAbortFailedMatch = (state,game) => state.game.started&&state.game.mode==='bot'&&!state.game.resigned&&!state.game.settled&&!game.isGameOver()&&state.game.engineFailure?.fen===game.fen();
+export const abortFailedMatch = (state,game,{id,finishedAt}) => {
+ if(!canAbortFailedMatch(state,game))return null;
+ const entry={id,finishedAt,pgn:game.pgn(),mode:'bot',playerColor:state.game.playerColor,equipped:structuredClone(state.game.equipped),engineProfile:structuredClone(state.game.engineProfile||null),engineFailure:{...state.game.engineFailure},counted:false,result:'Прервана из-за ошибки',points:capturePoints(game,state.game.playerColor),playerRating:state.game.rating?.before??state.rating.value,opponentRating:state.game.rating?.opponent??null,ratingDelta:null};
+ return {...state,archive:[entry,...state.archive],game:newGame(state.settings.mode)};
+};
