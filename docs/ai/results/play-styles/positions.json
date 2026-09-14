@@ -1,0 +1,2305 @@
+{
+  "seed": 20260913,
+  "iterationsPerPosition": 1000,
+  "rows": [
+    {
+      "elo": 600,
+      "profile": "default",
+      "total": 18000,
+      "changedFraction": 0,
+      "cpLoss": 90.48678571429045,
+      "referenceUtilityLoss": 2.1206272222222355,
+      "quality": {
+        "mistake": 2604,
+        "inaccuracy": 5061,
+        "good": 2330,
+        "best": 5621,
+        "blunder": 2384
+      },
+      "styleScore": 0,
+      "baselineStyleScore": 0,
+      "features": {
+        "attack": 0.306639506172867,
+        "safety": -0.009431790123457203,
+        "position": 0.02548148148148139,
+        "complexity": 0.47377939814810804,
+        "exchange": 0.017290123456790124
+      },
+      "featureMsPerPosition": 44.893032833333336,
+      "examples": []
+    },
+    {
+      "elo": 600,
+      "profile": "aggressive",
+      "total": 18000,
+      "changedFraction": 0.15461111111111112,
+      "cpLoss": 90.53928571429026,
+      "referenceUtilityLoss": 2.1275916666666785,
+      "quality": {
+        "mistake": 2604,
+        "inaccuracy": 5061,
+        "good": 2330,
+        "best": 5621,
+        "blunder": 2384
+      },
+      "styleScore": 0.6421752022707212,
+      "baselineStyleScore": 0.6095377044752975,
+      "features": {
+        "attack": 0.33813333333335094,
+        "safety": -0.010692901234568288,
+        "position": 0.028825396825396234,
+        "complexity": 0.47411550925922175,
+        "exchange": 0.017123456790123465
+      },
+      "featureMsPerPosition": 51.19243144444446,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "f2f4",
+          "selected": "b2b4",
+          "baselineLoss": 0.53,
+          "loss": 0.45,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d3",
+          "selected": "b1c3",
+          "baselineLoss": 0.28,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b1a3",
+          "selected": "g1h3",
+          "baselineLoss": 0.71,
+          "loss": 0.71,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.04761904761904775,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260929,
+          "baseline": "g2g3",
+          "selected": "d2d3",
+          "baselineLoss": 0.23,
+          "loss": 0.28,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260938,
+          "baseline": "h2h4",
+          "selected": "f2f4",
+          "baselineLoss": 0.5,
+          "loss": 0.53,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 600,
+      "profile": "solid",
+      "total": 18000,
+      "changedFraction": 0.1605,
+      "cpLoss": 90.54221428571884,
+      "referenceUtilityLoss": 2.1163544444444624,
+      "quality": {
+        "mistake": 2604,
+        "inaccuracy": 5061,
+        "good": 2330,
+        "best": 5621,
+        "blunder": 2384
+      },
+      "styleScore": -0.33650306216935827,
+      "baselineStyleScore": -0.34318185570992327,
+      "features": {
+        "attack": 0.29572098765434573,
+        "safety": -0.006541666666666914,
+        "position": 0.0266005291005288,
+        "complexity": 0.4724885802468735,
+        "exchange": 0.01858024691357995
+      },
+      "featureMsPerPosition": 52.49092483333331,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "f2f4",
+          "selected": "b2b4",
+          "baselineLoss": 0.53,
+          "loss": 0.45,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d3",
+          "selected": "b1c3",
+          "baselineLoss": 0.28,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b1a3",
+          "selected": "f2f3",
+          "baselineLoss": 0.71,
+          "loss": 0.79,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.09523809523809579,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260929,
+          "baseline": "g2g3",
+          "selected": "d2d3",
+          "baselineLoss": 0.23,
+          "loss": 0.28,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260938,
+          "baseline": "h2h4",
+          "selected": "f2f4",
+          "baselineLoss": 0.5,
+          "loss": 0.53,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 600,
+      "profile": "positional",
+      "total": 18000,
+      "changedFraction": 0.15716666666666668,
+      "cpLoss": 90.55021428571858,
+      "referenceUtilityLoss": 2.121901111111128,
+      "quality": {
+        "mistake": 2604,
+        "inaccuracy": 5061,
+        "good": 2330,
+        "best": 5621,
+        "blunder": 2384
+      },
+      "styleScore": 0.08385725418870546,
+      "baselineStyleScore": 0.0801486458333244,
+      "features": {
+        "attack": 0.31144814814817545,
+        "safety": -0.00845432098765468,
+        "position": 0.02851587301587248,
+        "complexity": 0.4731584876542819,
+        "exchange": 0.018067901234567727
+      },
+      "featureMsPerPosition": 48.55172266666667,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "f2f4",
+          "selected": "b2b4",
+          "baselineLoss": 0.53,
+          "loss": 0.45,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d3",
+          "selected": "b1c3",
+          "baselineLoss": 0.28,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b1a3",
+          "selected": "f2f3",
+          "baselineLoss": 0.71,
+          "loss": 0.79,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.09523809523809579,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260929,
+          "baseline": "g2g3",
+          "selected": "d2d3",
+          "baselineLoss": 0.23,
+          "loss": 0.28,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260938,
+          "baseline": "h2h4",
+          "selected": "f2f4",
+          "baselineLoss": 0.5,
+          "loss": 0.53,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 600,
+      "profile": "tricky",
+      "total": 18000,
+      "changedFraction": 0.15616666666666668,
+      "cpLoss": 90.47335714286147,
+      "referenceUtilityLoss": 2.1278950000000116,
+      "quality": {
+        "mistake": 2604,
+        "inaccuracy": 5061,
+        "good": 2330,
+        "best": 5621,
+        "blunder": 2384
+      },
+      "styleScore": 0.5768930224867074,
+      "baselineStyleScore": 0.571234043209812,
+      "features": {
+        "attack": 0.31613950617286635,
+        "safety": -0.010232098765432518,
+        "position": 0.02666402116402082,
+        "complexity": 0.4752479166666274,
+        "exchange": 0.016506172839506252
+      },
+      "featureMsPerPosition": 49.477641944444436,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "f2f4",
+          "selected": "b2b4",
+          "baselineLoss": 0.53,
+          "loss": 0.45,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d3",
+          "selected": "b1c3",
+          "baselineLoss": 0.28,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b1a3",
+          "selected": "g1h3",
+          "baselineLoss": 0.71,
+          "loss": 0.71,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.04761904761904775,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260929,
+          "baseline": "g2g3",
+          "selected": "d2d3",
+          "baselineLoss": 0.23,
+          "loss": 0.28,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260938,
+          "baseline": "h2h4",
+          "selected": "f2f4",
+          "baselineLoss": 0.5,
+          "loss": 0.53,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1000,
+      "profile": "default",
+      "total": 18000,
+      "changedFraction": 0,
+      "cpLoss": 34.52450000000065,
+      "referenceUtilityLoss": 0.5978505555555628,
+      "quality": {
+        "good": 4900,
+        "best": 9699,
+        "inaccuracy": 2178,
+        "mistake": 677,
+        "blunder": 546
+      },
+      "styleScore": 0,
+      "baselineStyleScore": 0,
+      "features": {
+        "attack": 0.3557395061728496,
+        "safety": 0.014772839506172579,
+        "position": 0.02283862433862467,
+        "complexity": 0.4495855709876035,
+        "exchange": 0.025395061728393713
+      },
+      "featureMsPerPosition": 46.219558333333126,
+      "examples": []
+    },
+    {
+      "elo": 1000,
+      "profile": "aggressive",
+      "total": 18000,
+      "changedFraction": 0.21405555555555555,
+      "cpLoss": 34.654571428571735,
+      "referenceUtilityLoss": 0.6078044444444519,
+      "quality": {
+        "good": 4900,
+        "best": 9699,
+        "inaccuracy": 2178,
+        "mistake": 677,
+        "blunder": 546
+      },
+      "styleScore": 0.6700775027557442,
+      "baselineStyleScore": 0.6311959209655835,
+      "features": {
+        "attack": 0.39250864197530727,
+        "safety": 0.011202469135802298,
+        "position": 0.02644973544973572,
+        "complexity": 0.45011041666661844,
+        "exchange": 0.02487654320987528
+      },
+      "featureMsPerPosition": 45.93182805555544,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260913,
+          "baseline": "h2h3",
+          "selected": "a2a4",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.37,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d3",
+          "selected": "g2g3",
+          "baselineLoss": 0.28,
+          "loss": 0.23,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260923,
+          "baseline": "g1h3",
+          "selected": "b1a3",
+          "baselineLoss": 0.71,
+          "loss": 0.71,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.04761904761904775,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1000,
+      "profile": "solid",
+      "total": 18000,
+      "changedFraction": 0.21494444444444444,
+      "cpLoss": 34.662928571429376,
+      "referenceUtilityLoss": 0.590857222222227,
+      "quality": {
+        "good": 4900,
+        "best": 9699,
+        "inaccuracy": 2178,
+        "mistake": 677,
+        "blunder": 546
+      },
+      "styleScore": -0.2950254012345777,
+      "baselineStyleScore": -0.3047930020943768,
+      "features": {
+        "attack": 0.34496913580248345,
+        "safety": 0.020200925925925862,
+        "position": 0.023740740740741104,
+        "complexity": 0.44794506172834425,
+        "exchange": 0.02718518518518354
+      },
+      "featureMsPerPosition": 49.074309944444344,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d3",
+          "selected": "g2g3",
+          "baselineLoss": 0.28,
+          "loss": 0.23,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "h2h3",
+          "selected": "a2a3",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1000,
+      "profile": "positional",
+      "total": 18000,
+      "changedFraction": 0.21505555555555556,
+      "cpLoss": 34.65957142857198,
+      "referenceUtilityLoss": 0.5987538888888954,
+      "quality": {
+        "good": 4900,
+        "best": 9699,
+        "inaccuracy": 2178,
+        "mistake": 677,
+        "blunder": 546
+      },
+      "styleScore": 0.0898076714065262,
+      "baselineStyleScore": 0.08564728560405256,
+      "features": {
+        "attack": 0.363461728395069,
+        "safety": 0.015421296296296065,
+        "position": 0.02607936507936537,
+        "complexity": 0.4487985339505671,
+        "exchange": 0.02629012345678857
+      },
+      "featureMsPerPosition": 48.787358611111,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d3",
+          "selected": "g2g3",
+          "baselineLoss": 0.28,
+          "loss": 0.23,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "h2h3",
+          "selected": "a2a3",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1000,
+      "profile": "tricky",
+      "total": 18000,
+      "changedFraction": 0.21544444444444444,
+      "cpLoss": 34.55171428571489,
+      "referenceUtilityLoss": 0.6061638888888963,
+      "quality": {
+        "good": 4900,
+        "best": 9699,
+        "inaccuracy": 2178,
+        "mistake": 677,
+        "blunder": 546
+      },
+      "styleScore": 0.5615237301586846,
+      "baselineStyleScore": 0.5538462852733258,
+      "features": {
+        "attack": 0.36659876543210324,
+        "safety": 0.012398456790123252,
+        "position": 0.02332804232804267,
+        "complexity": 0.45185223765427057,
+        "exchange": 0.02388888888888785
+      },
+      "featureMsPerPosition": 50.610712666666785,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d3",
+          "selected": "g2g3",
+          "baselineLoss": 0.28,
+          "loss": 0.23,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "h2h3",
+          "selected": "a2a3",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1400,
+      "profile": "default",
+      "total": 18000,
+      "changedFraction": 0,
+      "cpLoss": 15.255571428570859,
+      "referenceUtilityLoss": 0.1796911111111172,
+      "quality": {
+        "good": 4939,
+        "best": 12404,
+        "inaccuracy": 559,
+        "mistake": 50,
+        "blunder": 48
+      },
+      "styleScore": 0,
+      "baselineStyleScore": 0,
+      "features": {
+        "attack": 0.3793814814814807,
+        "safety": 0.01754197530864187,
+        "position": 0.01994708994709036,
+        "complexity": 0.4352733024690748,
+        "exchange": 0.032697530864196224
+      },
+      "featureMsPerPosition": 48.823453055555646,
+      "examples": []
+    },
+    {
+      "elo": 1400,
+      "profile": "aggressive",
+      "total": 18000,
+      "changedFraction": 0.22972222222222222,
+      "cpLoss": 15.479428571428038,
+      "referenceUtilityLoss": 0.19347555555556015,
+      "quality": {
+        "good": 4939,
+        "best": 12404,
+        "inaccuracy": 559,
+        "mistake": 50,
+        "blunder": 48
+      },
+      "styleScore": 0.6827776543209781,
+      "baselineStyleScore": 0.6396623026895767,
+      "features": {
+        "attack": 0.42041234567899993,
+        "safety": 0.013402160493827068,
+        "position": 0.024277777777778512,
+        "complexity": 0.4353515432098183,
+        "exchange": 0.0321604938271591
+      },
+      "featureMsPerPosition": 47.50157811111098,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260913,
+          "baseline": "h2h3",
+          "selected": "a2a4",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.37,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260923,
+          "baseline": "a2a3",
+          "selected": "b1c3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1400,
+      "profile": "solid",
+      "total": 18000,
+      "changedFraction": 0.2298888888888889,
+      "cpLoss": 15.504999999999441,
+      "referenceUtilityLoss": 0.17078611111111808,
+      "quality": {
+        "good": 4939,
+        "best": 12404,
+        "inaccuracy": 559,
+        "mistake": 50,
+        "blunder": 48
+      },
+      "styleScore": -0.28011047398588995,
+      "baselineStyleScore": -0.2911480963403954,
+      "features": {
+        "attack": 0.3720703703703735,
+        "safety": 0.022929012345679074,
+        "position": 0.02164285714285774,
+        "complexity": 0.43210277777771783,
+        "exchange": 0.035283950617282844
+      },
+      "featureMsPerPosition": 49.56298672222197,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "h2h3",
+          "selected": "a2a3",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1400,
+      "profile": "positional",
+      "total": 18000,
+      "changedFraction": 0.22977777777777778,
+      "cpLoss": 15.478357142856586,
+      "referenceUtilityLoss": 0.1810061111111166,
+      "quality": {
+        "good": 4939,
+        "best": 12404,
+        "inaccuracy": 559,
+        "mistake": 50,
+        "blunder": 48
+      },
+      "styleScore": 0.09065618441357819,
+      "baselineStyleScore": 0.0855499526014073,
+      "features": {
+        "attack": 0.3895518518518525,
+        "safety": 0.01799814814814812,
+        "position": 0.023925925925926638,
+        "complexity": 0.4333835648147548,
+        "exchange": 0.0340617283950605
+      },
+      "featureMsPerPosition": 52.35648755555576,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "h2h3",
+          "selected": "a2a3",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1400,
+      "profile": "tricky",
+      "total": 18000,
+      "changedFraction": 0.2291111111111111,
+      "cpLoss": 15.349499999999423,
+      "referenceUtilityLoss": 0.19048555555556043,
+      "quality": {
+        "good": 4939,
+        "best": 12404,
+        "inaccuracy": 559,
+        "mistake": 50,
+        "blunder": 48
+      },
+      "styleScore": 0.5498499272486387,
+      "baselineStyleScore": 0.5412622089946734,
+      "features": {
+        "attack": 0.3928506172839494,
+        "safety": 0.015040740740740622,
+        "position": 0.020671957671958147,
+        "complexity": 0.43735100308635966,
+        "exchange": 0.03101234567901091
+      },
+      "featureMsPerPosition": 50.48285488888885,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "h2h3",
+          "selected": "a2a3",
+          "baselineLoss": 0.33999999999999997,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "b2b3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1600,
+      "profile": "default",
+      "total": 18000,
+      "changedFraction": 0,
+      "cpLoss": 11.184999999999519,
+      "referenceUtilityLoss": 0.14726555555556445,
+      "quality": {
+        "good": 4485,
+        "best": 13515
+      },
+      "styleScore": 0,
+      "baselineStyleScore": 0,
+      "features": {
+        "attack": 0.38967777777777585,
+        "safety": 0.01631111111111108,
+        "position": 0.01952380952380996,
+        "complexity": 0.42975833333326724,
+        "exchange": 0.03573456790123356
+      },
+      "featureMsPerPosition": 53.34832016666658,
+      "examples": []
+    },
+    {
+      "elo": 1600,
+      "profile": "aggressive",
+      "total": 18000,
+      "changedFraction": 0.23127777777777778,
+      "cpLoss": 11.454857142856625,
+      "referenceUtilityLoss": 0.16191277777778282,
+      "quality": {
+        "good": 4485,
+        "best": 13515
+      },
+      "styleScore": 0.6877887433862335,
+      "baselineStyleScore": 0.6446440189594279,
+      "features": {
+        "attack": 0.43067160493824697,
+        "safety": 0.012783641975308617,
+        "position": 0.023902116402117448,
+        "complexity": 0.43007067901228246,
+        "exchange": 0.03510493827160381
+      },
+      "featureMsPerPosition": 51.02235794444378,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260913,
+          "baseline": "a2a3",
+          "selected": "a2a4",
+          "baselineLoss": 0.31,
+          "loss": 0.37,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260915,
+          "baseline": "a2a3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "e2e3",
+          "selected": "g1f3",
+          "baselineLoss": 0.08,
+          "loss": 0.11,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1600,
+      "profile": "solid",
+      "total": 18000,
+      "changedFraction": 0.23177777777777778,
+      "cpLoss": 11.495857142856604,
+      "referenceUtilityLoss": 0.13843611111111134,
+      "quality": {
+        "good": 4485,
+        "best": 13515
+      },
+      "styleScore": -0.2765222663139324,
+      "baselineStyleScore": -0.28801486552028627,
+      "features": {
+        "attack": 0.3821000000000014,
+        "safety": 0.02190000000000006,
+        "position": 0.021441798941799754,
+        "complexity": 0.4265049382715404,
+        "exchange": 0.038450617283949835
+      },
+      "featureMsPerPosition": 52.38240450000012,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260913,
+          "baseline": "a2a3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "e2e3",
+          "selected": "g1f3",
+          "baselineLoss": 0.08,
+          "loss": 0.11,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1600,
+      "profile": "positional",
+      "total": 18000,
+      "changedFraction": 0.23166666666666666,
+      "cpLoss": 11.464785714285176,
+      "referenceUtilityLoss": 0.14846722222222974,
+      "quality": {
+        "good": 4485,
+        "best": 13515
+      },
+      "styleScore": 0.09122361166225422,
+      "baselineStyleScore": 0.08599962742503961,
+      "features": {
+        "attack": 0.3993148148148141,
+        "safety": 0.017088271604938293,
+        "position": 0.02361904761904865,
+        "complexity": 0.4278758487653672,
+        "exchange": 0.03716049382715956
+      },
+      "featureMsPerPosition": 47.1057668333336,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260913,
+          "baseline": "a2a3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "e2e3",
+          "selected": "g1f3",
+          "baselineLoss": 0.08,
+          "loss": 0.11,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    },
+    {
+      "elo": 1600,
+      "profile": "tricky",
+      "total": 18000,
+      "changedFraction": 0.23072222222222222,
+      "cpLoss": 11.325214285713768,
+      "referenceUtilityLoss": 0.15874277777778337,
+      "quality": {
+        "good": 4485,
+        "best": 13515
+      },
+      "styleScore": 0.5457704188712148,
+      "baselineStyleScore": 0.5370636155202472,
+      "features": {
+        "attack": 0.4027814814814784,
+        "safety": 0.014288888888888848,
+        "position": 0.020224867724868343,
+        "complexity": 0.4320831790122808,
+        "exchange": 0.03395679012345563
+      },
+      "featureMsPerPosition": 48.38324244444428,
+      "examples": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260913,
+          "baseline": "a2a3",
+          "selected": "h2h3",
+          "baselineLoss": 0.31,
+          "loss": 0.33999999999999997,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260914,
+          "baseline": "d2d4",
+          "selected": "e2e4",
+          "baselineLoss": 0.06,
+          "loss": 0,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260918,
+          "baseline": "d2d4",
+          "selected": "e2e3",
+          "baselineLoss": 0.06,
+          "loss": 0.08,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260919,
+          "baseline": "e2e3",
+          "selected": "g1f3",
+          "baselineLoss": 0.08,
+          "loss": 0.11,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.14285714285714324,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260920,
+          "baseline": "e2e4",
+          "selected": "d2d4",
+          "baselineLoss": 0,
+          "loss": 0.06,
+          "features": {
+            "attack": 0.6666666666666666,
+            "safety": 0,
+            "position": 0.190476190476191,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        },
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "seed": 20260921,
+          "baseline": "b1c3",
+          "selected": "a2a3",
+          "baselineLoss": 0.31,
+          "loss": 0.31,
+          "features": {
+            "attack": 0.3333333333333333,
+            "safety": 0,
+            "position": 0.0952380952380955,
+            "complexity": 0.5,
+            "exchange": 0,
+            "isCapture": false,
+            "isCheck": false,
+            "queenTrade": false
+          }
+        }
+      ]
+    }
+  ],
+  "pairwise": [
+    {
+      "elo": 600,
+      "total": 18000,
+      "differences": {
+        "aggressive/solid": 0.08516666666666667,
+        "aggressive/positional": 0.05938888888888889,
+        "aggressive/tricky": 0.046,
+        "solid/positional": 0.036944444444444446,
+        "solid/tricky": 0.05483333333333333,
+        "positional/tricky": 0.02788888888888889
+      }
+    },
+    {
+      "elo": 1000,
+      "total": 18000,
+      "differences": {
+        "aggressive/solid": 0.13211111111111112,
+        "aggressive/positional": 0.09016666666666667,
+        "aggressive/tricky": 0.07372222222222222,
+        "solid/positional": 0.06683333333333333,
+        "solid/tricky": 0.09033333333333333,
+        "positional/tricky": 0.042388888888888886
+      }
+    },
+    {
+      "elo": 1400,
+      "total": 18000,
+      "differences": {
+        "aggressive/solid": 0.14294444444444446,
+        "aggressive/positional": 0.09844444444444445,
+        "aggressive/tricky": 0.07855555555555556,
+        "solid/positional": 0.07238888888888889,
+        "solid/tricky": 0.09877777777777778,
+        "positional/tricky": 0.04811111111111111
+      }
+    },
+    {
+      "elo": 1600,
+      "total": 18000,
+      "differences": {
+        "aggressive/solid": 0.14383333333333334,
+        "aggressive/positional": 0.09927777777777778,
+        "aggressive/tricky": 0.07822222222222222,
+        "solid/positional": 0.07222222222222222,
+        "solid/tricky": 0.09933333333333333,
+        "positional/tricky": 0.048666666666666664
+      }
+    }
+  ]
+}

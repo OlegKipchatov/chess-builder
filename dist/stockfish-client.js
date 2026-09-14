@@ -1,8 +1,9 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=21';
-import {parseInfo,completeCandidates,prepareCandidates,attachPerception} from './candidate-analysis.js?v=21';
-import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=21';
-import {Chess} from './chess.js?v=21';
-import {stockfishProfile,validEngineProfile} from './strength.js?v=21';
+import {applyPlayStyle} from './play-style.js?v=22';
+import {DIFFICULTY as C} from './difficulty-config.js?v=22';
+import {parseInfo,completeCandidates,prepareCandidates,attachPerception} from './candidate-analysis.js?v=22';
+import {selectCandidate,seededRandom,positionSeed} from './difficulty-model.js?v=22';
+import {Chess} from './chess.js?v=22';
+import {stockfishProfile,validEngineProfile} from './strength.js?v=22';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -26,7 +27,10 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
     let rows=completeCandidates(request.info,request.expected);
     if(recover&&!rows.length)rows=completeCandidates(request.info.filter(row=>row.index===1),1);
     analysis=attachPerception(prepareCandidates(request.position,rows),completeCandidates(request.info.filter(row=>row.depth<=C.perception.depth),request.expected));
-    if(analysis.candidates.length)token=selectCandidate(analysis.candidates,request.profile.effectiveElo,analysis.context,seededRandom(positionSeed(request.profile.seed,request.position.fen()))).move;
+    if(analysis.candidates.length){
+     const baseline=selectCandidate(analysis.candidates,request.profile.effectiveElo,analysis.context,seededRandom(positionSeed(request.profile.seed,request.position.fen())));
+     token=applyPlayStyle({game:request.position,candidates:analysis.candidates,baseline,profile:request.profile.profile,seed:request.profile.seed}).move;
+    }
    }
    if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token||''))throw Error(recover?'Stockfish search timeout: no evaluated legal move':'Missing bestmove');
    const move={from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})};
@@ -73,4 +77,4 @@ export const createStockfishClient = (spawn=()=>new Worker('./vendor/stockfish-1
  initialize();return client;
 };
 
-export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=21',{type:'module'}));
+export const createStockfish19Client = () => createStockfishClient(()=>new Worker('./stockfish19-worker.js?v=22',{type:'module'}));

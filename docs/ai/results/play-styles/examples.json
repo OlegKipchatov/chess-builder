@@ -1,0 +1,157 @@
+{
+  "note": "Illustrative first non-opening examples with positive primary-feature delta, not random samples",
+  "examples": [
+    {
+      "profile": "aggressive",
+      "position": "quiet-middle",
+      "fen": "r2q1rk1/pbpn1ppp/1p1bpn2/3p4/3P4/1P1BPN2/PBPN1PPP/R2Q1RK1 w - - 4 9",
+      "elo": 1000,
+      "seed": 20260916,
+      "baseline": {
+        "move": "a1c1",
+        "san": "Rc1",
+        "loss": 0,
+        "features": {
+          "attack": 0,
+          "safety": 0,
+          "position": 0.0952380952380949,
+          "complexity": 0.7625,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "selected": {
+        "move": "f3e5",
+        "san": "Ne5",
+        "loss": 0.060000000000000005,
+        "features": {
+          "attack": 0.7777777777777777,
+          "safety": 0.1111111111111111,
+          "position": 0.0952380952380949,
+          "complexity": 0.775,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "primaryFeature": "attack"
+    },
+    {
+      "profile": "solid",
+      "position": "quiet-middle",
+      "fen": "r2q1rk1/pbpn1ppp/1p1bpn2/3p4/3P4/1P1BPN2/PBPN1PPP/R2Q1RK1 w - - 4 9",
+      "elo": 1000,
+      "seed": 20260914,
+      "baseline": {
+        "move": "f3h4",
+        "san": "Nh4",
+        "loss": 0.43,
+        "features": {
+          "attack": 0.3333333333333333,
+          "safety": 0,
+          "position": -0.04761904761904775,
+          "complexity": 0.7625,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "selected": {
+        "move": "g2g3",
+        "san": "g3",
+        "loss": 0.4,
+        "features": {
+          "attack": 0.3333333333333333,
+          "safety": 0.1111111111111111,
+          "position": 0.0952380952380949,
+          "complexity": 0.75,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "primaryFeature": "safety"
+    },
+    {
+      "profile": "positional",
+      "position": "quiet-middle",
+      "fen": "r2q1rk1/pbpn1ppp/1p1bpn2/3p4/3P4/1P1BPN2/PBPN1PPP/R2Q1RK1 w - - 4 9",
+      "elo": 1000,
+      "seed": 20260914,
+      "baseline": {
+        "move": "f3h4",
+        "san": "Nh4",
+        "loss": 0.43,
+        "features": {
+          "attack": 0.3333333333333333,
+          "safety": 0,
+          "position": -0.04761904761904775,
+          "complexity": 0.7625,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "selected": {
+        "move": "g2g3",
+        "san": "g3",
+        "loss": 0.4,
+        "features": {
+          "attack": 0.3333333333333333,
+          "safety": 0.1111111111111111,
+          "position": 0.0952380952380949,
+          "complexity": 0.75,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "primaryFeature": "position"
+    },
+    {
+      "profile": "tricky",
+      "position": "quiet-middle",
+      "fen": "r2q1rk1/pbpn1ppp/1p1bpn2/3p4/3P4/1P1BPN2/PBPN1PPP/R2Q1RK1 w - - 4 9",
+      "elo": 1000,
+      "seed": 20260934,
+      "baseline": {
+        "move": "f3e5",
+        "san": "Ne5",
+        "loss": 0.060000000000000005,
+        "features": {
+          "attack": 0.7777777777777777,
+          "safety": 0.1111111111111111,
+          "position": 0.0952380952380949,
+          "complexity": 0.775,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "selected": {
+        "move": "c2c4",
+        "san": "c4",
+        "loss": 0,
+        "features": {
+          "attack": 0.6666666666666665,
+          "safety": 0,
+          "position": 0.1904761904761898,
+          "complexity": 0.8375,
+          "exchange": 0,
+          "isCapture": false,
+          "isCheck": false,
+          "queenTrade": false
+        }
+      },
+      "primaryFeature": "complexity"
+    }
+  ]
+}

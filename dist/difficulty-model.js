@@ -1,15 +1,17 @@
-import {DIFFICULTY as C} from './difficulty-config.js?v=21';
+import {validPlayStyle} from './play-style-config.js?v=22';
+import {DIFFICULTY as C} from './difficulty-config.js?v=22';
 /** @typedef {()=>number} RandomSource */
 export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};
 export const positionSeed = (seed,fen) => {let hash=seed>>>0;for(const character of fen)hash=Math.imul(hash^character.charCodeAt(0),16777619);return hash>>>0;};
 export const skillFor = (elo,config=C) => {if(!Number.isFinite(elo))throw RangeError('Elo must be finite');return clamp((elo-config.minHumanElo)/(config.maxHumanElo-config.minHumanElo),0,1);};
 export const targetFor = (playerElo,config=C) => {if(!Number.isFinite(playerElo))throw RangeError('Elo must be finite');return clamp(playerElo-config.targetEloOffset,config.minHumanElo,config.maxHumanElo);};
-export const createDifficultyProfile = (playerElo,rng=Math.random,config=C) => {
+export const createDifficultyProfile = (playerElo,rng=Math.random,config=C,options={}) => {
+  if(!validPlayStyle(options.profile))throw RangeError('Unknown play style');
   const seed=Math.floor(rng()*config.seedMax)>>>0,random=seededRandom(seed);
   const variance=clamp(Math.sqrt(-2*Math.log(Math.max(Number.EPSILON,random())))*Math.cos(2*Math.PI*random())*config.sessionSigma,-config.varianceLimit,config.varianceLimit);
   const targetElo=targetFor(playerElo,config);
-  return {id:'humanized19-v1',targetElo,effectiveElo:clamp(targetElo+variance,config.minHumanElo,config.maxHumanElo),seed};
+  return {id:'humanized19-v1',targetElo,effectiveElo:clamp(targetElo+variance,config.minHumanElo,config.maxHumanElo),seed,...(options.profile?{profile:options.profile}:{})};
 };
 export const qualityFor = (loss,config=C) => ['best','good','inaccuracy','mistake','blunder'][config.thresholds.findIndex(value=>loss<value)===-1?4:config.thresholds.findIndex(value=>loss<value)];
 export const probabilitiesFor = (elo,context={},config=C) => {

@@ -1,0 +1,12 @@
+[Event "GachaChess style screening"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "tricky"]
+[Black "positional"]
+[Result "0-1"]
+[WhiteElo "1000"]
+[BlackElo "1000"]
+[Seed "20261922"]
+
+1. b3 e5 2. c4 Na6 3. Nf3 g5 4. Nxe5 Nf6 5. d4 Bb4+ 6. Bd2 O-O 7. f3 d5 8. c5 Nd7 9. Nxd7 Bxd2+ 10. Kxd2 Bxd7 11. Nc3 Bc8 12. Qe1 b6 13. h4 bxc5 14. e3 g4 15. Qc1 Bb7 16. Ke1 Nb4 17. a3 Re8 18. axb4 cxd4 19. Ne2 c5 20. Ra4 Bc6 21. Ra6 Bb5 22. Ra3 d3 23. Ra5 Qb6 24. Qxc5 Qh6 25. Qxb5 Qxe3 26. Qc5 dxe2 27. Qxe3 Rxe3 28. Bxe2 Rae8 29. Ra2 R8e6 30. fxg4 R3e4 31. Rd2 R4e5 32. g5 Re3 33. Kf2 R3e5 34. Rf1 h6 35. Kf3 Rf5+ 36. Kg4 Rxe2 37. gxh6 Rxd2 38. h7+ Kg7 39. h8=Q+ Kxh8 40. Rxf5 Rxg2+ 41. Kf4 Ra2 42. Rh5+ Kg7 43. Kf5 Re2 44. b5 Re5+ 45. Kxe5 Kg8 46. Rh8+ Kxh8 47. Kd4 Kg7 48. Kxd5 Kh6 49. Kc6 Kh5 50. Kb7 f5 51. Kxa7 f4 52. b6 f3 53. b7 f2 54. b8=Q f1=Q 55. Qh8+ Kg4 56. Qd4+ Kh3 57. b4 Qb5 58. h5 Qxh5 59. Qd8 Qg6 60. Qd4 Kh2 61. Qd7 Qe4 62. Qg7 Qe1 63. Qb2+ Kh1 64. Qa2 Qh4 65. Kb6 Qe1 66. Qa4 Kg2 67. Qa2+ Kf3 68. Ka5 Qd1 69. Qg8 Qd4 70. Qg6 Qh4 71. Ka6 Qd4 72. Kb7 Ke2 73. Qg2+ Kd1 74. b5 Kc1 75. Qg8 Kc2 76. Qf8 Qd1 77. Qh6 Qe2 78. Qg6+ Kc3 79. Qb6 Kb3 80. Ka6 Qd2 81. Qe3+ Qxe3 82. b6 Qg3 83. Ka7 Qg5 84. Ka6 Kb4 85. b7 Qa5# 0-1

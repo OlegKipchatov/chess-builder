@@ -1,0 +1,45 @@
+{
+  "note": "Node on same machine as four concurrent tournament engine processes; profile step only, real on-demand features",
+  "rows": [
+    {
+      "profile": "default",
+      "n": 1800,
+      "meanMs": 0.001405338333333148,
+      "p95Ms": 0.0007610000000113359,
+      "maxMs": 1.6832880000000046,
+      "changed": 0
+    },
+    {
+      "profile": "aggressive",
+      "n": 1800,
+      "meanMs": 2.170771110555553,
+      "p95Ms": 13.364484999999604,
+      "maxMs": 46.66101000000026,
+      "changed": 0.23277777777777778
+    },
+    {
+      "profile": "solid",
+      "n": 1800,
+      "meanMs": 2.8909239133333395,
+      "p95Ms": 19.60380400000031,
+      "maxMs": 56.317549999999756,
+      "changed": 0.22277777777777777
+    },
+    {
+      "profile": "positional",
+      "n": 1800,
+      "meanMs": 3.0126885122222586,
+      "p95Ms": 20.161282000000938,
+      "maxMs": 56.905055999999604,
+      "changed": 0.23
+    },
+    {
+      "profile": "tricky",
+      "n": 1800,
+      "meanMs": 2.8676687349999845,
+      "p95Ms": 18.736677000000782,
+      "maxMs": 47.431862999997975,
+      "changed": 0.2311111111111111
+    }
+  ]
+}

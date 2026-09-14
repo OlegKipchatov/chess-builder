@@ -1,12 +1,12 @@
-import {createDifficultyProfile} from './difficulty-model.js?v=21';
-import {ratingSnapshot} from './rating.js?v=21';
-import {Chess} from './chess.js?v=21';
-import {newGame} from './state.js?v=21';
+import {createDifficultyProfile} from './difficulty-model.js?v=22';
+import {ratingSnapshot} from './rating.js?v=22';
+import {Chess} from './chess.js?v=22';
+import {newGame} from './state.js?v=22';
 export const SCREENS = ['profile','collection','play','chests','archive','statistics','calendar','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
-export const createStartedGame = (state,rng=Math.random) => {
-  const playerColor=rng()<0.5?'w':'b',engineProfile=createDifficultyProfile(state.rating.value,rng);
+export const createStartedGame = (state,rng=Math.random,options={}) => {
+  const playerColor=rng()<0.5?'w':'b',engineProfile=createDifficultyProfile(state.rating.value,rng,undefined,options);
   return {...newGame('bot','adaptive'),started:true,engineProfile,playerColor,rating:{...ratingSnapshot(state.rating),opponent:engineProfile.targetElo},equipped:structuredClone(state.equipped)};
 };
 export const updatePreferences = (state, game, settings) => {

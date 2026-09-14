@@ -48,3 +48,18 @@ test('Humanized отправляет один поиск, MultiPV и макси�
  assert.ok(commands.includes('setoption name MultiPV value 20'));assert.equal(commands.filter(c=>c.startsWith('go ')).length,1);
  assert.ok(!commands.some(c=>c.includes('UCI_Elo')));assert.ok(commands.find(c=>c.startsWith('go ')).includes('movetime 2500'));client.terminate();
 });
+test('Real SF19 adapter applies assigned play style after seeded Elo choice', {timeout:30000},async()=>{
+ const {selectCandidate,positionSeed}=await import('../dist/difficulty-model.js');
+ const {applyPlayStyle}=await import('../dist/play-style.js');
+ const client=createStockfishClient(()=>spawnStockfish(19));
+ try{
+  const game=new Chess();
+  for(const style of ['aggressive','solid','positional','tricky']){
+   const engineProfile={...profile,profile:style};
+   const response=await new Promise((resolve,reject)=>{client.onmessage=({data})=>resolve(data);client.onerror=reject;client.postMessage({id:1,fen:game.fen(),engineProfile,analysisOnly:true});});
+   const {candidates,context}=response.analysis,baseline=selectCandidate(candidates,profile.effectiveElo,context,seededRandom(positionSeed(profile.seed,game.fen())));
+   const expected=applyPlayStyle({game,candidates,baseline,profile:style,seed:profile.seed});
+   assert.equal(response.move.from+response.move.to+(response.move.promotion||''),expected.move);
+  }
+ }finally{client.terminate();}
+});
