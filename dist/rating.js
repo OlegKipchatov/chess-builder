@@ -6,12 +6,12 @@ export const normalizeRating = rating => ({
   games:Number.isSafeInteger(rating?.games)&&rating.games>=0?rating.games:0,
   lastDelta:Number.isSafeInteger(rating?.lastDelta)?clamp(rating.lastDelta,-64,64):0
 });
-export const opponentFor = value => clamp(Math.round(value/50)*50,400,1600);
+export const opponentFor = value => clamp(Math.round(value)-100,100,1400);
 export const ratingSnapshot = rating => {const current=normalizeRating(rating);return {before:current.value,opponent:opponentFor(current.value),k:current.games<10?64:32};};
-export const validRatingSnapshot = snapshot => snapshot && Number.isSafeInteger(snapshot.before) && snapshot.before>=100 && snapshot.before<=2400 && Number.isSafeInteger(snapshot.opponent) && snapshot.opponent>=400 && snapshot.opponent<=1600 && [32,64].includes(snapshot.k);
+export const validRatingSnapshot = snapshot => snapshot && Number.isSafeInteger(snapshot.before) && snapshot.before>=100 && snapshot.before<=2400 && Number.isSafeInteger(snapshot.opponent) && snapshot.opponent>=100 && snapshot.opponent<=1400 && [32,64].includes(snapshot.k);
 export const adaptiveLevel = (rating=1000) => {
   const target=opponentFor(Number.isFinite(rating)?rating:1000);
-  const progress=(target-400)/1200;
+  const progress=(target-100)/1300;
   return {depth:target<800?1:target<1150?2:target<1450?3:4,milliseconds:Math.round(250+1550*progress),noise:Math.round(260*(1-progress)**2)};
 };
 export const settleRating = (state,game) => {

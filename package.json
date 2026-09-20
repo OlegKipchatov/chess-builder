@@ -8,8 +8,7 @@
     "prestart": "node scripts/prepare-stockfish.mjs",
     "test": "node --test tests/*.test.js",
     "start": "python3 -m http.server 8080 --directory dist",
-    "simulate:collect": "node scripts/simulation/collect.mjs",
-    "simulate": "node scripts/simulation/simulate.mjs"
+    "simulate": "node scripts/simulation/cognitive-v2-smoke.mjs"
   },
   "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами"
 }

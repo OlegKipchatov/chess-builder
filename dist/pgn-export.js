@@ -1,5 +1,5 @@
-import {playStyleName} from './play-style-config.js?v=22';
-import {Chess} from './chess.js?v=22';
+import {playStyleName} from './play-style-config.js?v=23';
+import {Chess} from './chess.js?v=23';
 const clean = value => String(value).replace(/[\r\n\\"]/g,' ').slice(0,240);
 export const exportPgn = (game,config={},error=null) => {
  error??=config.engineFailure;
@@ -9,11 +9,11 @@ export const exportPgn = (game,config={},error=null) => {
  const opponentRating=config.rating?.opponent??config.opponentRating;
  const winner=config.result==='Победа'?color:config.result==='Поражение'||config.resigned?(color==='w'?'b':'w'):copy.isCheckmate()?(copy.turn()==='w'?'b':'w'):null;
  const result=winner?(winner==='w'?'1-0':'0-1'):config.result==='Ничья'||copy.isDraw()?'1/2-1/2':'*';
- const headers={...(config.counted===false?{Termination:'abandoned'}:{}),Event:'GachaChess',Site:'https://olegkipchatov.github.io/chess-builder/',White:color==='w'?'Player':botName,Black:color==='b'?'Player':botName,Result:result,GachaChessVersion:'0.2-v22',CurrentFEN:copy.fen()};
+ const headers={...(config.counted===false?{Termination:'abandoned'}:{}),Event:'GachaChess',Site:'https://olegkipchatov.github.io/chess-builder/',White:color==='w'?'Player':botName,Black:color==='b'?'Player':botName,Result:result,GachaChessVersion:'0.2-v23',CurrentFEN:copy.fen()};
  if(playerRating!=null)headers[color==='w'?'WhiteElo':'BlackElo']=playerRating;
  if(opponentRating!=null)headers[color==='w'?'BlackElo':'WhiteElo']=opponentRating;
  const profile=config.engineProfile;
- if(profile){headers.BotModel=profile.id;headers.BotTargetElo=profile.targetElo;headers.BotEffectiveElo=profile.effectiveElo;headers.BotSeed=profile.seed;headers.BotPlayStyle=profile.profile;}
+ if(profile){headers.BotModel=profile.id;headers.BotCalibration=profile.calibrationVersion;headers.BotMode=profile.mode;headers.BotTargetElo=profile.targetElo;headers.BotEffectiveElo=profile.effectiveElo;headers.BotSeed=profile.seed;headers.BotPlayStyle=profile.profile;}
  if(error){headers.LastEngineError=error.message;headers.EngineErrorFEN=error.fen;}
  for(const [key,value] of Object.entries(headers))if(value!=null)copy.setHeader(key,clean(value));
  return copy.pgn();
