@@ -1,18 +1,17 @@
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=23';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=23';
-import {targetFor as opponentFor} from './cognitive-model.js?v=23';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=23';
-import {createStockfish19Client} from './stockfish-client.js?v=23';
-import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=23';
-import {settleRating, signedDelta} from './rating.js?v=23';
-import {Chess} from './chess.js?v=23';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=23';
-import {openChest, craftItem} from './economy.js?v=23';
-import {KEY, loadState, initialState, newGame} from './state.js?v=23';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=23';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=23';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=23';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=23';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=25';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=25';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=25';
+import {createBotClient} from './bot-client.js?v=25';
+import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=25';
+import {signedDelta} from './rating.js?v=25';
+import {Chess} from './chess.js?v=25';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=25';
+import {openChest, craftItem} from './economy.js?v=25';
+import {KEY, loadState, initialState, newGame} from './state.js?v=25';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=25';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=25';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=25';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=25';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -46,6 +45,7 @@ const persist = (next,reset=false) => {
 const showModal = html => {
   $('#modal-content').innerHTML=html;
   $('#close-modal').hidden=false;
+  $('#close-modal').textContent='Продолжить';
   if(!$('#modal').open)$('#modal').showModal();
 };
 const ended = () => state.game.resigned || game.isGameOver();
@@ -70,11 +70,11 @@ const settle = (notifyActivity=true) => {
   const closed=closeActivityDay(state.activity,{counted:!!result.entry&&!wasSettled,finishedAt:result.entry?.finishedAt});
   if(!persist({...result.state,activity:closed.activity},true))return;
   pendingActivity=notifyActivity?closed.event:null;
-  const {entry,reward,rating}=result;
+  const {entry,reward}=result;
   stopBot();game.reset();reviewCursor=null;queuedCursor=undefined;selected=null;
   if(!wasSettled){displayMatch={game:finishedGame,config:finishedConfig,kind:'result'};pendingResult=true;}
-  if(result.cancelled){showModal('<h2>Партия отменена</h2><p>Вы не сделали ни одного хода. Рейтинг сохранён, партия не учитывается в статистике.</p>');return;}
-  if(!wasSettled)showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${title}</h2><h2>+${reward} монет</h2><p>Взято фигур на ${entry.points} очков</p>${rating?`<p class="rating-result">Рейтинг: ${entry.playerRating} → <strong>${rating.value}</strong> (${signedDelta(rating.lastDelta)})</p>`:''}<p>Партия сохранена в истории профиля.</p>`);
+  if(result.cancelled){showModal('<h2>Партия отменена</h2><p>Вы не сделали ни одного хода. Партия не учитывается в статистике.</p>');return;}
+  if(!wasSettled)showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${title}</h2><h2>+${reward} монет</h2><p>Взято фигур на ${entry.points} очков</p><p>Партия сохранена в истории профиля.</p>`);
 };
 const drawBoard = () => {
   const config=viewedConfig(),equipped=config.equipped||state.equipped;
@@ -104,15 +104,15 @@ const renderArchive = () => {
   if(!total){root.innerHTML='<p class="muted">Здесь появятся завершённые партии.</p>';return;}
   const start=Math.max(0,Math.floor((root.scrollTop||0)/rowHeight)-3);
   const end=Math.min(total,start+Math.ceil((root.clientHeight||520)/rowHeight)+6);
-  root.innerHTML=`<div style="height:${start*rowHeight}px" aria-hidden="true"></div>${state.archive.slice(start,end).map((entry,index)=>`<button class="archive-entry" data-archive="${escapeHTML(entry.id)}" aria-label="Партия ${start+index+1} из ${total}: ${escapeHTML(entry.result)}"><span><strong>${escapeHTML(entry.result)}</strong><small>${entry.playerColor==='w'?'Белые':'Чёрные'} · ${Number.isNaN(Date.parse(entry.finishedAt))?'Дата неизвестна':new Date(entry.finishedAt).toLocaleDateString('ru-RU')}</small></span><span>${entry.points} очк.<small>${entry.ratingDelta===null?'Без рейтинга':signedDelta(entry.ratingDelta)+' рейтинга'}</small></span></button>`).join('')}<div style="height:${(total-end)*rowHeight}px" aria-hidden="true"></div>`;
+  root.innerHTML=`<div style="height:${start*rowHeight}px" aria-hidden="true"></div>${state.archive.slice(start,end).map((entry,index)=>`<button class="archive-entry" data-archive="${escapeHTML(entry.id)}" aria-label="Партия ${start+index+1} из ${total}: ${escapeHTML(entry.result)}"><span><strong>${escapeHTML(entry.result)}</strong><small>${entry.playerColor==='w'?'Белые':'Чёрные'} · ${Number.isNaN(Date.parse(entry.finishedAt))?'Дата неизвестна':new Date(entry.finishedAt).toLocaleDateString('ru-RU')}</small></span><span>${entry.points} очк.</span></button>`).join('')}<div style="height:${(total-end)*rowHeight}px" aria-hidden="true"></div>`;
 };
 const renderStatistics = () => {
   const entries=state.archive.filter(entry=>entry.mode==='bot'&&entry.counted!==false), wins=entries.filter(entry=>entry.result==='Победа').length;
   const draws=entries.filter(entry=>entry.result==='Ничья').length, losses=entries.length-wins-draws;
   const percent=entries.length?Math.round(wins/entries.length*100)+'%':'—';
   const card=(value,label)=>`<article><strong>${value}</strong><span>${label}</span></article>`;
-  $('#play-stats').innerHTML=card(state.rating.value,'Рейтинг')+card(percent,'Побед');
-  $('#detailed-statistics').innerHTML=card(entries.length,'Партий с ИИ')+card(wins,'Побед')+card(draws,'Ничьих')+card(losses,'Поражений')+card(percent,'Процент побед')+card(state.rating.value,'Текущий рейтинг')+card(state.rating.games,'Рейтинговых партий')+card(state.owned.length,'Предметов')+card(state.opened,'Сундуков');
+  $('#play-stats').innerHTML=card(entries.length,'Сыграно партий')+card(wins,'Побед');
+  $('#detailed-statistics').innerHTML=card(entries.length,'Партий с ИИ')+card(wins,'Побед')+card(draws,'Ничьих')+card(losses,'Поражений')+card(percent,'Процент побед')+card(state.owned.length,'Предметов')+card(state.opened,'Сундуков');
 };
 $('#match-archive').addEventListener('scroll',renderArchive,{passive:true});
 window.addEventListener('resize',()=>{if(currentScreen==='archive')renderArchive();});
@@ -121,11 +121,6 @@ setInterval(()=>{if(currentScreen==='calendar')renderCalendar();},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentScreen==='calendar')renderCalendar();});
 const renderProfile = () => {
 
-  $('#rating-value').textContent=state.rating.value;
-  $('#rating-delta').textContent=state.rating.games?`${signedDelta(state.rating.lastDelta)} за последнюю партию`:'Начальный рейтинг';
-  $('#rating-progress').value=Math.min(state.rating.games,10);
-  $('#rating-calibration').textContent=state.rating.games<10?`Калибровка: ${state.rating.games} из 10 партий`:`Рейтинговых партий: ${state.rating.games}`;
-  $('#rating-opponent').textContent=`Следующий уровень: ${opponentFor(state.rating.value)}${opponentFor(state.rating.value)>=1400?' · максимум движка':''}`;
   renderArchive();renderStatistics();
   $('#profile-played').textContent=state.played;
   $('#profile-owned').textContent=state.owned.length;
@@ -154,19 +149,14 @@ const renderGameInfo = () => {
   const points=materialBalance(positionAt(viewedGame(),reviewCursor),color);
   const pointsText=`${signedDelta(points)} очк.`;
   for(const node of [$('#match-points'),$('#match-settings')])node.dataset.balance=points>0?'positive':points<0?'negative':'zero';
-  $('#player-color').textContent=hasBoard?(color==='w'?'Белые фигуры':'Чёрные фигуры'):'Случайная сторона';
-  $('#opponent-color').textContent=hasBoard?(color==='w'?'Чёрные фигуры':'Белые фигуры'):'Сторона определится при старте';
   $('#player-name').textContent=config.mode==='bot'?'Вы':'Игрок 1';
   $('#opponent-avatar').innerHTML=pieceSVG('n',color==='w'?'b':'w');
   $('#player-avatar').innerHTML=pieceSVG('p',color);
-  $('#opponent').textContent=config.mode==='bot'?playStyleName(config.engineProfile?.profile):'Второй игрок';
-  $('#opponent-rating').textContent=config.mode==='bot'?`Рейтинг ${config.rating?.opponent??opponentFor(state.rating.value)}`:'';
-  $('#player-rating').textContent=`Рейтинг ${config.rating?.before??state.rating.value}`;
+  $('#opponent').textContent=config.mode==='bot'?`ИИ · ${playStyleName(config.engineProfile?.profile)}`:'Игрок 2';
   $('#match-points').textContent=pointsText;
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   $('#archive-return').disabled=animating;
-  $('#play-rewards').hidden=hasBoard;
   $('#play-stats').hidden=hasBoard;
   $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
   $('#resign').disabled=!active()||animating;
@@ -176,13 +166,10 @@ const renderGameInfo = () => {
   $('#retry-failed').hidden=$('#abort-failed').hidden;
   $('#retry-failed').disabled=locked();
   $('#hint').textContent=displayMatch?'Просматривайте партию стрелками или выберите ход в журнале.':reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
-  $('#skin-name').textContent=styleById(itemById((config.equipped||state.equipped).board).style).name;
   $('#game-ready').hidden=hasBoard;
   $('#match-title').textContent=displayMatch?'История партии':active()?'В игре':state.game.started?'Итоги партии':'Игра';
-  $('#match-settings').textContent=hasBoard?'':config.mode==='bot'?'ИИ · по вашему рейтингу':'Вдвоём';
-  $('#ready-title').textContent=state.game.started?'Готовы к новой партии?':'Сыграем?';
-  $('#ready-description').textContent=state.game.started?'Завершённые партии хранятся в профиле.':'Сторона выбирается случайно. Уровень — по вашему рейтингу.';
-  $('#start-game').textContent=state.game.started?'Начать новую партию':'Начать партию';
+  $('#match-settings').textContent='';
+  $('#start-game').textContent='Партия с ИИ';
   $('#start-game').disabled=active()||animating;
   renderHistory();
 };
@@ -202,7 +189,7 @@ const botFailure = (error) => {
   stopBot();
   const failed={...state,game:{...state.game,engineFailure:lastBotError}};if(!persist(failed))state=failed;
   renderGameInfo();
-  showModal('<h2>Компьютер не смог ответить</h2><p>Повторите расчёт или завершите партию без изменения рейтинга. История ходов сохранится.</p><button class="quiet" data-retry-bot>Повторить расчёт</button><button class="quiet" data-export-pgn>Экспорт PGN</button><button class="quiet" data-abort-failed>Завершить без рейтинга</button>');
+  showModal('<h2>Компьютер не смог ответить</h2><p>Повторите расчёт или завершите партию без изменения прогресса. История ходов сохранится.</p><button class="quiet" data-retry-bot>Повторить расчёт</button><button class="quiet" data-export-pgn>Экспорт PGN</button><button class="quiet" data-abort-failed>Отменить партию</button>');
 };
 const applyMove = async move => {
   if(!active()||animating)return;
@@ -222,7 +209,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=state.game.engineProfile?.mode==='native'?createStockfish19Client():new Worker('./bot-worker.js?v=23',{type:'module'});
+    worker??=createBotClient(state.game.engineProfile);
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure(data.error||'Missing engine move');return;}
@@ -348,7 +335,13 @@ $('#collection-content').addEventListener('click',event=>{
     const card=document.getElementById(`collection-item-${item.id}`);
     card?.classList.add('focused-item');
     card?.focus({preventScroll:true});
-    card?.scrollIntoView({block:'nearest'});
+    if(card){
+      const top=document.querySelector('header').getBoundingClientRect().bottom;
+      const dock=$('#app-nav');
+      const bottom=dock.hidden?window.innerHeight:Math.min(window.innerHeight,dock.getBoundingClientRect().top);
+      const rect=card.getBoundingClientRect();
+      window.scrollTo({top:window.scrollY+rect.top+rect.height/2-(top+bottom)/2,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    }
     return;
   }
   if(button.dataset.pieceType){pieceType=button.dataset.pieceType;collectionView='items';drawCollection();}
@@ -396,6 +389,7 @@ $('#modal-content').addEventListener('click',event=>{
     if(next&&persist(next)){$('#modal').close();render();toast('Предмет создан и добавлен в коллекцию.');}
   }
   if(button.dataset.useReward){useItem(button.dataset.useReward);$('#modal').close();}
+  if(button.hasAttribute('data-confirm-resign'))confirmResignation();
   if(button.hasAttribute('data-abort-failed'))abortAfterFailure();
   if(button.hasAttribute('data-download-pgn'))downloadPgn($('#pgn-text').value);
   if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось передать PGN. Используйте скачивание или копирование.'));
@@ -438,15 +432,21 @@ const abortAfterFailure = () => {
   if(!next)return;
   stopBot();if(!persist(next,true)){renderGameInfo();return;}
   game.reset();displayMatch=null;pendingResult=false;pendingActivity=null;reviewCursor=null;queuedCursor=undefined;selected=null;promotion=null;lastBotError=null;
-  $('#modal').close();render();toast('Партия сохранена в истории. Рейтинг не изменился.');
+  $('#modal').close();render();toast('Партия сохранена в истории. Прогресс не изменился.');
 };
 $('#abort-failed').onclick=abortAfterFailure;
 $('#retry-failed').onclick=requestBot;
-$('#resign').onclick=()=>{
-  if(!active()||animating||!confirm('Сдаться и завершить текущую партию? Просмотр истории не меняет её результат.'))return;
+const confirmResignation = () => {
+  if(!active())return;
+  if(animating){toast('Дождитесь завершения хода и подтвердите ещё раз.');return;}
   stopBot();
   if(persist({...state,game:{...state.game,resigned:true}})){settle();render();}
-  else requestBot();
+  else {$('#modal').close();requestBot();}
+};
+$('#resign').onclick=()=>{
+  if(!active()||animating)return;
+  showModal('<h2>Завершить партию?</h2><p>До вашего первого хода партия будет отменена. После первого хода завершение засчитается как поражение.</p><button class="primary" data-confirm-resign>Завершить партию</button>');
+  $('#close-modal').textContent='Продолжить играть';
 };
 $('#install').onclick=async()=>{
   if(active())return;

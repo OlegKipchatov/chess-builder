@@ -1,6 +1,6 @@
 import {spawn} from 'node:child_process';
 export const spawnStockfish = (version=19) => {
- if(version!==19)throw RangeError('Only Stockfish 19 is shipped');
+ if(version!==19)throw Error('Only Stockfish 19 is supported');
  const child=spawn(process.execPath,[new URL('./stockfish19-cli.mjs',import.meta.url).pathname],{stdio:['pipe','pipe','pipe']});
  const worker={onmessage:null,onerror:null,postMessage:line=>child.stdin.write(line+'\n'),terminate:()=>child.kill()};
  let buffer='';

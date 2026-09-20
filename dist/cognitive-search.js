@@ -1,164 +1,122 @@
-import {Chess} from './chess.js?v=23';
-import {CONFIG} from './cognitive-config.js?v=23';
-import {capabilitiesFor,factsFor,perceive,positionSeed,random,clamp} from './cognitive-model.js?v=23';
-import {profileAdjustment} from './cognitive-profile.js?v=23';
-
-const value=CONFIG.pieceValue,files='abcdefgh';
-const uci = move => move.from+move.to+(move.promotion||'');
-const center = square => 7-Math.abs(files.indexOf(square[0])-3.5)-Math.abs(Number(square[1])-4.5);
-const homeRank = color => color==='w'?'1':'8';
-const promotionValue = move => move.promotion?value[move.promotion]-value.p:0;
-
-const positionalValue = (piece,caps) => {
-  const square=piece.square,rank=Number(square[1]),progress=piece.color==='w'?rank-2:7-rank;
-  let score=0;
-  if(['n','b'].includes(piece.type))score+=center(square)*5*caps.positionalAwareness;
-  if(piece.type==='p')score+=progress*(4+caps.conversionSkill*7)+Math.max(0,center(square))*caps.positionalAwareness*2;
-  if(piece.type==='k')score-=Math.max(0,center(square))*8*(1-caps.positionalAwareness*.5);
-  return score;
+import {Chess} from './chess.js?v=25';
+import {CONFIG as C} from './cognitive-config.js?v=25';
+import {capabilitiesFor,factsFor,threatsFor,perceive,random,uci,boardPieces} from './cognitive-model.js?v=25';
+import {profileAdjustment} from './cognitive-profile.js?v=25';
+import {validPlayStyle} from './play-style-config.js?v=25';
+const center = square => 7-Math.abs(square.charCodeAt(0)-97-3.5)-Math.abs(Number(square[1])-1-3.5);
+const material = (pieces,side) => pieces.reduce((s,p)=>s+(p.color===side?1:-1)*C.values[p.type],0);
+const fractional = (n,seed,key) => Math.floor(n)+(random(seed,key)<n%1?1:0);
+export const leafValue = (game,side,view,caps,seed,key) => {
+ const pieces=boardPieces(game);let score=pieces.reduce((sum,p)=>sum+(p.color===side?1:-1)*C.values[p.type]*(1+(random(seed,key+':value:'+p.type)*2-1)*C.valueUncertainty*(1-caps.evaluationAccuracy)),0);
+ // `view` is produced for this exact FEN by the caller. Re-sampling here
+ // made one position appear to both notice and miss the same attack depending
+ // on which root candidate reached the leaf.
+ const observed=Array.isArray(view.noticed)?view:perceive({threats:threatsFor(game,pieces),complexity:view.complexity},caps,seed,key),risks=new Map();
+ for(const threat of observed.noticed){
+  const defended=game.isAttacked(threat.to,threat.color),attacker=C.values[game.get(threat.from).type];
+  const loss=Math.max(0,C.values[threat.type]-(defended?attacker:0))*(game.turn()===threat.color?C.escapeDiscount:1);
+  const previous=risks.get(threat.to);if(!previous||loss>previous.loss)risks.set(threat.to,{loss,color:threat.color});
+ }
+ for(const risk of risks.values())score+=(risk.color===side?-1:1)*risk.loss*C.threatWeight;
+ if(view.tactics&&game.turn()!==side&&game.isCheck())score+=C.checkEvaluationBonus;
+ if(view.position)score+=pieces.reduce((s,p)=>s+(p.color===side?1:-1)*center(p.square)*C.positionWeight,0);
+ // Shared subjective piece values; no independent re-rolling of the same material between lines.
+ if(view.position&&material(pieces,side)>C.winningMaterial){
+  const enemyMaterial=pieces.filter(p=>p.color!==side).reduce((sum,p)=>sum+C.values[p.type],0);
+  score-=caps.conversionSkill*enemyMaterial*C.conversionExchange/1000;
+ }
+ return score;
 };
-
-export const leafValue = (game,rootSide,view,caps,seed,key) => {
-  if(game.isCheckmate())return game.turn()===rootSide?-100000:100000;
+export const candidateIdeas = (game,facts,view,caps,rootSide,seed,key,last=null) => {
+ const enemyTurn=game.turn()!==rootSide;
+ return facts.legal.flatMap(move=>{
+  const reasons=[];let value=0;
+  const noticedCapture=view.noticed.some(t=>t.from===move.from&&t.to===move.to);
+  if(move.captured&&(!enemyTurn||noticedCapture)){reasons.push('capture');value+=C.values[move.captured];}
+  if(enemyTurn&&move.captured&&!noticedCapture&&!game.isCheck())return [];
+  if(view.tactics&&/[+#]/.test(move.san)){reasons.push('check');value+=C.checkBonus;}
+  if(view.noticed.some(t=>t.to===move.from)){reasons.push('escape-threat');value+=C.values[move.piece]*.25;}
+  if(['n','b'].includes(move.piece)&&['1','8'].includes(move.from[1])){reasons.push('development');value+=view.opening?C.development:5;}
+  if(center(move.to)>center(move.from)){reasons.push('centralize');value+=(center(move.to)-center(move.from))*(view.position?C.positionWeight:3);}
+  if(move.promotion){reasons.push('promotion');value+=C.values[move.promotion]-100;}
+  if(/[kq]/.test(move.flags)){reasons.push('castle');value+=view.opening?C.castleBonus:5;}
+  if(game.isCheck())reasons.push('legal-check-response');
+  if(facts.legal.length===1)reasons.push('only-legal-move');
+  if(move.piece==='k'&&facts.legal.every(candidate=>candidate.piece==='k'))reasons.push('forced-king-manoeuvre');
+  if(move.piece==='p'&&!move.captured){reasons.push('pawn-space');value+=2;}
+  if(move.piece==='r'&&!facts.pieces.some(p=>p.type==='p'&&p.color===game.turn()&&p.square[0]===move.to[0]))reasons.push('open-file');
+  if(move.piece==='k'&&facts.phase==='endgame')reasons.push('king-activity');
+  if(!reasons.length)return [];
+  if(view.opening&&last?.to===move.from&&!move.captured)value-=C.repeatPenalty;
+  if(view.opening&&facts.phase==='opening'&&move.piece==='q'&&!move.captured)value-=C.earlyQueenPenalty;
+  return [{move,reasons,naturalness:value}];
+ }).sort((a,b)=>b.naturalness-a.naturalness||uci(a.move).localeCompare(uci(b.move)));
+};
+/** Decision API: no reference evaluations or SF candidates are accepted. */
+export const decide = ({fen,pgn,elo,seed,maxNodes=C.maxNodes,maxDepth=C.technicalDepthCap,profile='default'}) => {
+ if(!validPlayStyle(profile))throw RangeError('Unknown play style');
+ if(!Number.isInteger(seed)||seed<0||seed>0xffffffff||!Number.isSafeInteger(maxNodes)||maxNodes<1||!(maxDepth===Infinity||(Number.isSafeInteger(maxDepth)&&maxDepth>=0)))throw RangeError('Invalid decision input');
+ const caps=capabilitiesFor(elo),game=new Chess();if(pgn)game.loadPgn(pgn);else game.load(fen);
+ if(fen&&game.fen()!==fen)throw Error('Position/history mismatch');
+ if(game.isGameOver())return {move:null,trace:{terminal:true}};
+ const side=game.turn(),key=game.fen();
+ // Facts are geometric and safe to memoize by FEN. Perception is also stable
+ // for a given position/seed, so this removes duplicate chess.js work and
+ // prevents accidental re-rolls at equivalent nodes.
+ const factsCache=new Map(),viewCache=new Map();
+ const factsAt=state=>{const stateKey=state.fen();let value=factsCache.get(stateKey);if(!value){value=factsFor(state);factsCache.set(stateKey,value);}return value;};
+ const facts=factsAt(game);
+ // Attention load belongs to this decision. Imagined leaves need observed
+ // attacks, but not another full legal-move/SAN generation just to evaluate them.
+ const viewAt=state=>{const stateKey=state.fen();let value=viewCache.get(stateKey);if(!value){value=perceive({threats:factsCache.get(stateKey)?.threats||threatsFor(state),complexity:facts.complexity},caps,seed,stateKey);viewCache.set(stateKey,value);}return value;};
+ const view=viewAt(game);
+ const history=game.history({verbose:true}),lastMoves={w:history.filter(m=>m.color==='w').at(-1),b:history.filter(m=>m.color==='b').at(-1)};
+ const withMove=(move,run)=>{const color=game.turn(),previous=lastMoves[color];game.move(move);lastMoves[color]=move;try{return run();}finally{game.undo();lastMoves[color]=previous;}};
+ const width=Math.max(1,fractional(caps.calculationWidth,seed,key+':width'));
+ const requestedDepth=fractional(caps.calculationDepth,seed,key+':depth'),depth=Math.min(requestedDepth,maxDepth);
+ const ideas=candidateIdeas(game,facts,view,caps,side,seed,key,lastMoves[side]).slice(0,C.maxRoot);
+ if(!ideas.length)throw Error('No explainable candidate');
+ // Complete each depth for the entire selectable pool. Mixing shallow and
+ // searched values rewards candidates whose adverse replies were not visited.
+ let nodes=0,cut=false;const limit=Symbol('budget');
+ const search=(remaining,ply)=>{
+  if(++nodes>maxNodes)throw limit;
+  if(!remaining){
+   if(game.isCheckmate())return (game.turn()===side?-1:1)*(C.terminalValue-ply);
+   if(game.isDraw())return 0;
+   return leafValue(game,side,viewAt(game),caps,seed,game.fen());
+  }
+  const nodeKey=game.fen(),nodeFacts=factsAt(game),nodeView=viewAt(game);
+  // Mate is known only when this reply node has actually been visited.
+  if(!nodeFacts.legal.length)return game.isCheck()?(game.turn()===side?-1:1)*(C.terminalValue-ply):0;
   if(game.isDraw())return 0;
-  let score=0,bishops={w:0,b:0};
-  for(const piece of game.board().flat().filter(Boolean)){
-    const sign=piece.color===rootSide?1:-1;
-    score+=sign*(value[piece.type]+positionalValue(piece,caps));
-    if(piece.type==='b')bishops[piece.color]++;
-  }
-  score+=(bishops[rootSide]>=2?CONFIG.evaluation.bishopPair:0)-(bishops[rootSide==='w'?'b':'w']>=2?CONFIG.evaluation.bishopPair:0);
-  const accuracy=caps.evaluationAccuracy,noise=CONFIG.evaluation.noiseAt1400+(CONFIG.evaluation.noiseAt100-CONFIG.evaluation.noiseAt1400)*(1-accuracy);
-  return score+(random(seed,`${key}:eval`)*2-1)*noise*(1+view.load*.75)+(game.turn()===rootSide?CONFIG.evaluation.tempo:-CONFIG.evaluation.tempo);
-};
-
-const moveReasons = (game,move,view,caps) => {
-  const reasons=[],ownThreat=view.noticed.find(threat=>threat.color===game.turn()&&threat.square===move.from);
-  if(game.isCheck())reasons.push('escape-check');
-  if(move.captured)reasons.push('capture');
-  if(/[+#]/.test(move.san))reasons.push(move.san.includes('#')?'mate':'check');
-  if(move.flags.includes('k')||move.flags.includes('q'))reasons.push('castle');
-  if(ownThreat)reasons.push('save-threatened-piece');
-  if(['n','b'].includes(move.piece)&&move.from[1]===homeRank(move.color))reasons.push('develop');
-  if(move.piece==='p'&&['d','e'].includes(move.to[0]))reasons.push('center');
-  if(move.piece==='p'){
-    const direction=move.color==='w'?1:-1,rank=Number(move.to[1])+direction,file=files.indexOf(move.to[0]);
-    for(const next of [file-1,file+1])if(next>=0&&next<8){const target=game.get(files[next]+rank);if(target&&target.color!==move.color&&target.type==='p'&&['d','e'].includes(files[next]))reasons.push('challenge-center');}
-  }
-  if(move.piece!=='p'&&center(move.to)>center(move.from)+.5&&caps.positionalAwareness>.05)reasons.push('improve');
-  if(move.promotion)reasons.push('promote');
-  return reasons;
-};
-
-const naturalnessFor = (game,move,reasons,caps,pgn='') => {
-  let score=12+reasons.length*18+(move.captured?Math.max(0,value[move.captured]-value[move.piece]*.18):0)+promotionValue(move);
-  if(reasons.includes('mate'))score+=3000;
-  else if(reasons.includes('check'))score+=120*caps.tacticalAwareness;
-  if(reasons.includes('develop')||reasons.includes('center')||reasons.includes('castle'))score+=55*caps.openingDiscipline;
-  if(reasons.includes('challenge-center'))score+=48*(.45+caps.positionalAwareness);
-  if(reasons.includes('save-threatened-piece'))score+=70*caps.threatAwareness;
-  const opening=Number(game.fen().split(' ')[5])<=8;
-  if(opening){
-    if(move.piece==='p'&&['d','e'].includes(move.from[0]))score+=(Math.abs(Number(move.to[1])-Number(move.from[1]))===2?28:14)*caps.openingDiscipline;
-    if(move.piece==='p'&&['f','g','h'].includes(move.from[0]))score-=42*caps.openingDiscipline;
-    if(move.piece==='n'&&['a','h'].includes(move.to[0]))score-=32*caps.openingDiscipline;
-    if(move.piece==='q')score-=38*caps.openingDiscipline;
-  }
-  const history=(pgn.match(new RegExp(`\\b${move.from.replace(/[1-8]/,'')}[^ ]*`,'g'))||[]).length;
-  if(history>1&&!move.captured&&!reasons.includes('save-threatened-piece'))score-=18*(1-caps.openingDiscipline);
-  return score+center(move.to)*caps.positionalAwareness*3;
-};
-
-const surfaceRisk = (game,move,caps) => {
-  game.move(move);
+  // Alternatives receive less attention further along an imagined line; avoid width^depth explosion.
+  const movingSide=game.turn();
+  const replies=candidateIdeas(game,nodeFacts,nodeView,caps,side,seed,nodeKey,lastMoves[movingSide]).map(candidate=>{
+   if(++nodes>maxNodes)throw limit;
+   const perceived=withMove(candidate.move,()=>leafValue(game,movingSide,viewAt(game),caps,seed,game.fen()));
+   return {...candidate,priority:perceived+candidate.naturalness*.15};
+  }).sort((a,b)=>b.priority-a.priority||uci(a.move).localeCompare(uci(b.move))).slice(0,Math.max(1,Math.ceil(width/ply)));
+  if(!replies.length)return leafValue(game,side,nodeView,caps,seed,nodeKey);
+  const scores=replies.map(candidate=>withMove(candidate.move,()=>search(remaining-1,ply+1)));
+  return game.turn()===side?Math.max(...scores):Math.min(...scores);
+ };
+ const rootLimit=Math.min(ideas.length,Math.ceil(C.rootBase+C.rootWidth*caps.calculationWidth),C.searchRootMax);
+ let scored=ideas.map(c=>withMove(c.move,()=>({...c,perceivedValue:leafValue(game,side,viewAt(game),caps,seed,game.fen())})))
+  .sort((a,b)=>(b.perceivedValue+b.naturalness*.15)-(a.perceivedValue+a.naturalness*.15)||uci(a.move).localeCompare(uci(b.move))).slice(0,rootLimit),completedDepth=0;
+ const searchIdeas=scored;
+ for(let level=1;level<=depth;level++){
   try{
-    if(game.isCheckmate())return 0;
-    const moved=game.get(move.to),captures=game.moves({verbose:true}).filter(reply=>reply.to===move.to&&reply.captured),defended=game.attackers(move.to,move.color).length>0;
-    if(!moved||!captures.length)return 0;
-    return Math.max(...captures.map(reply=>Math.max(0,value[moved.type]-value[reply.piece]*(defended?1:.35))))*caps.threatAwareness;
-  } finally {game.undo();}
-};
-
-export const candidateIdeas = (game,facts,view,caps,rootSide,seed,key,last=null,pgn='') => {
-  const legal=game.moves({verbose:true});
-  return legal.map(move=>{
-    const reasons=moveReasons(game,move,view,caps),risk=surfaceRisk(game,move,caps),naturalness=naturalnessFor(game,move,reasons,caps,pgn)-risk;
-    return {move,uci:uci(move),reasons,naturalness,risk,tie:random(seed,`${key}:idea:${uci(move)}`)};
-  }).sort((a,b)=>b.naturalness-a.naturalness||a.tie-b.tie||a.uci.localeCompare(b.uci)).slice(0,CONFIG.rootIdeaLimit);
-};
-
-const replyIdeas = (game,caps,seed,key,rootSide,lastMove) => {
-  const facts=factsFor(game),view=perceive(facts,caps,seed,key,caps.elo||1000),legal=game.moves({verbose:true});
-  const tactical=legal.map(move=>{
-    let salience=(move.captured?value[move.captured]/900:.05)+(move.san.includes('#')?3:move.san.includes('+')?.75:0);
-    if(move.to===lastMove?.to&&move.captured)salience+=.7;
-    const seen=random(seed,`${key}:reply:${uci(move)}`)<clamp(caps.tacticalAwareness+salience*.28-view.load*.18,.02,.999);
-    return {move,seen,salience,naturalness:naturalnessFor(game,move,moveReasons(game,move,view,caps),caps,'')};
-  });
-  const visible=tactical.filter(row=>row.seen||game.isCheck()).sort((a,b)=>(b.salience*80+b.naturalness)-(a.salience*80+a.naturalness));
-  const fallback=tactical.sort((a,b)=>b.naturalness-a.naturalness);
-  const width=Math.max(1,Math.ceil(caps.calculationWidth));
-  return (visible.length?visible:fallback).slice(0,width).map(row=>row.move);
-};
-
-const quiescence = (game,rootSide,caps,seed,key,view,depth,context) => {
-  const stand=leafValue(game,rootSide,view,caps,seed,`${key}:stand`);
-  if(depth<=0||game.isGameOver()||context.nodes>=context.maxNodes)return stand;
-  const maximizing=game.turn()===rootSide;
-  const tactical=game.moves({verbose:true}).filter(move=>move.captured||move.san.includes('#')).map(move=>({move,score:(move.san.includes('#')?100000:0)+(value[move.captured]||0)*10-value[move.piece]})).sort((a,b)=>b.score-a.score).slice(0,Math.max(1,Math.ceil(caps.calculationWidth)));
-  if(!tactical.length)return stand;
-  let best=stand;
-  for(const {move} of tactical){
-    const token=uci(move);
-    if(random(seed,`${key}:tactical:${token}`)>clamp(caps.tacticalAwareness+(move.san.includes('#')?.5:move.captured==='q'?.3:0),.02,1))continue;
-    game.move(move);context.nodes++;
-    let score;
-    try{score=quiescence(game,rootSide,caps,seed,`${key}:${token}`,view,depth-1,context);}finally{game.undo();}
-    best=maximizing?Math.max(best,score):Math.min(best,score);
-    if(context.nodes>=context.maxNodes)break;
-  }
-  return best;
-};
-
-const evaluateCandidate = (game,candidate,rootSide,caps,seed,key,view,depth,context) => {
-  game.move(candidate.move);context.nodes++;
-  try{
-    if(game.isGameOver()||depth<=0)return leafValue(game,rootSide,view,caps,seed,`${key}:${candidate.uci}`);
-    const replies=replyIdeas(game,caps,seed,`${key}:${candidate.uci}`,rootSide,candidate.move);
-    if(!replies.length)return leafValue(game,rootSide,view,caps,seed,`${key}:${candidate.uci}:none`);
-    let worst=Infinity;
-    for(const reply of replies){
-      if(context.nodes>=context.maxNodes)break;
-      game.move(reply);context.nodes++;
-      try{
-        const score=depth>1?quiescence(game,rootSide,caps,seed,`${key}:${candidate.uci}:${uci(reply)}`,view,2,context):leafValue(game,rootSide,view,caps,seed,`${key}:${candidate.uci}:${uci(reply)}`);
-        worst=Math.min(worst,score);
-      } finally {game.undo();}
-    }
-    return worst===Infinity?leafValue(game,rootSide,view,caps,seed,`${key}:${candidate.uci}:cut`):worst;
-  } finally {game.undo();}
-};
-
-const weightedChoice = (items,weight,ticket) => {const weights=items.map(item=>Math.max(CONFIG.selection.minimumWeight,weight(item))),total=weights.reduce((a,b)=>a+b,0);let cursor=ticket*total;return items.find((_,index)=>(cursor-=weights[index])<=0)||items.at(-1);};
-
-export const decide = ({fen,pgn='',elo=1000,seed=0,profile='default',maxNodes=CONFIG.maxNodes}={}) => {
-  const game=new Chess(fen);
-  if(game.isGameOver())return {move:null,trace:{nodes:0,completedDepth:0,rootCandidates:0,searchRoot:0}};
-  const legal=game.moves({verbose:true});
-  if(!legal.length)return {move:null,trace:{nodes:0,completedDepth:0,rootCandidates:0,searchRoot:0}};
-  const rootSide=game.turn(),caps={...capabilitiesFor(elo),elo},facts=factsFor(game),key=game.fen(),view=perceive(facts,caps,positionSeed(seed,pgn||key),key,elo);
-  const ideas=candidateIdeas(game,facts,view,caps,rootSide,seed,key,null,pgn);
-  const fractional=caps.calculationDepth-Math.floor(caps.calculationDepth),abstractDepth=Math.floor(caps.calculationDepth)+(random(seed,`${key}:depth`)<fractional?1:0);
-  const depth=Math.min(CONFIG.technicalDepthCap,Math.max(0,abstractDepth)),context={nodes:0,maxNodes},staticValues=new Map();
-  for(const candidate of ideas){game.move(candidate.move);try{staticValues.set(candidate.uci,leafValue(game,rootSide,view,caps,seed,`${key}:${candidate.uci}:static`));}finally{game.undo();}}
-  const searchRoot=[...ideas].sort((a,b)=>(staticValues.get(b.uci)+b.naturalness*.4)-(staticValues.get(a.uci)+a.naturalness*.4)).slice(0,CONFIG.searchRootLimit);
-  const evaluated=ideas.map(candidate=>{
-    const shouldSearch=searchRoot.includes(candidate)&&context.nodes<maxNodes,perceivedValue=shouldSearch?evaluateCandidate(game,candidate,rootSide,caps,seed,key,view,depth,context):staticValues.get(candidate.uci);
-    const styleAdjustment=profileAdjustment(game,candidate,profile),naturalnessBonus=candidate.naturalness*(.22+(1-caps.evaluationAccuracy)*.18),forcingBonus=candidate.reasons.includes('check')?180*caps.tacticalAwareness:0;
-    return {...candidate,perceivedValue:perceivedValue+styleAdjustment+naturalnessBonus+forcingBonus,styleAdjustment};
-  });
-  const temperature=CONFIG.selection.highTemperature+(CONFIG.selection.lowTemperature-CONFIG.selection.highTemperature)*(1-caps.evaluationAccuracy)**2*(1+view.load*.5);
-  const best=Math.max(...evaluated.map(candidate=>candidate.perceivedValue));
-  const chosen=weightedChoice(evaluated,candidate=>Math.exp((candidate.perceivedValue-best)/temperature),random(seed,`${key}:select:${profile}`));
-  return {move:chosen.uci,trace:{elo,complexity:view.complexity,load:view.load,noticed:view.noticed.length,missed:view.missed.length,nodes:context.nodes,depth:abstractDepth,completedDepth:depth,rootCandidates:ideas.length,searchRoot:searchRoot.length,candidates:evaluated.map(candidate=>({move:candidate.uci,perceivedValue:candidate.perceivedValue,naturalness:candidate.naturalness,reasons:candidate.reasons,styleAdjustment:candidate.styleAdjustment})),selected:chosen.uci}};
+   const next=searchIdeas.map(c=>withMove(c.move,()=>({...c,perceivedValue:search(level,1)})));
+   scored=next;completedDepth=level;
+  }catch(error){if(error!==limit)throw error;cut=true;break;}
+ }
+ const temperature=C.temperature.high+(C.temperature.low-C.temperature.high)*(1-caps.evaluationAccuracy);
+ const styleAdjustments=scored.map(c=>profileAdjustment(game,c,profile,C.profileStrength));
+ const utilities=scored.map((c,index)=>c.perceivedValue+c.naturalness*.15+styleAdjustments[index]),best=Math.max(...utilities);
+ const weights=utilities.map(u=>Math.exp((u-best)/(temperature*(1+C.temperature.load*view.load)))),total=weights.reduce((a,b)=>a+b,0);
+ let ticket=random(seed,key+':selection')*total;const selected=scored.find((c,i)=>(ticket-=weights[i])<0)||scored.at(-1);
+ return {move:uci(selected.move),trace:{version:C.version,elo:caps.elo,profile,requestedDepth,depth,completedDepth,width,nodes,cut,complexity:facts.complexity,load:view.load,tactics:view.tactics,position:view.position,opening:view.opening,generatedCandidates:ideas.length,rootCandidates:scored.length,searchRoot:searchIdeas.length,
+  noticed:view.noticed.map(t=>t.id),missed:view.missed.map(t=>t.id),oversight:view.oversight,
+  candidates:scored.map((c,index)=>({move:uci(c.move),reasons:c.reasons,perceivedValue:c.perceivedValue,naturalness:c.naturalness,styleAdjustment:styleAdjustments[index]}))}};
 };

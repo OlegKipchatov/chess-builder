@@ -1,76 +1,75 @@
-import {CONFIG,CAPABILITY_POINTS,AUXILIARY_POINTS} from './cognitive-config.js?v=23';
-import {validPlayStyle} from './play-style-config.js?v=23';
-
-export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
-export const seededRandom = seed => {let state=seed>>>0;return ()=>{state+=0x6D2B79F5;let x=state;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};};
-export const positionSeed = (seed,text='') => {let hash=seed>>>0;for(const character of text)hash=Math.imul(hash^character.charCodeAt(0),16777619);return hash>>>0;};
-export const random = (seed,key='') => seededRandom(positionSeed(seed,String(key)))();
-
-const interpolate = (points,elo,keys) => {
-  const rating=clamp(elo,points[0].elo,points.at(-1).elo);
-  const upper=points.find(point=>point.elo>=rating)||points.at(-1),lower=[...points].reverse().find(point=>point.elo<=rating)||points[0];
-  const progress=upper.elo===lower.elo?0:(rating-lower.elo)/(upper.elo-lower.elo);
-  return Object.fromEntries(keys.map(key=>[key,lower[key]+(upper[key]-lower[key])*progress]));
+import {CONFIG as C,CONTROL_POINTS,EXTRA_POINTS} from './cognitive-config.js?v=25';
+import {validPlayStyle} from './play-style-config.js?v=25';
+export const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
+export const hash = (seed,key) => {let value=seed>>>0;for(const c of key)value=Math.imul(value^c.charCodeAt(0),16777619);return value>>>0;};
+export const random = (seed,key) => {let x=hash(seed,key)+0x6D2B79F5;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};
+const interpolate = (rows,elo) => {
+ const upper=rows.findIndex(row=>row[0]>=elo);if(upper<=0)return rows[0].slice(1);
+ const a=rows[upper-1],b=rows[upper],t=(elo-a[0])/(b[0]-a[0]);return a.slice(1).map((v,i)=>v+(b[i+1]-v)*t);
 };
-
-export const capabilitiesFor = (elo,config=CONFIG) => {
-  if(!Number.isFinite(elo))throw RangeError('Elo must be finite');
-  const base=interpolate(CAPABILITY_POINTS,clamp(elo,config.minElo,config.maxElo),['threatAwareness','tacticalAwareness','calculationDepth','calculationWidth','positionalAwareness','conversionSkill']);
-  return {...base,...interpolate(AUXILIARY_POINTS,clamp(elo,config.minElo,config.maxElo),['evaluationAccuracy','openingDiscipline','oversightResistance'])};
+export const capabilitiesFor = elo => {
+ if(!Number.isFinite(elo))throw RangeError('Elo must be finite');elo=clamp(elo,C.minElo,C.maxElo);
+ const keys=['threatAwareness','tacticalAwareness','calculationDepth','calculationWidth','positionalAwareness','conversionSkill'];
+ return {...Object.fromEntries(keys.map((key,i)=>[key,interpolate(CONTROL_POINTS,elo)[i]])),
+  ...Object.fromEntries(['evaluationAccuracy','openingDiscipline','oversightResistance'].map((key,i)=>[key,interpolate(EXTRA_POINTS,elo)[i]])),elo};
 };
-
-export const targetFor = (playerElo,config=CONFIG) => {
-  if(!Number.isFinite(playerElo))throw RangeError('Elo must be finite');
-  return clamp(playerElo-config.targetEloOffset,config.minElo,config.maxElo);
+export const decisionModeFor = elo => clamp(Number.isFinite(elo)?elo:C.minElo,C.minElo,C.maxElo)>=C.nativeStockfishFromElo?'native-stockfish':'cognitive-v2';
+export const targetFor = playerElo => clamp((Number.isFinite(playerElo)?playerElo:1000)+C.offset,C.minElo,C.maxElo);
+export const createSession = (playerElo,seed,profile='default') => {
+ if(!validPlayStyle(profile))throw RangeError('Unknown play style');
+ if(!Number.isFinite(playerElo)||!Number.isInteger(seed)||seed<0||seed>0xffffffff)throw RangeError('Invalid session input');
+ const targetElo=targetFor(playerElo);
+ const variance=clamp(Math.sqrt(-2*Math.log(Math.max(Number.EPSILON,random(seed,'variance-a'))))*Math.cos(2*Math.PI*random(seed,'variance-b'))*C.sigma,-C.varianceLimit,C.varianceLimit);
+ return {id:'cognitive-v2',calibrationVersion:C.version,targetElo,effectiveElo:clamp(targetElo+variance,C.minElo,C.maxElo),seed,profile};
 };
-
-export const createSession = (playerElo,rng=Math.random,profile,options={}) => {
-  if(!validPlayStyle(profile))throw RangeError('Unknown play style');
-  const seed=Number.isInteger(options.seed)?options.seed>>>0:typeof rng==='number'?rng>>>0:Math.floor(rng()*CONFIG.seedMax)>>>0;
-  const source=seededRandom(seed),targetElo=targetFor(playerElo);
-  const variance=options.disableVariance?0:clamp(Math.sqrt(-2*Math.log(Math.max(Number.EPSILON,source())))*Math.cos(2*Math.PI*source())*CONFIG.sessionSigma,-CONFIG.varianceLimit,CONFIG.varianceLimit);
-  return {id:CONFIG.id,mode:targetElo>=CONFIG.nativeStockfishFromElo?'native':'cognitive',targetElo,effectiveElo:clamp(targetElo+variance,CONFIG.minElo,CONFIG.maxElo),seed,...(profile?{profile}:{}),calibrationVersion:CONFIG.calibrationVersion};
-};
-
-export const validCognitiveProfile = profile => profile?.id===CONFIG.id&&['cognitive','native'].includes(profile.mode)&&profile.mode===(profile.targetElo>=CONFIG.nativeStockfishFromElo?'native':'cognitive')&&Number.isFinite(profile.targetElo)&&profile.targetElo>=CONFIG.minElo&&profile.targetElo<=CONFIG.maxElo&&Number.isFinite(profile.effectiveElo)&&profile.effectiveElo>=CONFIG.minElo&&profile.effectiveElo<=CONFIG.maxElo&&Number.isInteger(profile.seed)&&profile.seed>=0&&profile.seed<=CONFIG.seedMax&&validPlayStyle(profile.profile)&&profile.calibrationVersion===CONFIG.calibrationVersion;
-
-const files='abcdefgh';
-const distance = (a,b) => Math.max(Math.abs(files.indexOf(a[0])-files.indexOf(b[0])),Math.abs(Number(a[1])-Number(b[1])));
-export const threatsFor = game => {
-  const rows=[];
-  for(const piece of game.board().flat().filter(Boolean)){
-    const enemy=piece.color==='w'?'b':'w',attackers=game.attackers(piece.square,enemy),defenders=game.attackers(piece.square,piece.color);
-    if(!attackers.length)continue;
-    const value=CONFIG.pieceValue[piece.type],leastAttacker=Math.min(...attackers.map(square=>CONFIG.pieceValue[game.get(square)?.type]??10000));
-    if(defenders.length>=attackers.length&&leastAttacker>=value&&piece.type!=='k')continue;
-    const obviousness=clamp(.34+value/1250+(defenders.length?-.08:.14)+(attackers.some(square=>distance(square,piece.square)===1)?.12:0),.15,1);
-    rows.push({id:`attack:${piece.square}:${enemy}`,kind:'attack',square:piece.square,piece:piece.type,color:piece.color,attackers:[...attackers],defenders:[...defenders],value,obviousness});
-  }
-  return rows;
-};
-
-export const positionComplexity = (game,threats=threatsFor(game),config=CONFIG) => {
-  const moves=game.moves({verbose:true}),captures=moves.filter(move=>move.captured).length,forcing=moves.filter(move=>/[+#]/.test(move.san)).length;
-  return clamp(.12+.28*Math.min(1,moves.length/config.complexity.moves)+.25*Math.min(1,captures/config.complexity.captures)+.20*Math.min(1,forcing/config.complexity.forcing)+.15*Math.min(1,threats.length/config.complexity.attacked),0,1);
-};
-
-export const detectionProbability = (capability,elo,obviousness=.5,load=0,config=CONFIG) => {
-  const safe=clamp(capability,.001,.999),logit=Math.log(safe/(1-safe));
-  const highEloProtection=(clamp(elo,config.minElo,config.maxElo)-config.minElo)/(config.maxElo-config.minElo)*Math.max(0,obviousness-.65)*2.1;
-  return clamp(1/(1+Math.exp(-(logit+(obviousness-.5)*config.perception.obviousnessScale-load*config.perception.loadPenalty+highEloProtection))),.001,.999);
-};
-
+export const uci = m => m.from+m.to+(m.promotion||'');
+export const opposite = side => side==='w'?'b':'w';
+export const boardPieces = game => game.board().flat().filter(Boolean);
+export const threatsFor = (game,pieces=boardPieces(game)) => pieces.filter(p=>p.type!=='k').flatMap(p=>game.attackers(p.square,opposite(p.color)).filter(from=>game.get(from).type!=='k'||!game.isAttacked(p.square,p.color)).map(from=>({
+  id:`${from}:${p.square}`,from,to:p.square,color:p.color,type:p.type,
+  obviousness:p.type==='q'?C.salience.queen:C.values[p.type]>=500?C.salience.major:C.salience.normal
+ })));
 export const factsFor = game => {
-  const threats=threatsFor(game);
-  return {threats,complexity:positionComplexity(game,threats),turn:game.turn(),inCheck:game.isCheck(),legalCount:game.moves().length};
+ const pieces=boardPieces(game),legal=game.moves({verbose:true}).sort((a,b)=>uci(a).localeCompare(uci(b))),threats=threatsFor(game,pieces);
+ const forcing=legal.filter(m=>m.captured||/[+#]/.test(m.san)).length;
+ const signal=[Math.min(1,legal.length/C.complexity.moves),Math.min(1,forcing/C.complexity.forcing),Math.min(1,threats.length/C.complexity.exposed),pieces.filter(p=>p.type==='q').length/2];
+ const complexity=clamp(signal.reduce((s,v,i)=>s+v*C.complexity.weights[i],0),0,1);
+ const material=pieces.reduce((s,p)=>s+C.values[p.type],0),ply=(Number(game.fen().split(' ')[5])-1)*2+(game.turn()==='b');
+ return {pieces,legal,threats,complexity,phase:material<=1600?'endgame':ply<16?'opening':'middlegame'};
 };
-
-export const perceive = (facts,caps,seed,key,elo=1000,config=CONFIG) => {
-  const capacity=clamp((caps.calculationDepth*caps.calculationWidth)/20,.04,1),load=Math.max(0,facts.complexity-capacity),noticed=[],missed=[];
-  for(const threat of facts.threats){
-    let probability=detectionProbability(caps.threatAwareness,elo,threat.obviousness,load,config);
-    if(random(seed,`${key}:${threat.id}:oversight`)>caps.oversightResistance)probability*=.25;
-    (random(seed,`${key}:${threat.id}`)<probability?noticed:missed).push(threat);
-  }
-  return {noticed,missed,complexity:facts.complexity,load,capacity};
+export const detectionProbability = (capability,elo,obviousness,load=0,attention=0) => {
+ const c=clamp(capability,.000001,.999999),skill=(clamp(elo,100,1400)-100)/1300;
+ const logit=Math.log(c/(1-c))+(C.attention.boostMin+(C.attention.boostMax-C.attention.boostMin)*skill)*(obviousness-.5)-C.attention.loadPenalty*load+attention;
+ return 1/(1+Math.exp(-logit));
+};
+export const perceive = (facts,caps,seed,key) => {
+ const capacity=Math.sqrt(caps.calculationDepth*caps.calculationWidth/(5.2*3.8)),load=Math.max(0,facts.complexity-capacity);
+ const attention=(random(seed,key+':attention')*2-1)*C.attention.noise;
+ const noticed=facts.threats.filter(t=>random(seed,key+':threat:'+t.id)<detectionProbability(caps.threatAwareness,caps.elo,t.obviousness,load,attention));
+ const oversight=random(seed,key+':oversight')>caps.oversightResistance;
+ const retained=oversight?noticed.filter(t=>t.obviousness>.5||random(seed,key+':omit:'+t.id)>.25):noticed;
+ return {noticed:retained,missed:facts.threats.filter(t=>!retained.includes(t)),complexity:facts.complexity,load,oversight,
+  tactics:random(seed,key+':tactics')<caps.tacticalAwareness,
+  position:random(seed,key+':position')<caps.positionalAwareness,
+  opening:random(seed,key+':opening')<caps.openingDiscipline};
+};
+export const errorQuality = evaluationLoss => {
+ const [best,good,inaccuracy,mistake]=C.errorThresholds;
+ if(!Number.isFinite(evaluationLoss))return 'unknown';
+ if(evaluationLoss<best)return 'best';
+ if(evaluationLoss<good)return 'good';
+ if(evaluationLoss<inaccuracy)return 'inaccuracy';
+ if(evaluationLoss<mistake)return 'mistake';
+ return 'blunder';
+};
+/** Reporting-only heuristic; it never feeds back into move selection. */
+export const classifyError = ({evaluationLoss,trace}) => {
+ const quality=errorQuality(evaluationLoss);if(quality==='best'||quality==='good')return 'none';
+ if(quality==='unknown')return 'unknown';
+ const causes=[];
+ if(trace?.oversight)causes.push('oversight');
+ if(trace?.missed?.length)causes.push('perception');
+ if((trace?.load??0)>.15||(trace?.completedDepth??0)<(trace?.depth??0))causes.push('calculation');
+ if(trace?.position&&quality!=='inaccuracy')causes.push('strategy');
+ return causes.length===0?'evaluation':causes.length===1?causes[0]:'mixed';
 };

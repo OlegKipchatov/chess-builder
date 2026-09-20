@@ -1,2 +1,2 @@
-// Production ships only the pinned Stockfish 19 smallnet build.
+// Production ships only Stockfish 19.
 await import('./prepare-stockfish19.mjs');

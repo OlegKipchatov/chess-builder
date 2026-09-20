@@ -1,10 +1,8 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=23';
-import {validEngineProfile} from './strength.js?v=23';
-import {createSession,validCognitiveProfile,positionSeed,seededRandom} from './cognitive-model.js?v=23';
-import {randomPlayStyle,validPlayStyle} from './play-style-config.js?v=23';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=23';
-import {Chess} from './chess.js?v=23';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=23';
+import {initialActivity, normalizeActivity} from './activity.js?v=25';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=25';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=25';
+import {Chess} from './chess.js?v=25';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=25';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
@@ -38,10 +36,9 @@ export const migrateState = input => {
   next.settings = {mode:input.settings?.mode === 'local' ? 'local' : input.settings?.mode === 'bot' ? 'bot' : next.game.mode, difficulty:['easy','normal','hard','adaptive'].includes(input.settings?.difficulty) ? input.settings.difficulty : next.game.difficulty};
   next.activity = normalizeActivity(input.activity);
   next.rating = normalizeRating(input.rating);
-  const previousRating=input.game?.rating;
-  next.game.rating = validRatingSnapshot(previousRating) ? {...previousRating} : previousRating&&Number.isSafeInteger(previousRating.before)&&previousRating.before>=100&&previousRating.before<=2400&&[32,64].includes(previousRating.k)?{before:previousRating.before,opponent:Math.max(100,Math.min(1400,previousRating.before-100)),k:previousRating.k}:null;
+  next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
   next.game.engineFailure = typeof input.game?.engineFailure?.fen==='string'&&typeof input.game.engineFailure.message==='string'?{fen:input.game.engineFailure.fen.slice(0,120),message:input.game.engineFailure.message.slice(0,240)}:null;
-  next.game.engineProfile = validEngineProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
+  next.game.engineProfile = validArchivedProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
   next.settings = {mode:'bot',difficulty:'adaptive'};
@@ -49,17 +46,12 @@ export const migrateState = input => {
   if(next.game.mode==='bot' && !next.game.settled){
     next.game.difficulty='adaptive';
     if(next.game.started && !next.game.rating)next.game.rating=ratingSnapshot(next.rating);
-    if(next.game.started&&!validCognitiveProfile(next.game.engineProfile)){
-      const legacySeed=Number.isInteger(input.game?.engineProfile?.seed)?input.game.engineProfile.seed:positionSeed(0x56323032,next.game.pgn);
-      const savedStyle=input.game?.engineProfile?.profile;
-      const style=savedStyle&&validPlayStyle(savedStyle)&&savedStyle!=='default'?savedStyle:randomPlayStyle(seededRandom(legacySeed));
-      next.game.engineProfile=createSession(next.game.rating?.before??next.rating.value,legacySeed,style);
-    }
+    if(next.game.started&&!next.game.resigned)next.game.engineProfile=migrateEngineProfile(next.game.engineProfile,{playerElo:next.game.rating?.before??next.rating.value,targetElo:next.game.rating?.opponent,pgn:next.game.pgn});
   }
   next.archive = (Array.isArray(input.archive)?input.archive:[]).filter(entry=>typeof entry?.id==='string'&&typeof entry.pgn==='string').map(entry=>({
     ...(entry.counted===false?{counted:false}:{}),
     ...(typeof entry.engineFailure?.fen==='string'&&typeof entry.engineFailure.message==='string'?{engineFailure:{fen:entry.engineFailure.fen.slice(0,120),message:entry.engineFailure.message.slice(0,240)}}:{}),
-    id:entry.id,pgn:entry.pgn,engineProfile:validEngineProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
+    id:entry.id,pgn:entry.pgn,engineProfile:validArchivedProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
     mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
     result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),
     playerRating:integer(entry.playerRating,1000),opponentRating:Number.isSafeInteger(entry.opponentRating)?entry.opponentRating:null,
@@ -70,7 +62,7 @@ export const migrateState = input => {
 };
 export const loadState = storage => {
   const saved = storage.getItem(KEY);
-  if (saved !== null) {const input=JSON.parse(saved),next=migrateState(input);if(!input.activity)storage.setItem(KEY,JSON.stringify(next));return next;}
+  if (saved !== null) {const input=JSON.parse(saved),next=migrateState(input);if(!input.activity||JSON.stringify(input.game?.engineProfile)!==JSON.stringify(next.game.engineProfile))storage.setItem(KEY,JSON.stringify(next));return next;}
   const legacy = storage.getItem(PREVIOUS_KEY) ?? storage.getItem(LEGACY_KEY);
   const next = migrateState(legacy ? JSON.parse(legacy) : null);
   storage.setItem(KEY,JSON.stringify(next));

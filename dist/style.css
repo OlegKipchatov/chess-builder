@@ -66,3 +66,23 @@ body.match-active .profile-avatar{visibility:visible;opacity:1}body.match-active
 .activity-calendar{max-width:540px;margin:auto}.streak-value{display:block;font-size:32px;color:var(--accent)}.activity-calendar h2{text-transform:capitalize;margin-top:28px}.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin-top:18px}.calendar-weekday{text-align:center;color:var(--muted);font-size:14px}.calendar-day{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1;border-radius:12px;border:1px solid transparent;font-variant-numeric:tabular-nums}.calendar-day.closed{background:#344329;color:var(--accent);font-weight:700}.calendar-day.today{border-color:var(--accent)}.calendar-day.future{color:var(--muted);opacity:.6}.calendar-day small{position:absolute;right:4px;bottom:0;font-size:12px}.calendar-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:14px;color:var(--muted);margin-top:20px}.activity-calendar>.muted{font-size:14px}.day-closed-mark{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#344329;color:var(--accent);font-size:36px;margin:0 auto 20px}#modal:has(.day-closed-mark){text-align:center}#calendar-entry{margin-left:0;flex-shrink:0}header #profile-avatar{flex-shrink:0}@media(max-width:400px){header{gap:5px}.brand>span:first-child{display:none}.wallet,.wallet.shards{padding:5px}.profile-avatar{width:34px;height:34px;padding:7px}.activity-calendar{padding:16px}.calendar-grid{gap:4px}}
 
 .pgn-text{display:block;width:100%;box-sizing:border-box;min-height:12rem;max-height:40vh;margin:1rem 0;padding:.75rem;background:var(--bg,#101416);color:inherit;border:1px solid currentColor;border-radius:.75rem;resize:vertical;font: .85rem monospace;}
+
+/* 0.3: match header, spacious controls and collapsed FAQ. */
+.match-summary{display:flex;align-items:center;gap:12px;padding:12px 0 16px;flex-wrap:wrap}
+.match-versus{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.match-person{display:flex;align-items:center;gap:8px;min-width:0}.match-person strong{font-size:14px;overflow-wrap:anywhere}
+.match-person .avatar{display:flex;align-items:center;justify-content:center;flex:none;width:28px;height:32px}.match-person .avatar svg{width:100%;height:100%}
+.versus{font-size:12px;color:var(--muted);flex:none}.match-summary #match-points{font-size:16px;font-variant-numeric:tabular-nums}
+#resign{display:grid;place-items:center;width:44px;height:44px;padding:10px;flex:none;color:var(--muted)}#resign:hover{color:#ff9292;background:#40282b}
+#play:has(#match-surface[hidden]) .game-ready{padding:0;background:none;border:0;min-height:0;margin:24px auto;display:block}
+#game-ready #start-game{width:100%;max-width:none;min-height:52px}
+#profile .profile-grid{max-width:none;margin:20px 0 24px}#profile .profile-stats{margin:0;gap:16px}#profile>#install,#profile>.faq-link{margin:0 0 16px}#profile .profile-links{margin:0;gap:16px}
+.collection-items-list{padding-bottom:calc(40dvh - 80px)}
+.collection-items-list .compact-item{padding:16px;gap:16px}.collection-items-list .compact-item>button{padding:12px 18px;min-height:44px;margin:4px 0;line-height:1.4}
+.collection-action{gap:8px}.collection-action>button{padding:12px;min-height:44px;margin:0;font-size:14px}
+.faq-accordion{border:1px solid #ffffff18;border-radius:16px;background:var(--panel);margin:16px 0;overflow:hidden}
+.faq-accordion>summary{cursor:pointer;padding:20px;font-size:16px;font-weight:600}.faq-accordion[open]>summary{border-bottom:1px solid #ffffff12}
+#faq .faq-accordion>.panel{margin:0;border:0;border-radius:0}#faq .faq-accordion>p{margin:16px 20px;line-height:1.65}
+#faq #play-rewards{margin:0;max-width:none;padding:20px;background:none;border:0}.calendar-key{display:inline-block;width:14px;height:14px;border-radius:4px;background:#344329;vertical-align:middle}
+@media(max-width:760px){.move-log{display:none}.match-summary{gap:8px}.match-versus{gap:8px}.match-person{gap:5px}.match-person .avatar{display:none}.match-person strong{font-size:14px}.match-summary #match-points{font-size:14px}.game-grid aside{width:100%}.collection-items-list .compact-item{padding:14px;gap:12px}.collection-items-list .compact-item>button{padding:12px;max-width:135px;white-space:normal}.profile-stats article{padding:16px 12px}#profile .profile-stats{gap:12px}}
+@media(max-width:359px){.collection-items-list .compact-item{grid-template-columns:46px minmax(0,1fr)}.collection-items-list .compact-item>button{grid-column:1/-1;width:100%;max-width:none}.match-versus{flex-basis:100%}}
