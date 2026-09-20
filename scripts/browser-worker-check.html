@@ -5,7 +5,7 @@ import {createStockfish19Client} from '../dist/stockfish-client.js';
 import {Chess} from '../dist/chess.js';
 const output=document.querySelector('#result');
 document.querySelector('#run').onclick=async()=>{
- const client=createStockfish19Client(),profile={id:'humanized19-v1',targetElo:446,effectiveElo:460.4859445538423,seed:219237029},rows=[];
+ const client=createStockfish19Client(),profile={id:'cognitive-v2',mode:'native',targetElo:1400,effectiveElo:1400,seed:219237029,profile:'tricky',calibrationVersion:9},rows=[];
  const ask=game=>new Promise((resolve,reject)=>{const start=performance.now();client.onmessage=({data})=>resolve({...data,ms:performance.now()-start});client.onerror=reject;client.postMessage({id:rows.length+1,fen:game.fen(),pgn:game.pgn(),engineProfile:profile});});
  try{
   const game=new Chess(),moves=['g4','e5','g5','f6','b3','fxg5'];

@@ -1,18 +1,18 @@
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=22';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=22';
-import {targetFor as opponentFor} from './difficulty-model.js?v=22';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=22';
-import {createStockfishClient, createStockfish19Client} from './stockfish-client.js?v=22';
-import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=22';
-import {settleRating, signedDelta} from './rating.js?v=22';
-import {Chess} from './chess.js?v=22';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=22';
-import {openChest, craftItem} from './economy.js?v=22';
-import {KEY, loadState, initialState, newGame} from './state.js?v=22';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=22';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=22';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=22';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=22';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=23';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=23';
+import {targetFor as opponentFor} from './cognitive-model.js?v=23';
+import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=23';
+import {createStockfish19Client} from './stockfish-client.js?v=23';
+import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=23';
+import {settleRating, signedDelta} from './rating.js?v=23';
+import {Chess} from './chess.js?v=23';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, styleById, craftCost} from './catalog.js?v=23';
+import {openChest, craftItem} from './economy.js?v=23';
+import {KEY, loadState, initialState, newGame} from './state.js?v=23';
+import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=23';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=23';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=23';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=23';
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
@@ -125,7 +125,7 @@ const renderProfile = () => {
   $('#rating-delta').textContent=state.rating.games?`${signedDelta(state.rating.lastDelta)} за последнюю партию`:'Начальный рейтинг';
   $('#rating-progress').value=Math.min(state.rating.games,10);
   $('#rating-calibration').textContent=state.rating.games<10?`Калибровка: ${state.rating.games} из 10 партий`:`Рейтинговых партий: ${state.rating.games}`;
-  $('#rating-opponent').textContent=`Следующий уровень: ${opponentFor(state.rating.value)}${state.rating.value>=1600?' · максимум движка':''}`;
+  $('#rating-opponent').textContent=`Следующий уровень: ${opponentFor(state.rating.value)}${opponentFor(state.rating.value)>=1400?' · максимум движка':''}`;
   renderArchive();renderStatistics();
   $('#profile-played').textContent=state.played;
   $('#profile-owned').textContent=state.owned.length;
@@ -222,7 +222,7 @@ const requestBot = () => {
   busy=true;renderGameInfo();
   const id=++taskId;
   try {
-    worker??=['stockfish19-v1','humanized19-v1'].includes(state.game.engineProfile?.id)?createStockfish19Client():state.game.engineProfile?createStockfishClient():new Worker('./bot-worker.js?v=22',{type:'module'});
+    worker??=state.game.engineProfile?.mode==='native'?createStockfish19Client():new Worker('./bot-worker.js?v=23',{type:'module'});
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure(data.error||'Missing engine move');return;}
