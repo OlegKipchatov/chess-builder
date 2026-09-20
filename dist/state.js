@@ -1,8 +1,8 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=25';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=25';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=25';
-import {Chess} from './chess.js?v=25';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=25';
+import {initialActivity, normalizeActivity} from './activity.js?v=26';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=26';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=26';
+import {Chess} from './chess.js?v=26';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=26';
 export const KEY = 'chess-vault-v3';
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';

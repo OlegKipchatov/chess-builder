@@ -1,8 +1,8 @@
-import {Chess} from './chess.js?v=25';
-import {CONFIG as C} from './cognitive-config.js?v=25';
-import {capabilitiesFor,factsFor,threatsFor,perceive,random,uci,boardPieces} from './cognitive-model.js?v=25';
-import {profileAdjustment} from './cognitive-profile.js?v=25';
-import {validPlayStyle} from './play-style-config.js?v=25';
+import {Chess} from './chess.js?v=26';
+import {CONFIG as C} from './cognitive-config.js?v=26';
+import {capabilitiesFor,factsFor,threatsFor,perceive,random,uci,boardPieces} from './cognitive-model.js?v=26';
+import {profileAdjustment} from './cognitive-profile.js?v=26';
+import {validPlayStyle} from './play-style-config.js?v=26';
 const center = square => 7-Math.abs(square.charCodeAt(0)-97-3.5)-Math.abs(Number(square[1])-1-3.5);
 const material = (pieces,side) => pieces.reduce((s,p)=>s+(p.color===side?1:-1)*C.values[p.type],0);
 const fractional = (n,seed,key) => Math.floor(n)+(random(seed,key)<n%1?1:0);

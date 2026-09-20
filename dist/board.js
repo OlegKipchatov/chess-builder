@@ -1,6 +1,6 @@
-import {Chess} from './chess.js?v=25';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=25';
-import {pieceSVG} from './pieces.js?v=25';
+import {Chess} from './chess.js?v=26';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=26';
+import {pieceSVG} from './pieces.js?v=26';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);

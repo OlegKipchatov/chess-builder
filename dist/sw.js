@@ -1,7 +1,7 @@
-const CACHE='chess-vault-v25';
+const CACHE='chess-vault-v26';
 const ASSETS=['./','./index.html','./style.css','./app.js','./catalog.js','./economy.js','./state.js','./session.js','./rating.js','./archive.js','./pgn-export.js','./activity.js','./play-style-config.js','./cognitive-config.js','./cognitive-model.js','./cognitive-search.js','./cognitive-profile.js','./bot-client.js','./candidate-analysis.js','./stockfish-config.js','./stockfish-client.js','./strength.js','./stockfish19-worker.js','./stockfish19-license.txt','./vendor/sf19/sf_19_smallnet.js','./vendor/sf19/sf_19_smallnet.wasm','./vendor/sf19/nn-61e7af4bb97d.nnue','./engine-info.html','./pieces.js','./board.js','./collection.js','./engine.js','./chess.js','./bot-worker.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable.png'];
-const VERSIONED=ASSETS.filter(path=>path.endsWith('.js')||path.endsWith('.css')).map(path=>path+'?v=25');
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([...ASSETS,...VERSIONED]))));
+const VERSIONED=ASSETS.filter(path=>path.endsWith('.js')||path.endsWith('.css')).map(path=>path+'?v=26');
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([...ASSETS,...VERSIONED].map(path=>new Request(path,{cache:'reload'}))))));
 self.addEventListener('message',event=>{if(event.data?.type==='ACTIVATE_UPDATE')self.skipWaiting();});
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('chess-vault-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 const isolated = response => {

@@ -73,7 +73,7 @@ body.match-active .profile-avatar{visibility:visible;opacity:1}body.match-active
 .match-person{display:flex;align-items:center;gap:8px;min-width:0}.match-person strong{font-size:14px;overflow-wrap:anywhere}
 .match-person .avatar{display:flex;align-items:center;justify-content:center;flex:none;width:28px;height:32px}.match-person .avatar svg{width:100%;height:100%}
 .versus{font-size:12px;color:var(--muted);flex:none}.match-summary #match-points{font-size:16px;font-variant-numeric:tabular-nums}
-#resign{display:grid;place-items:center;width:44px;height:44px;padding:10px;flex:none;color:var(--muted)}#resign:hover{color:#ff9292;background:#40282b}
+#resign{order:-1;display:grid;place-items:center;width:44px;height:44px;padding:10px;flex:none;color:var(--muted)}#resign:hover{color:#ff9292;background:#40282b}
 #play:has(#match-surface[hidden]) .game-ready{padding:0;background:none;border:0;min-height:0;margin:24px auto;display:block}
 #game-ready #start-game{width:100%;max-width:none;min-height:52px}
 #profile .profile-grid{max-width:none;margin:20px 0 24px}#profile .profile-stats{margin:0;gap:16px}#profile>#install,#profile>.faq-link{margin:0 0 16px}#profile .profile-links{margin:0;gap:16px}
