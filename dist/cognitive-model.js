@@ -1,5 +1,5 @@
-import {CONFIG as C,CONTROL_POINTS,EXTRA_POINTS} from './cognitive-config.js?v=28';
-import {validPlayStyle} from './play-style-config.js?v=28';
+import {CONFIG as C,CONTROL_POINTS,EXTRA_POINTS} from './cognitive-config.js?v=29';
+import {validPlayStyle} from './play-style-config.js?v=29';
 export const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
 export const hash = (seed,key) => {let value=seed>>>0;for(const c of key)value=Math.imul(value^c.charCodeAt(0),16777619);return value>>>0;};
 export const random = (seed,key) => {let x=hash(seed,key)+0x6D2B79F5;x=Math.imul(x^(x>>>15),x|1);x^=x+Math.imul(x^(x>>>7),x|61);return ((x^(x>>>14))>>>0)/4294967296;};

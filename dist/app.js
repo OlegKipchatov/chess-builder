@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=28';
-import {mountAppShell} from './ui/shell.js?v=28';
-import {statCard} from './ui/primitives.js?v=28';
-import {createDialog,createToast} from './ui/dialog.js?v=28';
-import {renderArchiveList} from './ui/components/archive-list.js?v=28';
-import {moveList} from './ui/components/move-list.js?v=28';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=28';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=28';
-import {closeActivityDay, calendarHTML} from './activity.js?v=28';
-import {createBotClient} from './bot-client.js?v=28';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=28';
-import {signedDelta} from './rating.js?v=28';
-import {Chess} from './chess.js?v=28';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=28';
-import {openChest, craftItem} from './economy.js?v=28';
-import {KEY, loadState, initialState, newGame} from './state.js?v=28';
-import {pieceSVG, itemPreview} from './pieces.js?v=28';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=28';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=28';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=28';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=29';
+import {mountAppShell} from './ui/shell.js?v=29';
+import {statCard} from './ui/primitives.js?v=29';
+import {createDialog,createToast} from './ui/dialog.js?v=29';
+import {renderArchiveList} from './ui/components/archive-list.js?v=29';
+import {moveList} from './ui/components/move-list.js?v=29';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=29';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=29';
+import {closeActivityDay, calendarHTML} from './activity.js?v=29';
+import {createBotClient} from './bot-client.js?v=29';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=29';
+import {signedDelta} from './rating.js?v=29';
+import {Chess} from './chess.js?v=29';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=29';
+import {openChest, craftItem} from './economy.js?v=29';
+import {KEY, loadState, initialState, newGame} from './state.js?v=29';
+import {pieceSVG, itemPreview} from './pieces.js?v=29';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=29';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=29';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=29';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
@@ -67,11 +67,11 @@ const settle = (notifyActivity=true) => {
   const closed=closeActivityDay(state.activity,{counted:!!result.entry&&!wasSettled,finishedAt:result.entry?.finishedAt});
   if(!persist({...result.state,activity:closed.activity},true))return;
   pendingActivity=notifyActivity?closed.event:null;
-  const {entry,reward}=result;
+  const {entry,reward,rewardBreakdown}=result;
   stopBot();game.reset();reviewCursor=null;queuedCursor=undefined;selected=null;
   if(!wasSettled){displayMatch={game:finishedGame,config:finishedConfig,kind:'result'};pendingResult=true;}
   if(result.cancelled){showModal(cancelledDialog(),{closeLabel:'Продолжить',closeVariant:'primary'});return;}
-  if(!wasSettled)showModal(matchResultDialog(title,reward,entry),{closeLabel:'Продолжить',closeVariant:'primary'});
+  if(!wasSettled)showModal(matchResultDialog(title,reward,entry,rewardBreakdown),{closeLabel:'Продолжить',closeVariant:'primary'});
 };
 const drawBoard = () => {
   const config=viewedConfig(),equipped=config.equipped||state.equipped;
@@ -116,7 +116,7 @@ const renderProfile = () => {
   $('#profile-played').textContent=state.played;
   $('#profile-owned').textContent=state.owned.length;
   $('#profile-opened').textContent=state.opened;
-  $('#profile-rewards').textContent=state.settings.mode==='local'?'Завершённая партия +40 монет':'Победа +60 · ничья +40 · поражение +25';
+  $('#profile-rewards').textContent='Завершение +10 · ходы до +20 · победа +10 / ничья +5';
 };
 const renderHistory = () => {
   const moves=viewedGame().history(), cursor=(queuedCursor===undefined?reviewCursor:queuedCursor)??moves.length;
@@ -213,8 +213,7 @@ const requestBot = () => {
 };
 const showPromotion = (from,to) => {
   promotion={from,to};
-  showModal(promotionDialog(game.turn(),state.game.equipped));
-  $('#close-modal').hidden=true;
+  showModal(promotionDialog(game.turn(),state.game.equipped),{hideClose:true});
 };
 $('#board').addEventListener('click',event=>{
   const square=event.target.closest('[data-square]')?.dataset.square;
@@ -368,33 +367,33 @@ $('#modal-content').addEventListener('submit',event=>{
   const name=$('#set-name').value.trim();
   if(!name||state.sets.length>=12)return;
   const set={id:crypto.randomUUID(),name:name.slice(0,32),...structuredClone(state.equipped)};
-  if(persist({...state,sets:[...state.sets,set]})){$('#modal').close();drawCollection();toast('Набор сохранён.');}
+  if(persist({...state,sets:[...state.sets,set]})){showModal.close();drawCollection();toast('Набор сохранён.');}
 });
-$('#modal-content').addEventListener('click',event=>{
+$('#modal-content').addEventListener('click',async event=>{
   const button=event.target.closest('button');
   if(!button)return;
-  if(button.dataset.promote&&promotion){const move={...promotion,promotion:button.dataset.promote};$('#modal').close();void applyMove(move);}
+  if(button.dataset.promote&&promotion){const move={...promotion,promotion:button.dataset.promote};await showModal.close();void applyMove(move);}
   if(button.dataset.confirmCraft&&!active()){
     const next=craftItem(state,button.dataset.confirmCraft);
-    if(next&&persist(next)){$('#modal').close();render();toast('Предмет создан и добавлен в коллекцию.');}
+    if(next&&persist(next)){showModal.close();render();toast('Предмет создан и добавлен в коллекцию.');}
   }
-  if(button.dataset.useReward){useItem(button.dataset.useReward);$('#modal').close();}
+  if(button.dataset.useReward){useItem(button.dataset.useReward);showModal.close();}
   if(button.hasAttribute('data-confirm-resign'))confirmResignation();
   if(button.hasAttribute('data-abort-failed'))abortAfterFailure();
   if(button.hasAttribute('data-download-pgn'))downloadPgn($('#pgn-text').value);
   if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось передать PGN. Используйте скачивание или копирование.'));
   if(button.hasAttribute('data-copy-pgn')){const field=$('#pgn-text');field.focus();field.select();if(navigator.clipboard?.writeText)navigator.clipboard.writeText(field.value).then(()=>toast('PGN скопирован')).catch(()=>toast('Текст выделен. Выберите «Копировать».'));else toast('Текст выделен. Выберите «Копировать».');}
   if(button.hasAttribute('data-export-pgn'))void exportViewedMatch();
-  if(button.hasAttribute('data-retry-bot')){$('#modal').close();requestBot();}
+  if(button.hasAttribute('data-retry-bot')){showModal.close();requestBot();}
 });
-$('#modal').addEventListener('cancel',()=>{promotion=null;selected=null;if(!animating)drawBoard();});
-$('#modal').addEventListener('close',()=>{
+$('#modal').addEventListener('cancel',()=>{if(!promotion){selected=null;if(!animating)drawBoard();}});
+$('#modal').addEventListener('dialogdismiss',()=>{
   if(pendingResult&&!$('#modal').open){pendingResult=false;displayMatch=null;reviewCursor=null;render();
     const event=pendingActivity;pendingActivity=null;
     if(event)showModal(activityDialog(event),{closeLabel:'Продолжить',closeVariant:'primary'});
   }
 });
-$('#close-modal').onclick=()=>$('#modal').close();
+$('#close-modal').onclick=()=>showModal.close();
 $('#open-chest').onclick=()=>{
   if(active())return;
   const opened=openChest(state);
@@ -422,7 +421,7 @@ const abortAfterFailure = () => {
   if(!next)return;
   stopBot();if(!persist(next,true)){renderGameInfo();return;}
   game.reset();displayMatch=null;pendingResult=false;pendingActivity=null;reviewCursor=null;queuedCursor=undefined;selected=null;promotion=null;lastBotError=null;
-  $('#modal').close();render();toast('Партия сохранена в истории. Прогресс не изменился.');
+  showModal.close();render();toast('Партия сохранена в истории. Прогресс не изменился.');
 };
 $('#abort-failed').onclick=abortAfterFailure;
 $('#retry-failed').onclick=requestBot;
@@ -430,7 +429,7 @@ const confirmResignation = () => {
   if(!active())return;
   stopBot();
   if(persist({...state,game:{...state.game,resigned:true}})){settle();render();}
-  else {$('#modal').close();requestBot();}
+  else {showModal.close();requestBot();}
 };
 $('#resign').onclick=()=>{
   if(!active())return;
