@@ -1,7 +1,7 @@
-import {escapeHTML} from './primitives.js?v=27';
-import {itemPreview,pieceSVG} from '../pieces.js?v=27';
-import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=27';
-import {dayLabel} from '../activity.js?v=27';
+import {escapeHTML} from './primitives.js?v=28';
+import {itemPreview,pieceSVG} from '../pieces.js?v=28';
+import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=28';
+import {dayLabel} from '../activity.js?v=28';
 export const exportPgnDialog = (pgn) => `<h2>Экспорт партии</h2><p>Скачайте файл или скопируйте весь текст для анализа.</p><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="actions"><button class="quiet" data-download-pgn>Скачать PGN</button><button class="quiet" data-copy-pgn>Скопировать PGN</button><button class="quiet" data-share-pgn>Поделиться</button></div>`;
 export const cancelledDialog = () => '<h2>Партия отменена</h2><p>Вы не сделали ни одного хода. Партия не учитывается в статистике.</p>';
 export const matchResultDialog = (title,reward,entry) => `<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${title}</h2><h2>+${reward} монет</h2><p>Взято фигур на ${entry.points} очков</p><p>Партия сохранена в истории профиля.</p>`;

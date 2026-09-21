@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=27';
-import {mountAppShell} from './ui/shell.js?v=27';
-import {statCard} from './ui/primitives.js?v=27';
-import {createDialog,createToast} from './ui/dialog.js?v=27';
-import {renderArchiveList} from './ui/components/archive-list.js?v=27';
-import {moveList} from './ui/components/move-list.js?v=27';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=27';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=27';
-import {closeActivityDay, calendarHTML} from './activity.js?v=27';
-import {createBotClient} from './bot-client.js?v=27';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=27';
-import {signedDelta} from './rating.js?v=27';
-import {Chess} from './chess.js?v=27';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=27';
-import {openChest, craftItem} from './economy.js?v=27';
-import {KEY, loadState, initialState, newGame} from './state.js?v=27';
-import {pieceSVG, itemPreview} from './pieces.js?v=27';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=27';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=27';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=27';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=28';
+import {mountAppShell} from './ui/shell.js?v=28';
+import {statCard} from './ui/primitives.js?v=28';
+import {createDialog,createToast} from './ui/dialog.js?v=28';
+import {renderArchiveList} from './ui/components/archive-list.js?v=28';
+import {moveList} from './ui/components/move-list.js?v=28';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=28';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=28';
+import {closeActivityDay, calendarHTML} from './activity.js?v=28';
+import {createBotClient} from './bot-client.js?v=28';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=28';
+import {signedDelta} from './rating.js?v=28';
+import {Chess} from './chess.js?v=28';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=28';
+import {openChest, craftItem} from './economy.js?v=28';
+import {KEY, loadState, initialState, newGame} from './state.js?v=28';
+import {pieceSVG, itemPreview} from './pieces.js?v=28';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=28';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=28';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=28';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
@@ -149,7 +149,7 @@ const renderGameInfo = () => {
   $('#archive-return').disabled=animating;
   $('#play-stats').hidden=hasBoard;
   $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
-  $('#resign').disabled=!active()||animating;
+  $('#resign').disabled=!active();
   $('#resign').hidden=!active();
   $('#abort-failed').hidden=!canAbortFailedMatch(state,game)||!!displayMatch;
   $('#abort-failed').disabled=animating;
@@ -428,13 +428,12 @@ $('#abort-failed').onclick=abortAfterFailure;
 $('#retry-failed').onclick=requestBot;
 const confirmResignation = () => {
   if(!active())return;
-  if(animating){toast('Дождитесь завершения хода и подтвердите ещё раз.');return;}
   stopBot();
   if(persist({...state,game:{...state.game,resigned:true}})){settle();render();}
   else {$('#modal').close();requestBot();}
 };
 $('#resign').onclick=()=>{
-  if(!active()||animating)return;
+  if(!active())return;
   showModal(resignDialog(),{closeLabel:'Продолжить игру'});
 };
 $('#install').onclick=async()=>{

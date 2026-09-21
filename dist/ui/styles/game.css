@@ -3,3 +3,5 @@
 @media(min-width:761px) and (min-height:700px){.board-area{max-width:min(600px,calc(100dvh - 295px))}.match-active .board-area{max-width:min(650px,calc(100dvh - 245px))}}
 @media(max-width:760px){.game-grid{display:flex;flex-direction:column;gap:16px}.game-grid aside{width:100%}.game-grid aside .panel{padding:16px}.move-log{display:none}.match-summary,.match-versus{gap:8px}.match-person{gap:5px}.match-person .avatar{display:none}#match-points{font-size:.875rem}.archive-entry{align-items:flex-start}.archive-entry small{max-width:200px}}
 @media(max-width:359px){.match-versus{flex-basis:100%}.history-buttons{gap:5px}}
+
+#resign{width:36px;height:36px;min-height:36px;padding:8px}#resign svg{width:18px;height:18px}
