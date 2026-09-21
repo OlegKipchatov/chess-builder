@@ -23,7 +23,7 @@ test('Production: new games use seeded v2; all four names survive save and PGN',
   assert.equal(state.game.engineProfile.id,'cognitive-v2');assert.equal(state.game.engineProfile.profile,style);
   assert.deepEqual(migrateState(state).game.engineProfile,state.game.engineProfile);
   const game=new Chess();game.move('e4');const pgn=exportPgn(game,state.game);
-  assert.match(pgn,/BotModel "cognitive-v2"/);assert.match(pgn,/GachaChessVersion "0.3-v29"/);assert.ok(pgn.includes(`BotPlayStyle "${style}"`));
+  assert.match(pgn,/BotModel "cognitive-v2"/);assert.match(pgn,/GachaChessVersion "0.3-v31"/);assert.ok(pgn.includes(`BotPlayStyle "${style}"`));
  }
 });
 test('Production: old running sessions migrate once, preserving position, progression, seed and style',()=>{

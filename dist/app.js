@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=29';
-import {mountAppShell} from './ui/shell.js?v=29';
-import {statCard} from './ui/primitives.js?v=29';
-import {createDialog,createToast} from './ui/dialog.js?v=29';
-import {renderArchiveList} from './ui/components/archive-list.js?v=29';
-import {moveList} from './ui/components/move-list.js?v=29';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=29';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=29';
-import {closeActivityDay, calendarHTML} from './activity.js?v=29';
-import {createBotClient} from './bot-client.js?v=29';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=29';
-import {signedDelta} from './rating.js?v=29';
-import {Chess} from './chess.js?v=29';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=29';
-import {openChest, craftItem} from './economy.js?v=29';
-import {KEY, loadState, initialState, newGame} from './state.js?v=29';
-import {pieceSVG, itemPreview} from './pieces.js?v=29';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=29';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=29';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=29';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=31';
+import {mountAppShell} from './ui/shell.js?v=31';
+import {statCard} from './ui/primitives.js?v=31';
+import {createDialog,createToast} from './ui/dialog.js?v=31';
+import {renderArchiveList} from './ui/components/archive-list.js?v=31';
+import {moveList} from './ui/components/move-list.js?v=31';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=31';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=31';
+import {closeActivityDay, calendarHTML} from './activity.js?v=31';
+import {createBotClient} from './bot-client.js?v=31';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=31';
+import {signedDelta} from './rating.js?v=31';
+import {Chess} from './chess.js?v=31';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=31';
+import {openChest, craftItem} from './economy.js?v=31';
+import {KEY, loadState, initialState, newGame} from './state.js?v=31';
+import {pieceSVG, itemPreview} from './pieces.js?v=31';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=31';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=31';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=31';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
@@ -147,7 +147,7 @@ const renderGameInfo = () => {
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   $('#archive-return').disabled=animating;
-  $('#play-stats').hidden=hasBoard;
+  $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
   $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
   $('#resign').disabled=!active();
   $('#resign').hidden=!active();
@@ -159,7 +159,7 @@ const renderGameInfo = () => {
   $('#game-ready').hidden=hasBoard;
   $('#match-title').textContent=displayMatch?'История партии':active()?'В игре':state.game.started?'Итоги партии':'Игра';
   $('#match-settings').textContent='';
-  $('#start-game').textContent='Партия с ИИ';
+  $('#start-game').textContent='Сыграем?';
   $('#start-game').disabled=active()||animating;
   renderHistory();
 };
@@ -414,7 +414,12 @@ $('#start-game').onclick=()=>{
   }
   selected=null;promotion=null;reviewCursor=null;
   currentScreen='play';
-  changeTab('play');render();requestBot();
+  changeTab('play');render();
+  const surface=$('#match-surface');
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    surface.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'ease-out'});
+  }
+  requestBot();
 };
 const abortAfterFailure = () => {
   const next=abortFailedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
