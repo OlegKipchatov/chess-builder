@@ -1,53 +1,50 @@
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=26';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=26';
-import {closeActivityDay, calendarHTML, dayLabel} from './activity.js?v=26';
-import {createBotClient} from './bot-client.js?v=26';
-import {capturePoints, completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=26';
-import {signedDelta} from './rating.js?v=26';
-import {Chess} from './chess.js?v=26';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=26';
-import {openChest, craftItem} from './economy.js?v=26';
-import {KEY, loadState, initialState, newGame} from './state.js?v=26';
-import {pieceSVG, itemPreview, equipmentPreview} from './pieces.js?v=26';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=26';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=26';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=26';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=27';
+import {mountAppShell} from './ui/shell.js?v=27';
+import {statCard} from './ui/primitives.js?v=27';
+import {createDialog,createToast} from './ui/dialog.js?v=27';
+import {renderArchiveList} from './ui/components/archive-list.js?v=27';
+import {moveList} from './ui/components/move-list.js?v=27';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=27';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=27';
+import {closeActivityDay, calendarHTML} from './activity.js?v=27';
+import {createBotClient} from './bot-client.js?v=27';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=27';
+import {signedDelta} from './rating.js?v=27';
+import {Chess} from './chess.js?v=27';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=27';
+import {openChest, craftItem} from './economy.js?v=27';
+import {KEY, loadState, initialState, newGame} from './state.js?v=27';
+import {pieceSVG, itemPreview} from './pieces.js?v=27';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=27';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=27';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=27';
+mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
 let state;
 try {state=loadState(localStorage);} catch {state=initialState();storageError=true;}
 const game = new Chess();
 try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.game=newGame();storageError=true;}
-let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, toastTimer, installPrompt=null;
+let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
 let lastBotError=null;
 const exportViewedMatch = () => {
  const config=viewedConfig(),error=config.engineFailure||(!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null);
  const pgn=exportPgn(viewedGame(),config,error);
- showModal(`<h2>Экспорт партии</h2><p>Скачайте файл или скопируйте весь текст для анализа.</p><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="actions"><button class="quiet" data-download-pgn>Скачать PGN</button><button class="quiet" data-copy-pgn>Скопировать PGN</button><button class="quiet" data-share-pgn>Поделиться</button></div>`);
+ showModal(exportPgnDialog(pgn));
 };
 let pendingActivity=null;
 let displayMatch=null, pendingResult=false, replayRunning=false, replayTimer=null;
 const viewedGame = () => displayMatch?.game||game;
 const viewedConfig = () => displayMatch?.config||(state.game.started?state.game:state.settings);
-const toast = message => {
-  $('#toast').textContent=message;
-  $('#toast').style.display='block';
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>$('#toast').style.display='none',5000);
-};
+const toast = createToast($('#toast'));
 const persist = (next,reset=false) => {
   const snapshot={...next, game:{...next.game,pgn:reset?'':game.pgn()}};
   try {localStorage.setItem(KEY,JSON.stringify(snapshot));state=snapshot;return true;}
   catch {toast('Не удалось сохранить прогресс. Освободите место или разрешите хранение данных.');return false;}
 };
-const showModal = html => {
-  $('#modal-content').innerHTML=html;
-  $('#close-modal').hidden=false;
-  $('#close-modal').textContent='Продолжить';
-  if(!$('#modal').open)$('#modal').showModal();
-};
+const showModal = createDialog($('#modal'),$('#modal-content'),$('#close-modal'));
 const ended = () => state.game.resigned || game.isGameOver();
 const locked = () => busy || animating;
 const active = () => isMatchActive(state,game);
@@ -73,8 +70,8 @@ const settle = (notifyActivity=true) => {
   const {entry,reward}=result;
   stopBot();game.reset();reviewCursor=null;queuedCursor=undefined;selected=null;
   if(!wasSettled){displayMatch={game:finishedGame,config:finishedConfig,kind:'result'};pendingResult=true;}
-  if(result.cancelled){showModal('<h2>Партия отменена</h2><p>Вы не сделали ни одного хода. Партия не учитывается в статистике.</p>');return;}
-  if(!wasSettled)showModal(`<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${title}</h2><h2>+${reward} монет</h2><p>Взято фигур на ${entry.points} очков</p><p>Партия сохранена в истории профиля.</p>`);
+  if(result.cancelled){showModal(cancelledDialog(),{closeLabel:'Продолжить',closeVariant:'primary'});return;}
+  if(!wasSettled)showModal(matchResultDialog(title,reward,entry),{closeLabel:'Продолжить',closeVariant:'primary'});
 };
 const drawBoard = () => {
   const config=viewedConfig(),equipped=config.equipped||state.equipped;
@@ -99,18 +96,12 @@ const syncNavigation = () => {
   document.body.classList.toggle('match-active',active()||pendingResult);
   $('.brand').setAttribute('aria-disabled',String(active()));
 };
-const renderArchive = () => {
-  const root=$('#match-archive'), rowHeight=104, total=state.archive.length;
-  if(!total){root.innerHTML='<p class="muted">Здесь появятся завершённые партии.</p>';return;}
-  const start=Math.max(0,Math.floor((root.scrollTop||0)/rowHeight)-3);
-  const end=Math.min(total,start+Math.ceil((root.clientHeight||520)/rowHeight)+6);
-  root.innerHTML=`<div style="height:${start*rowHeight}px" aria-hidden="true"></div>${state.archive.slice(start,end).map((entry,index)=>`<button class="archive-entry" data-archive="${escapeHTML(entry.id)}" aria-label="Партия ${start+index+1} из ${total}: ${escapeHTML(entry.result)}"><span><strong>${escapeHTML(entry.result)}</strong><small>${entry.playerColor==='w'?'Белые':'Чёрные'} · ${Number.isNaN(Date.parse(entry.finishedAt))?'Дата неизвестна':new Date(entry.finishedAt).toLocaleDateString('ru-RU')}</small></span><span>${entry.points} очк.</span></button>`).join('')}<div style="height:${(total-end)*rowHeight}px" aria-hidden="true"></div>`;
-};
+const renderArchive = () => renderArchiveList($('#match-archive'),state.archive);
 const renderStatistics = () => {
   const entries=state.archive.filter(entry=>entry.mode==='bot'&&entry.counted!==false), wins=entries.filter(entry=>entry.result==='Победа').length;
   const draws=entries.filter(entry=>entry.result==='Ничья').length, losses=entries.length-wins-draws;
   const percent=entries.length?Math.round(wins/entries.length*100)+'%':'—';
-  const card=(value,label)=>`<article><strong>${value}</strong><span>${label}</span></article>`;
+  const card=statCard;
   $('#play-stats').innerHTML=card(entries.length,'Сыграно партий')+card(wins,'Побед');
   $('#detailed-statistics').innerHTML=card(entries.length,'Партий с ИИ')+card(wins,'Побед')+card(draws,'Ничьих')+card(losses,'Поражений')+card(percent,'Процент побед')+card(state.owned.length,'Предметов')+card(state.opened,'Сундуков');
 };
@@ -139,8 +130,7 @@ const renderHistory = () => {
   $('#history-position').textContent=reviewCursor===null?`Текущая позиция · ${moves.length} полуходов`:`Позиция ${cursor} из ${moves.length}`;
   $('#history-notice').hidden=reviewCursor===null||!!displayMatch;
   $('#move-count').textContent=moves.length;
-  const moveButton=(index)=>moves[index]?`<button data-history-ply="${index+1}" class="history-move ${cursor===index+1?'selected-move':''}" aria-current="${cursor===index+1?'step':'false'}" >${moves[index]}</button>`:'<span>—</span>';
-  $('#moves').innerHTML=moves.length?Array.from({length:Math.ceil(moves.length/2)},(_,i)=>`<div class="move-row"><span class="muted">${i+1}.</span>${moveButton(i*2)}${moveButton(i*2+1)}</div>`).join(''):'<p class="muted">Здесь появится история партии.</p>';
+  $('#moves').innerHTML=moveList(moves,cursor);
   if(reviewCursor===null)$('#moves').scrollTop=$('#moves').scrollHeight;
 };
 const renderGameInfo = () => {
@@ -165,7 +155,7 @@ const renderGameInfo = () => {
   $('#abort-failed').disabled=animating;
   $('#retry-failed').hidden=$('#abort-failed').hidden;
   $('#retry-failed').disabled=locked();
-  $('#hint').textContent=displayMatch?'Просматривайте партию стрелками или выберите ход в журнале.':reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Настройки игры выбираются в профиле.';
+  $('#hint').textContent=displayMatch?'Просматривайте партию стрелками.':reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Начните новую партию с ИИ.';
   $('#game-ready').hidden=hasBoard;
   $('#match-title').textContent=displayMatch?'История партии':active()?'В игре':state.game.started?'Итоги партии':'Игра';
   $('#match-settings').textContent='';
@@ -189,7 +179,7 @@ const botFailure = (error) => {
   stopBot();
   const failed={...state,game:{...state.game,engineFailure:lastBotError}};if(!persist(failed))state=failed;
   renderGameInfo();
-  showModal('<h2>Компьютер не смог ответить</h2><p>Повторите расчёт или завершите партию без изменения прогресса. История ходов сохранится.</p><button class="quiet" data-retry-bot>Повторить расчёт</button><button class="quiet" data-export-pgn>Экспорт PGN</button><button class="quiet" data-abort-failed>Отменить партию</button>');
+  showModal(botFailureDialog());
 };
 const applyMove = async move => {
   if(!active()||animating)return;
@@ -223,7 +213,7 @@ const requestBot = () => {
 };
 const showPromotion = (from,to) => {
   promotion={from,to};
-  showModal(`<h2>Превращение пешки</h2><p>Выберите фигуру</p><div class="promotion">${['q','r','b','n'].map(type=>`<button data-promote="${type}" aria-label="${PIECE_NAMES[type]}">${pieceSVG(type,game.turn(),itemById(state.game.equipped.pieces[type]).style)}</button>`).join('')}</div>`);
+  showModal(promotionDialog(game.turn(),state.game.equipped));
   $('#close-modal').hidden=true;
 };
 $('#board').addEventListener('click',event=>{
@@ -316,12 +306,12 @@ const confirmCraft = id => {
   if(active())return;
   const item=itemById(id);
   if(!item||state.owned.includes(id)||state.shards<craftCost(item))return;
-  showModal(`<p class="eyebrow">МАСТЕРСКАЯ</p><div class="result-art">${itemPreview(item)}</div><h2>${item.name}</h2><p>Создать выбранный предмет за ${craftCost(item)} осколков? Случайности нет.</p><button class="primary" data-confirm-craft="${id}">Создать за ${craftCost(item)} ✧</button>`);
+  showModal(craftDialog(item,id),{closeLabel:'Отмена'});
 };
 const showSaveSet = () => {
   if(active())return;
   if(state.sets.length>=12){toast('Можно сохранить до 12 наборов. Удалите ненужный, чтобы добавить новый.');return;}
-  showModal('<h2>Сохранить свой набор</h2><p>Сохраним шесть выбранных скинов и текущую доску.</p><form id="save-set-form"><label for="set-name">Название</label><input id="set-name" name="name" maxlength="32" required placeholder="Например, Полярная ночь" autocomplete="off"><button class="primary" type="submit">Сохранить набор</button></form>');
+  showModal(saveSetDialog(),{closeLabel:'Отмена'});
   $('#set-name').focus();
 };
 $('#collection-content').addEventListener('click',event=>{
@@ -401,7 +391,7 @@ $('#modal').addEventListener('cancel',()=>{promotion=null;selected=null;if(!anim
 $('#modal').addEventListener('close',()=>{
   if(pendingResult&&!$('#modal').open){pendingResult=false;displayMatch=null;reviewCursor=null;render();
     const event=pendingActivity;pendingActivity=null;
-    if(event)showModal(`<div class="day-closed-mark" aria-hidden="true">✓</div><h2>День закрыт</h2><p>${event.streak===1?'Началась новая серия.':`Вы играете ${dayLabel(event.streak)} подряд.`}</p><strong class="streak-value">${dayLabel(event.streak)}</strong>`);
+    if(event)showModal(activityDialog(event),{closeLabel:'Продолжить',closeVariant:'primary'});
   }
 });
 $('#close-modal').onclick=()=>$('#modal').close();
@@ -414,7 +404,7 @@ $('#open-chest').onclick=()=>{
   const title=!item?'Осколки для мастерской':duplicate?'Предмет уже в коллекции':'Новый предмет!';
   const artwork=item?itemPreview(item):'<div class="shard-reveal">✧</div>';
   const copy=!item?'В этом сундуке нет предмета. Осколки можно потратить на конкретную фигурку или доску.':duplicate?'Повтор превратился в осколки. Сохранённый предмет остаётся у вас.':'Предмет добавлен в коллекцию. Используйте его отдельно или включите в свой набор.';
-  showModal(`<p class="eyebrow">${title}</p><div class="result-art reveal">${artwork}</div>${item?`<span class="rarity ${item.rarity}">${rarityNames[item.rarity]}</span><h2>${item.name}</h2>`:''}${shards?`<h2>+${shards} осколков</h2>`:''}<p>${copy}</p>${item&&!duplicate?`<button class="quiet" data-use-reward="${item.id}">Использовать</button>`:''}`);
+  showModal(chestRewardDialog(title,artwork,item,shards,copy,duplicate));
 };
 $('#start-game').onclick=()=>{
   if(active()||animating||pendingResult||displayMatch)return;
@@ -445,13 +435,12 @@ const confirmResignation = () => {
 };
 $('#resign').onclick=()=>{
   if(!active()||animating)return;
-  showModal('<h2>Завершить партию?</h2><p>До вашего первого хода партия будет отменена. После первого хода завершение засчитается как поражение.</p><button class="primary" data-confirm-resign>Завершить партию</button>');
-  $('#close-modal').textContent='Продолжить играть';
+  showModal(resignDialog(),{closeLabel:'Продолжить игру'});
 };
 $('#install').onclick=async()=>{
   if(active())return;
   if(installPrompt){await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;}
-  else showModal('<h2>Установить GachaChess</h2><p>На iPhone: откройте сайт в Safari → «Поделиться» → «На экран Домой».</p><p>На Android и компьютере: в меню браузера выберите «Установить приложение».</p><p>После загрузки офлайн-кэша можно играть без интернета.</p>');
+  else showModal(installHelpDialog());
 };
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;});
 window.addEventListener('appinstalled',()=>{$('#install').hidden=true;toast('Приложение установлено');});

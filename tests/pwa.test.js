@@ -5,13 +5,13 @@ import {pieceSVG} from '../dist/pieces.js';
 import {TYPES,STYLES} from '../dist/catalog.js';
 import vm from 'node:vm';
 const read = file => readFileSync(new URL('../dist/'+file,import.meta.url),'utf8');
-test('Весь граф runtime-модулей согласован с v26 и доступен офлайн',()=>{
+test('Весь граф runtime-модулей согласован с v27 и доступен офлайн',()=>{
  const sw=read('sw.js');
  for(const file of readdirSync(new URL('../dist/',import.meta.url)).filter(name=>name.endsWith('.js')&&name!=='sw.js')){
   assert.ok(sw.includes(`'./${file}'`),file);
   for(const match of read(file).matchAll(/from\s*['"]\.\/([^'"]+)['"]/g)){
    const [name,query]=match[1].split('?');assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)),`${file}: ${name}`);
-   assert.ok(sw.includes(`'./${name}'`),name);if(!name.startsWith('vendor/'))assert.equal(query,'v=26',`${file}: ${name}`);
+   assert.ok(sw.includes(`'./${name}'`),name);if(!name.startsWith('vendor/'))assert.equal(query,'v=27',`${file}: ${name}`);
   }
  }
  for(const name of ['difficulty-model.js','difficulty-config.js','play-style.js'])assert.equal(existsSync(new URL('../dist/'+name,import.meta.url)),false,name);
@@ -34,12 +34,12 @@ test('Stockfish 19 получает изоляцию для сетевых и о
  }
 });
 test('Белые и чёрные SVG используют разные явные заливки, а не шрифтовые символы',()=>{for(const type of TYPES)for(const style of STYLES){assert.match(pieceSVG(type,'w',style.id),/fill="#faf8ef"/);assert.match(pieceSVG(type,'b',style.id),/fill="#202933"/);assert.doesNotMatch(pieceSVG(type,'w',style.id),/[♔-♟]/);}});
-test('Все локальные зависимости HTML и модулей существуют и покрыты офлайн-кэшем',()=>{const sw=read('sw.js');const modules=['app.js','session.js','catalog.js','economy.js','state.js','pieces.js','board.js','collection.js','engine.js','bot-worker.js'];for(const file of modules){assert.ok(sw.includes(`'./${file}'`),file);for(const match of read(file).matchAll(/from\s*['"]\.\/([^'"]+)['"]/g)){const name=match[1].split('?')[0];assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)),name);assert.ok(sw.includes(`'./${name}'`),name);}}const html=read('index.html');assert.ok(html.includes('./app.js?v=26'));assert.ok(html.includes('./style.css?v=26'));assert.ok(sw.includes("path+'?v=26'"));});
+test('Все локальные зависимости HTML и модулей существуют и покрыты офлайн-кэшем',()=>{const sw=read('sw.js');const modules=['app.js','session.js','catalog.js','economy.js','state.js','pieces.js','board.js','collection.js','engine.js','bot-worker.js'];for(const file of modules){assert.ok(sw.includes(`'./${file}'`),file);for(const match of read(file).matchAll(/from\s*['"]\.\/([^'"]+)['"]/g)){const name=match[1].split('?')[0];assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)),name);assert.ok(sw.includes(`'./${name}'`),name);}}const html=read('index.html');assert.ok(html.includes('./app.js?v=27'));assert.ok(html.includes('./style.css?v=27'));assert.ok(sw.includes("path+'?v=27'"));});
 test('Сервис-воркер обновляет оболочку целиком и сохраняет область установки',()=>{const sw=read('sw.js');assert.ok(sw.includes('ACTIVATE_UPDATE'));assert.ok(sw.includes("caches.match('./index.html')"));const manifest=JSON.parse(read('manifest.webmanifest'));assert.equal(manifest.scope,'./');assert.equal(manifest.start_url,'./');});
-test('Поставка v26 содержит v2, но не содержит удалённый алгоритм и SF18',()=>{const sw=read('sw.js');for(const name of ['cognitive-config.js','cognitive-model.js','cognitive-search.js','cognitive-profile.js','bot-client.js','stockfish-config.js','stockfish-client.js','strength.js','engine-info.html']){assert.ok(sw.includes(`'./${name}'`));assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)));}for(const name of ['difficulty-model.js','difficulty-config.js','play-style.js','stockfish-18-lite-single'])assert.ok(!sw.includes(name));assert.match(read('engine-info.html'),/Cognitive v2/);});
+test('Поставка v27 содержит v2, но не содержит удалённый алгоритм и SF18',()=>{const sw=read('sw.js');for(const name of ['cognitive-config.js','cognitive-model.js','cognitive-search.js','cognitive-profile.js','bot-client.js','stockfish-config.js','stockfish-client.js','strength.js','engine-info.html']){assert.ok(sw.includes(`'./${name}'`));assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)));}for(const name of ['difficulty-model.js','difficulty-config.js','play-style.js','stockfish-18-lite-single'])assert.ok(!sw.includes(name));assert.match(read('engine-info.html'),/Cognitive v2/);});
 
 test('Таблица стилей содержит оформление приложения, а не JavaScript',()=>{
- const css=read('style.css');
+ const css=read('style.css')+readdirSync(new URL('../dist/ui/styles/',import.meta.url)).filter(name=>name.endsWith('.css')).map(name=>read('ui/styles/'+name)).join('\n');
  assert.doesNotMatch(css,/^\s*(?:import\s|export\s|const\s|let\s)/m);
  for(const selector of [':root','body','.board','.piece-icon','.collection-row'])assert.ok(css.includes(selector+'{'),selector);
  assert.match(css,/grid-template-columns:repeat\(8,1fr\)/);
