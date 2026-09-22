@@ -1,4 +1,4 @@
-import {escapeHTML,emptyState} from '../primitives.js?v=31';
+import {escapeHTML,emptyState} from '../primitives.js?v=32';
 export const ARCHIVE_ROW_HEIGHT=104;
 export const renderArchiveList = (root,entries) => {
   const total=entries.length;

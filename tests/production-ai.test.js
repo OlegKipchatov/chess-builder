@@ -11,6 +11,7 @@ import {exportPgn} from '../dist/pgn-export.js';
 import {uciPosition,createStockfishClient} from '../dist/stockfish-client.js';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
 import {normalizeScore} from '../dist/candidate-analysis.js';
+import {CONFIG} from '../dist/cognitive-config.js';
 const spawnCognitive = () => {
  const thread=new Worker(new URL('./helpers/cognitive-worker.mjs',import.meta.url));
  const worker={onmessage:null,onerror:null,postMessage:data=>thread.postMessage(data),terminate:()=>thread.terminate()};
@@ -23,7 +24,7 @@ test('Production: new games use seeded v2; all four names survive save and PGN',
   assert.equal(state.game.engineProfile.id,'cognitive-v2');assert.equal(state.game.engineProfile.profile,style);
   assert.deepEqual(migrateState(state).game.engineProfile,state.game.engineProfile);
   const game=new Chess();game.move('e4');const pgn=exportPgn(game,state.game);
-  assert.match(pgn,/BotModel "cognitive-v2"/);assert.match(pgn,/GachaChessVersion "0.3-v31"/);assert.ok(pgn.includes(`BotPlayStyle "${style}"`));
+  assert.match(pgn,/BotModel "cognitive-v2"/);assert.match(pgn,/GachaChessVersion "0.3-v32"/);assert.ok(pgn.includes(`BotPlayStyle "${style}"`));
  }
 });
 test('Production: old running sessions migrate once, preserving position, progression, seed and style',()=>{
@@ -43,6 +44,13 @@ test('Production: completed history retains old model metadata without enabling 
  const state=initialState(),old={id:'stockfish18-v1',skill:4,nodes:4000,milliseconds:1500};
  state.archive=[{id:'old',pgn:'1. e4 *',engineProfile:old}];state.game={...state.game,started:true,settled:true,engineProfile:old};
  const next=migrateState(state);assert.deepEqual(next.archive[0].engineProfile,old);assert.deepEqual(next.game.engineProfile,old);assert.equal(validEngineProfile(old),false);assert.throws(()=>createBotClient(old));
+});
+test('Production: every running cognitive session switches directly to 2.1',()=>{
+ const state=initialState();state.game=createStartedGame(state,()=>.4);
+ state.game.engineProfile.calibrationVersion='cognitive-v2-prototype-9';
+ const migrated=migrateState(state);
+ assert.equal(migrated.game.engineProfile.calibrationVersion,CONFIG.version);
+ assert.equal(migrated.game.engineProfile.seed,state.game.engineProfile.seed);
 });
 test('Production: mode is fixed by target, not session variance; low Elo never spawns WASM',()=>{
  let cognitive=0,native=0;

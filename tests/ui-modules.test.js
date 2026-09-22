@@ -39,6 +39,6 @@ test('Все вложенные JS/CSS-модули существуют и вх
   const source=readFileSync(file,'utf8'),name='./'+relative(rootPath,file);
   assert.ok(sw.includes(`'${name}'`),name);
   const imports=[...source.matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g),...source.matchAll(/@import\s+url\(['"](\.[^'"]+)['"]\)/g)];
-  for(const match of imports){const [target,version]=match[1].split('?');assert.ok(existsSync(resolve(dirname(file),target)),`${name}: ${target}`);if(!target.includes('/vendor/'))assert.equal(version,'v=31',`${name}: ${target}`);}
+  for(const match of imports){const [target,version]=match[1].split('?');assert.ok(existsSync(resolve(dirname(file),target)),`${name}: ${target}`);if(!target.includes('/vendor/'))assert.equal(version,'v=32',`${name}: ${target}`);}
  }
 });

@@ -1,8 +1,11 @@
-import {Chess} from './chess.js?v=31';
-import {CONFIG as C} from './cognitive-config.js?v=31';
-import {capabilitiesFor,factsFor,threatsFor,perceive,random,uci,boardPieces} from './cognitive-model.js?v=31';
-import {profileAdjustment} from './cognitive-profile.js?v=31';
-import {validPlayStyle} from './play-style-config.js?v=31';
+import {CONVERSION} from './conversion-config.js?v=32';
+import {conversionSignature} from './conversion-model.js?v=32';
+import {decideConversion} from './conversion-search.js?v=32';
+import {Chess} from './chess.js?v=32';
+import {CONFIG as C} from './cognitive-config.js?v=32';
+import {capabilitiesFor,factsFor,threatsFor,perceive,random,uci,boardPieces} from './cognitive-model.js?v=32';
+import {profileAdjustment} from './cognitive-profile.js?v=32';
+import {validPlayStyle} from './play-style-config.js?v=32';
 const center = square => 7-Math.abs(square.charCodeAt(0)-97-3.5)-Math.abs(Number(square[1])-1-3.5);
 const material = (pieces,side) => pieces.reduce((s,p)=>s+(p.color===side?1:-1)*C.values[p.type],0);
 const fractional = (n,seed,key) => Math.floor(n)+(random(seed,key)<n%1?1:0);
@@ -53,12 +56,15 @@ export const candidateIdeas = (game,facts,view,caps,rootSide,seed,key,last=null)
  }).sort((a,b)=>b.naturalness-a.naturalness||uci(a.move).localeCompare(uci(b.move)));
 };
 /** Decision API: no reference evaluations or SF candidates are accepted. */
-export const decide = ({fen,pgn,elo,seed,maxNodes=C.maxNodes,maxDepth=C.technicalDepthCap,profile='default'}) => {
+export const decide = ({fen,pgn,elo,seed,maxNodes,maxDepth,conversionEnabled=CONVERSION.enabled,profile='default'}) => {
+ const conversionLimits={maxNodes,maxDepth};
+ maxNodes??=C.maxNodes;maxDepth??=C.technicalDepthCap;
  if(!validPlayStyle(profile))throw RangeError('Unknown play style');
  if(!Number.isInteger(seed)||seed<0||seed>0xffffffff||!Number.isSafeInteger(maxNodes)||maxNodes<1||!(maxDepth===Infinity||(Number.isSafeInteger(maxDepth)&&maxDepth>=0)))throw RangeError('Invalid decision input');
  const caps=capabilitiesFor(elo),game=new Chess();if(pgn)game.loadPgn(pgn);else game.load(fen);
  if(fen&&game.fen()!==fen)throw Error('Position/history mismatch');
  if(game.isGameOver())return {move:null,trace:{terminal:true}};
+ if(conversionEnabled&&conversionSignature(game,game.turn()).active)return decideConversion({game,caps,seed,profile,...conversionLimits});
  const side=game.turn(),key=game.fen();
  // Facts are geometric and safe to memoize by FEN. Perception is also stable
  // for a given position/seed, so this removes duplicate chess.js work and

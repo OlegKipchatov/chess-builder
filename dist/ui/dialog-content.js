@@ -1,7 +1,7 @@
-import {escapeHTML} from './primitives.js?v=31';
-import {itemPreview,pieceSVG} from '../pieces.js?v=31';
-import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=31';
-import {dayLabel} from '../activity.js?v=31';
+import {escapeHTML} from './primitives.js?v=32';
+import {itemPreview,pieceSVG} from '../pieces.js?v=32';
+import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=32';
+import {dayLabel} from '../activity.js?v=32';
 export const exportPgnDialog = (pgn) => `<h2>Экспорт партии</h2><p>Скачайте файл или скопируйте весь текст для анализа.</p><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="actions"><button class="quiet" data-download-pgn>Скачать PGN</button><button class="quiet" data-copy-pgn>Скопировать PGN</button><button class="quiet" data-share-pgn>Поделиться</button></div>`;
 export const cancelledDialog = () => '<h2>Партия отменена</h2><p>Вы не сделали ни одного хода. Партия не учитывается в статистике.</p>';
 export const matchResultDialog = (title,reward,entry,breakdown) => `<p class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</p><h2>${escapeHTML(title)}</h2><p class="reward-total">+${reward} монет</p>${breakdown?`<dl class="reward-breakdown"><div><dt>Завершение партии</dt><dd>+${breakdown.completion}</dd></div><div><dt>Ваши ходы: ${breakdown.cleanMoves}<small>+1 за каждые 2 хода · максимум +20</small></dt><dd>+${breakdown.moves}</dd></div><div><dt>${breakdown.outcome==='win'?'Победа':breakdown.outcome==='draw'?'Ничья':'Поражение'}</dt><dd>+${breakdown.result}</dd></div></dl>${breakdown.reason==='early-resignation'?'<p class="reward-note">При сдаче раньше 10 ваших ходов монеты не начисляются.</p>':''}`:''}<p>Партия сохранена в истории профиля.</p>`;

@@ -1,10 +1,10 @@
-import {decisionModeFor} from './cognitive-model.js?v=31';
-import {validEngineProfile} from './strength.js?v=31';
-import {createStockfishClient} from './stockfish-client.js?v=31';
-import {Chess} from './chess.js?v=31';
+import {decisionModeFor} from './cognitive-model.js?v=32';
+import {validEngineProfile} from './strength.js?v=32';
+import {createStockfishClient} from './stockfish-client.js?v=32';
+import {Chess} from './chess.js?v=32';
 export const COGNITIVE_TIMEOUT_MS=12000;
 /** One client per session; native boundary uses TARGET, never per-move variance. */
-export const createBotClient = (profile,{spawn=()=>new Worker('./bot-worker.js?v=31',{type:'module'}),native=()=>createStockfishClient()}={}) => {
+export const createBotClient = (profile,{spawn=()=>new Worker('./bot-worker.js?v=32',{type:'module'}),native=()=>createStockfishClient()}={}) => {
  if(!validEngineProfile(profile))throw Error('Invalid engine profile');
  if(decisionModeFor(profile.targetElo)==='native-stockfish')return native();
  const worker=spawn(),client={onmessage:null,onerror:null};let dead=false,current=null,timer=null;

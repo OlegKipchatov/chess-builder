@@ -1,0 +1,1373 @@
+{
+  "summary": {
+    "games": 25,
+    "mates": 25,
+    "decisions": 280,
+    "p50Ms": 71.29599999999846,
+    "p95Ms": 177.00342499999897,
+    "maxMs": 363.2364799999996,
+    "defender": "Stockfish 19, depth 12 / nodes 80000 / 250ms, not tablebase oracle"
+  },
+  "config": {
+    "version": "conversion-1",
+    "enabled": true,
+    "maxPieces": 6,
+    "rootCap": 8,
+    "beam": 4,
+    "depth": 4,
+    "maxNodes": 3000,
+    "progressWeight": 360,
+    "orderingWeight": 140,
+    "rescueDepth": 6,
+    "rescueNodes": 6500,
+    "rescueAfter": 6,
+    "featureWeights": {
+      "cage": 0.5,
+      "edgePressure": 0.2,
+      "kingProximity": 0.2,
+      "confinement": 0.05,
+      "coverage": 0.05
+    },
+    "repeatPenalty": 180,
+    "progressEpsilon": 0.025,
+    "stagnationCap": 360,
+    "temperatureScale": 0.3,
+    "styleScale": 0.25,
+    "styleCap": 12
+  },
+  "sourceHashes": {
+    "conversion-config": "e825c316b40f4dd22a2a7099e81e81bef80bd66764bedd59f191cd7b6ba7febf",
+    "conversion-board": "54848fbc6921c4a4509c0067041ee0a390c92aeff8a1f002e6e71cdfd255eeb6",
+    "conversion-model": "daa63926db422e7ee8d071b21bce12008ca105fd362c8409f47d57ef6d875704",
+    "conversion-history": "f83cfc3821952f1008e96a33c62fbdbd183c150f6724e57381ec7824a2582eb8",
+    "conversion-search": "446f731257054ac8355cf701ac67651d14488f091c00633238651561e2d3ebd9",
+    "cognitive-search": "969d47dd13885b6c2331b8a8556e556e53c7d249190cdf2713a2a2775b5b1cf1"
+  },
+  "rows": [
+    {
+      "name": "incident",
+      "fen": "8/6k1/5R2/5R2/3B4/3K4/8/8 w - - 8 63",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 23,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/6k1/5R2/5R2/3B4/3K4/8/8 w - - 8 63\"]\n\n63. Ra6+ Kg8 64. Rc6 Kh7 65. Ba1 Kg8 66. Be5 Kh7 67. Ke4 Kg8 68. Ra6 Kh7 69. Bc3 Kg8 70. Kd5 Kh7 71. Ke6 Kg6 72. Ra7 Kh6 73. Kf7 Kh7 74. Rh5# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": false,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 89,
+        "cut": false,
+        "generatedCandidates": 39,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "f5h5",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "krk",
+      "fen": "8/4k3/8/8/8/8/4K3/R7 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 37,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/4k3/8/8/8/8/4K3/R7 w - - 0 1\"]\n\n1. Ra6 Ke8 2. Ra7 Kd8 3. Kf3 Ke8 4. Kf4 Kd8 5. Ke5 Ke8 6. Rb7 Kf8 7. Rc7 Ke8 8. Rg7 Kd8 9. Kd6 Ke8 10. Rd7 Kf8 11. Ke6 Ke8 12. Rb7 Kd8 13. Kd6 Ke8 14. Re7+ Kf8 15. Ke6 Kg8 16. Rf7 Kh8 17. Kf6 Kg8 18. Kg6 Kh8 19. Rf8# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "f7f8",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "kqk",
+      "fen": "8/4k3/8/8/8/8/4K3/Q7 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 25,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/4k3/8/8/8/8/4K3/Q7 w - - 0 1\"]\n\n1. Qe5+ Kd7 2. Kf2 Kc8 3. Qe7 Kb8 4. Qd7 Ka8 5. Kg3 Kb8 6. Kf3 Ka8 7. Qb5 Ka7 8. Kf4 Ka8 9. Ke4 Ka7 10. Ke5 Ka8 11. Kd6 Ka7 12. Kc6 Ka8 13. Qb7# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 58,
+        "cut": false,
+        "generatedCandidates": 26,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "b5b7",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "krk-black",
+      "fen": "r7/4k3/8/8/8/8/4K3/8 b - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 37,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"r7/4k3/8/8/8/8/4K3/8 b - - 0 1\"]\n\n1. ... Ra3 2. Kd2 Ke6 3. Kc1 Kd5 4. Kd1 Ra2 5. Kc1 Kd4 6. Kd1 Rb2 7. Kc1 Rh2 8. Kd1 Rg2 9. Ke1 Ke3 10. Kd1 Re2 11. Kc1 Ke4 12. Kd1 Ra2 13. Kc1 Rg2 14. Kb1 Kd3 15. Kc1 Rd2 16. Kb1 Rc2 17. Ka1 Kc3 18. Kb1 Kb3 19. Ka1 Rc1# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "b",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "c2c1",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "kqk-black",
+      "fen": "q7/4k3/8/8/8/8/4K3/8 b - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 15,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"q7/4k3/8/8/8/8/4K3/8 b - - 0 1\"]\n\n1. ... Qa3 2. Kd2 Kd6 3. Ke2 Kc5 4. Kf2 Kd5 5. Ke1 Qa2 6. Kd1 Ke4 7. Ke1 Ke3 8. Kf1 Qf2# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "b",
+        "historyComplete": true,
+        "progressBefore": 0.913125,
+        "features": {
+          "mobilityCount": 2,
+          "confinement": 0.6,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6,
+          "cage": 0.90625,
+          "progress": 0.913125
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 82,
+        "cut": false,
+        "generatedCandidates": 27,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "a2f2",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-0",
+      "fen": "8/8/5R2/8/1K6/8/4k3/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 35,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/5R2/8/1K6/8/4k3/8 w - - 0 1\"]\n\n1. Kc3 Ke3 2. Kc4 Ke2 3. Kd4 Kd2 4. Rf2+ Ke1 5. Rh2 Kd1 6. Rg2 Ke1 7. Rc2 Kd1 8. Rh2 Ke1 9. Kc3 Kd1 10. Rc2 Ke1 11. Rd2 Kf1 12. Kc2 Kg1 13. Re2 Kh1 14. Kd1 Kg1 15. Ke1 Kh1 16. Kf2 Kh2 17. Re3 Kh1 18. Rh3# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 42,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "e3h3",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-1",
+      "fen": "8/8/8/8/8/5k2/1Q6/2K5 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 11,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/8/8/8/5k2/1Q6/2K5 w - - 0 1\"]\n\n1. Qb4 Kg3 2. Kd2 Kh2 3. Qg4 Kh1 4. Ke3 Kh2 5. Kf2 Kh1 6. Qg1# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 51,
+        "cut": false,
+        "generatedCandidates": 29,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "g4g1",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-2",
+      "fen": "8/1k6/4R3/8/8/8/8/1K6 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 35,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/1k6/4R3/8/8/8/8/1K6 w - - 0 1\"]\n\n1. Ka2 Kc8 2. Re8+ Kd7 3. Re4 Kd6 4. Kb3 Kc5 5. Re6 Kd5 6. Re2 Kd4 7. Re1 Kd5 8. Re8 Kd4 9. Kb4 Kd5 10. Re3 Kc6 11. Rd3 Kb6 12. Rc3 Ka7 13. Ka5 Kb7 14. Rc4 Ka7 15. Rc7+ Ka8 16. Ka6 Kb8 17. Kb6 Ka8 18. Rc8# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "c7c8",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-3",
+      "fen": "5K2/8/8/8/7k/8/8/3Q4 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 13,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"5K2/8/8/8/7k/8/8/3Q4 w - - 0 1\"]\n\n1. Qf3 Kg5 2. Kg7 Kh4 3. Qg2 Kh5 4. Qe4 Kg5 5. Kf7 Kh5 6. Kf6 Kh6 7. Qg6# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 80,
+        "cut": false,
+        "generatedCandidates": 32,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "e4g6",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-4",
+      "fen": "8/3k1K2/8/8/8/8/8/R7 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 21,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/3k1K2/8/8/8/8/8/R7 w - - 0 1\"]\n\n1. Ra6 Kd8 2. Ra7 Kc8 3. Re7 Kb8 4. Kf6 Kc8 5. Ke6 Kd8 6. Kd6 Kc8 7. Rd7 Kb8 8. Rc7 Ka8 9. Kc6 Kb8 10. Kb6 Ka8 11. Rc8# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "c7c8",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-5",
+      "fen": "8/8/1k6/8/3K4/6Q1/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 9,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/1k6/8/3K4/6Q1/8/8 w - - 0 1\"]\n\n1. Kd5 Kb7 2. Qf2 Ka6 3. Kc6 Ka5 4. Qd4 Ka6 5. Qa1# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 80,
+        "cut": false,
+        "generatedCandidates": 32,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "d4a1",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-6",
+      "fen": "2k5/6R1/8/8/4K3/8/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 21,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"2k5/6R1/8/8/4K3/8/8/8 w - - 0 1\"]\n\n1. Ke5 Kd8 2. Kf5 Ke8 3. Ke6 Kd8 4. Re7 Kc8 5. Rd7 Kb8 6. Ke7 Kc8 7. Kd6 Kb8 8. Rc7 Ka8 9. Kc6 Kb8 10. Kb6 Ka8 11. Rc8# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "c7c8",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-7",
+      "fen": "2k5/8/8/2K5/8/2Q5/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 5,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"2k5/8/8/2K5/8/2Q5/8/8 w - - 0 1\"]\n\n1. Kc6 Kd8 2. Qe5 Kc8 3. Qc7# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 80,
+        "cut": false,
+        "generatedCandidates": 32,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "e5c7",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-8",
+      "fen": "k7/8/8/8/5K2/5R2/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 35,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"k7/8/8/8/5K2/5R2/8/8 w - - 0 1\"]\n\n1. Rb3 Ka7 2. Ke4 Ka6 3. Kd5 Ka5 4. Rb2 Ka6 5. Rb4 Ka5 6. Rb7 Ka4 7. Kc4 Ka3 8. Kc3 Ka4 9. Kb2 Ka5 10. Rb3 Ka4 11. Rb8 Ka5 12. Kc3 Ka6 13. Rb4 Ka5 14. Kc4 Ka6 15. Kc5 Ka5 16. Rd4 Ka6 17. Rd7 Ka5 18. Ra7# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.86625,
+        "features": {
+          "mobilityCount": 2,
+          "confinement": 0.6,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6,
+          "cage": 0.8125,
+          "progress": 0.86625
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 64,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "d7a7",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-9",
+      "fen": "8/5K2/8/8/1Q6/6k1/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 13,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/5K2/8/8/1Q6/6k1/8/8 w - - 0 1\"]\n\n1. Qd2 Kf3 2. Qe1 Kg4 3. Qe3 Kf5 4. Kg7 Kg4 5. Kf6 Kh4 6. Kf5 Kh5 7. Qg5# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 77,
+        "cut": false,
+        "generatedCandidates": 30,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "e3g5",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-10",
+      "fen": "8/8/8/2k5/7R/7K/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 41,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/8/2k5/7R/7K/8/8 w - - 0 1\"]\n\n1. Kg3 Kb5 2. Rf4 Kc5 3. Kf3 Kb5 4. Rd4 Kc6 5. Ke4 Kc5 6. Ke5 Kb6 7. Rc4 Kb5 8. Kd4 Kb6 9. Rc2 Kb5 10. Rc1 Kb6 11. Kd5 Kb7 12. Rc6 Kb8 13. Kd6 Kb7 14. Kc5 Ka7 15. Rb6 Ka8 16. Kb5 Ka7 17. Kc6 Ka8 18. Rb5 Ka7 19. Rb4 Ka8 20. Kc7 Ka7 21. Ra4# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.92875,
+        "features": {
+          "mobilityCount": 2,
+          "confinement": 0.6,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6,
+          "cage": 0.9375,
+          "progress": 0.92875
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 53,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "b4a4",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-11",
+      "fen": "8/4k3/K7/Q7/8/8/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 13,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/4k3/K7/Q7/8/8/8/8 w - - 0 1\"]\n\n1. Qf5 Kd6 2. Kb6 Ke7 3. Kc5 Kd8 4. Kc6 Ke7 5. Kc7 Ke8 6. Kd6 Kd8 7. Qd7# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 77,
+        "cut": false,
+        "generatedCandidates": 30,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "f5d7",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-12",
+      "fen": "8/1R6/8/8/8/7K/8/5k2 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 27,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/1R6/8/8/8/7K/8/5k2 w - - 0 1\"]\n\n1. Rb2 Ke1 2. Kg3 Kd1 3. Ra2 Ke1 4. Kg2 Kd1 5. Kf2 Kc1 6. Re2 Kd1 7. Ke3 Kc1 8. Kd4 Kd1 9. Kd3 Kc1 10. Rd2 Kb1 11. Rc2 Ka1 12. Kc3 Kb1 13. Kb3 Ka1 14. Rc1# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": true,
+        "depth": 6,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "c2c1",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-13",
+      "fen": "8/8/2K1k3/8/8/8/6Q1/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 7,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/2K1k3/8/8/8/6Q1/8 w - - 0 1\"]\n\n1. Qg5 Kf7 2. Kd7 Kf8 3. Ke6 Ke8 4. Qe7# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 72,
+        "cut": false,
+        "generatedCandidates": 28,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "g5e7",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-14",
+      "fen": "4k3/2K5/8/8/8/8/6R1/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 23,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"4k3/2K5/8/8/8/8/6R1/8 w - - 0 1\"]\n\n1. Rg5 Ke7 2. Ra5 Kf7 3. Ra6 Ke7 4. Rh6 Kf7 5. Rb6 Kg7 6. Kd7 Kf7 7. Ra6 Kg8 8. Ke7 Kg7 9. Rb6 Kh8 10. Kf7 Kh7 11. Ra6 Kh8 12. Rh6# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 46,
+        "cut": false,
+        "generatedCandidates": 20,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "a6h6",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-15",
+      "fen": "8/8/2Q5/8/6k1/8/8/4K3 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 15,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/2Q5/8/6k1/8/8/4K3 w - - 0 1\"]\n\n1. Qf6 Kg3 2. Kf1 Kg4 3. Kg2 Kh5 4. Qg7 Kh4 5. Qe5 Kg4 6. Kf2 Kh4 7. Kf3 Kh3 8. Qg3# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.964375,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.8,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.8,
+          "cage": 0.96875,
+          "progress": 0.964375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 80,
+        "cut": false,
+        "generatedCandidates": 32,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "e5g3",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-16",
+      "fen": "6R1/8/2k2K2/8/8/8/8/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 29,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"6R1/8/2k2K2/8/8/8/8/8 w - - 0 1\"]\n\n1. Ke6 Kc5 2. Rg4 Kb6 3. Rc4 Kb5 4. Kd5 Kb6 5. Rc5 Kb7 6. Rc6 Kb8 7. Kd6 Kb7 8. Kc5 Ka7 9. Rb6 Ka8 10. Kd5 Ka7 11. Kc6 Ka8 12. Rb2 Ka7 13. Rb4 Ka8 14. Kc7 Ka7 15. Ra4# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.92875,
+        "features": {
+          "mobilityCount": 2,
+          "confinement": 0.6,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6,
+          "cage": 0.9375,
+          "progress": 0.92875
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 53,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "b4a4",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-17",
+      "fen": "8/8/1k6/8/1K6/8/8/Q7 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 11,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/1k6/8/1K6/8/8/Q7 w - - 0 1\"]\n\n1. Qc1 Kb7 2. Ka5 Ka7 3. Qc7+ Ka8 4. Qd7 Kb8 5. Ka6 Ka8 6. Qa7# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 44,
+        "cut": false,
+        "generatedCandidates": 26,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "d7a7",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-18",
+      "fen": "8/8/8/8/5k2/7K/2R5/8 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 21,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/8/8/5k2/7K/2R5/8 w - - 0 1\"]\n\n1. Re2 Kf3 2. Re6 Kf4 3. Re7 Kf3 4. Kh4 Kf4 5. Re8 Kf3 6. Kg5 Kg3 7. Rf8 Kg2 8. Kg4 Kh1 9. Rf2 Kg1 10. Kg3 Kh1 11. Rf1# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9510416666666666,
+        "features": {
+          "mobilityCount": 1,
+          "confinement": 0.6666666666666667,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6666666666666666,
+          "cage": 0.96875,
+          "progress": 0.9510416666666666
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 36,
+        "cut": false,
+        "generatedCandidates": 19,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "f2f1",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    },
+    {
+      "name": "generated-19",
+      "fen": "8/8/7k/8/8/Q7/8/6K1 w - - 0 1",
+      "elo": 840,
+      "seed": 2935870025,
+      "plies": 13,
+      "mate": true,
+      "repetition": false,
+      "fiftyMoves": false,
+      "stalemate": false,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n[SetUp \"1\"]\n[FEN \"8/8/7k/8/8/Q7/8/6K1 w - - 0 1\"]\n\n1. Qg3 Kh7 2. Kf1 Kh6 3. Qg8 Kh5 4. Kf2 Kh6 5. Kf3 Kh5 6. Qg7 Kh4 7. Qg4# *",
+      "trace": {
+        "version": "cognitive-v2.1-conversion-1",
+        "behaviorVersion": "2.1.0",
+        "conversionConfig": "conversion-1",
+        "conversionMode": true,
+        "conversionKind": "major-vs-lone-king",
+        "elo": 840,
+        "profile": "solid",
+        "strongSide": "w",
+        "historyComplete": true,
+        "progressBefore": 0.9209375,
+        "features": {
+          "mobilityCount": 2,
+          "confinement": 0.6,
+          "edgePressure": 1,
+          "kingProximity": 1,
+          "coverage": 0.6,
+          "cage": 0.921875,
+          "progress": 0.9209375
+        },
+        "rescue": false,
+        "depth": 4,
+        "completedDepth": 0,
+        "searchNodes": 0,
+        "orderingEvaluations": 0,
+        "nodes": 0,
+        "safetyEvaluations": 84,
+        "cut": false,
+        "generatedCandidates": 29,
+        "immediateMate": true,
+        "rootCandidates": 1,
+        "candidates": [
+          {
+            "move": "g7g4",
+            "reasons": [
+              "mate"
+            ],
+            "perceivedValue": 99999
+          }
+        ]
+      }
+    }
+  ]
+}

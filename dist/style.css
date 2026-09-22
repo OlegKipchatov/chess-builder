@@ -1,9 +1,9 @@
 /* UI styles are owned by their modules; order: tokens, primitives, shell, features. */
-@import url('./ui/styles/tokens.css?v=31');
-@import url('./ui/styles/base.css?v=31');
-@import url('./ui/styles/shell.css?v=31');
-@import url('./ui/styles/board.css?v=31');
-@import url('./ui/styles/game.css?v=31');
-@import url('./ui/styles/collection.css?v=31');
-@import url('./ui/styles/content.css?v=31');
-@import url('./ui/styles/dialog.css?v=31');
+@import url('./ui/styles/tokens.css?v=32');
+@import url('./ui/styles/base.css?v=32');
+@import url('./ui/styles/shell.css?v=32');
+@import url('./ui/styles/board.css?v=32');
+@import url('./ui/styles/game.css?v=32');
+@import url('./ui/styles/collection.css?v=32');
+@import url('./ui/styles/content.css?v=32');
+@import url('./ui/styles/dialog.css?v=32');

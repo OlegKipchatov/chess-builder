@@ -7,7 +7,7 @@ export const CONTROL_POINTS = [
  [1300,.94,.91,4.6,3.5,.77,.87],[1400,.96,.94,5.2,3.8,.87,.92]
 ];
 export const EXTRA_POINTS = [[100,.10,.05,.90],[600,.45,.40,.97],[1000,.75,.75,.99],[1400,.93,.93,.997]];
-export const CONFIG = Object.freeze({version:'cognitive-v2-prototype-9',minElo:100,maxElo:1400,nativeStockfishFromElo:1400,technicalDepthCap:2,
+export const CONFIG = Object.freeze({version:'cognitive-v2.1-conversion-1',minElo:100,maxElo:1400,nativeStockfishFromElo:1400,technicalDepthCap:2,
  offset:-100,sigma:40,varianceLimit:60,maxNodes:2000,maxRoot:16,searchRootMax:6,rootBase:2,rootWidth:1.5,
  values:{p:100,n:320,b:335,r:500,q:900,k:0},
  complexity:{moves:40,forcing:12,exposed:8,weights:[.25,.30,.30,.15]},

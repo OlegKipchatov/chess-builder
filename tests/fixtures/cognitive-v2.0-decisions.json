@@ -1,0 +1,1624 @@
+[
+  {
+    "input": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "elo": 100,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "b1c3",
+      "trace": {
+        "elo": 100,
+        "profile": "default",
+        "requestedDepth": 0,
+        "depth": 0,
+        "completedDepth": 0,
+        "width": 1,
+        "nodes": 0,
+        "cut": false,
+        "complexity": 0.275,
+        "load": 0.275,
+        "tactics": false,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 4,
+        "searchRoot": 4,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 1.7053025658242404e-13,
+            "naturalness": 34,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g1f3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": -4.547473508864641e-13,
+            "naturalness": 34,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "b1a3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 2.2737367544323206e-13,
+            "naturalness": 28,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g1h3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": -4.547473508864641e-13,
+            "naturalness": 28,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "elo": 100,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "b1c3",
+      "trace": {
+        "elo": 100,
+        "profile": "solid",
+        "requestedDepth": 0,
+        "depth": 0,
+        "completedDepth": 0,
+        "width": 1,
+        "nodes": 0,
+        "cut": false,
+        "complexity": 0.275,
+        "load": 0.275,
+        "tactics": false,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 4,
+        "searchRoot": 4,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 1.7053025658242404e-13,
+            "naturalness": 34,
+            "styleAdjustment": -15.257142857142856
+          },
+          {
+            "move": "g1f3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": -4.547473508864641e-13,
+            "naturalness": 34,
+            "styleAdjustment": -15.257142857142856
+          },
+          {
+            "move": "b1a3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 2.2737367544323206e-13,
+            "naturalness": 28,
+            "styleAdjustment": -18.685714285714287
+          },
+          {
+            "move": "g1h3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": -4.547473508864641e-13,
+            "naturalness": 28,
+            "styleAdjustment": -18.685714285714287
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "elo": 840,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "b1c3",
+      "trace": {
+        "elo": 840,
+        "profile": "default",
+        "requestedDepth": 2,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 2,
+        "nodes": 553,
+        "cut": false,
+        "complexity": 0.275,
+        "load": 0,
+        "tactics": true,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 35.99999999999994,
+            "naturalness": 34,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "d2d4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 36,
+            "naturalness": 8,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "f2f4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 17.999999999999886,
+            "naturalness": 8,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2e4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 35.99999999999994,
+            "naturalness": 8,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "c2c3",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 17.999999999999773,
+            "naturalness": 5,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g1f3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 18.000000000000227,
+            "naturalness": 34,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "elo": 840,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "b1c3",
+      "trace": {
+        "elo": 840,
+        "profile": "solid",
+        "requestedDepth": 2,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 2,
+        "nodes": 553,
+        "cut": false,
+        "complexity": 0.275,
+        "load": 0,
+        "tactics": true,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 35.99999999999994,
+            "naturalness": 34,
+            "styleAdjustment": -15.257142857142856
+          },
+          {
+            "move": "d2d4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 36,
+            "naturalness": 8,
+            "styleAdjustment": -15.17142857142857
+          },
+          {
+            "move": "f2f4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 17.999999999999886,
+            "naturalness": 8,
+            "styleAdjustment": -15.17142857142857
+          },
+          {
+            "move": "e2e4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 35.99999999999994,
+            "naturalness": 8,
+            "styleAdjustment": -15.17142857142857
+          },
+          {
+            "move": "c2c3",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 17.999999999999773,
+            "naturalness": 5,
+            "styleAdjustment": -14.485714285714288
+          },
+          {
+            "move": "g1f3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 18.000000000000227,
+            "naturalness": 34,
+            "styleAdjustment": -15.257142857142856
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "elo": 1200,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "b1c3",
+      "trace": {
+        "elo": 1200,
+        "profile": "default",
+        "requestedDepth": 4,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 3,
+        "nodes": 705,
+        "cut": false,
+        "complexity": 0.275,
+        "load": 0,
+        "tactics": true,
+        "position": true,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 54.00000000000006,
+            "naturalness": 79,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g1f3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 54.00000000000006,
+            "naturalness": 79,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "d2d4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 36,
+            "naturalness": 38,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "h2h4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 35.99999999999983,
+            "naturalness": 38,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g2g4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 4.547473508864641e-13,
+            "naturalness": 38,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "f2f4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 35.999999999999375,
+            "naturalness": 38,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "elo": 1200,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "b1c3",
+      "trace": {
+        "elo": 1200,
+        "profile": "solid",
+        "requestedDepth": 4,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 3,
+        "nodes": 705,
+        "cut": false,
+        "complexity": 0.275,
+        "load": 0,
+        "tactics": true,
+        "position": true,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 54.00000000000006,
+            "naturalness": 79,
+            "styleAdjustment": -15.257142857142856
+          },
+          {
+            "move": "g1f3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 54.00000000000006,
+            "naturalness": 79,
+            "styleAdjustment": -15.257142857142856
+          },
+          {
+            "move": "d2d4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 36,
+            "naturalness": 38,
+            "styleAdjustment": -15.17142857142857
+          },
+          {
+            "move": "h2h4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 35.99999999999983,
+            "naturalness": 38,
+            "styleAdjustment": -15.17142857142857
+          },
+          {
+            "move": "g2g4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 4.547473508864641e-13,
+            "naturalness": 38,
+            "styleAdjustment": -15.17142857142857
+          },
+          {
+            "move": "f2f4",
+            "reasons": [
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 35.999999999999375,
+            "naturalness": 38,
+            "styleAdjustment": -15.17142857142857
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1b1kbnr/pppp1ppp/8/4N1q1/2BnP3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5",
+      "elo": 100,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "c4f7",
+      "trace": {
+        "elo": 100,
+        "profile": "default",
+        "requestedDepth": 0,
+        "depth": 0,
+        "completedDepth": 0,
+        "width": 1,
+        "nodes": 0,
+        "cut": false,
+        "complexity": 0.725,
+        "load": 0.725,
+        "tactics": false,
+        "position": false,
+        "opening": false,
+        "generatedCandidates": 16,
+        "rootCandidates": 4,
+        "searchRoot": 4,
+        "noticed": [],
+        "missed": [
+          "e5:d7",
+          "e5:f7",
+          "c4:f7",
+          "g5:e5",
+          "d4:c2",
+          "g5:d2",
+          "g5:g2"
+        ],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "c4f7",
+            "reasons": [
+              "capture"
+            ],
+            "perceivedValue": 874.9669867180985,
+            "naturalness": 100,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5d7",
+            "reasons": [
+              "capture"
+            ],
+            "perceivedValue": 851.1504057853482,
+            "naturalness": 100,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5f7",
+            "reasons": [
+              "capture"
+            ],
+            "perceivedValue": 811.8714501677543,
+            "naturalness": 100,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g1h3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 785.6138079353141,
+            "naturalness": 8,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1b1kbnr/pppp1ppp/8/4N1q1/2BnP3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5",
+      "elo": 100,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "c4f7",
+      "trace": {
+        "elo": 100,
+        "profile": "solid",
+        "requestedDepth": 0,
+        "depth": 0,
+        "completedDepth": 0,
+        "width": 1,
+        "nodes": 0,
+        "cut": false,
+        "complexity": 0.725,
+        "load": 0.725,
+        "tactics": false,
+        "position": false,
+        "opening": false,
+        "generatedCandidates": 16,
+        "rootCandidates": 4,
+        "searchRoot": 4,
+        "noticed": [],
+        "missed": [
+          "e5:d7",
+          "e5:f7",
+          "c4:f7",
+          "g5:e5",
+          "d4:c2",
+          "g5:d2",
+          "g5:g2"
+        ],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "c4f7",
+            "reasons": [
+              "capture"
+            ],
+            "perceivedValue": 874.9669867180985,
+            "naturalness": 100,
+            "styleAdjustment": -32.00857142857142
+          },
+          {
+            "move": "e5d7",
+            "reasons": [
+              "capture"
+            ],
+            "perceivedValue": 851.1504057853482,
+            "naturalness": 100,
+            "styleAdjustment": -53.02857142857143
+          },
+          {
+            "move": "e5f7",
+            "reasons": [
+              "capture"
+            ],
+            "perceivedValue": 811.8714501677543,
+            "naturalness": 100,
+            "styleAdjustment": -37.67619047619048
+          },
+          {
+            "move": "g1h3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 785.6138079353141,
+            "naturalness": 8,
+            "styleAdjustment": -51.352380952380955
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1b1kbnr/pppp1ppp/8/4N1q1/2BnP3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5",
+      "elo": 840,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e5f7",
+      "trace": {
+        "elo": 840,
+        "profile": "default",
+        "requestedDepth": 2,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 2,
+        "nodes": 751,
+        "cut": false,
+        "complexity": 0.725,
+        "load": 0.23725545944408016,
+        "tactics": false,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [
+          "e5:d7",
+          "e5:f7",
+          "g5:e5",
+          "g5:g2"
+        ],
+        "missed": [
+          "c4:f7",
+          "d4:c2",
+          "g5:d2"
+        ],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e5f7",
+            "reasons": [
+              "capture",
+              "escape-threat"
+            ],
+            "perceivedValue": 1345.040722478479,
+            "naturalness": 180,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5f3",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 950.8373696939609,
+            "naturalness": 80,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5g4",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 987.578496002468,
+            "naturalness": 80,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g1e2",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 889.1546348034058,
+            "naturalness": 34,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "g2g3",
+            "reasons": [
+              "escape-threat",
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 984.2261990694623,
+            "naturalness": 30,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 1106.7488720017486,
+            "naturalness": 34,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1b1kbnr/pppp1ppp/8/4N1q1/2BnP3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5",
+      "elo": 840,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e5f7",
+      "trace": {
+        "elo": 840,
+        "profile": "solid",
+        "requestedDepth": 2,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 2,
+        "nodes": 751,
+        "cut": false,
+        "complexity": 0.725,
+        "load": 0.23725545944408016,
+        "tactics": false,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [
+          "e5:d7",
+          "e5:f7",
+          "g5:e5",
+          "g5:g2"
+        ],
+        "missed": [
+          "c4:f7",
+          "d4:c2",
+          "g5:d2"
+        ],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e5f7",
+            "reasons": [
+              "capture",
+              "escape-threat"
+            ],
+            "perceivedValue": 1345.040722478479,
+            "naturalness": 180,
+            "styleAdjustment": -37.67619047619048
+          },
+          {
+            "move": "e5f3",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 950.8373696939609,
+            "naturalness": 80,
+            "styleAdjustment": -29.82857142857143
+          },
+          {
+            "move": "e5g4",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 987.578496002468,
+            "naturalness": 80,
+            "styleAdjustment": -32.22857142857143
+          },
+          {
+            "move": "g1e2",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 889.1546348034058,
+            "naturalness": 34,
+            "styleAdjustment": -45.52380952380952
+          },
+          {
+            "move": "g2g3",
+            "reasons": [
+              "escape-threat",
+              "centralize",
+              "pawn-space"
+            ],
+            "perceivedValue": 984.2261990694623,
+            "naturalness": 30,
+            "styleAdjustment": -47.15238095238095
+          },
+          {
+            "move": "b1c3",
+            "reasons": [
+              "development",
+              "centralize"
+            ],
+            "perceivedValue": 1106.7488720017486,
+            "naturalness": 34,
+            "styleAdjustment": -47.923809523809524
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1b1kbnr/pppp1ppp/8/4N1q1/2BnP3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5",
+      "elo": 1200,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e5f7",
+      "trace": {
+        "elo": 1200,
+        "profile": "default",
+        "requestedDepth": 4,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 3,
+        "nodes": 903,
+        "cut": false,
+        "complexity": 0.725,
+        "load": 0,
+        "tactics": true,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [
+          "e5:d7",
+          "e5:f7",
+          "g5:e5",
+          "d4:c2",
+          "g5:d2",
+          "g5:g2"
+        ],
+        "missed": [
+          "c4:f7"
+        ],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "c4f7",
+            "reasons": [
+              "capture",
+              "check"
+            ],
+            "perceivedValue": 1032.0402324589716,
+            "naturalness": 220,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5f7",
+            "reasons": [
+              "capture",
+              "escape-threat"
+            ],
+            "perceivedValue": 1268.717240152471,
+            "naturalness": 180,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5f3",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 930.0423355433342,
+            "naturalness": 80,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5g4",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 897.1196720802787,
+            "naturalness": 80,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5d7",
+            "reasons": [
+              "capture",
+              "escape-threat"
+            ],
+            "perceivedValue": 691.3066636221495,
+            "naturalness": 180,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e5d3",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 922.3379625887815,
+            "naturalness": 80,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1b1kbnr/pppp1ppp/8/4N1q1/2BnP3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5",
+      "elo": 1200,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e5f7",
+      "trace": {
+        "elo": 1200,
+        "profile": "solid",
+        "requestedDepth": 4,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 3,
+        "nodes": 903,
+        "cut": false,
+        "complexity": 0.725,
+        "load": 0,
+        "tactics": true,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 16,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [
+          "e5:d7",
+          "e5:f7",
+          "g5:e5",
+          "d4:c2",
+          "g5:d2",
+          "g5:g2"
+        ],
+        "missed": [
+          "c4:f7"
+        ],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "c4f7",
+            "reasons": [
+              "capture",
+              "check"
+            ],
+            "perceivedValue": 1032.0402324589716,
+            "naturalness": 220,
+            "styleAdjustment": -32.00857142857142
+          },
+          {
+            "move": "e5f7",
+            "reasons": [
+              "capture",
+              "escape-threat"
+            ],
+            "perceivedValue": 1268.717240152471,
+            "naturalness": 180,
+            "styleAdjustment": -37.67619047619048
+          },
+          {
+            "move": "e5f3",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 930.0423355433342,
+            "naturalness": 80,
+            "styleAdjustment": -29.82857142857143
+          },
+          {
+            "move": "e5g4",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 897.1196720802787,
+            "naturalness": 80,
+            "styleAdjustment": -32.22857142857143
+          },
+          {
+            "move": "e5d7",
+            "reasons": [
+              "capture",
+              "escape-threat"
+            ],
+            "perceivedValue": 691.3066636221495,
+            "naturalness": 180,
+            "styleAdjustment": -53.02857142857143
+          },
+          {
+            "move": "e5d3",
+            "reasons": [
+              "escape-threat"
+            ],
+            "perceivedValue": 922.3379625887815,
+            "naturalness": 80,
+            "styleAdjustment": -28.114285714285714
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "8/4k3/8/4p3/4P3/8/4K3/8 w - - 0 1",
+      "elo": 100,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e2e3",
+      "trace": {
+        "elo": 100,
+        "profile": "default",
+        "requestedDepth": 0,
+        "depth": 0,
+        "completedDepth": 0,
+        "width": 1,
+        "nodes": 0,
+        "cut": false,
+        "complexity": 0.05,
+        "load": 0.05,
+        "tactics": false,
+        "position": false,
+        "opening": false,
+        "generatedCandidates": 8,
+        "rootCandidates": 4,
+        "searchRoot": 4,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e2d3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2e3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2d1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2d2",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "8/4k3/8/4p3/4P3/8/4K3/8 w - - 0 1",
+      "elo": 100,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e2e3",
+      "trace": {
+        "elo": 100,
+        "profile": "solid",
+        "requestedDepth": 0,
+        "depth": 0,
+        "completedDepth": 0,
+        "width": 1,
+        "nodes": 0,
+        "cut": false,
+        "complexity": 0.05,
+        "load": 0.05,
+        "tactics": false,
+        "position": false,
+        "opening": false,
+        "generatedCandidates": 8,
+        "rootCandidates": 4,
+        "searchRoot": 4,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e2d3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": -9.13904761904762
+          },
+          {
+            "move": "e2e3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": -14.472380952380952
+          },
+          {
+            "move": "e2d1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -2.4342857142857146
+          },
+          {
+            "move": "e2d2",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -3.12
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "8/4k3/8/4p3/4P3/8/4K3/8 w - - 0 1",
+      "elo": 840,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e2d1",
+      "trace": {
+        "elo": 840,
+        "profile": "default",
+        "requestedDepth": 2,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 2,
+        "nodes": 212,
+        "cut": false,
+        "complexity": 0.05,
+        "load": 0,
+        "tactics": false,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 8,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e2d3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2e3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2d1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2d2",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2e1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2f1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "8/4k3/8/4p3/4P3/8/4K3/8 w - - 0 1",
+      "elo": 840,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e2d1",
+      "trace": {
+        "elo": 840,
+        "profile": "solid",
+        "requestedDepth": 2,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 2,
+        "nodes": 212,
+        "cut": false,
+        "complexity": 0.05,
+        "load": 0,
+        "tactics": false,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 8,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e2d3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": -9.13904761904762
+          },
+          {
+            "move": "e2e3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": -14.472380952380952
+          },
+          {
+            "move": "e2d1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -2.4342857142857146
+          },
+          {
+            "move": "e2d2",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -3.12
+          },
+          {
+            "move": "e2e1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -2.4342857142857146
+          },
+          {
+            "move": "e2f1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -4.1485714285714295
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "8/4k3/8/4p3/4P3/8/4K3/8 w - - 0 1",
+      "elo": 1200,
+      "profile": "default",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e2d1",
+      "trace": {
+        "elo": 1200,
+        "profile": "default",
+        "requestedDepth": 4,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 3,
+        "nodes": 285,
+        "cut": false,
+        "complexity": 0.05,
+        "load": 0,
+        "tactics": true,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 8,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e2d3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2e3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2d1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2d2",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2f1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          },
+          {
+            "move": "e2f3",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "8/4k3/8/4p3/4P3/8/4K3/8 w - - 0 1",
+      "elo": 1200,
+      "profile": "solid",
+      "seed": 2935870025
+    },
+    "expected": {
+      "move": "e2d1",
+      "trace": {
+        "elo": 1200,
+        "profile": "solid",
+        "requestedDepth": 4,
+        "depth": 2,
+        "completedDepth": 2,
+        "width": 3,
+        "nodes": 285,
+        "cut": false,
+        "complexity": 0.05,
+        "load": 0,
+        "tactics": true,
+        "position": false,
+        "opening": true,
+        "generatedCandidates": 8,
+        "rootCandidates": 6,
+        "searchRoot": 6,
+        "noticed": [],
+        "missed": [],
+        "oversight": false,
+        "candidates": [
+          {
+            "move": "e2d3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": -9.13904761904762
+          },
+          {
+            "move": "e2e3",
+            "reasons": [
+              "centralize",
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 3,
+            "styleAdjustment": -14.472380952380952
+          },
+          {
+            "move": "e2d1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -2.4342857142857146
+          },
+          {
+            "move": "e2d2",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -3.12
+          },
+          {
+            "move": "e2f1",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -4.1485714285714295
+          },
+          {
+            "move": "e2f3",
+            "reasons": [
+              "forced-king-manoeuvre",
+              "king-activity"
+            ],
+            "perceivedValue": 0,
+            "naturalness": 0,
+            "styleAdjustment": -10.853333333333332
+          }
+        ]
+      }
+    }
+  }
+]
