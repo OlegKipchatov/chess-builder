@@ -1,7 +1,7 @@
-import {createSession} from './cognitive-model.js?v=32';
-import {ratingSnapshot} from './rating.js?v=32';
-import {Chess} from './chess.js?v=32';
-import {newGame} from './state.js?v=32';
+import {createSession} from './cognitive-model.js?v=35';
+import {ratingSnapshot} from './rating.js?v=35';
+import {Chess} from './chess.js?v=35';
+import {newGame} from './state.js?v=35';
 export const SCREENS = ['profile','collection','play','chests','archive','statistics','calendar','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';

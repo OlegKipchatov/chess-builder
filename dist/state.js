@@ -1,9 +1,16 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=32';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=32';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=32';
-import {Chess} from './chess.js?v=32';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=32';
+import {initialActivity, normalizeActivity} from './activity.js?v=35';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=35';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=35';
+import {Chess} from './chess.js?v=35';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=35';
 export const KEY = 'chess-vault-v3';
+export const createRecordId = () => {
+  if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
+  const bytes=crypto.getRandomValues(new Uint8Array(16));
+  bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+  const hex=Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+};
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
 export const newGame = (mode='bot', difficulty='adaptive') => ({pgn:'', mode, difficulty, playerColor:'w', started:false, settled:false, resigned:false});

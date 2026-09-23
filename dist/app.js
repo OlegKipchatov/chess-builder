@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog} from './ui/dialog-content.js?v=32';
-import {mountAppShell} from './ui/shell.js?v=32';
-import {statCard} from './ui/primitives.js?v=32';
-import {createDialog,createToast} from './ui/dialog.js?v=32';
-import {renderArchiveList} from './ui/components/archive-list.js?v=32';
-import {moveList} from './ui/components/move-list.js?v=32';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=32';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=32';
-import {closeActivityDay, calendarHTML} from './activity.js?v=32';
-import {createBotClient} from './bot-client.js?v=32';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=32';
-import {signedDelta} from './rating.js?v=32';
-import {Chess} from './chess.js?v=32';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=32';
-import {openChest, craftItem} from './economy.js?v=32';
-import {KEY, loadState, initialState, newGame} from './state.js?v=32';
-import {pieceSVG, itemPreview} from './pieces.js?v=32';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=32';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=32';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=32';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=35';
+import {mountAppShell} from './ui/shell.js?v=35';
+import {statCard,plural} from './ui/primitives.js?v=35';
+import {createDialog,createToast} from './ui/dialog.js?v=35';
+import {renderArchiveList} from './ui/components/archive-list.js?v=35';
+import {moveList} from './ui/components/move-list.js?v=35';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=35';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=35';
+import {closeActivityDay, calendarHTML} from './activity.js?v=35';
+import {createBotClient} from './bot-client.js?v=35';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=35';
+import {signedDelta} from './rating.js?v=35';
+import {Chess} from './chess.js?v=35';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=35';
+import {openChest, craftItem} from './economy.js?v=35';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=35';
+import {pieceSVG, itemPreview} from './pieces.js?v=35';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=35';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=35';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=35';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
@@ -42,7 +42,7 @@ const toast = createToast($('#toast'));
 const persist = (next,reset=false) => {
   const snapshot={...next, game:{...next.game,pgn:reset?'':game.pgn()}};
   try {localStorage.setItem(KEY,JSON.stringify(snapshot));state=snapshot;return true;}
-  catch {toast('Не удалось сохранить прогресс. Освободите место или разрешите хранение данных.');return false;}
+  catch {toast('Не удалось сохранить прогресс. Проверьте свободное место и разрешение на хранение данных.');return false;}
 };
 const showModal = createDialog($('#modal'),$('#modal-content'),$('#close-modal'));
 const ended = () => state.game.resigned || game.isGameOver();
@@ -52,17 +52,17 @@ const statusText = () => {
   if(state.game.resigned)return state.game.mode==='bot'?'Вы сдались':`${game.turn()==='w'?'Белые':'Чёрные'} сдались`;
   if(game.isCheckmate())return `Мат. ${game.turn()==='w'?'Чёрные':'Белые'} победили`;
   if(game.isStalemate())return 'Пат. Ничья';
-  if(game.isThreefoldRepetition())return 'Ничья: повторение позиции';
-  if(game.isInsufficientMaterial())return 'Ничья: недостаточно фигур';
+  if(game.isThreefoldRepetition())return 'Ничья — троекратное повторение позиции';
+  if(game.isInsufficientMaterial())return 'Ничья — недостаточно материала для мата';
   if(game.isDraw())return 'Ничья';
-  return `${game.isCheck()?'Шах! ':''}Ход ${game.turn()==='w'?'белых':'чёрных'}`;
+  return `${game.isCheck()?'Шах · ход':'Ход'} ${game.turn()==='w'?'белых':'чёрных'}`;
 };
 const settle = (notifyActivity=true) => {
   if(!ended()||!state.game.started)return;
   const wasSettled=state.game.settled, title=statusText();
   const finishedGame=new Chess();finishedGame.loadPgn(game.pgn());
   const finishedConfig=structuredClone(state.game);
-  const result=completedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
+  const result=completedMatch(state,game,{id:createRecordId(),finishedAt:new Date().toISOString()});
   if(!result)return;
   const closed=closeActivityDay(state.activity,{counted:!!result.entry&&!wasSettled,finishedAt:result.entry?.finishedAt});
   if(!persist({...result.state,activity:closed.activity},true))return;
@@ -77,7 +77,7 @@ const drawBoard = () => {
   const config=viewedConfig(),equipped=config.equipped||state.equipped;
   renderBoard($('#board'),positionAt(viewedGame(),reviewCursor),equipped,!displayMatch&&reviewCursor===null?selected:null,config.playerColor||'w');
   $('#board').classList.toggle('reviewing',reviewCursor!==null);
-  $('#board').setAttribute('aria-label',reviewCursor!==null?'Просмотр прежней позиции':'Шахматная доска');
+  $('#board').setAttribute('aria-label',reviewCursor!==null?'Шахматная доска: просмотр истории':'Шахматная доска');
   $('#board').querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled',String(!!displayMatch||!canPlayPosition(state,game,reviewCursor))));
 };
 const drawCollection = () => renderCollection($('#collection-content'),state,collectionView,pieceType,ownedOnly);
@@ -87,7 +87,7 @@ const syncNavigation = () => {
   document.querySelectorAll('[data-tab]').forEach(button=>{
     button.classList.toggle('active',button.dataset.tab===currentScreen);
     button.disabled=(active()||pendingResult)&&button.dataset.tab!=='play';
-    button.title=button.disabled?'Доступно после завершения партии':'';
+    button.title=button.disabled?(button.dataset.tab==='archive'?'История доступна после завершения партии':'Раздел доступен после завершения партии'):'';
     button.setAttribute('aria-current',button.dataset.tab===currentScreen?'page':'false');
   });
   $('#app-nav').hidden=active()||pendingResult;
@@ -103,7 +103,7 @@ const renderStatistics = () => {
   const percent=entries.length?Math.round(wins/entries.length*100)+'%':'—';
   const card=statCard;
   $('#play-stats').innerHTML=card(entries.length,'Сыграно партий')+card(wins,'Побед');
-  $('#detailed-statistics').innerHTML=card(entries.length,'Партий с ИИ')+card(wins,'Побед')+card(draws,'Ничьих')+card(losses,'Поражений')+card(percent,'Процент побед')+card(state.owned.length,'Предметов')+card(state.opened,'Сундуков');
+  $('#detailed-statistics').innerHTML=card(entries.length,'Сыграно с ИИ')+card(wins,'Побед')+card(draws,'Ничьих')+card(losses,'Поражений')+card(percent,'Процент побед')+card(state.owned.length,'Предметов')+card(state.opened,'Сундуков');
 };
 $('#match-archive').addEventListener('scroll',renderArchive,{passive:true});
 window.addEventListener('resize',()=>{if(currentScreen==='archive')renderArchive();});
@@ -116,7 +116,6 @@ const renderProfile = () => {
   $('#profile-played').textContent=state.played;
   $('#profile-owned').textContent=state.owned.length;
   $('#profile-opened').textContent=state.opened;
-  $('#profile-rewards').textContent='Завершение +10 · ходы до +20 · победа +10 / ничья +5';
 };
 const renderHistory = () => {
   const moves=viewedGame().history(), cursor=(queuedCursor===undefined?reviewCursor:queuedCursor)??moves.length;
@@ -127,7 +126,7 @@ const renderHistory = () => {
   $('#history-back').disabled=cursor===0;
   $('#history-forward').disabled=cursor===moves.length;
   $('#history-live').disabled=cursor===moves.length;
-  $('#history-position').textContent=reviewCursor===null?`Текущая позиция · ${moves.length} полуходов`:`Позиция ${cursor} из ${moves.length}`;
+  $('#history-position').textContent=reviewCursor===null?'Текущая позиция':`Позиция ${cursor} из ${moves.length}`;
   $('#history-notice').hidden=reviewCursor===null||!!displayMatch;
   $('#move-count').textContent=moves.length;
   $('#moves').innerHTML=moveList(moves,cursor);
@@ -137,7 +136,7 @@ const renderGameInfo = () => {
   const config=viewedConfig(),hasBoard=!!displayMatch||state.game.started;
   const color=config.playerColor||'w';
   const points=materialBalance(positionAt(viewedGame(),reviewCursor),color);
-  const pointsText=`${signedDelta(points)} очк.`;
+  const pointsText=`${signedDelta(points)} ${plural(points,['очко','очка','очков'])}`;
   for(const node of [$('#match-points'),$('#match-settings')])node.dataset.balance=points>0?'positive':points<0?'negative':'zero';
   $('#player-name').textContent=config.mode==='bot'?'Вы':'Игрок 1';
   $('#opponent-avatar').innerHTML=pieceSVG('n',color==='w'?'b':'w');
@@ -148,18 +147,18 @@ const renderGameInfo = () => {
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   $('#archive-return').disabled=animating;
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
-  $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Готовы начать?';
+  $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Партия';
   $('#resign').disabled=!active();
   $('#resign').hidden=!active();
   $('#abort-failed').hidden=!canAbortFailedMatch(state,game)||!!displayMatch;
   $('#abort-failed').disabled=animating;
   $('#retry-failed').hidden=$('#abort-failed').hidden;
   $('#retry-failed').disabled=locked();
-  $('#hint').textContent=displayMatch?'Просматривайте партию стрелками.':reviewCursor!==null?'Ходы не отменяются. Вернитесь к текущей позиции, чтобы продолжить.':active()?'Выберите фигуру, чтобы увидеть доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'Начните новую партию с ИИ.';
+  $('#hint').textContent=displayMatch?'Просматривайте партию стрелками.':reviewCursor!==null?'Вы смотрите прошлую позицию. Вернитесь к текущему ходу, чтобы продолжить.':active()?'Выберите фигуру — покажем доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'';
   $('#game-ready').hidden=hasBoard;
-  $('#match-title').textContent=displayMatch?'История партии':active()?'В игре':state.game.started?'Итоги партии':'Игра';
+  $('#match-title').textContent=displayMatch?'История партии':active()?'Партия':state.game.started?'Итоги партии':'Игра';
   $('#match-settings').textContent='';
-  $('#start-game').textContent='Сыграем?';
+  $('#start-game').textContent='Партия с ИИ';
   $('#start-game').disabled=active()||animating;
   renderHistory();
 };
@@ -168,9 +167,11 @@ const render = () => {
   drawCollection();renderProfile();renderCalendar();renderGameInfo();syncNavigation();
   $('#coins').textContent=state.coins;
   $('#shards').textContent=state.shards;
+  $('#coins').nextElementSibling.textContent=plural(state.coins,['монета','монеты','монет']);
+  $('#shards').nextElementSibling.textContent=plural(state.shards,['осколок','осколка','осколков']);
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
   $('#open-chest').disabled=active()||state.coins<100;
-  $('#pity').textContent=`Гарантированный предмет через ${10-state.pity}`;
+  $('#pity').textContent=`Эпический или легендарный — не позднее чем через ${10-state.pity} ${plural(10-state.pity,['открытие','открытия','открытий'])}`;
   $('#pity-progress').value=state.pity;
 };
 const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
@@ -243,7 +244,7 @@ const changeTab = tab => {
   if(animating||pendingResult)return;
   const target=navigationTarget(state,game,tab);
   if(displayMatch?.kind==='archive'&&target!=='play'){displayMatch=null;reviewCursor=null;render();}
-  if(target!==tab&&active())toast('Другие экраны доступны после завершения партии.');
+  if(target!==tab&&active())toast('Завершите партию, чтобы перейти в другой раздел.');
   currentScreen=target;
   window.history.replaceState(null,'','#'+target);
   syncNavigation();if(target==='archive')renderArchive();if(target==='calendar')renderCalendar();
@@ -299,7 +300,7 @@ const useItem = id => {
   if(active()||!item||!state.owned.includes(id)||animating)return;
   const equipped=structuredClone(state.equipped);
   if(item.kind==='board')equipped.board=id;else equipped.pieces[item.type]=id;
-  if(persist({...state,equipped})){render();toast('Предмет уже на доске.');}
+  if(persist({...state,equipped})){render();toast('Предмет уже выбран.');}
 };
 const confirmCraft = id => {
   if(active())return;
@@ -307,10 +308,10 @@ const confirmCraft = id => {
   if(!item||state.owned.includes(id)||state.shards<craftCost(item))return;
   showModal(craftDialog(item,id),{closeLabel:'Отмена'});
 };
-const showSaveSet = () => {
+const showSaveSet = async () => {
   if(active())return;
-  if(state.sets.length>=12){toast('Можно сохранить до 12 наборов. Удалите ненужный, чтобы добавить новый.');return;}
-  showModal(saveSetDialog(),{closeLabel:'Отмена'});
+  if(state.sets.length>=12){toast('Можно сохранить до 12 наборов. Удалите один, чтобы сохранить новый.');return;}
+  await showModal(saveSetDialog(),{closeLabel:'Отмена'});
   $('#set-name').focus();
 };
 $('#collection-content').addEventListener('click',event=>{
@@ -341,21 +342,19 @@ $('#collection-content').addEventListener('click',event=>{
   if(button.dataset.craft)confirmCraft(button.dataset.craft);
   if(button.hasAttribute('data-save-set'))showSaveSet();
   if(button.dataset.preset&&canEquipPreset(state,button.dataset.preset)){
-    if(persist({...state,equipped:presetEquipment(button.dataset.preset)})){render();toast('Коллекция выбрана.');}
+    if(persist({...state,equipped:presetEquipment(button.dataset.preset)})){render();toast('Набор выбран.');}
   }
   if(button.dataset.loadSet){
     const set=state.sets.find(set=>set.id===button.dataset.loadSet);
-    if(set&&persist({...state,equipped:{pieces:{...set.pieces},board:set.board}})){render();toast('Ваш набор выбран.');}
+    if(set&&persist({...state,equipped:{pieces:{...set.pieces},board:set.board}})){render();toast('Набор выбран.');}
   }
-  if(button.dataset.deleteSet&&confirm('Удалить сохранённый набор? Все предметы останутся в коллекции.')){
-    if(persist({...state,sets:state.sets.filter(set=>set.id!==button.dataset.deleteSet)}))drawCollection();
-  }
+  if(button.dataset.deleteSet)showModal(deleteSetDialog(button.dataset.deleteSet),{closeLabel:'Отмена'});
 });
 $('#match-archive').addEventListener('click',event=>{
   if(active()||animating||pendingResult)return;
   const id=event.target.closest('[data-archive]')?.dataset.archive;
   const entry=state.archive.find(entry=>entry.id===id);if(!entry)return;
-  const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось прочитать запись партии.');return;}
+  const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось открыть запись партии.');return;}
   displayMatch={game:replay,kind:'archive',title:entry.result,config:{...entry,started:true,rating:{before:entry.playerRating,opponent:entry.opponentRating}}};
   reviewCursor=replay.history().length?0:null;selected=null;changeTab('play');render();
 });
@@ -366,22 +365,25 @@ $('#modal-content').addEventListener('submit',event=>{
   event.preventDefault();
   const name=$('#set-name').value.trim();
   if(!name||state.sets.length>=12)return;
-  const set={id:crypto.randomUUID(),name:name.slice(0,32),...structuredClone(state.equipped)};
+  const set={id:createRecordId(),name:name.slice(0,32),...structuredClone(state.equipped)};
   if(persist({...state,sets:[...state.sets,set]})){showModal.close();drawCollection();toast('Набор сохранён.');}
 });
 $('#modal-content').addEventListener('click',async event=>{
   const button=event.target.closest('button');
   if(!button)return;
   if(button.dataset.promote&&promotion){const move={...promotion,promotion:button.dataset.promote};await showModal.close();void applyMove(move);}
+  if(button.dataset.confirmDeleteSet&&!active()){
+    if(persist({...state,sets:state.sets.filter(set=>set.id!==button.dataset.confirmDeleteSet)})){await showModal.close();drawCollection();}
+  }
   if(button.dataset.confirmCraft&&!active()){
     const next=craftItem(state,button.dataset.confirmCraft);
-    if(next&&persist(next)){showModal.close();render();toast('Предмет создан и добавлен в коллекцию.');}
+    if(next&&persist(next)){showModal.close();render();toast('Готово! Предмет в коллекции.');}
   }
   if(button.dataset.useReward){useItem(button.dataset.useReward);showModal.close();}
   if(button.hasAttribute('data-confirm-resign'))confirmResignation();
   if(button.hasAttribute('data-abort-failed'))abortAfterFailure();
   if(button.hasAttribute('data-download-pgn'))downloadPgn($('#pgn-text').value);
-  if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось передать PGN. Используйте скачивание или копирование.'));
+  if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось поделиться PGN. Скачайте файл или скопируйте текст.'));
   if(button.hasAttribute('data-copy-pgn')){const field=$('#pgn-text');field.focus();field.select();if(navigator.clipboard?.writeText)navigator.clipboard.writeText(field.value).then(()=>toast('PGN скопирован')).catch(()=>toast('Текст выделен. Выберите «Копировать».'));else toast('Текст выделен. Выберите «Копировать».');}
   if(button.hasAttribute('data-export-pgn'))void exportViewedMatch();
   if(button.hasAttribute('data-retry-bot')){showModal.close();requestBot();}
@@ -400,9 +402,9 @@ $('#open-chest').onclick=()=>{
   if(!opened||!persist(opened.state))return;
   render();
   const {item,duplicate,shards}=opened.result;
-  const title=!item?'Осколки для мастерской':duplicate?'Предмет уже в коллекции':'Новый предмет!';
+  const title=!item?'Осколки':duplicate?'Предмет уже в коллекции':'Новый предмет!';
   const artwork=item?itemPreview(item):'<div class="shard-reveal">✧</div>';
-  const copy=!item?'В этом сундуке нет предмета. Осколки можно потратить на конкретную фигурку или доску.':duplicate?'Повтор превратился в осколки. Сохранённый предмет остаётся у вас.':'Предмет добавлен в коллекцию. Используйте его отдельно или включите в свой набор.';
+  const copy=!item?'В сундуке — осколки. Их можно потратить на нужную фигурку или доску.':duplicate?'Повтор превратился в осколки. Ваш предмет остаётся в коллекции.':'Предмет добавлен в коллекцию.';
   showModal(chestRewardDialog(title,artwork,item,shards,copy,duplicate));
 };
 $('#start-game').onclick=()=>{
@@ -422,7 +424,7 @@ $('#start-game').onclick=()=>{
   requestBot();
 };
 const abortAfterFailure = () => {
-  const next=abortFailedMatch(state,game,{id:crypto.randomUUID(),finishedAt:new Date().toISOString()});
+  const next=abortFailedMatch(state,game,{id:createRecordId(),finishedAt:new Date().toISOString()});
   if(!next)return;
   stopBot();if(!persist(next,true)){renderGameInfo();return;}
   game.reset();displayMatch=null;pendingResult=false;pendingActivity=null;reviewCursor=null;queuedCursor=undefined;selected=null;promotion=null;lastBotError=null;
@@ -470,4 +472,4 @@ $('#chest-art').innerHTML=pieceSVG('q','w','gold');
 $('#status').setAttribute('aria-live','polite');
 currentScreen=navigationTarget(state,game,location.hash.slice(1)||'play');
 changeTab(currentScreen);render();settle(false);render();requestBot();
-if(storageError)toast('Сохранение не удалось прочитать. Старые данные оставлены в браузере.');
+if(storageError)toast('Не удалось прочитать сохранённый прогресс. Данные в браузере не удалены.');

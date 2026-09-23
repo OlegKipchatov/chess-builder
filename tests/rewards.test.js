@@ -35,7 +35,7 @@ test('История считает сторону игрока, исключа�
 test('Окно результата объясняет компоненты награды и раннюю сдачу',()=>{
  const normal=rewardBreakdownFor(position(20));
  const html=matchResultDialog('Победа',normal.total,{},normal);
- for(const text of ['+30 монет','Завершение партии','Ваши ходы: 20','Победа'])assert.ok(html.includes(text));
+ for(const text of ['+30 монет','За партию','Ваши ходы','Результат партии','Победа'])assert.ok(html.includes(text));
  const early=rewardBreakdownFor(position(9),true);
- assert.match(matchResultDialog('Вы сдались',0,{},early),/раньше 10 ваших ходов/);
+ assert.match(matchResultDialog('Вы сдались',0,{},early),/За эту партию монеты не начислены/);
 });

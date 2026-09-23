@@ -1,5 +1,5 @@
-import {decide} from './cognitive-search.js?v=32';
-import {validEngineProfile} from './strength.js?v=32';
+import {decide} from './cognitive-search.js?v=35';
+import {validEngineProfile} from './strength.js?v=35';
 self.onmessage = ({data}) => {
   try {
     const profile=data.engineProfile;

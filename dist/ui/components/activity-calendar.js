@@ -1,4 +1,4 @@
-import {activityDate,currentStreak,dayLabel} from '../../activity-model.js?v=32';
+import {activityDate,currentStreak,dayLabel} from '../../activity-model.js?v=35';
 export const calendarHTML = (activity,now=new Date()) => {
   const today=activityDate(now,activity.timeZone),month=today.slice(0,7),first=new Date(`${month}-01T12:00:00Z`);
   const offset=(first.getUTCDay()+6)%7,total=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();
@@ -8,5 +8,5 @@ export const calendarHTML = (activity,now=new Date()) => {
     const status=closed?'сыграна партия':isToday?'сегодня':day>today?'будущий день':'без партии';
     return `<span class="calendar-day ${closed?'closed':''} ${isToday?'today':''} ${day>today?'future':''}" ${isToday?'aria-current="date"':''} aria-label="${index+1}, ${status}">${index+1}</span>`;
   });
-  return `<article class="panel activity-calendar"><p class="eyebrow">ТЕКУЩАЯ СЕРИЯ</p><strong class="streak-value">${dayLabel(currentStreak(activity,today))}</strong><h2>${title}</h2><div class="calendar-grid" role="group" aria-label="${title}">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(day=>`<span class="calendar-weekday">${day}</span>`).join('')}${'<span aria-hidden="true"></span>'.repeat(offset)}${cells.join('')}</div><p class="calendar-legend"><span><i class="calendar-key" aria-hidden="true"></i> День с партией</span><span>Контур — сегодня</span></p></article>`;
+  return `<article class="panel activity-calendar"><p class="eyebrow">Текущая серия</p><strong class="streak-value">${dayLabel(currentStreak(activity,today))}</strong><h2>${title}</h2><div class="calendar-grid" role="group" aria-label="${title}">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(day=>`<span class="calendar-weekday">${day}</span>`).join('')}${'<span aria-hidden="true"></span>'.repeat(offset)}${cells.join('')}</div><p class="calendar-legend"><span><i class="calendar-key" aria-hidden="true"></i> С партией</span><span>Сегодня</span></p></article>`;
 };

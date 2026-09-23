@@ -11,3 +11,8 @@ export const statCard = (value,label,id) => `<article class="stat-card"><strong 
 export const emptyState = text => `<p class="empty-note">${escapeHTML(text)}</p>`;
 export const badge = text => `<span class="badge">${escapeHTML(text)}</span>`;
 export const disclosure = (title,content) => `<details class="faq-accordion"><summary>${escapeHTML(title)}</summary><div class="disclosure-content">${content}</div></details>`;
+
+export const plural = (value,forms) => {
+  const mod100=Math.abs(value)%100,mod10=Math.abs(value)%10;
+  return forms[mod100>10&&mod100<20?2:mod10===1?0:mod10>1&&mod10<5?1:2];
+};
