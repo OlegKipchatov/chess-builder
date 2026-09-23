@@ -1,10 +1,11 @@
-import {Chess} from './chess.js?v=35';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=35';
-import {pieceSVG} from './pieces.js?v=35';
+import {Chess} from './chess.js?v=36';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=36';
+import {pieceSVG} from './pieces.js?v=36';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);
   root.style.setProperty('--square-dark',style.dark);
+  root.classList.toggle('has-selection',Boolean(selected));
   const legal = selected ? game.moves({square:selected,verbose:true}).map(move=>move.to) : [];
   const last = game.history({verbose:true}).at(-1);
   const focused = root.contains(document.activeElement) ? document.activeElement.dataset.square : null;

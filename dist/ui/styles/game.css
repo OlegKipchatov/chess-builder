@@ -5,3 +5,4 @@
 @media(max-width:359px){.match-versus{flex-basis:100%}.history-buttons{gap:5px}}
 
 #resign{width:36px;height:36px;min-height:36px;padding:8px}#resign svg{width:18px;height:18px}
+@media(max-width:760px){#resign{width:44px;height:44px;min-height:44px;padding:13px;background:transparent}#resign svg{width:18px;height:18px}}

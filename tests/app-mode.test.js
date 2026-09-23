@@ -14,6 +14,18 @@ test('Старые сохранения сохраняют белую сторо
 test('Победа чёрными повышает рейтинг и даёт награду победителя',()=>{const state=initialState();state.game=createStartedGame(state,()=>0.9);const game=play(['f3','e5','g4','Qh4#']);assert.equal(rewardFor(game,false,'bot','b'),21);assert.equal(settleRating(state,game).value,1023);state.game.playerColor='w';assert.equal(rewardFor(game,false,'bot','w'),11);assert.equal(settleRating(state,game).value,959);});
 test('История анимирует прямые, обратные ходы и прыжок нескольких фигур',()=>{const game=play(['e4','e5','Nf3']);assert.deepEqual(historyMoves(game,2,3),[{from:'g1',to:'f3'}]);assert.deepEqual(historyMoves(game,3,2),[{from:'f3',to:'g1'}]);assert.equal(historyMoves(game,0,3).length,3);});
 test('История отслеживает рокировку, взятие на проходе и превращение',()=>{const castle=new Chess('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');castle.move('O-O');assert.deepEqual(historyMoves(castle,1,0),[{from:'g1',to:'e1'},{from:'f1',to:'h1'}]);const ep=play(['e4','a6','e5','d5','exd6']);assert.deepEqual(historyMoves(ep,5,4),[{from:'d6',to:'e5'}]);const promo=new Chess('7k/P7/8/8/8/8/8/7K w - - 0 1');promo.move('a8=Q');assert.deepEqual(historyMoves(promo,1,0),[{from:'a8',to:'a7'}]);});
-test('Доска за чёрных развёрнута без разворота рисунков фигур',()=>{globalThis.document={activeElement:null};const root={style:{setProperty:()=>{}},contains:()=>false};renderBoard(root,new Chess(),initialState().equipped,null,'b');assert.ok(root.innerHTML.indexOf('data-square="h1"')<root.innerHTML.indexOf('data-square="a8"'));assert.equal((root.innerHTML.match(/data-square=/g)||[]).length,64);delete globalThis.document;});
+test('Доска за чёрных развёрнута без разворота рисунков фигур',()=>{globalThis.document={activeElement:null};const root={style:{setProperty:()=>{}},classList:{toggle:()=>{}},contains:()=>false};renderBoard(root,new Chess(),initialState().equipped,null,'b');assert.ok(root.innerHTML.indexOf('data-square="h1"')<root.innerHTML.indexOf('data-square="a8"'));assert.equal((root.innerHTML.match(/data-square=/g)||[]).length,64);delete globalThis.document;});
+test('Выбор фигуры переключает приоритет подсветки, сохраняя последний ход',()=>{
+ globalThis.document={activeElement:null};
+ const states=[];
+ const root={style:{setProperty:()=>{}},classList:{toggle:(name,value)=>states.push([name,value])},contains:()=>false};
+ const game=play(['e4','e5']);
+ renderBoard(root,game,initialState().equipped,null);
+ renderBoard(root,game,initialState().equipped,'g1');
+ assert.deepEqual(states,[['has-selection',false],['has-selection',true]]);
+ assert.match(root.innerHTML,/class="[^"]*selected[^"]*" data-square="g1"/);
+ assert.match(root.innerHTML,/class="[^"]*last[^"]*" data-square="e5"/);
+ delete globalThis.document;
+});
 test('Предмет выбирается и создаётся в коллекции без дублирующих чипов',()=>{const root={},state=initialState();renderCollection(root,state,'items');assert.ok(root.innerHTML.includes('data-craft="'));assert.ok(root.innerHTML.includes('data-equip='));assert.ok(!root.innerHTML.includes('item-type-filter'));});
 test('Режим уменьшенного движения отключает переходы',async()=>{globalThis.matchMedia=()=>({matches:true});await animateTransition({},[],new Map());delete globalThis.matchMedia;});

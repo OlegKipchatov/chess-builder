@@ -1,4 +1,4 @@
-import {activityDate,currentStreak,dayLabel} from '../../activity-model.js?v=35';
+import {activityDate,currentStreak,dayLabel} from '../../activity-model.js?v=36';
 export const calendarHTML = (activity,now=new Date()) => {
   const today=activityDate(now,activity.timeZone),month=today.slice(0,7),first=new Date(`${month}-01T12:00:00Z`);
   const offset=(first.getUTCDay()+6)%7,total=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();

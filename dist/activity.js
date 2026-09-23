@@ -1,2 +1,2 @@
-export * from './activity-model.js?v=35';
-export {calendarHTML} from './ui/components/activity-calendar.js?v=35';
+export * from './activity-model.js?v=36';
+export {calendarHTML} from './ui/components/activity-calendar.js?v=36';
