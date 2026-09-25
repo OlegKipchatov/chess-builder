@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=40';
-import {mountAppShell} from './ui/shell.js?v=40';
-import {statCard,plural} from './ui/primitives.js?v=40';
-import {createDialog,createToast} from './ui/dialog.js?v=40';
-import {renderArchiveList} from './ui/components/archive-list.js?v=40';
-import {moveList} from './ui/components/move-list.js?v=40';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=40';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=40';
-import {closeActivityDay, calendarHTML} from './activity.js?v=40';
-import {createBotClient} from './bot-client.js?v=40';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=40';
-import {signedDelta} from './rating.js?v=40';
-import {Chess} from './chess.js?v=40';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=40';
-import {openChest, craftItem} from './economy.js?v=40';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=40';
-import {pieceSVG, itemPreview} from './pieces.js?v=40';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=40';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=40';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=40';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=42';
+import {mountAppShell} from './ui/shell.js?v=42';
+import {statCard,plural} from './ui/primitives.js?v=42';
+import {createDialog,createToast} from './ui/dialog.js?v=42';
+import {renderArchiveList} from './ui/components/archive-list.js?v=42';
+import {moveList} from './ui/components/move-list.js?v=42';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=42';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=42';
+import {closeActivityDay, calendarHTML} from './activity.js?v=42';
+import {createBotClient} from './bot-client.js?v=42';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=42';
+import {signedDelta} from './rating.js?v=42';
+import {Chess} from './chess.js?v=42';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=42';
+import {openChest, craftItem} from './economy.js?v=42';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=42';
+import {pieceSVG, itemPreview} from './pieces.js?v=42';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=42';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=42';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=42';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
@@ -184,7 +184,8 @@ const render = () => {
   $('#shards').nextElementSibling.textContent=plural(state.shards,['осколок','осколка','осколков']);
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
   $('#open-chest').disabled=active()||state.coins<100;
-  $('#pity').textContent=`Эпический или легендарный — не позднее чем через ${10-state.pity} ${plural(10-state.pity,['открытие','открытия','открытий'])}`;
+  $('#open-chest').textContent=state.coins<100?`Не хватает ${100-state.coins} ${plural(100-state.coins,['монеты','монет','монет'])}`:'Открыть за 100 ◈';
+  $('#pity').textContent=`Эпический или легендарный предмет — максимум через ${10-state.pity} ${plural(10-state.pity,['сундук','сундука','сундуков'])}`;
   $('#pity-progress').value=state.pity;
 };
 const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
@@ -314,7 +315,7 @@ const useItem = id => {
   if(active()||!item||!state.owned.includes(id)||animating)return;
   const equipped=structuredClone(state.equipped);
   if(item.kind==='board')equipped.board=id;else equipped.pieces[item.type]=id;
-  if(persist({...state,equipped})){render();toast('Предмет уже выбран.');}
+  if(persist({...state,equipped})){render();toast('Предмет выбран для игры.');}
 };
 const confirmCraft = id => {
   if(active())return;
@@ -328,24 +329,27 @@ const showSaveSet = async () => {
   await showModal(saveSetDialog(),{closeLabel:'Отмена'});
   $('#set-name').focus();
 };
+const focusCollectionItem = id => {
+  const item=itemById(id);
+  if(!item)return;
+  pieceType=item.kind==='board'?'board':item.type;
+  collectionView='items';ownedOnly=false;drawCollection();
+  const card=document.getElementById(`collection-item-${item.id}`);
+  card?.classList.add('focused-item');
+  card?.focus({preventScroll:true});
+  if(card){
+    const top=document.querySelector('header').getBoundingClientRect().bottom;
+    const dock=$('#app-nav');
+    const bottom=dock.hidden?window.innerHeight:Math.min(window.innerHeight,dock.getBoundingClientRect().top);
+    const rect=card.getBoundingClientRect();
+    window.scrollTo({top:window.scrollY+rect.top+rect.height/2-(top+bottom)/2,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  }
+};
 $('#collection-content').addEventListener('click',event=>{
   const button=event.target.closest('button');
   if(active()||!button||button.disabled)return;
   if(button.dataset.openItem){
-    const item=itemById(button.dataset.openItem);
-    if(!item)return;
-    pieceType=item.kind==='board'?'board':item.type;
-    collectionView='items';ownedOnly=false;drawCollection();
-    const card=document.getElementById(`collection-item-${item.id}`);
-    card?.classList.add('focused-item');
-    card?.focus({preventScroll:true});
-    if(card){
-      const top=document.querySelector('header').getBoundingClientRect().bottom;
-      const dock=$('#app-nav');
-      const bottom=dock.hidden?window.innerHeight:Math.min(window.innerHeight,dock.getBoundingClientRect().top);
-      const rect=card.getBoundingClientRect();
-      window.scrollTo({top:window.scrollY+rect.top+rect.height/2-(top+bottom)/2,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-    }
+    focusCollectionItem(button.dataset.openItem);
     return;
   }
   if(button.dataset.pieceType){pieceType=button.dataset.pieceType;collectionView='items';drawCollection();}
@@ -392,6 +396,13 @@ $('#modal-content').addEventListener('click',async event=>{
   if(button.dataset.confirmCraft&&!active()){
     const next=craftItem(state,button.dataset.confirmCraft);
     if(next&&persist(next)){showModal.close();render();toast('Готово! Предмет в коллекции.');}
+  }
+  if(button.dataset.viewReward&&!active()){
+    const id=button.dataset.viewReward;
+    button.disabled=true;
+    await showModal.close();
+    changeTab('collection');
+    focusCollectionItem(id);
   }
   if(button.dataset.useReward){useItem(button.dataset.useReward);showModal.close();}
   if(button.hasAttribute('data-confirm-resign'))confirmResignation();

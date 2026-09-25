@@ -28,3 +28,13 @@ dialog.is-closing::backdrop{animation:backdrop-exit 180ms ease-in forwards}
 @media(prefers-reduced-motion:reduce){dialog.is-closing::backdrop{animation:none}}
 
 @media(max-width:760px){dialog.is-resizing{overflow:hidden}}
+
+/* Local rarity accent runs alongside the existing 500ms reveal. */
+.reward-epic,.reward-legendary{position:relative;isolation:isolate}
+.reward-epic{--reward-glow:#b58ae5;--reward-peak:.45}
+.reward-legendary{--reward-glow:#edc46d;--reward-peak:.7}
+.reward-epic::before,.reward-legendary::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,var(--reward-glow),transparent 68%);opacity:.16;animation:reward-glow 500ms ease-out}
+@keyframes reward-glow{0%{opacity:0;transform:scale(.9)}35%{opacity:var(--reward-peak)}100%{opacity:.16;transform:scale(1)}}
+.chest-reward-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.chest-reward-actions button{width:100%;margin-top:0}
+@media(prefers-reduced-motion:reduce){.reward-epic::before,.reward-legendary::before{animation:none;opacity:.16}}

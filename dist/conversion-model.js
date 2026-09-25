@@ -1,6 +1,6 @@
-import {CONVERSION as V} from './conversion-config.js?v=40';
-import {CONFIG as C} from './cognitive-config.js?v=40';
-import {boardPieces,clamp,opposite} from './cognitive-model.js?v=40';
+import {CONVERSION as V} from './conversion-config.js?v=42';
+import {CONFIG as C} from './cognitive-config.js?v=42';
+import {boardPieces,clamp,opposite} from './cognitive-model.js?v=42';
 const xy = square => [square.charCodeAt(0)-97,Number(square[1])-1];
 const distance = (a,b) => Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]));
 export const conversionSignature = (game,side) => {
