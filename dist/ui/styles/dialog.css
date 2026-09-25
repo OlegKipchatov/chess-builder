@@ -20,3 +20,11 @@ dialog.is-closing{pointer-events:none}
 @keyframes sheet-enter{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes sheet-backdrop{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){dialog[open],dialog[open]::backdrop{animation:none}}
+
+@media(max-width:760px){[data-confirm-resign]{width:100%}}
+
+dialog.is-closing::backdrop{animation:backdrop-exit 180ms ease-in forwards}
+@keyframes backdrop-exit{from{opacity:1}to{opacity:0}}
+@media(prefers-reduced-motion:reduce){dialog.is-closing::backdrop{animation:none}}
+
+@media(max-width:760px){dialog.is-resizing{overflow:hidden}}

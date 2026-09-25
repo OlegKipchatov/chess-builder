@@ -1,2 +1,2 @@
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=36';
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=40';
 export const statisticsPage = () => `<section id="statistics" class="tab" hidden>${pageHeader({title:"Статистика",startContent:backButton('profile')})}<div id="detailed-statistics" class="statistics-grid"></div><p class="muted">Статистика рассчитана по истории партий на этом устройстве.</p></section>`;

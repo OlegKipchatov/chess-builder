@@ -1,6 +1,6 @@
-import {Chess} from './chess.js?v=36';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=36';
-import {pieceSVG} from './pieces.js?v=36';
+import {Chess} from './chess.js?v=40';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=40';
+import {pieceSVG} from './pieces.js?v=40';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);
@@ -9,12 +9,25 @@ export const renderBoard = (root, game, equipped, selected, orientation='w') => 
   const legal = selected ? game.moves({square:selected,verbose:true}).map(move=>move.to) : [];
   const last = game.history({verbose:true}).at(-1);
   const focused = root.contains(document.activeElement) ? document.activeElement.dataset.square : null;
-  root.innerHTML = game.board().flatMap((row,r) => row.map((piece,c) => {
+  const html = game.board().flatMap((row,r) => row.map((piece,c) => {
     const square = 'abcdefgh'[c]+(8-r);
     const check = piece?.type === 'k' && piece.color === game.turn() && game.isCheck();
     const classes = ['square',(r+c)%2?'dark':'',piece?'occupied':'',selected===square?'selected':'',legal.includes(square)?'legal':'',last&&(last.from===square||last.to===square)?'last':'',check?'check':''].join(' ');
     return `<button class="${classes}" data-square="${square}" aria-label="${square}${piece?`, ${piece.color==='w'?'белые':'чёрные'}: ${PIECE_NAMES[piece.type]}`:', пусто'}${legal.includes(square)?', доступный ход':''}" aria-pressed="${selected===square}">${piece?pieceSVG(piece.type,piece.color,itemById(equipped.pieces[piece.type])?.style):''}${c===(orientation==='b'?7:0)?`<span class="coord rank" aria-hidden="true">${8-r}</span>`:''}${r===(orientation==='b'?0:7)?`<span class="coord" aria-hidden="true">${'abcdefgh'[c]}</span>`:''}</button>`;
   })).filter(Boolean)[orientation==='b'?'reverse':'slice']().join('');
+  const template=document.createElement('template');template.innerHTML=html;
+  const current=[...root.querySelectorAll('[data-square]')];
+  const next=[...template.content.children];
+  if(current.length!==64||current.some((cell,index)=>cell.dataset.square!==next[index].dataset.square)){
+    root.replaceChildren(...next);
+  } else {
+    for(let index=0;index<64;index++){
+      const cell=current[index],target=next[index];
+      if(cell.className!==target.className)cell.className=target.className;
+      for(const name of ['aria-label','aria-pressed'])if(cell.getAttribute(name)!==target.getAttribute(name))cell.setAttribute(name,target.getAttribute(name));
+      if(cell.innerHTML!==target.innerHTML)cell.innerHTML=target.innerHTML;
+    }
+  }
   if (focused) root.querySelector(`[data-square="${focused}"]`)?.focus({preventScroll:true});
 };
 export const snapshotBoard = root => new Map([...root.querySelectorAll('[data-square]')].map(cell => [cell.dataset.square,{rect:cell.getBoundingClientRect(),icon:cell.querySelector('svg')?.outerHTML}]));

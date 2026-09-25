@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=36';
-import {mountAppShell} from './ui/shell.js?v=36';
-import {statCard,plural} from './ui/primitives.js?v=36';
-import {createDialog,createToast} from './ui/dialog.js?v=36';
-import {renderArchiveList} from './ui/components/archive-list.js?v=36';
-import {moveList} from './ui/components/move-list.js?v=36';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=36';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=36';
-import {closeActivityDay, calendarHTML} from './activity.js?v=36';
-import {createBotClient} from './bot-client.js?v=36';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=36';
-import {signedDelta} from './rating.js?v=36';
-import {Chess} from './chess.js?v=36';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=36';
-import {openChest, craftItem} from './economy.js?v=36';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=36';
-import {pieceSVG, itemPreview} from './pieces.js?v=36';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=36';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=36';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=36';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=40';
+import {mountAppShell} from './ui/shell.js?v=40';
+import {statCard,plural} from './ui/primitives.js?v=40';
+import {createDialog,createToast} from './ui/dialog.js?v=40';
+import {renderArchiveList} from './ui/components/archive-list.js?v=40';
+import {moveList} from './ui/components/move-list.js?v=40';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=40';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=40';
+import {closeActivityDay, calendarHTML} from './activity.js?v=40';
+import {createBotClient} from './bot-client.js?v=40';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=40';
+import {signedDelta} from './rating.js?v=40';
+import {Chess} from './chess.js?v=40';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=40';
+import {openChest, craftItem} from './economy.js?v=40';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=40';
+import {pieceSVG, itemPreview} from './pieces.js?v=40';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=40';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=40';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=40';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 let storageError = false;
@@ -70,8 +70,11 @@ const settle = (notifyActivity=true) => {
   const {entry,reward,rewardBreakdown}=result;
   stopBot();game.reset();reviewCursor=null;queuedCursor=undefined;selected=null;
   if(!wasSettled){displayMatch={game:finishedGame,config:finishedConfig,kind:'result'};pendingResult=true;}
-  if(result.cancelled){showModal(cancelledDialog(),{closeLabel:'Продолжить',closeVariant:'primary'});return;}
-  if(!wasSettled)showModal(matchResultDialog(title,reward,entry,rewardBreakdown),{closeLabel:'Продолжить',closeVariant:'primary'});
+  const options={closeLabel:'Продолжить',closeVariant:'primary',next:()=>{
+    const event=pendingActivity;pendingActivity=null;
+    return event?{html:activityDialog(event),options:{closeLabel:'Продолжить',closeVariant:'primary'}}:null;
+  }};
+  if(!wasSettled)showModal(result.cancelled?cancelledDialog():matchResultDialog(title,reward,entry,rewardBreakdown),options);
 };
 const drawBoard = () => {
   const config=viewedConfig(),equipped=config.equipped||state.equipped;
@@ -133,6 +136,13 @@ const renderHistory = () => {
   if(reviewCursor===null)$('#moves').scrollTop=$('#moves').scrollHeight;
 };
 const renderGameInfo = () => {
+  if(pendingResult){
+    $('#resign').disabled=true;
+    $('#match-surface').inert=true;
+    renderHistory();
+    return;
+  }
+  $('#match-surface').inert=false;
   const config=viewedConfig(),hasBoard=!!displayMatch||state.game.started;
   const color=config.playerColor||'w';
   const points=materialBalance(positionAt(viewedGame(),reviewCursor),color);
@@ -143,13 +153,16 @@ const renderGameInfo = () => {
   $('#player-avatar').innerHTML=pieceSVG('p',color);
   $('#opponent').textContent=config.mode==='bot'?`ИИ · ${playStyleName(config.engineProfile?.profile)}`:'Игрок 2';
   $('#match-points').textContent=pointsText;
+  if(state.game.started&&ended()&&!$('#match-surface').hidden){
+    $('#resign').disabled=true;renderHistory();return;
+  }
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   $('#archive-return').disabled=animating;
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
   $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Партия';
   $('#resign').disabled=!active();
-  $('#resign').hidden=!active();
+  $('#resign').hidden=!active()&&!pendingResult&&!(state.game.started&&ended());
   $('#abort-failed').hidden=!canAbortFailedMatch(state,game)||!!displayMatch;
   $('#abort-failed').disabled=animating;
   $('#retry-failed').hidden=$('#abort-failed').hidden;
@@ -250,6 +263,7 @@ const changeTab = tab => {
   syncNavigation();if(target==='archive')renderArchive();if(target==='calendar')renderCalendar();
 };
 const showHistory = async (cursor,automatic=false) => {
+  if(pendingResult)return;
   if(!automatic)stopReplay();
   if(animating){queuedCursor=cursor;renderHistory();return;}
   const total=viewedGame().history().length, from=reviewCursor??total;
@@ -390,9 +404,29 @@ $('#modal-content').addEventListener('click',async event=>{
 });
 $('#modal').addEventListener('cancel',()=>{if(!promotion){selected=null;if(!animating)drawBoard();}});
 $('#modal').addEventListener('dialogdismiss',()=>{
-  if(pendingResult&&!$('#modal').open){pendingResult=false;displayMatch=null;reviewCursor=null;render();
-    const event=pendingActivity;pendingActivity=null;
-    if(event)showModal(activityDialog(event),{closeLabel:'Продолжить',closeVariant:'primary'});
+  if(!pendingResult||$('#modal').open)return;
+  const finish = () => {
+    pendingResult=false;pendingActivity=null;displayMatch=null;reviewCursor=null;
+    render();$('#start-game').focus({preventScroll:true});
+
+  };
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Keep a visual copy of the outgoing board while the ready screen takes its place.
+  // Do not fade the entire document or briefly reveal an empty page.
+  const surface=$('#match-surface'),rect=surface.getBoundingClientRect();
+  const outgoing=!reduced&&surface.animate?surface.cloneNode(true):null;
+  if(outgoing){
+    outgoing.removeAttribute('id');outgoing.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+    outgoing.inert=true;outgoing.setAttribute('aria-hidden','true');
+    const areaRect=surface.querySelector('.board-area').getBoundingClientRect();
+    Object.assign(outgoing.querySelector('.board-area').style,{width:`${areaRect.width}px`,maxWidth:`${areaRect.width}px`});
+    Object.assign(outgoing.style,{position:'fixed',left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`,margin:'0',zIndex:'34',pointerEvents:'none',background:'var(--bg)'});
+    document.body.append(outgoing);
+  }
+  finish();
+  if(outgoing){
+    const animation=outgoing.animate([{opacity:1},{opacity:0}],{duration:160,easing:'ease-out'});
+    animation.finished.catch(()=>{}).finally(()=>outgoing.remove());
   }
 });
 $('#close-modal').onclick=()=>showModal.close();
@@ -451,21 +485,28 @@ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();ins
 window.addEventListener('appinstalled',()=>{$('#install').hidden=true;toast('Приложение установлено');});
 if(matchMedia('(display-mode: standalone)').matches)$('#install').hidden=true;
 window.addEventListener('storage',event=>{if(event.key===KEY){location.reload();}});
-const showUpdate = registration => {
-  if(!registration.waiting)return;
-  $('#update-app').hidden=false;
-  $('#update-app').onclick=()=>{
-    if(active()){toast('Обновление можно применить после завершения партии.');return;}
-    registration.waiting.postMessage({type:'ACTIVATE_UPDATE'});
-  };
+let refreshPending=false,refreshing=false;
+const applyPendingUpdate = () => {
+  if(!refreshPending||refreshing||active()||pendingResult||animating||$('#modal').open)return;
+  refreshing=true;location.reload();
 };
 if('serviceWorker' in navigator){
-  let refreshing=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!refreshing){refreshing=true;location.reload();}});
-  navigator.serviceWorker.register('./sw.js').then(registration=>{
-    showUpdate(registration);
-    registration.addEventListener('updatefound',()=>registration.installing?.addEventListener('statechange',()=>showUpdate(registration)));
+  // First installation already runs the current shell; only an existing controller needs a reload.
+  let controlled=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(controlled){refreshPending=true;applyPendingUpdate();}
+    controlled=true;
+  });
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(registration=>{
+    const activate = () => registration.waiting?.postMessage({type:'ACTIVATE_UPDATE'});
+    activate();
+    registration.addEventListener('updatefound',()=>registration.installing?.addEventListener('statechange',activate));
+    const check = () => {if(!document.hidden){applyPendingUpdate();void registration.update().catch(()=>{});}};
+    document.addEventListener('visibilitychange',check);
+    window.addEventListener('online',check);
+    check();
   }).catch(()=>toast('Офлайн-режим недоступен. Игра работает при подключении к сети.'));
+
 }
 $('.brand>span:first-child').innerHTML=pieceSVG('n','w');
 $('#chest-art').innerHTML=pieceSVG('q','w','gold');

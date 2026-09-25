@@ -4,3 +4,6 @@ body.match-active main{padding-bottom:24px}body.match-active .brand{cursor:defau
 @media(max-width:760px){header{padding-left:12px;padding-right:12px;gap:6px}.brand{font-size:.8125rem}.balances{gap:4px}.wallet{padding:7px}.app-version{margin-left:4px}main{padding:18px 16px calc(112px + env(safe-area-inset-bottom))}.match-active main{padding-top:12px}}
 @media(max-width:400px){.brand>span:first-child{display:none}.app-version{display:none}.wallet{padding:6px 5px}header{gap:4px}.brand{font-size:.75rem}}
 @media(max-width:359px){header{flex-wrap:wrap}.brand{flex:1}.balances{margin-left:0}.wallet{font-size:.8125rem}}
+
+
+html{scrollbar-gutter:stable}

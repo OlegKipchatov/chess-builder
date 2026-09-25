@@ -1,2 +1,2 @@
-import {sectionHeader} from '../primitives.js?v=36';
+import {sectionHeader} from '../primitives.js?v=40';
 export const matchStatusPanel = () => `<aside><article class="panel"><h2 id="status">Ход белых</h2><p id="hint" class="muted">Выберите фигуру — покажем доступные ходы.</p><div class="move-log"><div class="divider"></div>${sectionHeader({title:'Ходы',endContent:'<span id="move-count" class="muted">0</span>'})}<div id="moves" class="moves"><p class="muted">Ходы появятся здесь.</p></div></div><div class="actions match-actions"><button id="export-pgn" class="quiet">Экспортировать PGN</button><button id="retry-failed" class="quiet" hidden>Повторить расчёт</button><button id="abort-failed" class="quiet" hidden>Отменить партию</button></div></article></aside>`;
