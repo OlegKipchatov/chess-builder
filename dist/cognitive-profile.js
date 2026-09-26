@@ -1,5 +1,5 @@
-import {PLAY_STYLES,validPlayStyle} from './play-style-config.js?v=42';
-import {Chess} from './chess.js?v=42';
+import {PLAY_STYLES,validPlayStyle} from './play-style-config.js?v=44';
+import {Chess} from './chess.js?v=44';
 
 const clamp = value => Math.max(-1,Math.min(1,value));
 const xy = square => [square.charCodeAt(0)-97,Number(square[1])-1];

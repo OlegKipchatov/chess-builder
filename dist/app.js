@@ -1,25 +1,30 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=42';
-import {mountAppShell} from './ui/shell.js?v=42';
-import {statCard,plural} from './ui/primitives.js?v=42';
-import {createDialog,createToast} from './ui/dialog.js?v=42';
-import {renderArchiveList} from './ui/components/archive-list.js?v=42';
-import {moveList} from './ui/components/move-list.js?v=42';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=42';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=42';
-import {closeActivityDay, calendarHTML} from './activity.js?v=42';
-import {createBotClient} from './bot-client.js?v=42';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=42';
-import {signedDelta} from './rating.js?v=42';
-import {Chess} from './chess.js?v=42';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=42';
-import {openChest, craftItem} from './economy.js?v=42';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=42';
-import {pieceSVG, itemPreview} from './pieces.js?v=42';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=42';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=42';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=42';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=44';
+import {mountAppShell} from './ui/shell.js?v=44';
+import {statCard,plural} from './ui/primitives.js?v=44';
+import {createDialog,createToast} from './ui/dialog.js?v=44';
+import {renderArchiveList} from './ui/components/archive-list.js?v=44';
+import {moveList} from './ui/components/move-list.js?v=44';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=44';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=44';
+import {closeActivityDay, calendarHTML} from './activity.js?v=44';
+import {createBotClient} from './bot-client.js?v=44';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=44';
+import {signedDelta} from './rating.js?v=44';
+import {Chess} from './chess.js?v=44';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=44';
+import {openChest, craftItem} from './economy.js?v=44';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=44';
+import {pieceSVG, itemPreview} from './pieces.js?v=44';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=44';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=44';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=44';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
+// Sticky catalogue navigation follows the real header height, including text scaling.
+const headerResizeObserver = new ResizeObserver(([entry]) => {
+  document.documentElement.style.setProperty('--app-header-height',`${entry.target.getBoundingClientRect().height}px`);
+});
+headerResizeObserver.observe(document.querySelector('header'));
 let storageError = false;
 let state;
 try {state=loadState(localStorage);} catch {state=initialState();storageError=true;}
@@ -338,7 +343,7 @@ const focusCollectionItem = id => {
   card?.classList.add('focused-item');
   card?.focus({preventScroll:true});
   if(card){
-    const top=document.querySelector('header').getBoundingClientRect().bottom;
+    const top=document.querySelector('header').getBoundingClientRect().bottom+($('#collection-content .equipment-strip')?.getBoundingClientRect().height||0)+12;
     const dock=$('#app-nav');
     const bottom=dock.hidden?window.innerHeight:Math.min(window.innerHeight,dock.getBoundingClientRect().top);
     const rect=card.getBoundingClientRect();
