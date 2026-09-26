@@ -30,7 +30,17 @@ test('Миграция не переносит даты и не зависит �
   assert.ok(JSON.parse(storage.get(KEY)).activity.timeZone);
 });
 test('Календарь показывает текущий месяц без интерактивных дат',()=>{
-  const html=calendarHTML(activity(['2026-09-10']),'2026-09-12T12:00:00Z');
-  assert.ok(html.includes('сентябрь 2026'));assert.equal((html.match(/class="calendar-day /g)||[]).length,30);
+  const html=calendarHTML(activity(['2026-08-31','2026-09-10']),'2026-09-12T12:00:00Z');
+  assert.ok(html.includes('сентябрь 2026'));assert.equal((html.match(/class="calendar-day /g)||[]).length,35);
+  assert.match(html,/class="calendar-day closed[^\"]*adjacent"[^>]*aria-label="31 августа, сыграна партия"/);
+  assert.match(html,/aria-label="1 октября, будущий день"/);
+  assert.match(html,/<i class="calendar-key today" aria-hidden="true"><\/i> Сегодня/);
+  assert.ok(!html.includes('Первая завершённая партия'));
   assert.ok(html.includes('aria-current="date"'));assert.ok(!html.includes('<button'));
+});
+test('До первой активности календарь показывает подсказку и предыдущий месяц без закрытых дней',()=>{
+  const html=calendarHTML(activity(),'2026-03-01T12:00:00Z');
+  assert.equal((html.match(/class="calendar-day /g)||[]).length,42);
+  assert.match(html,/aria-label="23 февраля, без партии"/);
+  assert.match(html,/Первая завершённая партия отметит сегодняшний день в календаре/);
 });
