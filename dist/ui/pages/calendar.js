@@ -1,2 +1,2 @@
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=51';
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=52';
 export const calendarPage = () => `<section id="calendar" class="tab" hidden>${pageHeader({title:"Календарь активности"})}<div id="activity-calendar"></div></section>`;
