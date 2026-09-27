@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=52';
-import {mountAppShell} from './ui/shell.js?v=52';
-import {statCard,plural} from './ui/primitives.js?v=52';
-import {createDialog,createToast} from './ui/dialog.js?v=52';
-import {renderArchiveList} from './ui/components/archive-list.js?v=52';
-import {moveList} from './ui/components/move-list.js?v=52';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=52';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=52';
-import {closeActivityDay, calendarHTML} from './activity.js?v=52';
-import {createBotClient} from './bot-client.js?v=52';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=52';
-import {signedDelta} from './rating.js?v=52';
-import {Chess} from './chess.js?v=52';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=52';
-import {openChest, craftItem} from './economy.js?v=52';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=52';
-import {pieceSVG, itemPreview} from './pieces.js?v=52';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=52';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=52';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=52';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=53';
+import {mountAppShell} from './ui/shell.js?v=53';
+import {statCard,plural} from './ui/primitives.js?v=53';
+import {createDialog,createToast} from './ui/dialog.js?v=53';
+import {renderArchiveList} from './ui/components/archive-list.js?v=53';
+import {moveList} from './ui/components/move-list.js?v=53';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=53';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=53';
+import {closeActivityDay, calendarHTML} from './activity.js?v=53';
+import {createBotClient} from './bot-client.js?v=53';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=53';
+import {signedDelta} from './rating.js?v=53';
+import {Chess} from './chess.js?v=53';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=53';
+import {openChest, craftItem} from './economy.js?v=53';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=53';
+import {pieceSVG, itemPreview} from './pieces.js?v=53';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=53';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=53';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=53';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -25,6 +25,13 @@ const headerResizeObserver = new ResizeObserver(([entry]) => {
   document.documentElement.style.setProperty('--app-header-height',`${entry.target.getBoundingClientRect().height}px`);
 });
 headerResizeObserver.observe(document.querySelector('header'));
+// Reserve the actual navigation height, including text enlargement. Hidden
+// navigation must not erase the last measurement before it becomes visible.
+const navigationResizeObserver = new ResizeObserver(([entry]) => {
+  const height=entry.target.getBoundingClientRect().height;
+  if(height>0)document.documentElement.style.setProperty('--nav-height',`${height}px`);
+});
+navigationResizeObserver.observe(document.querySelector('#app-nav'));
 let storageError = false;
 let state;
 try {state=loadState(localStorage);} catch {state=initialState();storageError=true;}
@@ -101,6 +108,7 @@ const syncNavigation = () => {
   });
   $('#app-nav').hidden=active()||pendingResult||displayMatch?.kind==='archive';
   document.body.classList.toggle('archive-viewing',displayMatch?.kind==='archive');
+  $('#play').dataset.pageKind=displayMatch?.kind==='archive'?'detail':'root';
   $('#profile-avatar').disabled=active()||pendingResult;
 
   document.body.classList.toggle('match-active',active()||pendingResult);

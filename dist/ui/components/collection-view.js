@@ -1,8 +1,8 @@
-import {TYPES,PIECE_NAMES,STYLES,ITEMS,itemById,craftCost} from '../../catalog.js?v=52';
-import {pieceSVG,itemPreview} from '../../pieces.js?v=52';
-import {presetEquipment} from '../../collection-model.js?v=52';
-import {button,sectionHeader,emptyState,escapeHTML} from '../primitives.js?v=52';
-import {equipmentPreview,equipmentRow,savedSetRow,rarityLabel} from './equipment.js?v=52';
+import {TYPES,PIECE_NAMES,STYLES,ITEMS,itemById,craftCost} from '../../catalog.js?v=53';
+import {pieceSVG,itemPreview} from '../../pieces.js?v=53';
+import {presetEquipment} from '../../collection-model.js?v=53';
+import {button,sectionHeader,emptyState,escapeHTML} from '../primitives.js?v=53';
+import {equipmentPreview,equipmentRow,savedSetRow,rarityLabel} from './equipment.js?v=53';
 const collectionItemRow = (state,item) => {
   const owned=state.owned.includes(item.id),equipped=item.kind==='board'?state.equipped.board===item.id:state.equipped.pieces[item.type]===item.id,cost=craftCost(item);
   const style=STYLES.find(style=>style.id===item.style);
@@ -28,5 +28,5 @@ const itemCatalog = (state,type,ownedOnly) => {
 };
 export const renderCollection = (root,state,view='sets',type='k',ownedOnly=false) => {
   const content=view==='saved'?savedSets(state):view==='items'?itemCatalog(state,type,ownedOnly):`<div class="collection-list">${STYLES.map(style=>presetCollectionRow(state,style)).join('')}</div>`;
-  root.innerHTML=equipmentStrip(state,view,type)+`<div class="collection-toolbar"><div class="segmented" role="group" aria-label="Раздел коллекции">${[['sets','Коллекции'],['items','Фигуры и доски'],['saved','Мои наборы']].map(([id,label])=>button({label,variant:'ghost','data-collection-view':id,className:view===id?'active':'','aria-pressed':String(view===id)})).join('')}</div><span class="muted">${state.owned.length}/${ITEMS.length} предметов · ${state.shards} ✧</span></div>`+content;
+  root.innerHTML=equipmentStrip(state,view,type)+`<div class="collection-toolbar"><div class="segmented" role="group" aria-label="Раздел коллекции">${[['sets','Коллекции'],['items','Фигуры и доски'],['saved','Мои наборы']].map(([id,label])=>button({label,variant:'ghost','data-collection-view':id,className:view===id?'active':'','aria-pressed':String(view===id)})).join('')}</div><span class="muted">${state.owned.length}/${ITEMS.length} предметов · ${state.shards} ✧</span></div>`+`<div class="collection-content-group">${content}</div>`;
 };
