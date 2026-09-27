@@ -1,6 +1,7 @@
-import {newGame} from './state.js?v=47';
-import {settleRating} from './rating.js?v=47';
-import {rewardBreakdownFor} from './engine.js?v=47';
+import {Chess} from './chess.js?v=50';
+import {newGame} from './state.js?v=50';
+import {settleRating} from './rating.js?v=50';
+import {rewardBreakdownFor} from './engine.js?v=50';
 export const capturePoints = (game,color) => game.history({verbose:true}).reduce((sum,move)=>sum+(move.color===color?({p:1,n:3,b:3,r:5,q:9}[move.captured]||0):0),0);
 export const completedMatch = (state,game,{id,finishedAt}) => {
   if(!state.game.started||(!state.game.resigned&&!game.isGameOver()))return null;
@@ -21,4 +22,19 @@ export const abortFailedMatch = (state,game,{id,finishedAt}) => {
  if(!canAbortFailedMatch(state,game))return null;
  const entry={id,finishedAt,pgn:game.pgn(),mode:'bot',playerColor:state.game.playerColor,equipped:structuredClone(state.game.equipped),engineProfile:structuredClone(state.game.engineProfile||null),engineFailure:{...state.game.engineFailure},counted:false,result:'Прервана из-за ошибки',points:capturePoints(game,state.game.playerColor),playerRating:state.game.rating?.before??state.rating.value,opponentRating:state.game.rating?.opponent??null,ratingDelta:null};
  return {...state,archive:[entry,...state.archive],game:newGame(state.settings.mode)};
+};
+
+// Cache replay-derived metrics without changing existing saved history.
+const historyMetricsCache = new WeakMap();
+export const historyMetrics = entry => {
+ const cached=historyMetricsCache.get(entry);
+ if(cached?.pgn===entry.pgn&&cached.color===entry.playerColor)return cached.metrics;
+ let metrics={moves:null,balance:null};
+ try {
+  if(typeof entry.pgn!=='string')throw new Error('Missing PGN');
+  const game=new Chess();game.loadPgn(entry.pgn);
+  metrics={moves:Math.ceil(game.history().length/2),balance:materialBalance(game,entry.playerColor||'w')};
+ } catch {}
+ historyMetricsCache.set(entry,{pgn:entry.pgn,color:entry.playerColor,metrics});
+ return metrics;
 };

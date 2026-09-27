@@ -13,3 +13,27 @@ test('Старая уже оплаченная партия архивирует
 test('Незавершённая партия не переносится в архив',()=>{assert.equal(completedMatch(match(),new Chess(),meta),null);});
 test('Очки учитывают взятия и сторону, включая взятие на проходе',()=>{const game=new Chess();['e4','a6','e5','d5','exd6'].forEach(move=>game.move(move));assert.equal(capturePoints(game,'w'),1);assert.equal(capturePoints(game,'b'),0);});
 test('Разница материала бывает положительной, отрицательной и нулевой',async()=>{const {materialBalance}=await import('../dist/archive.js');const game=new Chess();assert.equal(materialBalance(game,'w'),0);['e4','d5','exd5'].forEach(move=>game.move(move));assert.equal(materialBalance(game,'w'),1);assert.equal(materialBalance(game,'b'),-1);game.move('Qxd5');assert.equal(materialBalance(game,'w'),0);});
+
+test('История считает полные ходы и конечный баланс со стороны игрока, игнорируя старые очки',async()=>{
+ const {historyMetrics}=await import('../dist/archive.js');
+ const game=new Chess();['e4','d5','exd5','Qxd5','Nc3'].forEach(move=>game.move(move));
+ const entry={pgn:game.pgn(),playerColor:'w',points:99};
+ assert.deepEqual(historyMetrics(entry),{moves:3,balance:0});
+ game.move('Qe5+');game.move('Be2');game.move('Qxe2+');entry.pgn=game.pgn();
+ assert.deepEqual(historyMetrics(entry),{moves:4,balance:-3});
+ assert.deepEqual(historyMetrics({...entry,playerColor:'b'}),{moves:4,balance:3});
+ assert.deepEqual(historyMetrics({pgn:'invalid',points:99}),{moves:null,balance:null});
+});
+test('История учитывает превращение и взятие на проходе в финальном материале',async()=>{
+ const {historyMetrics,materialBalance}=await import('../dist/archive.js');
+ for(const game of [new Chess(),new Chess('7k/P7/8/8/8/8/8/7K w - - 0 1')]){
+  (game.fen().startsWith('7k')?['a8=Q+']:['e4','a6','e5','d5','exd6']).forEach(move=>game.move(move));
+  assert.equal(historyMetrics({pgn:game.pgn(),playerColor:'w'}).balance,materialBalance(game,'w'));
+ }
+});
+test('Строка истории показывает время, ходы и материал вместо суммы взятий',async()=>{
+ const {renderArchiveList}=await import('../dist/ui/components/archive-list.js');
+ const root={style:{setProperty:()=>{}},scrollTop:0,clientHeight:520};
+ renderArchiveList(root,[{id:'a',result:'Победа',finishedAt:'2026-09-27T07:30:00Z',playerColor:'w',pgn:'1. e4 d5 2. exd5',points:99}]);
+ assert.match(root.innerHTML,/2 хода/);assert.match(root.innerHTML,/Материал/);assert.match(root.innerHTML,/>\+1</);assert.match(root.innerHTML,/datetime="2026-09-27T07:30:00.000Z"/);assert.doesNotMatch(root.innerHTML,/очк|99/);
+});
