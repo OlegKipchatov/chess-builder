@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {activityDate,closeActivityDay,currentStreak,normalizeActivity,calendarHTML} from '../dist/activity.js';
 import {initialState,migrateState,loadState,KEY} from '../dist/state.js';
+import {activityDialog} from '../dist/ui/dialog-content.js';
+test('Ячейка после партии показывает длину серии, а не дату',()=>{
+  for(const [streak,label] of [[1,'1 день'],[2,'2 дня подряд'],[12,'12 дней подряд'],[21,'21 день подряд']]){
+    const html=activityDialog({date:'2026-09-27',streak});
+    assert.match(html,new RegExp(`day-closed-mark"[^>]*>${streak}</div>`));
+    assert.ok(html.includes(`>${label}</strong>`));
+    assert.ok(!html.includes('>27</div>'));
+  }
+});
 const activity=(days=[])=>({version:1,timeZone:'Europe/Helsinki',days});
 test('Закрытие дня идемпотентно; неучитываемая партия ничего не меняет',()=>{
   const input=activity(),event={counted:true,finishedAt:'2026-09-12T10:00:00Z'};
