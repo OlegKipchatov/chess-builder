@@ -1,3 +1,4 @@
+import {motionDuration, motionEasing} from './motion.js?v=55';
 // Serialize replacements so result/activity content never changes mid-animation.
 export const createDialog = (root,content,closeButton) => {
   let returnFocus=null,returnId='',returnData=[],queue=Promise.resolve(),dismissPending=false,hideClose=false,nextStep=null;
@@ -17,7 +18,7 @@ export const createDialog = (root,content,closeButton) => {
     root.classList.add('is-closing');
     if(!reducedMotion()&&root.animate){
       const frames=mobile()?[{transform:'translateY(0)'},{transform:'translateY(100%)'}]:[{opacity:1},{opacity:0}];
-      const animation=root.animate(frames,{duration:180,easing:'ease-in',fill:'forwards'});
+      const animation=root.animate(frames,{duration:motionDuration.exit,easing:motionEasing.exit,fill:'forwards'});
       await animation.finished.catch(()=>{});
       root.close();animation.cancel();
     } else root.close();
@@ -42,7 +43,7 @@ export const createDialog = (root,content,closeButton) => {
       const nextHeight=root.getBoundingClientRect().height;
       if(Math.abs(nextHeight-previousHeight)>1){
         root.classList.add('is-resizing');
-        const animation=root.animate([{height:`${previousHeight}px`},{height:`${nextHeight}px`}],{duration:200,easing:'cubic-bezier(.2,0,0,1)'});
+        const animation=root.animate([{height:`${previousHeight}px`},{height:`${nextHeight}px`}],{duration:motionDuration.standard,easing:motionEasing.local});
         try {await animation.finished;} catch {} finally {
           animation.cancel();root.classList.remove('is-resizing');
         }

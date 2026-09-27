@@ -1,23 +1,24 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=53';
-import {mountAppShell} from './ui/shell.js?v=53';
-import {statCard,plural} from './ui/primitives.js?v=53';
-import {createDialog,createToast} from './ui/dialog.js?v=53';
-import {renderArchiveList} from './ui/components/archive-list.js?v=53';
-import {moveList} from './ui/components/move-list.js?v=53';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=53';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=53';
-import {closeActivityDay, calendarHTML} from './activity.js?v=53';
-import {createBotClient} from './bot-client.js?v=53';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=53';
-import {signedDelta} from './rating.js?v=53';
-import {Chess} from './chess.js?v=53';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=53';
-import {openChest, craftItem} from './economy.js?v=53';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=53';
-import {pieceSVG, itemPreview} from './pieces.js?v=53';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=53';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=53';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=53';
+import {motionDuration, motionEasing} from './ui/motion.js?v=55';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=55';
+import {mountAppShell} from './ui/shell.js?v=55';
+import {statCard,plural} from './ui/primitives.js?v=55';
+import {createDialog,createToast} from './ui/dialog.js?v=55';
+import {renderArchiveList} from './ui/components/archive-list.js?v=55';
+import {moveList} from './ui/components/move-list.js?v=55';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=55';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=55';
+import {closeActivityDay, calendarHTML} from './activity.js?v=55';
+import {createBotClient} from './bot-client.js?v=55';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=55';
+import {signedDelta} from './rating.js?v=55';
+import {Chess} from './chess.js?v=55';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=55';
+import {openChest, craftItem} from './economy.js?v=55';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=55';
+import {pieceSVG, itemPreview} from './pieces.js?v=55';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=55';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=55';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=55';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -482,7 +483,7 @@ $('#modal').addEventListener('dialogdismiss',()=>{
   }
   finish();
   if(outgoing){
-    const animation=outgoing.animate([{opacity:1},{opacity:0}],{duration:160,easing:'ease-out'});
+    const animation=outgoing.animate([{opacity:1},{opacity:0}],{duration:motionDuration.fast,easing:motionEasing.exit});
     animation.finished.catch(()=>{}).finally(()=>outgoing.remove());
   }
 });
@@ -510,7 +511,7 @@ $('#start-game').onclick=()=>{
   changeTab('play');render();
   const surface=$('#match-surface');
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    surface.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'ease-out'});
+    surface.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:motionDuration.standard,easing:motionEasing.enter});
   }
   requestBot();
 };

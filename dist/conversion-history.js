@@ -1,7 +1,7 @@
-import {Chess} from './chess.js?v=53';
-import {CONVERSION as V} from './conversion-config.js?v=53';
-import {conversionFeatures,conversionSignature} from './conversion-model.js?v=53';
-import {clamp} from './cognitive-model.js?v=53';
+import {Chess} from './chess.js?v=55';
+import {CONVERSION as V} from './conversion-config.js?v=55';
+import {conversionFeatures,conversionSignature} from './conversion-model.js?v=55';
+import {clamp} from './cognitive-model.js?v=55';
 export const positionKey = game => game.fen().split(' ').slice(0,4).join(' ');
 export const advanceProgress = (state,progress,signature) => {
  if(!state||state.signature!==signature)return {signature,bestProgress:progress,stagnantMoves:0};

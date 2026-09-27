@@ -10,7 +10,9 @@
     "start": "python3 -m http.server 8080 --directory dist",
     "simulate:collect": "node scripts/simulation/cognitive-v2-holdout.mjs",
     "simulate": "node scripts/simulation/cognitive-v2.mjs",
-    "simulate:conversion": "node scripts/simulation/conversion-v2.1.mjs"
+    "simulate:conversion": "node scripts/simulation/conversion-v2.1.mjs",
+    "motion:generate": "node scripts/generate-motion.mjs",
+    "motion:check": "node scripts/generate-motion.mjs --check"
   },
   "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами"
 }

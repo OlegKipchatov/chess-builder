@@ -1,6 +1,7 @@
-import {Chess} from './chess.js?v=53';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=53';
-import {pieceSVG} from './pieces.js?v=53';
+import {motionDuration, motionEasing} from './ui/motion.js?v=55';
+import {Chess} from './chess.js?v=55';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=55';
+import {pieceSVG} from './pieces.js?v=55';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);
@@ -63,7 +64,7 @@ export const historyMoves = (game,from,to) => {
 export const animateTransition = async (root, steps, before) => {
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||!root.getBoundingClientRect().width||!root.animate)return;
   const rect=root.getBoundingClientRect(), nodes=[],hidden=[],animations=[];
-  const timing={duration:420,easing:'cubic-bezier(.25,.1,.25,1)',fill:'forwards'};
+  const timing={duration:motionDuration.board,easing:motionEasing.board,fill:'forwards'};
   const overlay=source=>{
     if(!source?.icon)return null;
     const node=document.createElement('span');node.className='moving-piece';node.innerHTML=source.icon;
