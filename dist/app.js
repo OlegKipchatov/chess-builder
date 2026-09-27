@@ -1,23 +1,23 @@
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=50';
-import {mountAppShell} from './ui/shell.js?v=50';
-import {statCard,plural} from './ui/primitives.js?v=50';
-import {createDialog,createToast} from './ui/dialog.js?v=50';
-import {renderArchiveList} from './ui/components/archive-list.js?v=50';
-import {moveList} from './ui/components/move-list.js?v=50';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=50';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=50';
-import {closeActivityDay, calendarHTML} from './activity.js?v=50';
-import {createBotClient} from './bot-client.js?v=50';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=50';
-import {signedDelta} from './rating.js?v=50';
-import {Chess} from './chess.js?v=50';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=50';
-import {openChest, craftItem} from './economy.js?v=50';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=50';
-import {pieceSVG, itemPreview} from './pieces.js?v=50';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=50';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=50';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=50';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=51';
+import {mountAppShell} from './ui/shell.js?v=51';
+import {statCard,plural} from './ui/primitives.js?v=51';
+import {createDialog,createToast} from './ui/dialog.js?v=51';
+import {renderArchiveList} from './ui/components/archive-list.js?v=51';
+import {moveList} from './ui/components/move-list.js?v=51';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=51';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=51';
+import {closeActivityDay, calendarHTML} from './activity.js?v=51';
+import {createBotClient} from './bot-client.js?v=51';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=51';
+import {signedDelta} from './rating.js?v=51';
+import {Chess} from './chess.js?v=51';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=51';
+import {openChest, craftItem} from './economy.js?v=51';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=51';
+import {pieceSVG, itemPreview} from './pieces.js?v=51';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=51';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=51';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=51';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -33,6 +33,7 @@ try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
+let archiveReturnContext=null;
 let lastBotError=null;
 const exportViewedMatch = () => {
  const config=viewedConfig(),error=config.engineFailure||(!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null);
@@ -98,13 +99,30 @@ const syncNavigation = () => {
     button.title=button.disabled?(button.dataset.tab==='archive'?'История доступна после завершения партии':'Раздел доступен после завершения партии'):'';
     button.setAttribute('aria-current',button.dataset.tab===currentScreen?'page':'false');
   });
-  $('#app-nav').hidden=active()||pendingResult;
+  $('#app-nav').hidden=active()||pendingResult||displayMatch?.kind==='archive';
+  document.body.classList.toggle('archive-viewing',displayMatch?.kind==='archive');
   $('#profile-avatar').disabled=active()||pendingResult;
 
   document.body.classList.toggle('match-active',active()||pendingResult);
   $('.brand').setAttribute('aria-disabled',String(active()));
 };
-const renderArchive = () => renderArchiveList($('#match-archive'),state.archive);
+const renderArchive = () => {
+  if(currentScreen!=='archive')return;
+  const root=$('#match-archive');
+  const focusedId=root.contains(document.activeElement)?document.activeElement.dataset.archive:null;
+  renderArchiveList(root,state.archive);
+  if(focusedId)root.querySelector(`[data-archive="${CSS.escape(focusedId)}"]`)?.focus({preventScroll:true});
+};
+const restoreArchiveContext = () => {
+  if(!archiveReturnContext)return;
+  const {id,scrollTop,x,y}=archiveReturnContext;
+  $('#match-archive').scrollTop=scrollTop;
+  renderArchive();
+  const entry=$('#match-archive').querySelector(`[data-archive="${CSS.escape(id)}"]`);
+  (entry||$('#match-archive')).focus({preventScroll:true});
+  window.scrollTo({left:x,top:y,behavior:'instant'});
+  archiveReturnContext=null;
+};
 const renderStatistics = () => {
   const entries=state.archive.filter(entry=>entry.mode==='bot'&&entry.counted!==false), wins=entries.filter(entry=>entry.result==='Победа').length;
   const draws=entries.filter(entry=>entry.result==='Ничья').length, losses=entries.length-wins-draws;
@@ -134,7 +152,7 @@ const renderHistory = () => {
   $('#history-back').disabled=cursor===0;
   $('#history-forward').disabled=cursor===moves.length;
   $('#history-live').disabled=cursor===moves.length;
-  $('#history-position').textContent=reviewCursor===null?'Текущая позиция':`Позиция ${cursor} из ${moves.length}`;
+  $('#history-position').textContent=`${cursor} / ${moves.length}`;
   $('#history-notice').hidden=reviewCursor===null||!!displayMatch;
   $('#move-count').textContent=moves.length;
   $('#moves').innerHTML=moveList(moves,cursor);
@@ -163,7 +181,6 @@ const renderGameInfo = () => {
   }
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
-  $('#archive-return').disabled=animating;
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
   $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Партия';
   $('#resign').disabled=!active();
@@ -172,7 +189,7 @@ const renderGameInfo = () => {
   $('#abort-failed').disabled=animating;
   $('#retry-failed').hidden=$('#abort-failed').hidden;
   $('#retry-failed').disabled=locked();
-  $('#hint').textContent=displayMatch?'Просматривайте партию стрелками.':reviewCursor!==null?'Вы смотрите прошлую позицию. Вернитесь к текущему ходу, чтобы продолжить.':active()?'Выберите фигуру — покажем доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'';
+  $('#hint').textContent=displayMatch?'Переключайте ходы стрелками или включите воспроизведение.':reviewCursor!==null?'Вы смотрите прошлую позицию. Вернитесь к текущему ходу, чтобы продолжить.':active()?'Выберите фигуру — покажем доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'';
   $('#game-ready').hidden=hasBoard;
   $('#match-title').textContent=displayMatch?'История партии':active()?'Партия':state.game.started?'Итоги партии':'Игра';
   $('#match-settings').textContent='';
@@ -260,13 +277,21 @@ $('#board').addEventListener('keydown',event=>{
 });
 const changeTab = tab => {
   stopReplay();
-  if(animating||pendingResult)return;
+  const returningToArchive=displayMatch?.kind==='archive'&&tab==='archive';
+  if(pendingResult||(animating&&!returningToArchive))return;
+  if(returningToArchive){
+    queuedCursor=undefined;
+    $('#board').getAnimations({subtree:true}).forEach(animation=>animation.cancel());
+    animating=false;
+  }
   const target=navigationTarget(state,game,tab);
-  if(displayMatch?.kind==='archive'&&target!=='play'){displayMatch=null;reviewCursor=null;render();}
+  const leavingArchive=displayMatch?.kind==='archive'&&target!=='play';
+  if(leavingArchive){displayMatch=null;reviewCursor=null;render();}
   if(target!==tab&&active())toast('Завершите партию, чтобы перейти в другой раздел.');
   currentScreen=target;
   window.history.replaceState(null,'','#'+target);
   syncNavigation();if(target==='archive')renderArchive();if(target==='calendar')renderCalendar();
+  if(leavingArchive&&target==='archive')restoreArchiveContext();
 };
 const showHistory = async (cursor,automatic=false) => {
   if(pendingResult)return;
@@ -276,9 +301,11 @@ const showHistory = async (cursor,automatic=false) => {
   const target=cursor===null||cursor>=total?total:Math.max(0,cursor);
   if(from===target)return;
   const before=snapshotBoard($('#board')), steps=historyMoves(viewedGame(),from,target);
+  const matchAtStart=displayMatch;
   reviewCursor=target===total?null:target;selected=null;animating=true;
   drawBoard();renderGameInfo();
   try {await animateTransition($('#board'),steps,before);} finally {animating=false;}
+  if(displayMatch!==matchAtStart)return;
   render();
   if(queuedCursor!==undefined){const next=queuedCursor;queuedCursor=undefined;await showHistory(next);return;}
   if(pendingBotMove){const move=pendingBotMove;pendingBotMove=null;void applyMove(move);}
@@ -294,12 +321,12 @@ const replayStep = async () => {
   await showHistory(historyCursor(queuedCursor===undefined?reviewCursor:queuedCursor,1,total),true);
   if(!replayRunning)return;
   if(reviewCursor===null){stopReplay();return;}
-  replayTimer=setTimeout(()=>void replayStep(),800);
+  replayTimer=setTimeout(()=>void replayStep(),375);
 };
 $('#replay-start').onclick=async()=>{
   if(replayRunning||displayMatch?.kind!=='archive')return;
   if(reviewCursor===null)await showHistory(0);
-  replayRunning=true;renderHistory();replayTimer=setTimeout(()=>void replayStep(),500);
+  replayRunning=true;renderHistory();replayTimer=setTimeout(()=>void replayStep(),100);
 };
 $('#replay-pause').onclick=stopReplay;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopReplay();});
@@ -378,8 +405,12 @@ $('#match-archive').addEventListener('click',event=>{
   const id=event.target.closest('[data-archive]')?.dataset.archive;
   const entry=state.archive.find(entry=>entry.id===id);if(!entry)return;
   const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось открыть запись партии.');return;}
+  archiveReturnContext={id,scrollTop:$('#match-archive').scrollTop,x:window.scrollX,y:window.scrollY};
   displayMatch={game:replay,kind:'archive',title:entry.result,config:{...entry,started:true,rating:{before:entry.playerRating,opponent:entry.opponentRating}}};
   reviewCursor=replay.history().length?0:null;selected=null;changeTab('play');render();
+  $('#match-title').tabIndex=-1;
+  $('#match-title').focus({preventScroll:true});
+  window.scrollTo({top:0,left:0,behavior:'instant'});
 });
 $('#archive-return').onclick=()=>changeTab('archive');
 $('#export-pgn').onclick=exportViewedMatch;

@@ -1,6 +1,6 @@
-import {playStyleName} from './play-style-config.js?v=50';
-import {decisionModeFor} from './cognitive-model.js?v=50';
-import {Chess} from './chess.js?v=50';
+import {playStyleName} from './play-style-config.js?v=51';
+import {decisionModeFor} from './cognitive-model.js?v=51';
+import {Chess} from './chess.js?v=51';
 const clean = value => String(value).replace(/[\r\n\\"]/g,' ').slice(0,240);
 export const exportPgn = (game,config={},error=null) => {
  error??=config.engineFailure;

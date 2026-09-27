@@ -7,3 +7,6 @@ body.match-active main{padding-bottom:24px}body.match-active .brand{cursor:defau
 
 
 html{scrollbar-gutter:stable}
+
+body.archive-viewing main{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+body.archive-viewing .notification-stack{bottom:24px}

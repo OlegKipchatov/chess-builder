@@ -1,8 +1,8 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=50';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=50';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=50';
-import {Chess} from './chess.js?v=50';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=50';
+import {initialActivity, normalizeActivity} from './activity.js?v=51';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=51';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=51';
+import {Chess} from './chess.js?v=51';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=51';
 export const KEY = 'chess-vault-v3';
 export const createRecordId = () => {
   if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
