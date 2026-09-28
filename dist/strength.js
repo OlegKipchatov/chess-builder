@@ -1,6 +1,6 @@
-import {validPlayStyle} from './play-style-config.js?v=59';
-import {CONFIG as C} from './cognitive-config.js?v=59';
-import {createSession,clamp,hash} from './cognitive-model.js?v=59';
+import {validPlayStyle} from './play-style-config.js?v=60';
+import {CONFIG as C} from './cognitive-config.js?v=60';
+import {createSession,clamp,hash} from './cognitive-model.js?v=60';
 const validSeed = seed => Number.isInteger(seed)&&seed>=0&&seed<=0xffffffff;
 const validElo = elo => Number.isFinite(elo)&&elo>=C.minElo&&elo<=C.maxElo;
 export const validEngineProfile = profile => profile?.id==='cognitive-v2'&&validPlayStyle(profile.profile)&&validElo(profile.targetElo)&&validElo(profile.effectiveElo)&&validSeed(profile.seed);

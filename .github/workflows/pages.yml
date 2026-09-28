@@ -22,10 +22,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install test dependencies
+        run: npm ci
       - name: Fetch and verify pinned Stockfish release
         run: npm run prepare:engine
       - name: Test chess rules and rewards
         run: npm test
+      - name: Install Chromium for offline regression tests
+        run: npx playwright install --with-deps chromium
+      - name: Test cold offline launch and PWA upgrade
+        run: npm run test:pwa:browser
       - name: Check JavaScript syntax
         run: |
           for source in dist/*.js; do

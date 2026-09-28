@@ -1,24 +1,24 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=59';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=59';
-import {mountAppShell} from './ui/shell.js?v=59';
-import {statCard,plural} from './ui/primitives.js?v=59';
-import {createDialog,createToast} from './ui/dialog.js?v=59';
-import {renderArchiveList} from './ui/components/archive-list.js?v=59';
-import {moveList} from './ui/components/move-list.js?v=59';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=59';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=59';
-import {closeActivityDay, calendarHTML} from './activity.js?v=59';
-import {createBotClient} from './bot-client.js?v=59';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=59';
-import {signedDelta} from './rating.js?v=59';
-import {Chess} from './chess.js?v=59';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=59';
-import {openChest, craftItem} from './economy.js?v=59';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=59';
-import {pieceSVG, itemPreview} from './pieces.js?v=59';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=59';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=59';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=59';
+import {motionDuration, motionEasing} from './ui/motion.js?v=60';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=60';
+import {mountAppShell} from './ui/shell.js?v=60';
+import {statCard,plural} from './ui/primitives.js?v=60';
+import {createDialog,createToast} from './ui/dialog.js?v=60';
+import {renderArchiveList} from './ui/components/archive-list.js?v=60';
+import {moveList} from './ui/components/move-list.js?v=60';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=60';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=60';
+import {closeActivityDay, calendarHTML} from './activity.js?v=60';
+import {createBotClient} from './bot-client.js?v=60';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=60';
+import {signedDelta} from './rating.js?v=60';
+import {Chess} from './chess.js?v=60';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=60';
+import {openChest, craftItem} from './economy.js?v=60';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=60';
+import {pieceSVG, itemPreview} from './pieces.js?v=60';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=60';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=60';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=60';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -558,10 +558,10 @@ const applyPendingUpdate = () => {
   refreshing=true;location.reload();
 };
 if('serviceWorker' in navigator){
-  // First installation already runs the current shell; only an existing controller needs a reload.
+  // First control also needs a safe reload to apply the isolation headers for Stockfish.
   let controlled=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(controlled){refreshPending=true;applyPendingUpdate();}
+    if(controlled||!globalThis.crossOriginIsolated){refreshPending=true;applyPendingUpdate();}
     controlled=true;
   });
   navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(registration=>{

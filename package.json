@@ -12,7 +12,11 @@
     "simulate": "node scripts/simulation/cognitive-v2.mjs",
     "simulate:conversion": "node scripts/simulation/conversion-v2.1.mjs",
     "motion:generate": "node scripts/generate-motion.mjs",
-    "motion:check": "node scripts/generate-motion.mjs --check"
+    "motion:check": "node scripts/generate-motion.mjs --check",
+    "test:pwa:browser": "node scripts/test-pwa-browser.mjs"
   },
-  "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами"
+  "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами",
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
 }
