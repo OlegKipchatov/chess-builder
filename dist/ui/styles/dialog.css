@@ -38,3 +38,5 @@ dialog.is-closing::backdrop{animation:backdrop-exit var(--motion-exit) var(--mot
 .chest-reward-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .chest-reward-actions button{width:100%;margin-top:0}
 @media(prefers-reduced-motion:reduce){.reward-epic::before,.reward-legendary::before{animation:none;opacity:.16}}
+
+.match-end-reason{font-size:var(--type-secondary);color:var(--muted);margin:-4px 0 12px}

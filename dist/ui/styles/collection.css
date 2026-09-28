@@ -35,3 +35,7 @@
 
 /* Purchase/equip actions only; navigation and header controls keep their own styles. */
 .collection-content-group button:is([data-equip],[data-craft],[data-preset],[data-load-set]):not(.equipped-button){color:var(--text);background:#39434b;box-shadow:inset 0 0 0 1px #59656e}
+
+.compact-item>button.stable-label{width:max-content;max-width:100%;white-space:normal}
+@media(max-width:760px){.compact-item>button.stable-label{max-width:130px}}
+@media(max-width:359px){.compact-item>button.stable-label{max-width:106px}}

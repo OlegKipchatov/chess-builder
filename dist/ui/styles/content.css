@@ -3,3 +3,13 @@
 #faq .page-content{max-width:900px;width:100%;margin-inline:auto;gap:var(--page-related-gap)}.faq-accordion{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--panel);margin:0;overflow:hidden}.faq-accordion>summary{cursor:pointer;padding:20px;font-size:1rem;font-weight:600}.faq-accordion[open]>summary{border-bottom:1px solid var(--border)}.disclosure-content{padding:20px}.disclosure-content>.panel{margin:0;padding:0;border:0;background:transparent}.disclosure-content p{color:var(--muted);line-height:1.65}.compensation{display:grid;grid-template-columns:1fr 1.1fr;gap:24px}.compensation button{width:100%;margin-top:12px}.table-scroll{overflow:auto;min-width:0}table{width:100%;border-collapse:collapse;font-size:.875rem}caption{text-align:left;font-size:.8125rem;color:var(--muted);margin-bottom:12px}th{text-align:left;font-weight:500;color:var(--muted)}td,th{padding:11px 8px;border-bottom:1px solid #3b454e;white-space:nowrap}td:not(:first-child),th:not(:first-child){text-align:right}.reward-card{display:flex;align-items:center;gap:14px}.reward-icon{color:var(--accent);font-size:30px}.reward-card small{color:var(--muted)}.engine-document{max-width:820px;padding-bottom:40px}.engine-document h2{margin-top:28px}.engine-document p{color:var(--muted);line-height:1.7}.engine-document a{overflow-wrap:anywhere}
 @media(max-width:760px){.chest-card{padding:22px}.chest-symbol{height:140px}.chest-symbol>.piece-icon{height:130px}.compensation{grid-template-columns:1fr;gap:20px}.disclosure-content{padding:16px}}
 @media(max-width:400px){.calendar-grid{gap:4px}}
+
+.chest-card #open-chest{width:min(100%,16rem);min-width:0}
+.chest-card #open-chest::after,.chest-card #open-chest::before{font-weight:750}
+.chest-probabilities{display:grid;gap:20px;text-align:left}
+.faq-probability-group h3,.faq-guarantee>h3{font-size:var(--type-item);margin:0 0 8px}
+.probability-list{margin:0;display:grid;gap:6px}
+.probability-list>div{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:16px}
+.probability-list dt{color:var(--muted)}.probability-list dd{margin:0;text-align:right;white-space:nowrap}
+.faq-guarantee>.faq-probability-group{margin-top:16px}
+.faq-guarantee>p:last-child{margin-bottom:0}

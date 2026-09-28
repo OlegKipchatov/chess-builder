@@ -1,24 +1,24 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=58';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=58';
-import {mountAppShell} from './ui/shell.js?v=58';
-import {statCard,plural} from './ui/primitives.js?v=58';
-import {createDialog,createToast} from './ui/dialog.js?v=58';
-import {renderArchiveList} from './ui/components/archive-list.js?v=58';
-import {moveList} from './ui/components/move-list.js?v=58';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=58';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=58';
-import {closeActivityDay, calendarHTML} from './activity.js?v=58';
-import {createBotClient} from './bot-client.js?v=58';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=58';
-import {signedDelta} from './rating.js?v=58';
-import {Chess} from './chess.js?v=58';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=58';
-import {openChest, craftItem} from './economy.js?v=58';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=58';
-import {pieceSVG, itemPreview} from './pieces.js?v=58';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=58';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=58';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=58';
+import {motionDuration, motionEasing} from './ui/motion.js?v=59';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=59';
+import {mountAppShell} from './ui/shell.js?v=59';
+import {statCard,plural} from './ui/primitives.js?v=59';
+import {createDialog,createToast} from './ui/dialog.js?v=59';
+import {renderArchiveList} from './ui/components/archive-list.js?v=59';
+import {moveList} from './ui/components/move-list.js?v=59';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=59';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=59';
+import {closeActivityDay, calendarHTML} from './activity.js?v=59';
+import {createBotClient} from './bot-client.js?v=59';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=59';
+import {signedDelta} from './rating.js?v=59';
+import {Chess} from './chess.js?v=59';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=59';
+import {openChest, craftItem} from './economy.js?v=59';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=59';
+import {pieceSVG, itemPreview} from './pieces.js?v=59';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=59';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=59';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=59';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -73,7 +73,7 @@ const statusText = () => {
 };
 const settle = (notifyActivity=true) => {
   if(!ended()||!state.game.started)return;
-  const wasSettled=state.game.settled, title=statusText();
+  const wasSettled=state.game.settled, reason=matchEndReason(game,state.game.resigned);
   const finishedGame=new Chess();finishedGame.loadPgn(game.pgn());
   const finishedConfig=structuredClone(state.game);
   const result=completedMatch(state,game,{id:createRecordId(),finishedAt:new Date().toISOString()});
@@ -88,7 +88,7 @@ const settle = (notifyActivity=true) => {
     const event=pendingActivity;pendingActivity=null;
     return event?{html:activityDialog(event),options:{closeLabel:'Продолжить',closeVariant:'primary'}}:null;
   }};
-  if(!wasSettled)showModal(result.cancelled?cancelledDialog():matchResultDialog(title,reward,entry,rewardBreakdown),options);
+  if(!wasSettled)showModal(result.cancelled?cancelledDialog():matchResultDialog(entry.result,reward,entry,rewardBreakdown,reason),options);
 };
 const boardState = () => boardAvailability(state,game,reviewCursor,{readOnly:!!displayMatch,busy,animating});
 const syncBoardAvailability = () => {
@@ -225,7 +225,7 @@ const render = () => {
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
   $('#open-chest').disabled=active()||state.coins<100;
   $('#open-chest').classList.toggle('disabled-explanation',state.coins<100);
-  $('#open-chest').textContent=state.coins<100?`Не хватает ${100-state.coins} ${plural(100-state.coins,['монеты','монет','монет'])}`:'Открыть за 100 ◈';
+  $('#open-chest .control-label').textContent=state.coins<100?`Не хватает ${100-state.coins} ${plural(100-state.coins,['монеты','монет','монет'])}`:'Открыть за 100 ◈';
   $('#pity').textContent=`Эпический или легендарный предмет — максимум через ${10-state.pity} ${plural(10-state.pity,['сундук','сундука','сундуков'])}`;
   $('#pity-progress').value=state.pity;
 };
@@ -505,7 +505,7 @@ $('#open-chest').onclick=()=>{
   const {item,duplicate,shards}=opened.result;
   const title=!item?'Осколки':duplicate?'Предмет уже в коллекции':'Новый предмет!';
   const artwork=item?itemPreview(item):'<div class="shard-reveal">✧</div>';
-  const copy=!item?'В сундуке — осколки. Их можно потратить на нужную фигурку или доску.':duplicate?'Повтор превратился в осколки. Ваш предмет остаётся в коллекции.':'Предмет добавлен в коллекцию.';
+  const copy=!item?'В сундуке — осколки. Их можно потратить на нужную фигуру или доску.':duplicate?'Повтор превратился в осколки. Ваш предмет остаётся в коллекции.':'Предмет добавлен в коллекцию.';
   showModal(chestRewardDialog(title,artwork,item,shards,copy,duplicate));
 };
 $('#start-game').onclick=()=>{

@@ -1,7 +1,7 @@
-import {Chess} from './chess.js?v=58';
-import {newGame} from './state.js?v=58';
-import {settleRating} from './rating.js?v=58';
-import {rewardBreakdownFor} from './engine.js?v=58';
+import {Chess} from './chess.js?v=59';
+import {newGame} from './state.js?v=59';
+import {settleRating} from './rating.js?v=59';
+import {rewardBreakdownFor} from './engine.js?v=59';
 export const capturePoints = (game,color) => game.history({verbose:true}).reduce((sum,move)=>sum+(move.color===color?({p:1,n:3,b:3,r:5,q:9}[move.captured]||0):0),0);
 export const completedMatch = (state,game,{id,finishedAt}) => {
   if(!state.game.started||(!state.game.resigned&&!game.isGameOver()))return null;
@@ -37,4 +37,15 @@ export const historyMetrics = entry => {
  } catch {}
  historyMetricsCache.set(entry,{pgn:entry.pgn,color:entry.playerColor,metrics});
  return metrics;
+};
+
+// Capture the termination reason before the active game is reset. Result stays entry.result.
+export const matchEndReason = (game, resigned = false) => {
+ if(resigned)return 'Сдача';
+ if(game.isCheckmate())return 'Мат';
+ if(game.isStalemate())return 'Пат';
+ if(game.isThreefoldRepetition())return 'Троекратное повторение';
+ if(game.isInsufficientMaterial())return 'Недостаточно материала';
+ if(game.isDrawByFiftyMoves())return 'Правило 50 ходов';
+ return '';
 };

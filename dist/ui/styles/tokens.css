@@ -3,3 +3,6 @@
 /* Page geometry is independent of component geometry. */
 :root{--page-inset:26px;--page-top:24px;--page-header-gap:24px;--page-section-gap:24px;--page-related-gap:16px;--page-meta-gap:8px;--page-meta-size:.875rem;--nav-height:80px;--nav-offset:14px;--nav-content-gap:24px;--page-bottom:calc(var(--nav-height) + var(--nav-offset) + env(safe-area-inset-bottom) + var(--nav-content-gap))}
 @media(max-width:760px){:root{--page-inset:16px;--page-top:20px;--page-header-gap:20px}}
+
+/* Existing typography roles; do not add per-screen sizes. */
+:root{--type-page:1.75rem;--type-section:1.25rem;--type-dialog:1.375rem;--type-item:1rem;--type-body:1rem;--type-secondary:.875rem;--type-micro:.8125rem;--type-eyebrow:.75rem;--type-metric:1.75rem}
