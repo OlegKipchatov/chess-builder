@@ -1,4 +1,4 @@
-import {motionDuration, motionEasing} from './motion.js?v=55';
+import {motionDuration, motionEasing} from './motion.js?v=58';
 // Serialize replacements so result/activity content never changes mid-animation.
 export const createDialog = (root,content,closeButton) => {
   let returnFocus=null,returnId='',returnData=[],queue=Promise.resolve(),dismissPending=false,hideClose=false,nextStep=null;
@@ -84,7 +84,8 @@ export const createDialog = (root,content,closeButton) => {
 };
 export const createToast = root => {
   let timer;
-  return message => {
+  return (message,{error=false}={}) => {
+    root.dataset.tone=error?'error':'neutral';
     root.textContent=message;
     root.hidden=false;
     clearTimeout(timer);

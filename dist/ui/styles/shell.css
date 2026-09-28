@@ -29,3 +29,5 @@ body.match-active #play>.page-content{padding-block-start:0}
 .page-supporting{font-size:var(--page-meta-size);line-height:1.5;color:var(--muted)}
 #statistics>.page-content{gap:var(--page-related-gap)}
 .play-stats{width:100%}
+
+#toast[data-tone="error"]{color:var(--negative);border-color:var(--negative);background:color-mix(in srgb,var(--negative) 10%,var(--panel))}

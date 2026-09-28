@@ -1,24 +1,24 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=55';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=55';
-import {mountAppShell} from './ui/shell.js?v=55';
-import {statCard,plural} from './ui/primitives.js?v=55';
-import {createDialog,createToast} from './ui/dialog.js?v=55';
-import {renderArchiveList} from './ui/components/archive-list.js?v=55';
-import {moveList} from './ui/components/move-list.js?v=55';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=55';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=55';
-import {closeActivityDay, calendarHTML} from './activity.js?v=55';
-import {createBotClient} from './bot-client.js?v=55';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=55';
-import {signedDelta} from './rating.js?v=55';
-import {Chess} from './chess.js?v=55';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=55';
-import {openChest, craftItem} from './economy.js?v=55';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=55';
-import {pieceSVG, itemPreview} from './pieces.js?v=55';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=55';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=55';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, canPlayPosition} from './session.js?v=55';
+import {motionDuration, motionEasing} from './ui/motion.js?v=58';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=58';
+import {mountAppShell} from './ui/shell.js?v=58';
+import {statCard,plural} from './ui/primitives.js?v=58';
+import {createDialog,createToast} from './ui/dialog.js?v=58';
+import {renderArchiveList} from './ui/components/archive-list.js?v=58';
+import {moveList} from './ui/components/move-list.js?v=58';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=58';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=58';
+import {closeActivityDay, calendarHTML} from './activity.js?v=58';
+import {createBotClient} from './bot-client.js?v=58';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch} from './archive.js?v=58';
+import {signedDelta} from './rating.js?v=58';
+import {Chess} from './chess.js?v=58';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=58';
+import {openChest, craftItem} from './economy.js?v=58';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=58';
+import {pieceSVG, itemPreview} from './pieces.js?v=58';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=58';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=58';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=58';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -56,7 +56,7 @@ const toast = createToast($('#toast'));
 const persist = (next,reset=false) => {
   const snapshot={...next, game:{...next.game,pgn:reset?'':game.pgn()}};
   try {localStorage.setItem(KEY,JSON.stringify(snapshot));state=snapshot;return true;}
-  catch {toast('Не удалось сохранить прогресс. Проверьте свободное место и разрешение на хранение данных.');return false;}
+  catch {toast('Не удалось сохранить прогресс. Проверьте свободное место и разрешение на хранение данных.',{error:true});return false;}
 };
 const showModal = createDialog($('#modal'),$('#modal-content'),$('#close-modal'));
 const ended = () => state.game.resigned || game.isGameOver();
@@ -90,12 +90,18 @@ const settle = (notifyActivity=true) => {
   }};
   if(!wasSettled)showModal(result.cancelled?cancelledDialog():matchResultDialog(title,reward,entry,rewardBreakdown),options);
 };
+const boardState = () => boardAvailability(state,game,reviewCursor,{readOnly:!!displayMatch,busy,animating});
+const syncBoardAvailability = () => {
+  const availability=boardState();
+  $('#board').setAttribute('aria-busy',String(availability.busy));
+  $('#board').querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled',String(availability.disabled)));
+};
 const drawBoard = () => {
   const config=viewedConfig(),equipped=config.equipped||state.equipped;
   renderBoard($('#board'),positionAt(viewedGame(),reviewCursor),equipped,!displayMatch&&reviewCursor===null?selected:null,config.playerColor||'w');
   $('#board').classList.toggle('reviewing',reviewCursor!==null);
   $('#board').setAttribute('aria-label',reviewCursor!==null?'Шахматная доска: просмотр истории':'Шахматная доска');
-  $('#board').querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled',String(!!displayMatch||!canPlayPosition(state,game,reviewCursor))));
+  syncBoardAvailability();
 };
 const drawCollection = () => renderCollection($('#collection-content'),state,collectionView,pieceType,ownedOnly);
 const syncNavigation = () => {
@@ -170,6 +176,7 @@ const renderHistory = () => {
   if(reviewCursor===null)$('#moves').scrollTop=$('#moves').scrollHeight;
 };
 const renderGameInfo = () => {
+  syncBoardAvailability();
   if(pendingResult){
     $('#resign').disabled=true;
     $('#match-surface').inert=true;
@@ -217,11 +224,12 @@ const render = () => {
   $('#shards').nextElementSibling.textContent=plural(state.shards,['осколок','осколка','осколков']);
   $('#count').textContent=`${state.owned.length}/${ITEMS.length}`;
   $('#open-chest').disabled=active()||state.coins<100;
+  $('#open-chest').classList.toggle('disabled-explanation',state.coins<100);
   $('#open-chest').textContent=state.coins<100?`Не хватает ${100-state.coins} ${plural(100-state.coins,['монеты','монет','монет'])}`:'Открыть за 100 ◈';
   $('#pity').textContent=`Эпический или легендарный предмет — максимум через ${10-state.pity} ${plural(10-state.pity,['сундук','сундука','сундуков'])}`;
   $('#pity-progress').value=state.pity;
 };
-const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;};
+const stopBot = () => {taskId++;worker?.terminate();worker=null;busy=false;pendingBotMove=null;syncBoardAvailability();};
 const botFailure = (error) => {
   lastBotError={message:error?.message||String(error||'Unknown engine error'),fen:game.fen()};
   stopBot();
@@ -234,12 +242,12 @@ const applyMove = async move => {
   const followLive=reviewCursor===null;
   const before=snapshotBoard($('#board'));
   let played;
-  try {played=game.move(move);} catch {toast('Этот ход недоступен.');return;}
+  try {played=game.move(move);} catch {toast('Этот ход недоступен.',{error:true});return;}
   if(!persist({...state,game:{...state.game,engineFailure:null}})){game.undo();drawBoard();return;}
   lastBotError=null;
   selected=null;promotion=null;animating=followLive;
   drawBoard();renderGameInfo();
-  try {if(followLive)await animateMove($('#board'),played,before);} finally {animating=false;}
+  try {if(followLive)await animateMove($('#board'),played,before);} finally {animating=false;syncBoardAvailability();}
   settle();render();if(!pendingResult&&queuedCursor!==undefined){const cursor=queuedCursor;queuedCursor=undefined;void showHistory(cursor);}else requestBot();
 };
 const requestBot = () => {
@@ -251,7 +259,7 @@ const requestBot = () => {
     worker.onmessage=({data})=>{
       if(data.id!==taskId)return;
       if(data.error||!data.move){botFailure(data.error||'Missing engine move');return;}
-      busy=false;
+      busy=false;syncBoardAvailability();
       if(animating){pendingBotMove=data.move;return;}
       void applyMove(data.move);
     };
@@ -265,7 +273,7 @@ const showPromotion = (from,to) => {
 };
 $('#board').addEventListener('click',event=>{
   const square=event.target.closest('[data-square]')?.dataset.square;
-  if(!square||displayMatch||!canPlayPosition(state,game,reviewCursor)||locked()||ended()||(state.game.mode==='bot'&&game.turn()!==state.game.playerColor))return;
+  if(!square||boardState().disabled)return;
   const piece=game.get(square);
   if(selected){
     const moves=game.moves({square:selected,verbose:true}).filter(move=>move.to===square);
@@ -315,7 +323,7 @@ const showHistory = async (cursor,automatic=false) => {
   const matchAtStart=displayMatch;
   reviewCursor=target===total?null:target;selected=null;animating=true;
   drawBoard();renderGameInfo();
-  try {await animateTransition($('#board'),steps,before);} finally {animating=false;}
+  try {await animateTransition($('#board'),steps,before);} finally {animating=false;syncBoardAvailability();}
   if(displayMatch!==matchAtStart)return;
   render();
   if(queuedCursor!==undefined){const next=queuedCursor;queuedCursor=undefined;await showHistory(next);return;}
@@ -378,7 +386,8 @@ const focusCollectionItem = id => {
   pieceType=item.kind==='board'?'board':item.type;
   collectionView='items';ownedOnly=false;drawCollection();
   const card=document.getElementById(`collection-item-${item.id}`);
-  card?.classList.add('focused-item');
+  card?.classList.add('navigation-target');
+  card?.addEventListener('blur',()=>card.classList.remove('navigation-target'),{once:true});
   card?.focus({preventScroll:true});
   if(card){
     const top=document.querySelector('header').getBoundingClientRect().bottom+($('#collection-content .equipment-strip')?.getBoundingClientRect().height||0)+12;
@@ -415,7 +424,7 @@ $('#match-archive').addEventListener('click',event=>{
   if(active()||animating||pendingResult)return;
   const id=event.target.closest('[data-archive]')?.dataset.archive;
   const entry=state.archive.find(entry=>entry.id===id);if(!entry)return;
-  const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось открыть запись партии.');return;}
+  const replay=new Chess();try{replay.loadPgn(entry.pgn);}catch{toast('Не удалось открыть запись партии.',{error:true});return;}
   archiveReturnContext={id,scrollTop:$('#match-archive').scrollTop,x:window.scrollX,y:window.scrollY};
   displayMatch={game:replay,kind:'archive',title:entry.result,config:{...entry,started:true,rating:{before:entry.playerRating,opponent:entry.opponentRating}}};
   reviewCursor=replay.history().length?0:null;selected=null;changeTab('play');render();
@@ -455,7 +464,7 @@ $('#modal-content').addEventListener('click',async event=>{
   if(button.hasAttribute('data-confirm-resign'))confirmResignation();
   if(button.hasAttribute('data-abort-failed'))abortAfterFailure();
   if(button.hasAttribute('data-download-pgn'))downloadPgn($('#pgn-text').value);
-  if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось поделиться PGN. Скачайте файл или скопируйте текст.'));
+  if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось поделиться PGN. Скачайте файл или скопируйте текст.',{error:true}));
   if(button.hasAttribute('data-copy-pgn')){const field=$('#pgn-text');field.focus();field.select();if(navigator.clipboard?.writeText)navigator.clipboard.writeText(field.value).then(()=>toast('PGN скопирован')).catch(()=>toast('Текст выделен. Выберите «Копировать».'));else toast('Текст выделен. Выберите «Копировать».');}
   if(button.hasAttribute('data-export-pgn'))void exportViewedMatch();
   if(button.hasAttribute('data-retry-bot')){showModal.close();requestBot();}
@@ -563,7 +572,7 @@ if('serviceWorker' in navigator){
     document.addEventListener('visibilitychange',check);
     window.addEventListener('online',check);
     check();
-  }).catch(()=>toast('Офлайн-режим недоступен. Игра работает при подключении к сети.'));
+  }).catch(()=>toast('Офлайн-режим недоступен. Игра работает при подключении к сети.',{error:true}));
 
 }
 $('.brand>span:first-child').innerHTML=pieceSVG('n','w');
@@ -571,4 +580,4 @@ $('#chest-art').innerHTML=pieceSVG('q','w','gold');
 $('#status').setAttribute('aria-live','polite');
 currentScreen=navigationTarget(state,game,location.hash.slice(1)||'play');
 changeTab(currentScreen);render();settle(false);render();requestBot();
-if(storageError)toast('Не удалось прочитать сохранённый прогресс. Данные в браузере не удалены.');
+if(storageError)toast('Не удалось прочитать сохранённый прогресс. Данные в браузере не удалены.',{error:true});

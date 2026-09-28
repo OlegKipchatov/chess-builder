@@ -1,7 +1,7 @@
-import {createSession} from './cognitive-model.js?v=55';
-import {ratingSnapshot} from './rating.js?v=55';
-import {Chess} from './chess.js?v=55';
-import {newGame} from './state.js?v=55';
+import {createSession} from './cognitive-model.js?v=58';
+import {ratingSnapshot} from './rating.js?v=58';
+import {Chess} from './chess.js?v=58';
+import {newGame} from './state.js?v=58';
 export const SCREENS = ['profile','collection','play','chests','archive','statistics','calendar','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
@@ -29,3 +29,9 @@ export const historyCursor = (cursor, direction, total) => {
   return next === total ? null : next;
 };
 export const canPlayPosition = (state,game,cursor) => isMatchActive(state,game) && cursor === null;
+
+// One contract for pointer/keyboard activation and the board's accessibility state.
+export const boardAvailability = (state,game,cursor,{readOnly=false,busy=false,animating=false}={}) => ({
+  disabled:readOnly||!canPlayPosition(state,game,cursor)||busy||animating||(state.game.mode==='bot'&&game.turn()!==state.game.playerColor),
+  busy:busy||animating
+});

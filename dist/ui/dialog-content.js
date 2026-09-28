@@ -1,7 +1,7 @@
-import {escapeHTML,plural} from './primitives.js?v=55';
-import {itemPreview,pieceSVG} from '../pieces.js?v=55';
-import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=55';
-import {dayLabel} from '../activity.js?v=55';
+import {escapeHTML,plural,button} from './primitives.js?v=58';
+import {itemPreview,pieceSVG} from '../pieces.js?v=58';
+import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=58';
+import {dayLabel} from '../activity.js?v=58';
 export const exportPgnDialog = (pgn) => `<h2>Экспорт партии</h2><p>Скачайте PGN, скопируйте его или поделитесь им.</p><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="actions"><button class="quiet" data-download-pgn>Скачать PGN</button><button class="quiet" data-copy-pgn>Скопировать PGN</button><button class="quiet" data-share-pgn>Поделиться PGN</button></div>`;
 export const cancelledDialog = () => '<h2>Партия отменена</h2><p>Вы не сделали ни одного хода, поэтому партия не попала в историю и статистику и не принесла награду.</p>';
 export const matchResultDialog = (title,reward,entry,breakdown) => `<h2>${escapeHTML(title)}</h2><p class="reward-total">+${reward} ${plural(reward,['монета','монеты','монет'])}</p>${breakdown?`<dl class="reward-breakdown"><div><dt>За партию</dt><dd>+${breakdown.completion}</dd></div><div><dt>Ваши ходы</dt><dd>+${breakdown.moves}</dd></div><div><dt>Результат партии</dt><dd>+${breakdown.result}</dd></div></dl>${breakdown.reason==='early-resignation'?'<p class="reward-note">За эту партию монеты не начислены.</p>':''}`:''}`;
@@ -11,7 +11,7 @@ export const craftDialog = (item,id) => `<div class="result-art">${itemPreview(i
 export const saveSetDialog = () => '<h2>Сохранить набор</h2><p>В набор войдут шесть выбранных фигур и текущая доска.</p><form id="save-set-form"><label for="set-name">Название</label><input id="set-name" name="name" maxlength="32" required placeholder="Например, Полярная ночь" autocomplete="off"><button class="primary" type="submit">Сохранить набор</button></form>';
 export const activityDialog = (event) => `<div class="calendar-day closed today day-closed-mark" aria-label="Серия: ${dayLabel(event.streak)}">${event.streak}</div><h2>${event.streak===1?'Серия началась':'Серия продолжается'}</h2><strong class="streak-value">${dayLabel(event.streak)}${event.streak>1?' подряд':''}</strong>`;
 export const chestRewardDialog = (title,artwork,item,shards,copy,duplicate) => `<p class="eyebrow">${title}</p><div class="result-art reveal${item&&['epic','legendary'].includes(item.rarity)?` reward-${item.rarity}`:''}">${artwork}</div>${item?`<span class="rarity ${item.rarity}">${rarityNames[item.rarity]}</span><h2>${item.name}</h2>`:''}${shards?`<h2>+${shards} ${plural(shards,['осколок','осколка','осколков'])}</h2>`:''}<p>${copy}</p>${item&&!duplicate?`<div class="chest-reward-actions"><button class="primary" data-use-reward="${item.id}">Использовать</button><button class="quiet" data-view-reward="${item.id}">В коллекцию</button></div>`:''}`;
-export const resignDialog = () => '<h2>Сдаться?</h2><p>До вашего первого хода партия просто отменится. После первого хода сдача считается поражением. Награда начисляется по правилам завершённой партии.</p><button class="primary" data-confirm-resign>Сдаться</button>';
+export const resignDialog = () => `<h2>Сдаться?</h2><p>До вашего первого хода партия просто отменится. После первого хода сдача считается поражением. Награда начисляется по правилам завершённой партии.</p>${button({variant:'danger',label:'Сдаться','data-confirm-resign':true})}`;
 export const installHelpDialog = () => '<h2>Установить GachaChess</h2><p>На iPhone: откройте сайт в Safari → «Поделиться» → «На экран Домой».</p><p>На Android и компьютере: в меню браузера выберите «Установить приложение».</p><p>После первой загрузки игру можно запускать без интернета.</p>';
 
-export const deleteSetDialog = id => `<h2>Удалить набор?</h2><p>Все предметы останутся в коллекции.</p><button class="primary" data-confirm-delete-set="${escapeHTML(id)}">Удалить набор</button>`;
+export const deleteSetDialog = id => `<h2>Удалить набор?</h2><p>Все предметы останутся в коллекции.</p>${button({variant:'danger',label:'Удалить набор','data-confirm-delete-set':id})}`;
