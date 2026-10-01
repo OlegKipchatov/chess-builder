@@ -1,4 +1,4 @@
-import {PROFILE} from './analysis-config.js?v=72';
+import {PROFILE} from './analysis-config.js?v=73';
 export const eventFor = move => {
  if(move.status!=='complete'||move.forced)return {primaryEvent:null,eventPriority:0,autoPause:false};
  const primaryEvent=['allowed_mate','missed_mate','mate_opportunity'].includes(move.reason)?move.reason:move.highlight||move.quality;
@@ -15,9 +15,11 @@ export const selectEvents = moves => {
   return move.eventPriority>=60&&!repeat;
  });
  const ranked=candidates.sort((a,b)=>b.eventPriority-a.eventPriority||(b.expectedScoreLoss||0)-(a.expectedScoreLoss||0)||a.ply-b.ply);
- // Severe events take precedence. Positive moments occupy spare slots, never displace mate events.
+ // Never skip a displayed mistake because the optional focus budget is exhausted.
+ const mandatory=ranked.filter(move=>['mistake','blunder'].includes(move.quality)||['allowed_mate','missed_mate'].includes(move.reason));
  let positive=0;
- const selected=ranked.filter(move=>move.highlight!=='excellent'||++positive<=PROFILE.maxPositive).slice(0,PROFILE.maxEvents);
+ const optional=ranked.filter(move=>!mandatory.includes(move)).filter(move=>move.highlight!=='excellent'||++positive<=PROFILE.maxPositive).slice(0,Math.max(0,PROFILE.maxEvents-mandatory.length));
+ const selected=[...mandatory,...optional];
  selected.forEach(move=>move.autoPause=true);
  return selected.map(move=>move.ply).sort((a,b)=>a-b);
 };

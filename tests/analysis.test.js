@@ -21,6 +21,7 @@ test('reported game: both mate-in-two opportunities verified, no invented mistak
  for(const ply of [24,26]){
   const move=result.moves[ply-1];assert.equal(move.reason,'mate_opportunity');assert.equal(move.quality,'best');
   assert.deepEqual(move.shortMate,{moves:2,verified:true});assert.equal(move.recommendationRequired,true);
+  assert.ok(move.exercise.solutions.some(solution=>solution.move===move.bestLine.move));
   const board=new Chess(move.fenBefore);move.bestLine.pv.forEach(token=>board.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]}));assert.ok(board.isCheckmate());
  }
  assert.ok(result.focusEvents.includes(24));assert.ok(!result.focusEvents.includes(26));
@@ -66,9 +67,9 @@ test('mate transitions are separate from numeric loss',()=>{
  assert.equal(classifyMove({bestLine:line(1,'d2d4',4),playedLine:line(1,'e2e4',6)}).quality,'best');
  assert.equal(classifyMove({bestLine:line(0,'d2d4',-10),playedLine:line(0,'e2e4',-1)}).quality,'best');
 });
-test('event selection caps stops, prioritizes mates and does not invent positive events',()=>{
+test('event selection never caps errors, prioritizes mates and does not invent positive events',()=>{
  const rows=Array.from({length:20},(_,i)=>({ply:i+1,status:'complete',quality:i===0?'inaccuracy':'blunder',expectedScoreLoss:i/100,reason:i===1?'allowed_mate':'generic'}));
- const events=selectEvents(rows);assert.equal(events.length,8);assert.ok(events.includes(2));assert.equal(rows[0].autoPause,false);assert.equal(rows[1].primaryEvent,'allowed_mate');
+ const events=selectEvents(rows);assert.equal(events.length,19);assert.ok(events.includes(2));assert.equal(rows[0].autoPause,false);assert.equal(rows[1].primaryEvent,'allowed_mate');
  assert.deepEqual(selectEvents([{ply:1,status:'complete',quality:'best',forced:true,highlight:'excellent'}]),[]);
 });
 test('PGN pipeline analyzes player decisions, searches actual outside MultiPV, ignores stale replies and persists reloadable cache',async()=>{

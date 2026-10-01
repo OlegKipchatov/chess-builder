@@ -7,7 +7,8 @@ export const createAnalysisPlayback = ({analysis,showPly,onChange=()=>{},schedul
  const advance=async()=>{
   if(state!=='playing')return;const token=generation;
   ply++;await showPly(ply,true);if(token!==generation)return;
-  if(analysis.focusEvents.includes(ply)){state='pausedForInsight';emit();return;}
+  const move=analysis.moves?.[ply-1];
+  if(analysis.focusEvents.includes(ply)||move?.status==='complete'&&!move.forced&&['mistake','blunder'].includes(move.quality)){state='pausedForInsight';emit();return;}
   if(ply===analysis.totalPlies){state='finished';emit();return;}
   emit();timer=schedule(()=>void advance(),375);
  };

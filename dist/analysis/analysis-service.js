@@ -1,11 +1,12 @@
-import {Chess} from '../chess.js?v=72';
-import {createStockfishClient} from '../stockfish-client.js?v=72';
-import {engineLine} from '../stockfish-evaluation.js?v=72';
-import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=72';
-import {classifyMove,needsRefinement} from './analysis-classifier.js?v=72';
-import {uci,describeLine,detectReason,verifyShortMate} from './analysis-reasons.js?v=72';
-import {selectEvents} from './analysis-events.js?v=72';
-import {eligibleEntry} from './analysis-storage.js?v=72';
+import {Chess} from '../chess.js?v=73';
+import {createStockfishClient} from '../stockfish-client.js?v=73';
+import {engineLine} from '../stockfish-evaluation.js?v=73';
+import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=73';
+import {classifyMove,needsRefinement} from './analysis-classifier.js?v=73';
+import {uci,describeLine,detectReason,verifyShortMate} from './analysis-reasons.js?v=73';
+import {selectEvents} from './analysis-events.js?v=73';
+import {eligibleEntry} from './analysis-storage.js?v=73';
+import {prepareMateExercise} from './analysis-training.js?v=73';
 const abortError = () => new DOMException('Analysis cancelled','AbortError');
 export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=createStockfishClient,profile=PROFILE}={}) => {
  if(!eligibleEntry(entry))throw Error('This archive entry cannot be analyzed');
@@ -45,7 +46,7 @@ export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=c
   check();
   // Separate searches may improve the actual line. Never recommend a weaker line.
   const bestLine=[...lines,playedLine].sort((a,b)=>b.expectedScorePlayer-a.expectedScorePlayer)[0];
-  const result={...move,status:'complete',bestLine,playedLine,...classifyMove({bestLine,playedLine,lines,forced})};
+  const result={...move,shortMate:null,exercise:null,status:'complete',bestLine,playedLine,...classifyMove({bestLine,playedLine,lines,forced})};
   const decorate=line=>{const evidence=describeLine(move.fenBefore,line,entry.playerColor);if(!evidence.valid)throw Error('Illegal engine PV');line.san=evidence.san[0];line.pvSan=evidence.san;return evidence;};
   result.bestEvidence=decorate(bestLine);result.playedEvidence=decorate(playedLine);lines.forEach(decorate);
   result.reason=detectReason(result);result.explanationKey=result.reason||result.quality;
@@ -63,6 +64,8 @@ export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=c
     for(const pending of targets.slice(done))moves[pending]={...moves[pending],status:'unavailable',quality:undefined,highlight:null,reason:null,autoPause:false};
     onProgress({stage,done,total:targets.length});break;
    }
+   check();
+   if(stage==='deep'&&moves[index].shortMate?.verified)moves[index].exercise=await prepareMateExercise(moves[index],check);
    check();onProgress({stage,done:++done,total:targets.length});
   }
  };
