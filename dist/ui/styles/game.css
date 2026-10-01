@@ -44,10 +44,8 @@
  .game-grid{gap:8px}
  body.match-active main{display:flex;flex-direction:column;min-height:calc(100svh - var(--app-header-height,68px));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
  body.match-active #play,body.match-active #play>.page-content{display:flex;flex-direction:column;flex:1}
- /* Share spare height, but cap the space above the game in standalone PWA. */
- body.match-active #play>.page-content{gap:0}
- body.match-active #play>.page-content::before,body.match-active #play>.page-content::after{content:'';flex:1 0 0}
- body.match-active #play>.page-content::before{max-height:32px}
+ /* Keep the game directly below the header, regardless of viewport height. */
+ body.match-active #play>.page-content{gap:0;justify-content:flex-start}
  html:has(body.match-active){scrollbar-gutter:auto}
  body.match-active .board-area{margin-inline:0;align-self:center;max-width:min(600px,calc(100svh - var(--app-header-height,68px) - 200px - env(safe-area-inset-bottom)))}
  .history-buttons{gap:0}

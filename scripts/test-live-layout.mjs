@@ -77,7 +77,7 @@ try{
    return {headerBottom:box('header').bottom,summaryTop:box('.match-summary').top,boardWidth:box('#board').width,exportBottom:box('#export-pgn').bottom,height:innerHeight,scrollHeight:document.documentElement.scrollHeight};
   });
   const gap=geometry.summaryTop-geometry.headerBottom;
-  assert.ok(gap>=19&&gap<=53,`${name}: header-to-game gap ${gap}px`);
+  assert.ok(gap>=19&&gap<=21,`${name}: header-to-game gap ${gap}px`);
   assert.ok(geometry.exportBottom<=height-bottom,`${name}: controls reach unsafe bottom area`);
   assert.ok(geometry.scrollHeight<=height+1,`${name}: vertical overflow`);
   layouts.push(geometry);
@@ -86,5 +86,5 @@ try{
   await context.close();
  }
  assert.equal(layouts[0].boardWidth,layouts[1].boardWidth,'Browser chrome must not shrink the board when height is sufficient');
- assert.ok(Math.abs((layouts[0].summaryTop-layouts[0].headerBottom)-(layouts[1].summaryTop-layouts[1].headerBottom))<=2,'Embedded and standalone tall screens keep comparable top spacing');
+ assert.ok(Math.abs((layouts[0].summaryTop-layouts[0].headerBottom)-(layouts[1].summaryTop-layouts[1].headerBottom))<=2,'Embedded and standalone tall screens keep the standard top spacing');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
