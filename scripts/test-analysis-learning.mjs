@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 export const testAnalysisLearning = async (page,url) => {
  const saved=await page.evaluate(async()=>{
   const previous=localStorage.getItem('chess-vault-v3'),state=JSON.parse(previous);
-  const {Chess}=await import('./chess.js?v=76');
-  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=76');
-  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=76');
+  const {Chess}=await import('./chess.js?v=77');
+  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=77');
+  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=77');
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
   const game=new Chess();game.loadPgn(pgn);
   const entry={...state.archive[0],id:'training-fixture',pgn,playerColor:'b'};
@@ -45,6 +45,14 @@ export const testAnalysisLearning = async (page,url) => {
  assert.doesNotMatch(await page.locator('#analysis-insight').innerText(),/Nf6|f6/);
  await page.locator('[data-analysis-line]').click();
  await seek(24);
+ for(const width of [320,390,1280]){
+  await page.setViewportSize({width,height:844});
+  assert.equal(await page.locator('.analysis-insight-heading').evaluate(node=>{
+   const title=node.querySelector('h2').getBoundingClientRect(),button=node.querySelector('button').getBoundingClientRect(),row=node.getBoundingClientRect();
+   return button.left>=title.right&&button.right<=row.right+1&&Math.abs((title.top+title.bottom)/2-(button.top+button.bottom)/2)<1;
+  }),true,`Recommendation is aligned to the event heading at ${width}`);
+  assert.equal(await page.locator('#archive-review-actions').evaluate(node=>node.closest('.board-area')!==null&&node.getBoundingClientRect().top>=document.querySelector('#board').getBoundingClientRect().bottom),true,'Analysis controls remain below the board');
+ }
  assert.equal(await page.locator('#analysis-summary').isVisible(),false);
  assert.equal(await page.locator('[data-analysis-line]').count(),1);
  const actual=await page.locator('#board').innerHTML();

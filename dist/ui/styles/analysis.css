@@ -47,4 +47,13 @@
 .analysis-spinner{display:block;width:22px;height:22px;border:2px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:analysis-spin calc(var(--motion-reveal) * 2) linear infinite}
 @keyframes analysis-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.analysis-spinner{animation:none}}
-@media(max-width:760px){.archive-viewing .game-heading{column-gap:8px}.archive-viewing .game-heading h1{font-size:var(--type-section)}}
+#archive-review-actions{margin-top:12px;min-height:44px}
+#archive-review-actions[hidden]{display:none}
+#archive-review-actions #archive-analysis-actions>button{width:100%;min-height:44px}
+#archive-review-actions #analysis-progress{display:flex;align-items:center;gap:8px;min-height:44px}
+#archive-review-actions #analysis-progress[hidden]{display:none}
+#analysis-progress .analysis-spinner{flex:none}
+#analysis-progress button{margin-left:auto;min-height:44px}
+.analysis-insight-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.analysis-insight-heading h2{margin:0;min-width:0;flex:1}
+.analysis-insight-heading .analysis-variation{flex:0 1 140px;text-align:center;font-size:var(--type-secondary)}
