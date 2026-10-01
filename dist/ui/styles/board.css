@@ -5,3 +5,8 @@
 
 /* Read-only positions retain board and piece contrast; aria-disabled only blocks moves. */
 .square:disabled,.square[aria-disabled="true"]{opacity:1;filter:none;cursor:default}
+
+/* Keep material feedback inside the board, including the top and right edges. */
+.capture-material{position:absolute;z-index:20;pointer-events:none;transform:translateX(-100%);font-size:clamp(.875rem,2.6vw,1.125rem);font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;text-shadow:0 1px 2px #111416,1px 0 2px #111416,-1px 0 2px #111416,0 -1px 2px #111416}
+.capture-material[data-balance=positive]{color:var(--positive)}
+.capture-material[data-balance=negative]{color:var(--negative)}

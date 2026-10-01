@@ -1,7 +1,7 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=68';
-import {Chess} from './chess.js?v=68';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=68';
-import {pieceSVG} from './pieces.js?v=68';
+import {motionDuration, motionEasing} from './ui/motion.js?v=70';
+import {Chess} from './chess.js?v=70';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=70';
+import {pieceSVG} from './pieces.js?v=70';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);
@@ -90,3 +90,38 @@ export const animateTransition = async (root, steps, before) => {
   } finally {nodes.forEach(node=>node.remove());hidden.forEach(icon=>icon.style.visibility='');}
 };
 export const animateMove = (root,move,before) => animateTransition(root,animationMoves(move),before);
+
+export const clearCaptureMaterial = root => root.querySelectorAll('.capture-material').forEach(node=>{
+  node.getAnimations().forEach(animation=>animation.cancel());
+  node.remove();
+});
+
+// Feedback is independent of the move lock: it never delays the next turn.
+export const showCaptureMaterial = (root,move,playerColor) => {
+  clearCaptureMaterial(root);
+  const value=({p:1,n:3,b:3,r:5,q:9})[move.captured];
+  if(!value)return;
+  const square=move.flags.includes('e')?move.to[0]+move.from[1]:move.to;
+  const cell=root.querySelector(`[data-square="${square}"]`);
+  if(!cell)return;
+  const gained=move.color===playerColor;
+  const node=document.createElement('span');
+  node.className='capture-material';
+  node.dataset.balance=gained?'positive':'negative';
+  node.textContent=`${gained?'+':'-'}${value}`;
+  node.setAttribute('aria-hidden','true');
+  Object.assign(node.style,{left:`${cell.offsetLeft+cell.offsetWidth-4}px`,top:`${cell.offsetTop+4}px`});
+  root.append(node);
+  const duration=motionDuration.board+motionDuration.standard+motionDuration.fast;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||!node.animate){
+    setTimeout(()=>node.remove(),duration);
+    return;
+  }
+  const animation=node.animate([
+    {opacity:0,transform:'translate(-100%, 6px)'},
+    {opacity:1,transform:'translate(-100%, 0)',offset:motionDuration.fast/duration},
+    {opacity:1,transform:'translate(-100%, 0)',offset:1-motionDuration.fast/duration},
+    {opacity:0,transform:'translate(-100%, -4px)'}
+  ],{duration,easing:motionEasing.local});
+  void animation.finished.catch(()=>{}).finally(()=>node.remove());
+};

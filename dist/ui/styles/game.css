@@ -59,3 +59,16 @@
  .history-controls{margin-inline:4px;padding-inline:4px}
  .history-controls{gap:8px}
 }
+
+#resign{flex:0 0 44px}
+@media(min-width:761px){
+ .game-grid{grid-template-columns:minmax(0,600px) minmax(280px,320px);justify-content:center}
+ .match-secondary{display:grid;grid-template-columns:1fr auto;gap:12px;width:100%;min-width:0}
+ .move-log{display:contents}
+ .move-log>.section-header{grid-column:1;grid-row:1;margin:0;min-height:44px;gap:8px}
+ .moves{grid-column:1/-1;grid-row:2;margin:0;height:clamp(240px,45dvh,440px)}
+ .move-row{column-gap:8px;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr)}
+ .move-row+.move-row{margin-top:4px}
+ .match-actions{grid-column:2;grid-row:1;margin:0;align-items:flex-end}
+ #export-pgn{white-space:nowrap}
+}
