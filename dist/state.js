@@ -1,8 +1,8 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=67';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=67';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=67';
-import {Chess} from './chess.js?v=67';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=67';
+import {initialActivity, normalizeActivity} from './activity.js?v=68';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=68';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=68';
+import {Chess} from './chess.js?v=68';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=68';
 export const KEY = 'chess-vault-v3';
 export const createRecordId = () => {
   if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
@@ -58,6 +58,7 @@ export const migrateState = input => {
   next.archive = (Array.isArray(input.archive)?input.archive:[]).filter(entry=>typeof entry?.id==='string'&&typeof entry.pgn==='string').map(entry=>({
     ...(entry.counted===false?{counted:false}:{}),
     ...(typeof entry.engineFailure?.fen==='string'&&typeof entry.engineFailure.message==='string'?{engineFailure:{fen:entry.engineFailure.fen.slice(0,120),message:entry.engineFailure.message.slice(0,240)}}:{}),
+    ...(entry.rewardBreakdown?.rewardVersion==='game-economy-v2'?{rewardBreakdown:structuredClone(entry.rewardBreakdown)}:{}),
     id:entry.id,pgn:entry.pgn,engineProfile:validArchivedProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
     mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
     result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),

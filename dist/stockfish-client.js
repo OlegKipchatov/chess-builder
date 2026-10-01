@@ -1,8 +1,8 @@
-import {STOCKFISH as C} from './stockfish-config.js?v=67';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=67';
-import {Chess} from './chess.js?v=67';
-import {validEngineProfile} from './strength.js?v=67';
-import {decisionModeFor} from './cognitive-model.js?v=67';
+import {STOCKFISH as C} from './stockfish-config.js?v=68';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=68';
+import {Chess} from './chess.js?v=68';
+import {validEngineProfile} from './strength.js?v=68';
+import {decisionModeFor} from './cognitive-model.js?v=68';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -10,7 +10,7 @@ export const uciPosition = data => {
  const history=game.history({verbose:true}),moves=history.map(move=>move.from+move.to+(move.promotion||'')).join(' ');
  return {game,command:`position fen ${history[0]?.before||game.fen()}${moves?' moves '+moves:''}`};
 };
-export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker.js?v=67',{type:'module'})) => {
+export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker.js?v=68',{type:'module'})) => {
  const client={onmessage:null,onerror:null};
  let worker=null,ready=false,dead=false,current=null,timer=null,stopTimer=null;
  const clearTimers=()=>{clearTimeout(timer);clearTimeout(stopTimer);};
@@ -24,10 +24,13 @@ export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker
    if(recover)token=rows[0]?.move;
    if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token||''))throw Error(recover?'Stockfish search timeout: no evaluated legal move':'Missing bestmove');
    const move={from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})};
+   if(request.economy&&recover)throw Error('Economy search timed out');
+   const evaluation=request.economy?rows.find(row=>row.move===token):null;
+   if(request.economy&&!evaluation)throw Error('Missing economy evaluation');
    const analysis=request.analysisOnly?prepareCandidates(request.position,rows):null;
    request.position.move(move);clearTimers();current=null;
    if(recover)disposeWorker();
-   client.onmessage?.({data:{id:request.id,move,...(request.analysisOnly?{analysis,durationMs:performance.now()-request.startedAt,recovered:recover}:{})}});
+   client.onmessage?.({data:{id:request.id,move,...(evaluation?{evaluation}:{}),...(request.analysisOnly?{analysis,durationMs:performance.now()-request.startedAt,recovered:recover}:{})}});
   }catch(error){fail(error.message);}
  };
  const watchdog=(ms,stage)=>{clearTimeout(timer);timer=setTimeout(()=>stage==='search'?finish(null,true):fail(`Stockfish ${stage} timeout`),ms);};
@@ -35,18 +38,20 @@ export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker
   if(!ready||!current||dead)return;
   try{
    const {game,command}=uciPosition(current),profile=current.engineProfile;
+   if(current.economy)current.analysisOnly=true;
    if(!current.analysisOnly&&(!validEngineProfile(profile)||decisionModeFor(profile.targetElo)!=='native-stockfish'))throw Error('Native Stockfish requires a high-range v2 profile');
    if(game.isGameOver()){const id=current.id;current=null;client.onmessage?.({data:{id,move:null}});return;}
    current.position=game;current.info=[];current.startedAt=performance.now();
-   current.expected=current.analysisOnly?Math.min(current.analysis?.multiPv||8,game.moves().length):1;
-   send(`setoption name Hash value ${C.hashMb}`);send('setoption name Threads value 1');
-   send('setoption name Skill Level value 20');
+   current.expected=current.analysisOnly?Math.min(current.economy?1:current.analysis?.multiPv||8,game.moves().length):1;
+   send(`setoption name Hash value ${current.economy?16:C.hashMb}`);send('setoption name Threads value 1');
+   send('setoption name Skill Level value 20');send(`setoption name UCI_ShowWDL value ${!!current.economy}`);
+   if(current.economy)send('setoption name Clear Hash');
    send(`setoption name UCI_LimitStrength value ${!current.analysisOnly}`);
    if(!current.analysisOnly)send(`setoption name UCI_Elo value ${Math.round(Math.max(C.minElo,Math.min(C.maxElo,profile.effectiveElo)))}`);
    send(`setoption name MultiPV value ${current.expected}`);send('ucinewgame');send(command);
    watchdog(current.analysisOnly?C.analysisWatchdogMs:C.watchdogMs,'search');
    if(!current.analysisOnly)stopTimer=setTimeout(()=>{if(current&&!dead){try{send('stop');}catch(error){fail(error.message);}}},C.stopAfterMs);
-   send(current.analysisOnly?`go depth ${current.analysis?.depth||12} nodes ${current.analysis?.nodes||1600000} movetime ${current.analysis?.milliseconds||8000}`:`go nodes ${C.nodes} movetime ${C.milliseconds}`);
+   send(current.economy?`go nodes 50000${current.searchMove?' searchmoves '+current.searchMove:''}`:current.analysisOnly?`go depth ${current.analysis?.depth||12} nodes ${current.analysis?.nodes||1600000} movetime ${current.analysis?.milliseconds||8000}`:`go nodes ${C.nodes} movetime ${C.milliseconds}`);
   }catch(error){fail(error.message);}
  };
  const initialize=()=>{

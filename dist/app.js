@@ -1,24 +1,26 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=67';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=67';
-import {mountAppShell} from './ui/shell.js?v=67';
-import {statCard,plural} from './ui/primitives.js?v=67';
-import {createDialog,createToast} from './ui/dialog.js?v=67';
-import {renderArchiveList} from './ui/components/archive-list.js?v=67';
-import {moveList} from './ui/components/move-list.js?v=67';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=67';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=67';
-import {closeActivityDay, calendarHTML} from './activity.js?v=67';
-import {createBotClient} from './bot-client.js?v=67';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=67';
-import {signedDelta} from './rating.js?v=67';
-import {Chess} from './chess.js?v=67';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=67';
-import {openChest, craftItem} from './economy.js?v=67';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=67';
-import {pieceSVG, itemPreview} from './pieces.js?v=67';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=67';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=67';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=67';
+import {analyzeReward} from './economy-analysis.js?v=68';
+import {applyQualityReward} from './reward-quality.js?v=68';
+import {motionDuration, motionEasing} from './ui/motion.js?v=68';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=68';
+import {mountAppShell} from './ui/shell.js?v=68';
+import {statCard,plural} from './ui/primitives.js?v=68';
+import {createDialog,createToast} from './ui/dialog.js?v=68';
+import {renderArchiveList} from './ui/components/archive-list.js?v=68';
+import {moveList} from './ui/components/move-list.js?v=68';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=68';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=68';
+import {closeActivityDay, calendarHTML} from './activity.js?v=68';
+import {createBotClient} from './bot-client.js?v=68';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=68';
+import {signedDelta} from './rating.js?v=68';
+import {Chess} from './chess.js?v=68';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=68';
+import {openChest, craftItem} from './economy.js?v=68';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=68';
+import {pieceSVG, itemPreview} from './pieces.js?v=68';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=68';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=68';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=68';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -71,6 +73,29 @@ const statusText = () => {
   if(game.isDraw())return 'Ничья';
   return `${game.isCheck()?'Шах · ход':'Ход'} ${game.turn()==='w'?'белых':'чёрных'}`;
 };
+let qualityRunning=false,visibleRewardId=null;
+const processPendingRewards = async () => {
+ if(qualityRunning)return;
+ qualityRunning=true;
+ try {
+  while(state.archive.some(entry=>entry.rewardBreakdown?.qualityStatus==='pending')){
+   const pending=state.archive.find(entry=>entry.rewardBreakdown?.qualityStatus==='pending');
+   let quality;
+   try {quality=await analyzeReward(pending,{onProgress:(done,total)=>{
+    if(visibleRewardId===pending.id&&$('#reward-quality-progress'))$('#reward-quality-progress').textContent=`Оценка качества: ${done} из ${total} ходов`;
+   }});}catch {quality={status:'unavailable'};}
+   const next=applyQualityReward(state,pending.id,quality);
+   if(next===state)continue;
+   if(!persist(next))break;
+   const updated=state.archive.find(entry=>entry.id===pending.id);
+   if(visibleRewardId===pending.id&&$('#reward-quality-progress')){
+    $('#modal-content').innerHTML=matchResultDialog(updated.result,updated.rewardBreakdown.total,updated,updated.rewardBreakdown,matchEndReason(displayMatch.game,displayMatch.config.resigned));
+    $('#modal-content h2').id='dialog-title';
+   }else if(updated.rewardBreakdown.quality>0)toast(`Бонус за качество: +${updated.rewardBreakdown.quality} монет`);
+   render();
+  }
+ }finally{qualityRunning=false;}
+};
 const settle = (notifyActivity=true) => {
   if(!ended()||!state.game.started)return;
   const wasSettled=state.game.settled, reason=matchEndReason(game,state.game.resigned);
@@ -88,7 +113,7 @@ const settle = (notifyActivity=true) => {
     const event=pendingActivity;pendingActivity=null;
     return event?{html:activityDialog(event),options:{closeLabel:'Продолжить',closeVariant:'primary'}}:null;
   }};
-  if(!wasSettled)showModal(result.cancelled?cancelledDialog():matchResultDialog(entry.result,reward,entry,rewardBreakdown,reason),options);
+  if(!wasSettled){visibleRewardId=entry?.id||null;void showModal(result.cancelled?cancelledDialog():matchResultDialog(entry.result,reward,entry,rewardBreakdown,reason),options).then(()=>processPendingRewards());}
 };
 const boardState = () => boardAvailability(state,game,reviewCursor,{readOnly:!!displayMatch,busy,animating});
 const syncBoardAvailability = () => {
@@ -472,6 +497,7 @@ $('#modal-content').addEventListener('click',async event=>{
 });
 $('#modal').addEventListener('cancel',()=>{if(!promotion){selected=null;if(!animating)drawBoard();}});
 $('#modal').addEventListener('dialogdismiss',()=>{
+  visibleRewardId=null;
   if(!pendingResult||$('#modal').open)return;
   const finish = () => {
     pendingResult=false;pendingActivity=null;displayMatch=null;reviewCursor=null;
@@ -582,3 +608,5 @@ $('#status').setAttribute('aria-live','polite');
 currentScreen=navigationTarget(state,game,location.hash.slice(1)||'play');
 changeTab(currentScreen);render();settle(false);render();requestBot();
 if(storageError)toast('Не удалось прочитать сохранённый прогресс. Данные в браузере не удалены.',{error:true});
+
+void processPendingRewards();

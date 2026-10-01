@@ -1,12 +1,10 @@
-// Only the player's moves in the final line count; undo/replay cannot add rewards.
+import {REWARD_CONFIG as C} from './reward-quality.js?v=68';
+// Canonical final history only: replay/undo never creates another reward.
 export const rewardBreakdownFor = (game, resigned=false, mode='bot', playerColor='w') => {
-  const cleanMoves=game.history({verbose:true}).filter(move=>move.color===playerColor).length;
-  const reason=!game.isGameOver()&&!resigned?'unfinished':resigned&&cleanMoves<10?'early-resignation':null;
-  const completion=reason?0:10;
-  const moves=reason?0:Math.min(20,Math.floor(cleanMoves/2));
-  const outcome=resigned?'loss':game.isDraw()?'draw':game.turn()===playerColor?'loss':'win';
-  // Legacy local games share one wallet, so they have no winner bonus.
-  const result=reason?0:outcome==='draw'?5:mode==='bot'&&outcome==='win'?10:0;
-  return {cleanMoves,completion,moves,result,outcome,reason,total:completion+moves+result};
+ const cleanMoves=game.history({verbose:true}).filter(move=>move.color===playerColor).length;
+ const reason=!game.isGameOver()&&!resigned?'unfinished':resigned&&cleanMoves<C.minResignMoves?'early-resignation':mode!=='bot'?'legacy-local':null;
+ const outcome=resigned?'loss':game.isDraw()?'draw':game.turn()===playerColor?'loss':'win';
+ const completion=reason?0:C.completion,result=reason?0:C[outcome];
+ return {cleanMoves,completion,moves:0,result,outcome,reason,quality:0,qualityStatus:reason?'ineligible':'pending',rewardVersion:C.version,total:completion+result};
 };
-export const rewardFor = (game, resigned=false, mode='bot', playerColor='w') => rewardBreakdownFor(game,resigned,mode,playerColor).total;
+export const rewardFor = (game,resigned=false,mode='bot',playerColor='w') => rewardBreakdownFor(game,resigned,mode,playerColor).total;

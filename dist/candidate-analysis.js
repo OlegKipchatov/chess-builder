@@ -9,7 +9,7 @@ export const parseInfo = line => {
  if(!line.startsWith('info ')||/\b(lowerbound|upperbound)\b/.test(line))return null;
  const depth=line.match(/\bdepth (\d+)/),pv=line.match(/\bpv ([a-h][1-8][a-h][1-8][qrbn]?)(?:\s|$)/),score=line.match(/\bscore (cp|mate) (-?\d+)/),index=line.match(/\bmultipv (\d+)/);
  if(!depth||!pv||!score)return null;
- return {depth:Number(depth[1]),index:Number(index?.[1]||1),move:pv[1],scoreType:score[1],scoreValue:Number(score[2])};
+ return {depth:Number(depth[1]),index:Number(index?.[1]||1),move:pv[1],scoreType:score[1],scoreValue:Number(score[2]),...(line.match(/\bwdl (\d+) (\d+) (\d+)/)?{wdl:line.match(/\bwdl (\d+) (\d+) (\d+)/).slice(1).map(Number)}:{})};
 };
 export const completeCandidates = (lines,expected) => {
  const batches=new Map();let complete=[];
