@@ -1,8 +1,8 @@
-import {TYPES,PIECE_NAMES,STYLES,ITEMS,itemById,craftCost} from '../../catalog.js?v=74';
-import {pieceSVG,itemPreview} from '../../pieces.js?v=74';
-import {presetEquipment} from '../../collection-model.js?v=74';
-import {button,sectionHeader,emptyState,escapeHTML} from '../primitives.js?v=74';
-import {equipmentPreview,equipmentRow,savedSetRow,rarityLabel} from './equipment.js?v=74';
+import {TYPES,PIECE_NAMES,STYLES,ITEMS,itemById,craftCost} from '../../catalog.js?v=75';
+import {pieceSVG,itemPreview} from '../../pieces.js?v=75';
+import {presetEquipment} from '../../collection-model.js?v=75';
+import {button,sectionHeader,emptyState,escapeHTML} from '../primitives.js?v=75';
+import {equipmentPreview,equipmentRow,savedSetRow,rarityLabel} from './equipment.js?v=75';
 const collectionItemRow = (state,item) => {
   const owned=state.owned.includes(item.id),equipped=item.kind==='board'?state.equipped.board===item.id:state.equipped.pieces[item.type]===item.id,cost=craftCost(item);
   const style=STYLES.find(style=>style.id===item.style);

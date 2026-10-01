@@ -14,7 +14,15 @@ Base settlement atomically persists wallet, archive and reset active game. The
 archive stores `rewardVersion`, breakdown and pending quality status. A sequential
 local queue evaluates pending games, then atomically writes bonus and final status.
 Final states are idempotent. Restart resumes pending analysis; viewing history
-never reprices games. Engine failure finalizes zero quality, preserving base coins.
+never reprices completed rewards. A failed search is retried up to three attempts,
+recreating the Worker/client and validating the request id and WDL. Exhausted
+retries pay a fixed 5-coin reserve bonus in addition to base coins, with final
+status `fallback`. Earlier `unavailable` (zero bonus) records are eligible for
+recovery once; completed/fallback rewards are never paid twice, including reload.
+The last nine failures retain ply, search stage, attempt and a bounded error
+message. This records evidence for future failures; the original reported failure
+cannot be attributed to a specific cause without its diagnostics. Economy requests
+no longer build unused bot candidate explanations in the Stockfish adapter.
 
 Profile `economy-sf19-v1`: shipped SF19 smallnet, full strength, 1 thread, 16 MB
 hash, MultiPV 1, UCI_ShowWDL, 50,000 nodes per search, cleared hash. Compare best

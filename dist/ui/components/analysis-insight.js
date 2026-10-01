@@ -1,6 +1,7 @@
-import {escapeHTML as esc} from '../primitives.js?v=74';
-import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=74';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=74';
+import {escapeHTML as esc} from '../primitives.js?v=75';
+import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=75';
+import {humanMove} from './move-list.js?v=75';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=75';
 export {isImportantInsight};
 export const visibleVariation = move => {
  const line=move?.bestLine;if(!line)return {pv:[],san:[]};
@@ -20,5 +21,5 @@ export const analysisInsight = move => {
  const line=insightLines(move)[0],explanation=explanationFor(move);
  const exercise=move.exercise?'<button type="button" class="primary" data-analysis-practice>Найти мат самостоятельно</button>':'';
  // Do not reveal the solution before the user chooses to see it.
- return `<h2 data-quality="${esc(move.highlight||move.quality)}">${esc(label)}</h2><p>Вы сыграли: <strong>${esc(move.playedSan)}</strong></p>${explanation?`<p>${esc(explanation)}</p>`:''}<div class="analysis-insight-actions">${exercise}${line?`<button type="button" class="quiet analysis-variation" data-analysis-line="${esc(line.move)}" aria-pressed="false">${move.exercise?'Показать решение':'Показать вариант'}</button>`:''}</div>`;
+ return `<h2 data-quality="${esc(move.highlight||move.quality)}">${esc(label)}</h2><p>Вы сыграли: <strong>${esc(humanMove(move.playedSan))}</strong></p>${explanation?`<p>${esc(explanation)}</p>`:''}<div class="analysis-insight-actions">${exercise}${line?`<button type="button" class="quiet analysis-variation" data-analysis-line="${esc(line.move)}" aria-pressed="false">${move.exercise?'Показать решение':'Показать вариант'}</button>`:''}</div>`;
 };

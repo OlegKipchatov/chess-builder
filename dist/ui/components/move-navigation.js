@@ -1,4 +1,4 @@
-import {iconButton} from '../primitives.js?v=74';
+import {iconButton} from '../primitives.js?v=75';
 
 const control = (id,label,path,hidden=false) => iconButton({
   id,label,hidden,variant:'secondary',
@@ -18,7 +18,28 @@ export const moveNavigation = (prefix='') => `<div class="history-controls" role
 </div>`.replace(/id="([^"]+)"/g,(_,id)=>`id="${prefix}${id}"`);
 
 export const syncHistorySlider = (slider,ply,total) => {
- slider.max=String(total);slider.value=String(ply);slider.disabled=total===0;
+ slider.max=String(total);if(slider.dataset?.dragging!=='true')slider.value=String(ply);slider.disabled=total===0;
  slider.setAttribute('aria-valuetext',`${ply} из ${total}`);
- slider.style.setProperty('--history-progress',`${total?ply/total*100:0}%`);
+ if(slider.dataset?.dragging!=='true')slider.style.setProperty('--history-progress',`${total?ply/total*100:0}%`);
+};
+const sliderBindings=new WeakMap();
+export const bindHistorySlider = (slider,onSeek) => {
+ sliderBindings.get(slider)?.();let frame=null;
+ slider.step='any';
+ const seek=()=>{frame=null;onSeek(Math.round(Number(slider.value)));};
+ slider.onpointerdown=()=>{slider.dataset.dragging='true';};
+ slider.oninput=()=>{
+  slider.style.setProperty('--history-progress',`${Number(slider.max)?Number(slider.value)/Number(slider.max)*100:0}%`);
+  if(frame!==null)cancelAnimationFrame(frame);frame=requestAnimationFrame(seek);
+ };
+ const finish=()=>{delete slider.dataset.dragging;if(frame!==null)cancelAnimationFrame(frame);slider.value=String(Math.round(Number(slider.value)));slider.style.setProperty('--history-progress',`${Number(slider.max)?Number(slider.value)/Number(slider.max)*100:0}%`);seek();};
+ slider.onkeydown=event=>{
+  const value=Math.round(Number(slider.value)),max=Number(slider.max);
+  const targets={ArrowLeft:value-1,ArrowDown:value-1,ArrowRight:value+1,ArrowUp:value+1,PageDown:value-10,PageUp:value+10,Home:0,End:max};
+  if(!(event.key in targets))return;
+  event.preventDefault();slider.value=String(Math.max(0,Math.min(max,targets[event.key])));finish();
+ };
+ slider.onchange=finish;slider.onpointerup=finish;slider.onpointercancel=finish;
+ const dispose=()=>{if(frame!==null)cancelAnimationFrame(frame);delete slider.dataset.dragging;slider.oninput=slider.onchange=slider.onpointerdown=slider.onpointerup=slider.onpointercancel=slider.onkeydown=null;};
+ sliderBindings.set(slider,dispose);return dispose;
 };

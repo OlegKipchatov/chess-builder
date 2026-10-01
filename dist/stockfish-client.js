@@ -1,8 +1,8 @@
-import {STOCKFISH as C} from './stockfish-config.js?v=74';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=74';
-import {Chess} from './chess.js?v=74';
-import {validEngineProfile} from './strength.js?v=74';
-import {decisionModeFor} from './cognitive-model.js?v=74';
+import {STOCKFISH as C} from './stockfish-config.js?v=75';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=75';
+import {Chess} from './chess.js?v=75';
+import {validEngineProfile} from './strength.js?v=75';
+import {decisionModeFor} from './cognitive-model.js?v=75';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -10,7 +10,7 @@ export const uciPosition = data => {
  const history=game.history({verbose:true}),moves=history.map(move=>move.from+move.to+(move.promotion||'')).join(' ');
  return {game,command:`position fen ${history[0]?.before||game.fen()}${moves?' moves '+moves:''}`};
 };
-export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker.js?v=74',{type:'module'})) => {
+export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker.js?v=75',{type:'module'})) => {
  const client={onmessage:null,onerror:null};
  let worker=null,ready=false,dead=false,current=null,timer=null,stopTimer=null;
  const clearTimers=()=>{clearTimeout(timer);clearTimeout(stopTimer);};
@@ -29,7 +29,7 @@ export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker
    if(request.economy&&recover)throw Error('Economy search timed out');
    const evaluation=request.economy?rows.find(row=>row.move===token):null;
    if(request.economy&&!evaluation)throw Error('Missing economy evaluation');
-   const analysis=request.analysisOnly&&request.analysis?.mode!=='nodes'?prepareCandidates(request.position,rows):null;
+   const analysis=request.analysisOnly&&!request.economy&&request.analysis?.mode!=='nodes'?prepareCandidates(request.position,rows):null;
    request.position.move(move);clearTimers();current=null;
    if(recover)disposeWorker();
    client.onmessage?.({data:{id:request.id,jobId:request.jobId,moveIndex:request.moveIndex,requestId:request.requestId,move,...(request.analysis?.mode==='nodes'?{lines:rows}:{}),...(evaluation?{evaluation}:{}),...(request.analysisOnly?{analysis,durationMs:performance.now()-request.startedAt,recovered:recover}:{})}});

@@ -32,7 +32,8 @@ test('Bonus persists across restart, pays only once, never recalculates legacy g
  assert.equal(applyQualityReward(paid,'one',q),paid);
  assert.equal(applyQualityReward(migrateState(paid),'one',q).coins,paid.coins);
  const failed=applyQualityReward(saved,'one',{status:'unavailable'});
- assert.equal(failed.coins,123);assert.equal(failed.archive[0].rewardBreakdown.qualityStatus,'unavailable');
+ assert.equal(failed.coins,128);assert.equal(failed.archive[0].rewardBreakdown.qualityStatus,'fallback');
+ assert.equal(applyQualityReward(migrateState(failed),'one',q).coins,128);
  assert.equal(applyQualityReward({...initial,archive:[{id:'old',pgn:''}]},'old',q).coins,123);
 });
 test('Analysis uses actual player moves and restricted search from the same root, both colors',async()=>{
@@ -40,7 +41,7 @@ test('Analysis uses actual player moves and restricted search from the same root
   const calls=[];let terminated=false;
   const createClient=()=>{
    const client={terminate:()=>{terminated=true;},postMessage:data=>{
-    calls.push(data);queueMicrotask(()=>client.onmessage({data:{evaluation:{move:data.searchMove||(playerColor==='w'?'d2d4':'e7e5'),wdl:data.searchMove?[200,600,200]:[400,400,200]}}}));
+    calls.push(data);queueMicrotask(()=>client.onmessage({data:{id:data.id,evaluation:{move:data.searchMove||(playerColor==='w'?'d2d4':'e7e5'),wdl:data.searchMove?[200,600,200]:[400,400,200]}}}));
    }};return client;
   };
   const q=await analyzeReward({pgn:'1. e4 e5',playerColor},{createClient});
@@ -56,4 +57,27 @@ test('Stockfish 19 computes actual WDL rewards for a short mate, both sides',{ti
   assert.equal(quality.status,'complete');assert.equal(quality.eligibleMoves,2);
   assert.ok(quality.total>=0&&quality.total<=10);
  }
+});
+test('Reward retries failed searches with fresh clients, ignores stale replies, retains diagnostics',async()=>{
+ let created=0,terminated=0;
+ const quality=await analyzeReward({pgn:'1. e4',playerColor:'w'},{createClient:()=>{
+  const attempt=++created,client={terminate:()=>terminated++,postMessage:request=>queueMicrotask(()=>{
+   if(attempt===1){client.onerror(Error('Worker failed'));return;}
+   client.onmessage({data:{id:request.id-1,evaluation:{move:'e2e4',wdl:[0,0,1000]}}});
+   client.onmessage({data:{id:request.id,evaluation:{move:'e2e4',wdl:attempt===2?[1,2,3]:[300,400,300]}}});
+  })};return client;
+ }});
+ assert.equal(created,3);assert.equal(terminated,3);assert.equal(quality.status,'complete');
+ assert.equal(quality.diagnostics.length,2);assert.equal(quality.counts.best,1);
+});
+test('Reward failure stops after three attempts and old unavailable bonus is compensated only once',async()=>{
+ let created=0;
+ await assert.rejects(analyzeReward({pgn:'1. e4',playerColor:'w'},{createClient:()=>{
+  created++;const client={terminate:()=>{},postMessage:()=>queueMicrotask(()=>client.onerror(Error('No engine')))};return client;
+ }}),error=>error.diagnostics.length===3&&error.diagnostics[2].attempt===3);
+ assert.equal(created,3);
+ const initial={...initialState(),coins:100,archive:[{id:'old-failure',rewardBreakdown:{qualityStatus:'unavailable',quality:0,total:10}}]};
+ const paid=applyQualityReward(initial,'old-failure',{status:'unavailable'});
+ assert.equal(paid.coins,105);assert.equal(paid.archive[0].rewardBreakdown.total,15);
+ assert.equal(applyQualityReward(paid,'old-failure',{status:'unavailable'}),paid);
 });

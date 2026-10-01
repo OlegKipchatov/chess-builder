@@ -15,7 +15,7 @@ test('Собранная оболочка содержит все страниц
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
  assert.equal(ids.length,new Set(ids).size);
  for(const id of ['play','profile','collection','chests','archive','statistics','calendar','faq','board','modal','close-modal','abort-failed','retry-failed','archive-return','profile-played'])assert.ok(ids.includes(id),id);
- assert.equal((html.match(/class="tab"/g)||[]).length,9);
+ assert.equal((html.match(/class="tab"/g)||[]).length,8);
  assert.ok(html.includes('Ваш прогресс хранится на этом устройстве'));
 });
 test('Общие шаблоны экранируют текст и названия пользовательских наборов',()=>{
@@ -39,6 +39,6 @@ test('Все вложенные JS/CSS-модули существуют и вх
   const source=readFileSync(file,'utf8'),name='./'+relative(rootPath,file);
   assert.ok(sw.includes(`'${name}'`),name);
   const imports=[...source.matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g),...source.matchAll(/@import\s+url\(['"](\.[^'"]+)['"]\)/g)];
-  for(const match of imports){const [target,version]=match[1].split('?');assert.ok(existsSync(resolve(dirname(file),target)),`${name}: ${target}`);if(!target.includes('/vendor/'))assert.equal(version,'v=74',`${name}: ${target}`);}
+  for(const match of imports){const [target,version]=match[1].split('?');assert.ok(existsSync(resolve(dirname(file),target)),`${name}: ${target}`);if(!target.includes('/vendor/'))assert.equal(version,'v=75',`${name}: ${target}`);}
  }
 });

@@ -1,7 +1,7 @@
 // Frozen launch parameters; calibration requires a new reward version.
 export const REWARD_CONFIG = Object.freeze({version:'game-economy-v2',completion:5,win:18,draw:10,loss:5,qualityMax:10,minResignMoves:10,lambda:8,priorWeight:4,prior:.5});
 export const ECONOMY_PROFILE = Object.freeze({version:'economy-sf19-v1',nodes:50000,hashMb:16});
-export {expectedScore} from './stockfish-evaluation.js?v=74';
+export {expectedScore} from './stockfish-evaluation.js?v=75';
 export const classifyDecision = loss => loss<=.005?'best':loss<=.025?'good':loss<=.060?'inaccuracy':loss<=.150?'mistake':'blunder';
 export const summarizeQuality = decisions => {
  const rows=decisions.filter(row=>!row.forced),n=rows.length;
@@ -25,9 +25,9 @@ export const summarizeQuality = decisions => {
 };
 export const applyQualityReward = (state,id,quality) => {
  const entry=state.archive.find(entry=>entry.id===id);
- if(entry?.rewardBreakdown?.qualityStatus!=='pending')return state;
+ if(!['pending','unavailable'].includes(entry?.rewardBreakdown?.qualityStatus))return state;
  const valid=quality?.status==='complete'&&Number.isSafeInteger(quality.total)&&quality.total>=0&&quality.total<=10;
- const bonus=valid?quality.total:0;
- const rewardBreakdown={...entry.rewardBreakdown,quality:bonus,qualityStatus:valid?'complete':'unavailable',qualityDetails:valid?quality:null,total:entry.rewardBreakdown.total+bonus};
+ const bonus=valid?quality.total:5;
+ const rewardBreakdown={...entry.rewardBreakdown,quality:bonus,qualityStatus:valid?'complete':'fallback',qualityDetails:valid?quality:null,qualityDiagnostics:quality?.diagnostics?.slice(-9)||[],total:entry.rewardBreakdown.total+bonus};
  return {...state,coins:state.coins+bonus,archive:state.archive.map(row=>row.id===id?{...row,rewardBreakdown}:row)};
 };

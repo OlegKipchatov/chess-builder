@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {analysisInsight,insightLines,visibleVariation,isImportantInsight} from '../dist/ui/components/analysis-insight.js';
 import {selectEvents} from '../dist/analysis/analysis-events.js';
 import {syncHistorySlider,moveNavigation} from '../dist/ui/components/move-navigation.js';
-import {variationArrowPoints,analysisPage} from '../dist/ui/pages/analysis.js';
+import {playPage as analysisPage} from '../dist/ui/pages/play.js';
+import {variationArrowPoints} from '../dist/ui/pages/analysis.js';
 const line={move:'g1f3',san:'Nf3',pvSan:['Nf3','Nc6'],expectedScorePlayer:.47};
 const move={actor:'player',status:'complete',playedMove:'g1f3',playedSan:'Nf3',quality:'best',highlight:null,reason:'generic',expectedScoreLoss:0,bestLine:line,playedLine:line,alternatives:[]};
 test('Cards and autoplay pauses share the same definition of importance',()=>{

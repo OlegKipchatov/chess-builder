@@ -1,4 +1,4 @@
-import {Chess} from '../chess.js?v=74';
+import {Chess} from '../chess.js?v=75';
 export const uci = move => move.from+move.to+(move.promotion||'');
 // Verify a short mate against every legal defence, not only the principal variation.
 // Yield between replies so closing/cancelling remains responsive.
