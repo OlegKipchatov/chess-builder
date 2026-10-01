@@ -24,7 +24,7 @@ test('reported game: both mate-in-two opportunities verified, no invented mistak
   assert.ok(move.exercise.solutions.some(solution=>solution.move===move.bestLine.move));
   const board=new Chess(move.fenBefore);move.bestLine.pv.forEach(token=>board.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]}));assert.ok(board.isCheckmate());
  }
- assert.ok(result.focusEvents.includes(24));assert.ok(!result.focusEvents.includes(26));
+ assert.ok(result.focusEvents.includes(24));assert.ok(result.focusEvents.includes(26));
 });
 test('short mate validation rejects unsupported claims and observes cancellation',async()=>{
  assert.equal(await verifyShortMate(new Chess().fen(),line(1,'e2e4',2)),null);
@@ -32,11 +32,11 @@ test('short mate validation rejects unsupported claims and observes cancellation
  await assert.rejects(verifyShortMate(fen,line(1,'d8a5',2),()=>{throw new DOMException('Cancelled','AbortError');}),{name:'AbortError'});
  assert.equal(await verifyShortMate(fen,line(1,'d8a5',3)),null);
 });
-test('five consecutive opportunities stop once; a new episode and genuine losses still stop',()=>{
+test('every visible useful card pauses, including repeated opportunities',()=>{
  const rows=Array.from({length:10},(_,i)=>({ply:i+1,actor:i%2?'opponent':'player',status:i%2?'not_analyzed':'complete',quality:'best',reason:i%2?null:'mate_opportunity'}));
- assert.deepEqual(selectEvents(rows),[1]);assert.equal(rows[8].reason,'mate_opportunity');
+ assert.deepEqual(selectEvents(rows),[1,3,5,7,9]);assert.equal(rows[8].reason,'mate_opportunity');
  rows.push({ply:11,actor:'player',status:'complete',quality:'good'}, {ply:13,actor:'player',status:'complete',quality:'best',reason:'mate_opportunity'}, {ply:15,actor:'player',status:'complete',quality:'blunder',reason:'missed_mate',expectedScoreLoss:.5});
- assert.deepEqual(selectEvents(rows),[1,13,15]);
+ assert.deepEqual(selectEvents(rows),[1,3,5,7,9,13,15]);
  assert.equal(detectReason({mateTransition:'missed_mate',expectedScoreLoss:.5}),'missed_mate');
 });
 const fakeFactory=(requests,{outside=false,stale=false}={})=>()=>{
@@ -68,8 +68,8 @@ test('mate transitions are separate from numeric loss',()=>{
  assert.equal(classifyMove({bestLine:line(0,'d2d4',-10),playedLine:line(0,'e2e4',-1)}).quality,'best');
 });
 test('event selection never caps errors, prioritizes mates and does not invent positive events',()=>{
- const rows=Array.from({length:20},(_,i)=>({ply:i+1,status:'complete',quality:i===0?'inaccuracy':'blunder',expectedScoreLoss:i/100,reason:i===1?'allowed_mate':'generic'}));
- const events=selectEvents(rows);assert.equal(events.length,19);assert.ok(events.includes(2));assert.equal(rows[0].autoPause,false);assert.equal(rows[1].primaryEvent,'allowed_mate');
+ const rows=Array.from({length:20},(_,i)=>({ply:i+1,actor:'player',status:'complete',quality:i===0?'inaccuracy':'blunder',expectedScoreLoss:i/100,reason:i===1?'allowed_mate':'generic'}));
+ const events=selectEvents(rows);assert.equal(events.length,20);assert.ok(events.includes(2));assert.equal(rows[0].autoPause,true);assert.equal(rows[1].primaryEvent,'allowed_mate');
  assert.deepEqual(selectEvents([{ply:1,status:'complete',quality:'best',forced:true,highlight:'excellent'}]),[]);
 });
 test('PGN pipeline analyzes player decisions, searches actual outside MultiPV, ignores stale replies and persists reloadable cache',async()=>{

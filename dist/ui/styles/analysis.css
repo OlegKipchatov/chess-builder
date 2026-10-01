@@ -29,3 +29,5 @@
 .analysis-variation-controls,.analysis-insight-actions{display:flex;flex-wrap:wrap;gap:8px}
 .analysis-insight-actions button{min-height:44px}
 [data-practice-promotion] button{min-height:44px;margin:4px}
+#analysis .board-area{overflow-anchor:none}
+[data-practice-message]{min-height:1.45em}

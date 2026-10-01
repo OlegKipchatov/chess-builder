@@ -1,8 +1,14 @@
-import {escapeHTML as esc} from '../primitives.js?v=73';
-import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=73';
-export const isImportantInsight = move => move?.actor==='player'&&move.status==='complete'&&!move.forced&&(
- ['inaccuracy','mistake','blunder'].includes(move.quality)||move.highlight==='excellent'||['mate_opportunity','missed_mate','allowed_mate'].includes(move.reason)
-);
+import {escapeHTML as esc} from '../primitives.js?v=74';
+import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=74';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=74';
+export {isImportantInsight};
+export const visibleVariation = move => {
+ const line=move?.bestLine;if(!line)return {pv:[],san:[]};
+ const contextual=line.score?.type==='mate'||['mate_opportunity','missed_mate','missed_tactic','lost_material','hung_piece'].includes(move.reason);
+ const mateEnd=line.pvSan?.findIndex(san=>san.endsWith('#'))??-1;
+ const length=contextual?(mateEnd>=0?mateEnd+1:4):1;
+ return {pv:(line.pv||[line.move]).slice(0,length),san:(line.pvSan||[line.san||line.move]).slice(0,length)};
+};
 export const insightLines = move => {
  if(!isImportantInsight(move)||!move.bestLine||move.bestLine.move===move.playedMove)return [];
  if(move.expectedScoreLoss<=.005&&!['mate_opportunity','missed_mate','allowed_mate'].includes(move.reason))return [];

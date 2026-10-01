@@ -1,29 +1,30 @@
-import {analyzeGame} from './analysis/analysis-service.js?v=73';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=73';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=73';
-import {analyzeReward} from './economy-analysis.js?v=73';
-import {applyQualityReward} from './reward-quality.js?v=73';
-import {motionDuration, motionEasing} from './ui/motion.js?v=73';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=73';
-import {mountAppShell} from './ui/shell.js?v=73';
-import {statCard,plural} from './ui/primitives.js?v=73';
-import {createDialog,createToast} from './ui/dialog.js?v=73';
-import {renderArchiveList} from './ui/components/archive-list.js?v=73';
-import {moveList} from './ui/components/move-list.js?v=73';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=73';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=73';
-import {closeActivityDay, calendarHTML} from './activity.js?v=73';
-import {createBotClient} from './bot-client.js?v=73';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=73';
-import {signedDelta} from './rating.js?v=73';
-import {Chess} from './chess.js?v=73';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=73';
-import {openChest, craftItem} from './economy.js?v=73';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=73';
-import {pieceSVG, itemPreview} from './pieces.js?v=73';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=73';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=73';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=73';
+import {analyzeGame} from './analysis/analysis-service.js?v=74';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=74';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=74';
+import {analyzeReward} from './economy-analysis.js?v=74';
+import {applyQualityReward} from './reward-quality.js?v=74';
+import {motionDuration, motionEasing} from './ui/motion.js?v=74';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=74';
+import {mountAppShell} from './ui/shell.js?v=74';
+import {statCard,plural} from './ui/primitives.js?v=74';
+import {createDialog,createToast} from './ui/dialog.js?v=74';
+import {renderArchiveList} from './ui/components/archive-list.js?v=74';
+import {moveList} from './ui/components/move-list.js?v=74';
+import {syncHistorySlider} from './ui/components/move-navigation.js?v=74';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=74';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=74';
+import {closeActivityDay, calendarHTML} from './activity.js?v=74';
+import {createBotClient} from './bot-client.js?v=74';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=74';
+import {signedDelta} from './rating.js?v=74';
+import {Chess} from './chess.js?v=74';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=74';
+import {openChest, craftItem} from './economy.js?v=74';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=74';
+import {pieceSVG, itemPreview} from './pieces.js?v=74';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=74';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=74';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=74';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -46,6 +47,7 @@ try {if(state.game.pgn)game.loadPgn(state.game.pgn);} catch {game.reset();state.
 let selected=null, promotion=null, busy=false, animating=false, worker=null, taskId=0, installPrompt=null;
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
+let queuedHistoryInstant=false;
 let archiveReturnContext=null;
 let analysisController=null,disposeAnalysis=null,analysisGeneration=0,analysisEntryId=null;
 const stopAnalysis = () => {analysisGeneration++;analysisController?.abort();analysisController=null;disposeAnalysis?.();disposeAnalysis=null;};
@@ -228,6 +230,7 @@ const renderHistory = () => {
   $('#history-forward').disabled=cursor===moves.length;
   $('#history-live').disabled=cursor===moves.length;
   $('#history-position').textContent=`${cursor} / ${moves.length}`;
+  syncHistorySlider($('#history-slider'),cursor,moves.length);
   $('#history-notice').hidden=reviewCursor===null||!!displayMatch;
   $('#move-count').textContent=moves.length;
   $('#moves').innerHTML=moveList(moves,cursor);
@@ -308,7 +311,7 @@ const applyMove = async move => {
   drawBoard();renderGameInfo();
   if(followLive)showCaptureMaterial($('#board'),played,state.game.playerColor);
   try {if(followLive)await animateMove($('#board'),played,before);} finally {animating=false;syncBoardAvailability();}
-  settle();render();if(!pendingResult&&queuedCursor!==undefined){const cursor=queuedCursor;queuedCursor=undefined;void showHistory(cursor);}else requestBot();
+  settle();render();if(!pendingResult&&queuedCursor!==undefined){const cursor=queuedCursor,quick=queuedHistoryInstant;queuedCursor=undefined;queuedHistoryInstant=false;void showHistory(cursor,false,quick);}else requestBot();
 };
 const requestBot = () => {
   if(!active()||state.game.mode!=='bot'||game.turn()===state.game.playerColor||locked())return;
@@ -375,10 +378,10 @@ const changeTab = tab => {
   syncNavigation();if(target==='archive')renderArchive();if(target==='calendar')renderCalendar();
   if(leavingArchive&&target==='archive')restoreArchiveContext();
 };
-const showHistory = async (cursor,automatic=false) => {
+const showHistory = async (cursor,automatic=false,instant=false) => {
   if(pendingResult)return;
   if(!automatic)stopReplay();
-  if(animating){queuedCursor=cursor;renderHistory();return;}
+  if(animating){queuedCursor=cursor;queuedHistoryInstant=instant;renderHistory();return;}
   const total=viewedGame().history().length, from=reviewCursor??total;
   const target=cursor===null||cursor>=total?total:Math.max(0,cursor);
   if(from===target)return;
@@ -387,10 +390,10 @@ const showHistory = async (cursor,automatic=false) => {
   const matchAtStart=displayMatch;
   reviewCursor=target===total?null:target;selected=null;animating=true;
   drawBoard();renderGameInfo();
-  try {await animateTransition($('#board'),steps,before);} finally {animating=false;syncBoardAvailability();}
+  try {if(!instant)await animateTransition($('#board'),steps,before);} finally {animating=false;syncBoardAvailability();}
   if(displayMatch!==matchAtStart)return;
   render();
-  if(queuedCursor!==undefined){const next=queuedCursor;queuedCursor=undefined;await showHistory(next);return;}
+  if(queuedCursor!==undefined){const next=queuedCursor,quick=queuedHistoryInstant;queuedCursor=undefined;queuedHistoryInstant=false;await showHistory(next,false,quick);return;}
   if(pendingBotMove){const move=pendingBotMove;pendingBotMove=null;void applyMove(move);}
   else requestBot();
 };
@@ -416,6 +419,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)stopReplay(
 $('#history-back').onclick=()=>showHistory(historyCursor(queuedCursor===undefined?reviewCursor:queuedCursor,-1,viewedGame().history().length));
 $('#history-forward').onclick=()=>showHistory(historyCursor(queuedCursor===undefined?reviewCursor:queuedCursor,1,viewedGame().history().length));
 $('#history-live').onclick=()=>showHistory(null);
+$('#history-slider').oninput=event=>void showHistory(Number(event.target.value),false,true);
 $('#moves').addEventListener('click',event=>{
   const value=event.target.closest('[data-history-ply]')?.dataset.historyPly;
   if(value!==undefined)showHistory(Number(value));

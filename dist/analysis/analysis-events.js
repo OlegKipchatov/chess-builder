@@ -1,4 +1,6 @@
-import {PROFILE} from './analysis-config.js?v=73';
+export const isImportantInsight = move => move?.actor==='player'&&move.status==='complete'&&!move.forced&&(
+ ['inaccuracy','mistake','blunder'].includes(move.quality)||move.highlight==='excellent'||['mate_opportunity','missed_mate','allowed_mate'].includes(move.reason)
+);
 export const eventFor = move => {
  if(move.status!=='complete'||move.forced)return {primaryEvent:null,eventPriority:0,autoPause:false};
  const primaryEvent=['allowed_mate','missed_mate','mate_opportunity'].includes(move.reason)?move.reason:move.highlight||move.quality;
@@ -7,19 +9,8 @@ export const eventFor = move => {
 };
 export const selectEvents = moves => {
  moves.forEach(move=>Object.assign(move,eventFor(move)));
- let previousOpportunity=false;
- const candidates=moves.filter(move=>{
-  if(move.actor==='opponent')return false;
-  const opportunity=move.reason==='mate_opportunity';
-  const repeat=opportunity&&previousOpportunity;previousOpportunity=opportunity;
-  return move.eventPriority>=60&&!repeat;
- });
- const ranked=candidates.sort((a,b)=>b.eventPriority-a.eventPriority||(b.expectedScoreLoss||0)-(a.expectedScoreLoss||0)||a.ply-b.ply);
- // Never skip a displayed mistake because the optional focus budget is exhausted.
- const mandatory=ranked.filter(move=>['mistake','blunder'].includes(move.quality)||['allowed_mate','missed_mate'].includes(move.reason));
- let positive=0;
- const optional=ranked.filter(move=>!mandatory.includes(move)).filter(move=>move.highlight!=='excellent'||++positive<=PROFILE.maxPositive).slice(0,Math.max(0,PROFILE.maxEvents-mandatory.length));
- const selected=[...mandatory,...optional];
+ // A visible useful card and an autoplay stop share exactly the same predicate.
+ const selected=moves.filter(isImportantInsight);
  selected.forEach(move=>move.autoPause=true);
  return selected.map(move=>move.ply).sort((a,b)=>a-b);
 };

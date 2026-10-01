@@ -20,3 +20,5 @@ body{font-variant-numeric:tabular-nums}
 .stable-label::after{content:attr(data-size-label) / ""}
 .stable-label[data-size-alt]::before{content:attr(data-size-alt) / ""}
 .stable-label>.control-label{grid-area:1 / 1;min-width:0}
+/* Suppress double-tap zoom on controls without disabling pinch zoom or scrolling. */
+button,a,input[type=range],select{touch-action:manipulation}

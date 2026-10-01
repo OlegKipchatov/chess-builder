@@ -39,7 +39,7 @@ test('Mate-in-one promotion choices keep UCI suffixes and accept underpromotion 
  assert.equal(createMateExercise(exercise).submit('f7f8r').state,'success');
 });
 test('Playback pauses on a mistake even when an old focus list omits it',async()=>{
- let tick;const playback=createAnalysisPlayback({analysis:{totalPlies:2,focusEvents:[],moves:[{status:'complete',quality:'mistake'}]},showPly:async()=>{},schedule:fn=>{tick=fn;},unschedule:()=>{}});
+ let tick;const playback=createAnalysisPlayback({analysis:{totalPlies:2,focusEvents:[],moves:[{actor:'player',status:'complete',quality:'mistake'}]},showPly:async()=>{},schedule:fn=>{tick=fn;},unschedule:()=>{}});
  await playback.play();await tick();await new Promise(resolve=>setTimeout(resolve,0));
  assert.equal(playback.getSnapshot().state,'pausedForInsight');playback.dispose();
 });

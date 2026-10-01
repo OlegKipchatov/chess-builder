@@ -1,7 +1,7 @@
 // Frozen launch parameters; calibration requires a new reward version.
 export const REWARD_CONFIG = Object.freeze({version:'game-economy-v2',completion:5,win:18,draw:10,loss:5,qualityMax:10,minResignMoves:10,lambda:8,priorWeight:4,prior:.5});
 export const ECONOMY_PROFILE = Object.freeze({version:'economy-sf19-v1',nodes:50000,hashMb:16});
-export {expectedScore} from './stockfish-evaluation.js?v=73';
+export {expectedScore} from './stockfish-evaluation.js?v=74';
 export const classifyDecision = loss => loss<=.005?'best':loss<=.025?'good':loss<=.060?'inaccuracy':loss<=.150?'mistake':'blunder';
 export const summarizeQuality = decisions => {
  const rows=decisions.filter(row=>!row.forced),n=rows.length;

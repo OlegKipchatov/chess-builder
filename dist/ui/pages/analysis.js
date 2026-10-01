@@ -1,12 +1,12 @@
-import {pageHeader,iconButton,backIcon,escapeHTML as esc} from '../primitives.js?v=73';
-import {moveNavigation} from '../components/move-navigation.js?v=73';
-import {analysisInsight,insightLines} from '../components/analysis-insight.js?v=73';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=73';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=73';
-import {Chess} from '../../chess.js?v=73';
-import {positionAt} from '../../session.js?v=73';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=73';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=73';
+import {pageHeader,iconButton,backIcon,escapeHTML as esc} from '../primitives.js?v=74';
+import {moveNavigation,syncHistorySlider} from '../components/move-navigation.js?v=74';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=74';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=74';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=74';
+import {Chess} from '../../chess.js?v=74';
+import {positionAt} from '../../session.js?v=74';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=74';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=74';
 
 const boardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p><p data-analysis-pv></p>
@@ -37,6 +37,11 @@ export const mountAnalysis = ({analysis,entry,equipped}) => {
   window.scrollTo({top:Math.max(0,window.scrollY+root.getBoundingClientRect().top-offset),behavior:'instant'});
  };
  const setMode=next=>{
+  // Keep the page footprint when replacing an insight with compact board controls.
+  // Otherwise mobile scroll anchoring/clamping moves the board under the user.
+  const area=root.closest('.board-area');
+  if(mode==='game'&&next!=='game')area.style.minHeight=`${area.getBoundingClientRect().height}px`;
+  if(next==='game')area.style.minHeight='';
   mode=next;$('#analysis-board-tools').hidden=next==='game';$('#analysis-game-controls').hidden=next!=='game';
   $('#analysis-variation-tools').hidden=next!=='variation';$('#analysis-practice-tools').hidden=next!=='practice';
   $('#analysis-insight').hidden=next!=='game';$('#analysis-content').dataset.mode=next;
@@ -50,7 +55,7 @@ export const mountAnalysis = ({analysis,entry,equipped}) => {
  const showVariation=(token,step=0)=>{
   const move=analysis.moves[shown-1],line=insightLines(move).find(line=>line.move===token);
   if(!line||disposed)return;
-  const entering=mode!=='variation',position=new Chess(move.fenBefore),pv=line.pv||[token];
+  const entering=mode!=='variation',position=new Chess(move.fenBefore),{pv,san}=visibleVariation(move);
   previewStep=Math.max(0,Math.min(step,pv.length));
   for(const next of pv.slice(0,previewStep))position.move({from:next.slice(0,2),to:next.slice(2,4),promotion:next[4]});
   playback.pause();transition++;cancelAnimations();exercise=null;setMode('variation');board(position);
@@ -61,17 +66,17 @@ export const mountAnalysis = ({analysis,entry,equipped}) => {
    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 8 8');svg.setAttribute('aria-hidden','true');svg.classList.add('analysis-marker','analysis-arrow');
    svg.innerHTML=`<defs><marker id="analysis-tip" markerWidth="3" markerHeight="3" refX="2.3" refY="1.5" orient="auto"><path d="M0 0L3 1.5L0 3z" fill="currentColor"/></marker></defs><path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="currentColor" stroke-width=".1" marker-end="url(#analysis-tip)"/>`;root.append(svg);
   }
-  $('[data-analysis-context]').textContent=`Вариант · ${previewStep} / ${pv.length}${position.isCheckmate()?' · Мат':previewStep===0?' · До сыгранного хода':''}`;
-  $('[data-analysis-pv]').textContent=(line.pvSan||[line.san||token]).join(' ');
+  $('[data-analysis-context]').textContent=position.isCheckmate()?'Мат':previewStep===0?'Рекомендуемое продолжение':'Вариант';
+  $('[data-analysis-pv]').textContent=san.join(' ');
   $('[data-variation-back]').disabled=previewStep===0;$('[data-variation-next]').disabled=previewStep===pv.length;
-  if(entering){revealBoard();$('[data-variation-next]').focus({preventScroll:true});}
+  if(entering)$('[data-variation-next]').focus({preventScroll:true});
  };
  const renderExercise=()=>{
   if(!exercise||disposed)return;
   const {state,mateIn}=exercise.getSnapshot(),interactive=state==='awaitMove'&&!promotions.length;
   board(exercise.game,selected,interactive);root.setAttribute('aria-label','Задание: найдите мат');
   $('#analysis-content').dataset.practice=state;
-  $('[data-practice-message]').textContent=({awaitMove:exercise.game.history().length?'Найдите завершающий ход.':`Найдите мат ${mateIn===1?'в один ход':'в два хода'}.`,wrong:'Этот ход не приводит к мату за отведённое число ходов. Попробуйте другое продолжение.',correct:'Верно. Продолжите, чтобы увидеть ответ соперника.',opponent:`Соперник сыграл ${exercise.game.history().at(-1)}. Продолжите, чтобы сделать следующий ход.`,success:'Мат! Вы нашли решение.'})[state];
+  $('[data-practice-message]').textContent=({awaitMove:exercise.game.history().length?'Найдите завершающий ход.':`Найдите мат ${mateIn===1?'в один ход':'в два хода'}.`,wrong:'Этот ход не приводит к мату за отведённое число ходов. Попробуйте другое продолжение.',correct:'',opponent:`Соперник сыграл ${exercise.game.history().at(-1)}. Продолжите, чтобы сделать следующий ход.`,success:'Мат! Вы нашли решение.'})[state];
   const next=$('[data-practice-continue]');next.hidden=state==='awaitMove';next.textContent=state==='wrong'?'Попробовать снова':state==='success'?'Продолжить разбор':'Продолжить';
   const promotion=$('[data-practice-promotion]');promotion.hidden=!promotions.length;
   promotion.innerHTML=promotions.length?`<p>Выберите фигуру:</p>${promotions.map(move=>`<button type="button" class="quiet" data-practice-promote="${move.from+move.to+move.promotion}">${({q:'Ферзь',r:'Ладья',b:'Слон',n:'Конь'})[move.promotion]}</button>`).join('')}`:'';
@@ -95,6 +100,7 @@ export const mountAnalysis = ({analysis,entry,equipped}) => {
   const before=snapshotBoard(root),steps=historyMoves(game,shown,ply);shown=ply;
   board(positionAt(game,ply));
   $('#analysis-history-position').textContent=`${ply} / ${analysis.totalPlies}`;
+  syncHistorySlider($('#analysis-history-slider'),ply,analysis.totalPlies);
   $('#analysis-history-back').disabled=ply===0;$('#analysis-history-forward').disabled=ply===analysis.totalPlies;$('#analysis-history-live').disabled=ply===analysis.totalPlies;
   $('#analysis-moves').querySelectorAll('[data-analysis-ply]').forEach(button=>button.setAttribute('aria-current',String(Number(button.dataset.analysisPly)===ply)));
   if(animate)await animateTransition(root,steps,before);
@@ -108,10 +114,12 @@ export const mountAnalysis = ({analysis,entry,equipped}) => {
  }});
  const returnToGame=()=>void showPly(shown,false).then(()=>$('#analysis-replay-start').focus({preventScroll:true}));
  $('#analysis-moves').innerHTML=analysis.moves.map(move=>`<button class="text-button" data-analysis-ply="${move.ply}" data-quality="${esc(move.highlight||move.quality||'')}" aria-label="${move.ply}. ${esc(move.playedSan)}${move.quality&&!['best','good'].includes(move.quality)?', '+esc(qualityLabel[move.quality]):''}"><span>${Math.ceil(move.ply/2)}${move.ply%2?'.':'…'}</span> ${esc(move.playedSan)} <small>${move.highlight?'!':({blunder:'??',mistake:'?',inaccuracy:'?!'})[move.quality]||''}</small></button>`).join('');
- $('#analysis-summary').textContent=`Разобрано ваших ходов: ${analysis.analyzedPlayerMoves}. Ошибок: ${analysis.summary.mistake}, грубых ошибок: ${analysis.summary.blunder}, отличных ходов: ${analysis.summary.excellent}.${analysis.status!=='complete'?' Часть ходов не удалось оценить.':''}`;
+ $('#analysis-summary').hidden=analysis.status==='complete';
+ $('#analysis-summary').textContent=analysis.status==='complete'?'':'Часть ходов не удалось оценить. Можно повторить анализ.';
  $('#analysis-history-back').onclick=()=>void playback.seek(playback.getSnapshot().ply-1);
  $('#analysis-history-forward').onclick=()=>void playback.seek(playback.getSnapshot().ply+1);
  $('#analysis-history-live').onclick=()=>void playback.seek(analysis.totalPlies);
+ $('#analysis-history-slider').oninput=event=>void playback.seek(Number(event.target.value));
  $('#analysis-replay-start').onclick=()=>void playback.play();$('#analysis-replay-pause').onclick=playback.pause;
  $('#analysis-moves').onclick=event=>{const button=event.target.closest('[data-analysis-ply]');if(button)void playback.seek(Number(button.dataset.analysisPly));};
  $('#analysis-insight').onclick=event=>{

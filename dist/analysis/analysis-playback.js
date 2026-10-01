@@ -1,4 +1,5 @@
 // Presentation-only state machine: no imports from engine/service/config.
+import {isImportantInsight} from './analysis-events.js?v=74';
 export const createAnalysisPlayback = ({analysis,showPly,onChange=()=>{},schedule=setTimeout,unschedule=clearTimeout}) => {
  let ply=0,state='idle',timer=null,generation=0;
  const emit=()=>onChange({ply,state});
@@ -8,7 +9,7 @@ export const createAnalysisPlayback = ({analysis,showPly,onChange=()=>{},schedul
   if(state!=='playing')return;const token=generation;
   ply++;await showPly(ply,true);if(token!==generation)return;
   const move=analysis.moves?.[ply-1];
-  if(analysis.focusEvents.includes(ply)||move?.status==='complete'&&!move.forced&&['mistake','blunder'].includes(move.quality)){state='pausedForInsight';emit();return;}
+  if(analysis.moves?isImportantInsight(move):analysis.focusEvents.includes(ply)){state='pausedForInsight';emit();return;}
   if(ply===analysis.totalPlies){state='finished';emit();return;}
   emit();timer=schedule(()=>void advance(),375);
  };
