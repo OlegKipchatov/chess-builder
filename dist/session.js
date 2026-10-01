@@ -1,13 +1,13 @@
-import {createSession} from './cognitive-model.js?v=78';
-import {ratingSnapshot} from './rating.js?v=78';
-import {Chess} from './chess.js?v=78';
-import {newGame} from './state.js?v=78';
+import {createSession} from './cognitive-model.js?v=80';
+import {ratingSnapshot} from './rating.js?v=80';
+import {Chess} from './chess.js?v=80';
+import {newGame} from './state.js?v=80';
 export const SCREENS = ['analysis','profile','collection','play','chests','archive','statistics','calendar','faq'];
 export const isMatchActive = (state, game) => state.game.started && !state.game.resigned && !game.isGameOver();
 export const navigationTarget = (state, game, requested) => isMatchActive(state,game) ? 'play' : SCREENS.includes(requested) ? requested : 'play';
 export const createStartedGame = (state,rng=Math.random,options={}) => {
   const playerColor=rng()<0.5?'w':'b',engineProfile=createSession(state.rating.value,Math.floor(rng()*0x100000000)>>>0,options.profile);
-  return {...newGame('bot','adaptive'),started:true,engineProfile,playerColor,rating:{...ratingSnapshot(state.rating),opponent:engineProfile.targetElo},equipped:structuredClone(state.equipped)};
+  return {...newGame('bot','adaptive'),started:true,startedAt:new Date().toISOString(),engineProfile,playerColor,rating:{...ratingSnapshot(state.rating),opponent:engineProfile.targetElo},equipped:structuredClone(state.equipped)};
 };
 export const updatePreferences = (state, game, settings) => {
   if (isMatchActive(state,game)) return null;

@@ -1,12 +1,14 @@
-import {escapeHTML as esc} from '../primitives.js?v=78';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=78';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=78';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=78';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=78';
-import {Chess} from '../../chess.js?v=78';
-import {positionAt} from '../../session.js?v=78';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=78';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=78';
+import {matchEndReason} from '../../archive.js?v=80';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=80';
+import {escapeHTML as esc} from '../primitives.js?v=80';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=80';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=80';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=80';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=80';
+import {Chess} from '../../chess.js?v=80';
+import {positionAt} from '../../session.js?v=80';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=80';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=80';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>
@@ -48,14 +50,14 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   const cell=root.querySelector(`[data-square="${move.playedMove.slice(2,4)}"]`);
   if(cell&&mark){const span=document.createElement('span');span.className='analysis-marker analysis-badge';span.dataset.quality=move.highlight||move.quality;span.textContent=mark;span.setAttribute('aria-hidden','true');cell.append(span);}
  };
- const showVariation=async(token,step=0)=>{
+ const showVariation=async(token,step=0,expanded=mode==='variation')=>{
   const move=analysis.moves[shown-1],line=insightLines(move).find(line=>line.move===token);
   if(!line||disposed)return;
-  const entering=mode!=='variation',previous=previewStep,full=new Chess(move.fenBefore),{pv}=visibleVariation(move),before=snapshotBoard(root);
+  const entering=mode!=='variation',previous=previewStep,full=new Chess(move.fenBefore),{pv}=visibleVariation(move,expanded),before=snapshotBoard(root);
   previewStep=Math.max(0,Math.min(step,pv.length));
   for(const next of pv)full.move({from:next.slice(0,2),to:next.slice(2,4),promotion:next[4]});
   const position=positionAt(full,previewStep);
-  playback.pause();const generation=++transition;cancelAnimations();exercise=null;setMode(pv.length===1?'hint':'variation');board(position);
+  playback.pause();const generation=++transition;cancelAnimations();exercise?.dispose?.();exercise=null;setMode(pv.length===1?'hint':'variation');board(position);
   root.setAttribute('aria-label',`Вариант: ${previewStep} / ${pv.length}`);root.dataset.variation=token;
   if(!entering&&previewStep===previous+1){
    await animateTransition(root,historyMoves(full,previous,previewStep),before);
@@ -68,7 +70,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
    svg.innerHTML=`<defs><marker id="analysis-tip" markerWidth="3" markerHeight="3" refX="2.3" refY="1.5" orient="auto"><path d="M0 0L3 1.5L0 3z" fill="currentColor"/></marker></defs><path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="currentColor" stroke-width=".1" marker-end="url(#analysis-tip)"/>`;root.append(svg);
   }
   $('[data-analysis-context]').textContent=position.isCheckmate()?'Мат':previewStep===0?'Рекомендуемое продолжение':'Вариант';
-  if(pv.length===1){const button=$('[data-analysis-line]');button.textContent='Скрыть';button.setAttribute('aria-pressed','true');}
+  if(pv.length===1){const button=$('[data-analysis-line]');button.textContent='Скрыть';button.setAttribute('aria-pressed','true');const expand=$('[data-analysis-expand]');if(expand)expand.hidden=false;}
   $('[data-variation-back]').disabled=previewStep===0;$('[data-variation-next]').disabled=previewStep===pv.length;
   if(entering&&pv.length>1)$('[data-variation-next]').focus({preventScroll:true});
  };
@@ -77,21 +79,22 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   const {state,mateIn}=exercise.getSnapshot(),interactive=state==='awaitMove'&&!promotions.length;
   board(exercise.game,selected,interactive);root.setAttribute('aria-label','Задание: найдите мат');
   $('#match-surface').dataset.practice=state;
-  $('[data-practice-message]').textContent=({awaitMove:exercise.game.history().length?'Найдите завершающий ход.':`Найдите мат ${mateIn===1?'в один ход':'в два хода'}.`,wrong:'Этот ход не приводит к мату за отведённое число ходов. Попробуйте другое продолжение.',correct:'',opponent:'Соперник отвечает…',success:'Мат! Вы нашли решение.'})[state];
-  const next=$('[data-practice-continue]');next.hidden=['awaitMove','correct','opponent'].includes(state);next.textContent=state==='wrong'?'Попробовать снова':state==='success'?'Продолжить разбор':'Продолжить';
+  $('[data-practice-message]').textContent=({awaitMove:`Найдите мат в ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))} ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))===1?'ход':'хода'}.`,checking:'Проверяем продолжение…',unverified:'Не удалось подтвердить мат за отведённое время. Попробуйте ещё раз или выберите другой ход.',wrong:'Этот ход не приводит к мату за отведённое число ходов. Попробуйте другое продолжение.',correct:'',opponent:'Соперник отвечает…',success:'Мат! Вы нашли решение.'})[state];
+  const next=$('[data-practice-continue]');next.hidden=['awaitMove','checking','correct','opponent'].includes(state);next.textContent=['wrong','unverified'].includes(state)?'Попробовать снова':state==='success'?'Продолжить разбор':'Продолжить';
   $('#analysis-practice-tools [data-analysis-return]').hidden=state==='success';
   const promotion=$('[data-practice-promotion]');promotion.hidden=!promotions.length;
   promotion.innerHTML=promotions.length?`<p>Выберите фигуру:</p>${promotions.map(move=>`<button type="button" class="quiet" data-practice-promote="${move.from+move.to+move.promotion}">${({q:'Ферзь',r:'Ладья',b:'Слон',n:'Конь'})[move.promotion]}</button>`).join('')}`:'';
  };
  const startExercise=()=>{
   const data=analysis.moves[shown-1]?.exercise;if(!data||disposed)return;
-  playback.pause();transition++;cancelAnimations();exercise=createMateExercise(data);selected=null;promotions=[];
+  playback.pause();transition++;cancelAnimations();exercise?.dispose?.();exercise=createMateExercise(data);selected=null;promotions=[];
   delete root.dataset.variation;setMode('practice');renderExercise();
   root.querySelector(`[data-square="${exercise.game.moves({verbose:true})[0]?.from}"]`)?.focus({preventScroll:true});
  };
  const submitExercise=async token=>{
   if(!exercise)return;const owned=exercise,generation=++transition,before=snapshotBoard(root);
-  exercise.submit(token);selected=null;promotions=[];renderExercise();
+  const result=exercise.submit(token);selected=null;promotions=[];renderExercise();
+  await result;if(disposed||exercise!==owned||generation!==transition)return;renderExercise();
   $('[data-practice-continue]').disabled=true;
   await animateTransition(root,[owned.game.history({verbose:true}).at(-1)],before);
   if(disposed||exercise!==owned||generation!==transition)return;
@@ -108,7 +111,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   if(disposed)return;
   $('#analysis-insight').inert=true;
   if(mode!=='game')board(positionAt(game,shown));
-  exercise=null;selected=null;promotions=[];setMode('game');delete $('#match-surface').dataset.practice;
+  exercise?.dispose?.();exercise=null;selected=null;promotions=[];setMode('game');delete $('#match-surface').dataset.practice;
   const token=++transition;cancelAnimations();clearMarkers();delete root.dataset.variation;root.setAttribute('aria-label','Доска: разбор партии');
   const before=snapshotBoard(root),steps=historyMoves(game,shown,ply);shown=ply;
   onPly(ply);
@@ -120,7 +123,10 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   if(animate)await animateTransition(root,steps,before);
   if(disposed||token!==transition)return;
   $('#analysis-insight').inert=false;
-  const move=analysis.moves[ply-1];$('#analysis-insight').innerHTML=analysisInsight(move);marker(move);
+  const move=analysis.moves[ply-1],card=analysisInsight(move);
+  const boundary=ply===0?'<h2>Начало партии</h2><p>Переходите по ходам или выбирайте отметки на шкале, чтобы посмотреть разбор.</p>':ply===analysis.totalPlies?`<div class="analysis-boundary"><h2>Партия завершена</h2><p>${esc([entry.result,matchEndReason(game,entry.result==='Поражение'&&!game.isGameOver())].filter(Boolean).join(' · '))}</p>${analysis.status==='complete'&&!analysis.moves.some(isImportantInsight)?'<p>В этой партии анализ не обнаружил заметных ошибок.</p>':''}</div>`:'';
+  $('#analysis-insight').innerHTML=card+boundary;marker(move);
+  $('#history-markers').querySelectorAll('[data-insight-ply]').forEach(button=>button.setAttribute('aria-current',String(Number(button.dataset.insightPly)===ply)));
  };
  const playback=createAnalysisPlayback({analysis,showPly,onChange:({state})=>{
   if(disposed)return;$('#replay-start').hidden=state==='playing';$('#replay-pause').hidden=state!=='playing';
@@ -133,10 +139,14 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
  $('#history-back').onclick=()=>void playback.seek(playback.getSnapshot().ply-1);
  $('#history-forward').onclick=()=>void playback.seek(playback.getSnapshot().ply+1);
  $('#history-live').onclick=()=>void playback.seek(analysis.totalPlies);
+ const marks=$('#history-markers');marks.hidden=false;
+ marks.innerHTML=analysis.moves.filter(isImportantInsight).map(move=>`<button type="button" class="history-marker" data-insight-ply="${move.ply}" data-quality="${esc(move.highlight||move.quality)}" style="--marker-position:${move.ply/analysis.totalPlies*100}%" aria-label="Разбор хода ${Math.ceil(move.ply/2)}: ${esc(qualityLabel[move.quality]||'Важный момент')}" title="Ход ${Math.ceil(move.ply/2)} · ${esc(qualityLabel[move.quality]||'Важный момент')}"></button>`).join('');
+ marks.onclick=event=>{const button=event.target.closest('[data-insight-ply]');if(button)void playback.seek(Number(button.dataset.insightPly));};
  const disposeSlider=bindHistorySlider($('#history-slider'),ply=>void playback.seek(ply));
  $('#replay-start').onclick=()=>void playback.play();$('#replay-pause').onclick=playback.pause;
  $('#moves').onclick=event=>{const button=event.target.closest('[data-analysis-ply]');if(button)void playback.seek(Number(button.dataset.analysisPly));};
  $('#analysis-insight').onclick=event=>{
+  const expand=event.target.closest('[data-analysis-expand]');if(expand){showVariation(expand.dataset.analysisExpand,0,true);return;}
   const button=event.target.closest('[data-analysis-line]');if(button){if(mode==='hint')void showPly(shown,false);else showVariation(button.dataset.analysisLine);return;}
   if(event.target.closest('[data-analysis-practice]'))startExercise();
  };
@@ -173,5 +183,5 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
  const visibility=()=>{if(document.hidden)playback.pause();};
  $('#play').addEventListener('keydown',keyboard);document.addEventListener('visibilitychange',visibility);
  void playback.seek(initialPly);$('#replay-start').hidden=false;
- return ()=>{disposed=true;transition++;disposeSlider();exercise=null;root.onclick=null;$('#analysis-board-tools').onclick=null;playback.dispose();cancelAnimations();$('#play').removeEventListener('keydown',keyboard);document.removeEventListener('visibilitychange',visibility);};
+ return ()=>{disposed=true;transition++;disposeSlider();marks.hidden=true;marks.innerHTML='';marks.onclick=null;exercise?.dispose?.();exercise=null;root.onclick=null;$('#analysis-board-tools').onclick=null;playback.dispose();cancelAnimations();$('#play').removeEventListener('keydown',keyboard);document.removeEventListener('visibilitychange',visibility);};
 };

@@ -13,5 +13,5 @@ export const engineLine = (row,rootSide,playerColor) => ({
  move:row.move,rawScore:{type:row.scoreType,value:row.scoreValue},
  score:{type:row.scoreType,value:(rootSide===playerColor?1:-1)*row.scoreValue},
  ...(row.wdl?{wdl:normalizeWdl(row.wdl,rootSide,playerColor)}:{}),
- expectedScorePlayer:expectedScore(row,rootSide,playerColor),pv:(row.pv||[row.move]).slice(0,4),depth:row.depth,nodes:row.nodes
+ expectedScorePlayer:expectedScore(row,rootSide,playerColor),pv:(row.pv||[row.move]).slice(0,row.scoreType==='mate'?8:4),depth:row.depth,nodes:row.nodes
 });

@@ -1,13 +1,12 @@
-import {escapeHTML as esc} from '../primitives.js?v=78';
-import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=78';
-import {humanMove} from './move-list.js?v=78';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=78';
+import {escapeHTML as esc} from '../primitives.js?v=80';
+import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=80';
+import {humanMove} from './move-list.js?v=80';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=80';
 export {isImportantInsight};
-export const visibleVariation = move => {
+export const visibleVariation = (move,expanded=false) => {
  const line=move?.bestLine;if(!line)return {pv:[],san:[]};
- const contextual=line.score?.type==='mate'||['mate_opportunity','missed_mate','missed_tactic','lost_material','hung_piece'].includes(move.reason);
  const mateEnd=line.pvSan?.findIndex(san=>san.endsWith('#'))??-1;
- const length=contextual?(mateEnd>=0?mateEnd+1:4):1;
+ const length=expanded?(mateEnd>=0?mateEnd+1:Math.min(line.pv?.length||1,4)):1;
  return {pv:(line.pv||[line.move]).slice(0,length),san:(line.pvSan||[line.san||line.move]).slice(0,length)};
 };
 export const insightLines = move => {
@@ -22,5 +21,5 @@ export const analysisInsight = move => {
  const exercise=move.exercise?'<button type="button" class="primary analysis-variation" data-analysis-practice>Найти мат</button>':'';
  // Mate exercises offer practice only; do not disclose their saved solution.
  const recommendation=!move.exercise&&line?`<button type="button" class="quiet analysis-variation" data-analysis-line="${esc(line.move)}" aria-pressed="false">Подсказка</button>`:'';
- return `<div class="analysis-insight-heading"><h2 data-quality="${esc(move.highlight||move.quality)}">${esc(label)}</h2>${exercise||recommendation}</div><p>Вы сыграли: <strong>${esc(humanMove(move.playedSan))}</strong></p>${explanation?`<p>${esc(explanation)}</p>`:''}`;
+ return `<div class="analysis-insight-heading"><h2 data-quality="${esc(move.highlight||move.quality)}">${esc(label)}</h2><div class="analysis-insight-actions">${exercise||recommendation}${!move.exercise&&line?.pv?.length>1?`<button type="button" class="quiet analysis-variation" data-analysis-expand="${esc(line.move)}" hidden>Вариант</button>`:''}</div></div><p>Вы сыграли: <strong>${esc(humanMove(move.playedSan))}</strong></p>${explanation?`<p>${esc(explanation)}</p>`:''}`;
 };

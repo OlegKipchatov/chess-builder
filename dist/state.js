@@ -1,9 +1,9 @@
-import {restoreAnalysis} from './analysis/analysis-storage.js?v=78';
-import {initialActivity, normalizeActivity} from './activity.js?v=78';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=78';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=78';
-import {Chess} from './chess.js?v=78';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=78';
+import {restoreAnalysis} from './analysis/analysis-storage.js?v=80';
+import {initialActivity, normalizeActivity} from './activity.js?v=80';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=80';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=80';
+import {Chess} from './chess.js?v=80';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=80';
 export const KEY = 'chess-vault-v3';
 export const createRecordId = () => {
   if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
@@ -47,6 +47,7 @@ export const migrateState = input => {
   next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
   next.game.engineFailure = typeof input.game?.engineFailure?.fen==='string'&&typeof input.game.engineFailure.message==='string'?{fen:input.game.engineFailure.fen.slice(0,120),message:input.game.engineFailure.message.slice(0,240)}:null;
   next.game.engineProfile = validArchivedProfile(input.game?.engineProfile)?{...input.game.engineProfile}:null;
+  next.game.startedAt = typeof input.game?.startedAt==='string'?input.game.startedAt:'';
   next.game.started = typeof input.game?.started === 'boolean' ? input.game.started : hasMoves(next.game.pgn);
   next.game.equipped = validEquipment(input.game?.equipped || next.equipped,next.owned);
   next.settings = {mode:'bot',difficulty:'adaptive'};
@@ -60,7 +61,7 @@ export const migrateState = input => {
     ...(entry.counted===false?{counted:false}:{}),
     ...(typeof entry.engineFailure?.fen==='string'&&typeof entry.engineFailure.message==='string'?{engineFailure:{fen:entry.engineFailure.fen.slice(0,120),message:entry.engineFailure.message.slice(0,240)}}:{}),
     ...(entry.rewardBreakdown?.rewardVersion==='game-economy-v2'?{rewardBreakdown:structuredClone(entry.rewardBreakdown)}:{}),
-    ...(restoreAnalysis(entry.analysis,entry)?{analysis:restoreAnalysis(entry.analysis,entry)}:{}),id:entry.id,pgn:entry.pgn,engineProfile:validArchivedProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
+    ...(restoreAnalysis(entry.analysis,entry)?{analysis:restoreAnalysis(entry.analysis,entry)}:{}),id:entry.id,pgn:entry.pgn,startedAt:typeof entry.startedAt==='string'?entry.startedAt:'',engineProfile:validArchivedProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
     mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
     result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),
     playerRating:integer(entry.playerRating,1000),opponentRating:Number.isSafeInteger(entry.opponentRating)?entry.opponentRating:null,

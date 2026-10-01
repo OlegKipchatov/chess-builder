@@ -1,9 +1,9 @@
-import {targetFor} from './cognitive-model.js?v=78';
+import {targetFor} from './cognitive-model.js?v=80';
 // Internal progression scale, not a calibrated human Elo rating.
-export const initialRating = () => ({value:1000,games:0,lastDelta:0});
+export const initialRating = () => ({value:700,games:0,lastDelta:0});
 const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export const normalizeRating = rating => ({
-  value:Number.isSafeInteger(rating?.value)?clamp(rating.value,100,2400):1000,
+  value:Number.isSafeInteger(rating?.value)?clamp(rating.value,100,2400):700,
   games:Number.isSafeInteger(rating?.games)&&rating.games>=0?rating.games:0,
   lastDelta:Number.isSafeInteger(rating?.lastDelta)?clamp(rating.lastDelta,-64,64):0
 });

@@ -4,13 +4,13 @@ export const explanationFor = move => {
  if(move.mateTransition==='already_lost')return 'Форсированный мат уже существовал до этого хода. Этот ход не изменил исход.';
  if(move.reason==='allowed_mate')return 'После этого хода соперник получил форсированный мат.';
  if(['missed_mate','mate_opportunity'].includes(move.reason)){
-  const opportunity=move.shortMate?.verified?(move.shortMate.moves===2?'Можно было поставить мат в два хода.':'Можно было поставить мат в один ход.'):'Было продолжение с форсированным матом.';
+  const opportunity=move.shortMate?.verified?`Можно было поставить мат в ${['','один ход','два хода','три хода','четыре хода'][move.shortMate.moves]}.`:'Было продолжение с форсированным матом.';
   return opportunity+(move.reason==='mate_opportunity'?' Сыгранный ход сохраняет выигрышную позицию.':' Сыгранный ход снизил шансы на победу.');
  }
  if(move.reason==='found_mate')return 'Вы нашли точное продолжение с форсированным матом.';
  if(move.reason==='only_move')return 'Вы нашли точное решение. Другие проверенные продолжения заметно хуже.';
  if(move.reason==='hung_piece')return 'После этого хода соперник может взять вашу фигуру и выиграть материал.';
- if(move.reason==='lost_material')return 'Этот ход позволяет сопернику выиграть материал в показанном варианте.';
+ if(move.reason==='lost_material')return 'Этот ход позволяет сопернику выиграть материал.';
  if(move.reason==='missed_capture')return 'Здесь можно было выиграть материал взятием.';
  if(move.reason==='missed_tactic')return 'Короткая тактическая последовательность позволяла получить больше материала.';
  if(move.reason==='promotion')return 'Пешка превратилась в новую фигуру с сохранением сильной позиции.';

@@ -1,6 +1,6 @@
-import {playStyleName} from './play-style-config.js?v=78';
-import {decisionModeFor} from './cognitive-model.js?v=78';
-import {Chess} from './chess.js?v=78';
+import {playStyleName} from './play-style-config.js?v=80';
+import {decisionModeFor} from './cognitive-model.js?v=80';
+import {Chess} from './chess.js?v=80';
 const clean = value => String(value).replace(/[\r\n\\"]/g,' ').slice(0,240);
 export const exportPgn = (game,config={},error=null) => {
  error??=config.engineFailure;
@@ -10,7 +10,9 @@ export const exportPgn = (game,config={},error=null) => {
  const opponentRating=config.rating?.opponent??config.opponentRating;
  const winner=config.result==='Победа'?color:config.result==='Поражение'||config.resigned?(color==='w'?'b':'w'):copy.isCheckmate()?(copy.turn()==='w'?'b':'w'):null;
  const result=winner?(winner==='w'?'1-0':'0-1'):config.result==='Ничья'||copy.isDraw()?'1/2-1/2':'*';
- const headers={...(config.counted===false?{Termination:'abandoned'}:{}),Event:'GachaChess',Site:'https://olegkipchatov.github.io/chess-builder/',White:color==='w'?'Player':botName,Black:color==='b'?'Player':botName,Result:result,GachaChessVersion:'0.5',CurrentFEN:copy.fen()};
+ const stamp=[config.startedAt,config.finishedAt].map(value=>value?new Date(value):null).find(date=>date&&Number.isFinite(date.getTime()));
+ const date=stamp?`${stamp.getFullYear()}.${String(stamp.getMonth()+1).padStart(2,'0')}.${String(stamp.getDate()).padStart(2,'0')}`:null;
+ const headers={...(date?{Date:date}:{}),...(config.counted===false?{Termination:'abandoned'}:{}),Event:'GachaChess',Site:'https://olegkipchatov.github.io/chess-builder/',White:color==='w'?'Player':botName,Black:color==='b'?'Player':botName,Result:result,GachaChessVersion:'0.5',CurrentFEN:copy.fen()};
  if(playerRating!=null)headers[color==='w'?'WhiteElo':'BlackElo']=playerRating;
  if(opponentRating!=null)headers[color==='w'?'BlackElo':'WhiteElo']=opponentRating;
  const profile=config.engineProfile;

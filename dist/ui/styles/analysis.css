@@ -57,3 +57,5 @@
 .analysis-insight-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .analysis-insight-heading h2{margin:0;min-width:0;flex:1}
 .analysis-insight-heading .analysis-variation{flex:none;white-space:nowrap;text-align:center;font-size:var(--type-secondary)}
+
+.history-timeline{grid-column:1/-1;width:100%;min-width:0}.history-timeline .history-slider{width:100%}.history-markers{position:relative;height:24px;margin:0 10px;touch-action:manipulation}.history-marker{position:absolute;left:var(--marker-position);top:0;transform:translateX(-50%);width:16px;min-width:0;height:24px;min-height:0;padding:0;background:none;border:0;border-radius:0}.history-marker::after{content:"";display:block;width:4px;height:8px;border-radius:2px;background:currentColor;margin:auto}.history-marker[aria-current=true]::after{height:12px;outline:1px solid currentColor;outline-offset:2px}.analysis-boundary:not(:first-child){margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}.analysis-insight-actions{flex-wrap:nowrap;gap:6px}

@@ -16,8 +16,8 @@ test('Cards and autoplay pauses share the same definition of importance',()=>{
 test('Ordinary recommendations show one move; mate sequence stops at checkmate',()=>{
  const bestLine={...line,pv:['a','b','c','d'],pvSan:['Qa5+','Kd3','Qc3#','extra']};
  assert.deepEqual(visibleVariation({...move,bestLine}).pv,['a']);
- assert.deepEqual(visibleVariation({...move,bestLine,reason:'mate_opportunity'}).pv,['a','b','c']);
- assert.deepEqual(visibleVariation({...move,bestLine:{...bestLine,pvSan:['a','b','c','d']},reason:'missed_tactic'}).pv,['a','b','c','d']);
+ assert.deepEqual(visibleVariation({...move,bestLine,reason:'mate_opportunity'},true).pv,['a','b','c']);
+ assert.deepEqual(visibleVariation({...move,bestLine:{...bestLine,pvSan:['a','b','c','d']},reason:'missed_tactic'}).pv,['a']);
 });
 test('History slider covers initial and final position with accessible progress',()=>{
  const attrs={},slider={setAttribute:(key,value)=>attrs[key]=value,style:{setProperty:(key,value)=>attrs[key]=value}};

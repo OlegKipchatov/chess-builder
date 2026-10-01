@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 export const testAnalysisLearning = async (page,url) => {
  const saved=await page.evaluate(async()=>{
   const previous=localStorage.getItem('chess-vault-v3'),state=JSON.parse(previous);
-  const {Chess}=await import('./chess.js?v=78');
-  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=78');
-  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=78');
+  const {Chess}=await import('./chess.js?v=80');
+  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=80');
+  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=80');
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
   const game=new Chess();game.loadPgn(pgn);
   const entry={...state.archive[0],id:'training-fixture',pgn,playerColor:'b'};
@@ -36,7 +36,11 @@ export const testAnalysisLearning = async (page,url) => {
  const oneLine=async selector=>assert.equal(await page.locator(selector).evaluate(button=>{const range=document.createRange();range.selectNodeContents(button);return range.getClientRects().length===1;}),true,'Action label occupies one line');
  const seek=async value=>{await slider.evaluate((node,value)=>{node.value=String(value);node.dispatchEvent(new Event('input',{bubbles:true}));},value);await page.waitForFunction(value=>document.querySelector('#history-position').textContent===`${value} / 30`,value);};
  await slider.press('End');assert.equal(await page.locator('#history-position').innerText(),'30 / 30');
+ assert.match(await page.locator('#analysis-insight').innerText(),/Партия завершена/);
  await slider.press('Home');assert.equal(await page.locator('#history-position').innerText(),'0 / 30');
+ assert.match(await page.locator('#analysis-insight').innerText(),/Начало партии/);
+ await page.locator('[data-insight-ply="8"]').click();assert.equal(await page.locator('#history-position').innerText(),'8 / 30');
+ await slider.press('Home');
  await slider.press('ArrowRight');assert.equal(await page.locator('#history-position').innerText(),'1 / 30');
  await slider.evaluate(node=>{node.dispatchEvent(new PointerEvent('pointerdown'));node.value='3.4';node.dispatchEvent(new Event('input'));});
  await page.waitForFunction(()=>document.querySelector('#history-position').textContent==='3 / 30');
@@ -109,6 +113,8 @@ export const testAnalysisLearning = async (page,url) => {
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const after=await page.evaluate(()=>({y:scrollY,top:document.querySelector('#board').getBoundingClientRect().top}));
  assert.ok(Math.abs(before.y-after.y)<=1&&Math.abs(before.top-after.top)<=1,'Opening a variation must not move the page or board');
+ assert.equal(await page.locator('#match-surface').getAttribute('data-mode'),'hint');
+ await page.locator('[data-analysis-expand]').evaluate(button=>button.click());
  assert.equal(await page.locator('[data-variation-next]').evaluate(button=>getComputedStyle(button).touchAction),'manipulation');
  assert.equal(await page.locator('#board .analysis-arrow').count(),1);
  for(const width of [320,390,1280]){

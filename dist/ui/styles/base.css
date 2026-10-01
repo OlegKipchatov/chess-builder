@@ -22,3 +22,8 @@ body{font-variant-numeric:tabular-nums}
 .stable-label>.control-label{grid-area:1 / 1;min-width:0}
 /* Suppress double-tap zoom on controls without disabling pinch zoom or scrolling. */
 button,a,input[type=range],select{touch-action:manipulation}
+
+button,[role="button"],.history-controls,.actions,.pgn-actions{touch-action:manipulation}
+input:not([type="range"]),textarea{font-size:max(16px,1rem)}
+
+body{touch-action:manipulation}

@@ -41,3 +41,8 @@ dialog.is-closing::backdrop{animation:backdrop-exit var(--motion-exit) var(--mot
 
 .match-end-reason{font-size:var(--type-secondary);color:var(--muted);margin:-4px 0 12px}
 #modal-content > button.primary{display:block;width:100%}
+
+textarea.pgn-text{font-size:16px;line-height:1.5}.pgn-actions{display:flex;justify-content:space-between;gap:12px}.pgn-actions .icon-button{flex:1;min-width:44px;min-height:44px}.pgn-actions svg{width:24px;height:24px}.pgn-feedback{min-height:1.5em;font-size:var(--type-secondary);margin:8px 0}.pgn-feedback[data-error=true]{color:var(--negative)}.pgn-import-actions{display:flex;gap:8px;margin-bottom:16px}.pgn-import-actions button{flex:1;min-height:44px}#import-pgn-form label{display:block;margin-bottom:8px}
+
+/* Static dialog headings receive initial focus without a control-like outline. */
+#modal-content > h2[tabindex="-1"]:focus{outline:none}

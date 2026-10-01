@@ -1,9 +1,13 @@
-import {Chess} from '../chess.js?v=78';
+import {Chess} from '../chess.js?v=80';
 export const uci = move => move.from+move.to+(move.promotion||'');
 // Verify a short mate against every legal defence, not only the principal variation.
 // Yield between replies so closing/cancelling remains responsive.
 export const verifyShortMate = async (fen,line,check=()=>{}) => {
- if(line?.score.type!=='mate'||![1,2].includes(line.score.value))return null;
+ if(line?.score.type!=='mate'||![1,2,3,4].includes(line.score.value))return null;
+ if(line.score.value>=3){
+  check();const proof=new Chess(fen);try{for(const token of line.pv||[])proof.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]});}catch{return null;}
+  return proof.isCheckmate()&&proof.history().length<=2*line.score.value-1?{moves:line.score.value,verified:true}:null;
+ }
  const game=new Chess(fen),token=line.move;
  try {game.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]});} catch {return null;}
  if(game.isCheckmate())return {moves:1,verified:true};
@@ -21,7 +25,7 @@ export const verifyShortMate = async (fen,line,check=()=>{}) => {
 export const material = (game,color) => game.board().flat().filter(Boolean).reduce((sum,piece)=>sum+({p:1,n:3,b:3,r:5,q:9,k:0}[piece.type])*(piece.color===color?1:-1),0);
 export const describeLine = (fen,line,color) => {
  const game=new Chess(fen),before=material(game,color),san=[],moves=[];let first=null;
- try {for(const token of line.pv.slice(0,4)){const move=game.move({from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})});first ||= move;moves.push(move);san.push(move.san);}}
+ try {for(const token of line.pv.slice(0,line.score?.type==='mate'?8:4)){const move=game.move({from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})});first ||= move;moves.push(move);san.push(move.san);}}
  catch {return {valid:false,san:[],delta:0,first:null};}
  return {valid:!!san.length,san,delta:material(game,color)-before,first,moves};
 };

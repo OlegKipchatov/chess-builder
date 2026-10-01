@@ -132,3 +132,24 @@ Selecting the suggested line shows the pre-move board and one next-move arrow.
 Variation controls step through its saved PV (including the mating position),
 without invoking Stockfish or changing game history. Return/history controls
 restore the actual game. Regression coverage includes the supplied Reina PGN.
+
+## v79: review and practice
+
+Review starts with an introduction and ends with the recorded result and available
+termination reason. A final-ply insight remains visible alongside the ending.
+Timeline markers, autoplay stops and cards share `isImportantInsight`.
+Recommendations show one move first; an explicit `Вариант` expands the continuation.
+
+Confirmed mate opportunities now cover 1–4 attacking moves. Engine PVs retain up to
+8 plies for mate evidence. Mate-in-1/2 exercises retain their precomputed proof tree.
+Mate-in-3/4 practice evaluates the position after each attempted move in a separate
+local Stockfish client (MultiPV=1, 300k nodes). Negative mate scores are interpreted
+from the defending side, checked against the remaining move budget, and yield the
+best defence. Alternatives are accepted by the same criterion. Inconclusive searches
+are reported as unverified, not incorrect. Exiting practice terminates its client
+and discards late results. Ordinary saved review never starts this client.
+
+The cache and module graph are v79; analysis schema is post-game-analysis-v4.
+PGN import is ephemeral, single-game and read-only; it does not offer analysis or
+alter the user's personal archive/progress. Date is preserved independently of the
+export operation. The initial internal rating for new players is 700.

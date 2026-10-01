@@ -1,30 +1,32 @@
-import {analyzeGame} from './analysis/analysis-service.js?v=78';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=78';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=78';
-import {analyzeReward} from './economy-analysis.js?v=78';
-import {applyQualityReward} from './reward-quality.js?v=78';
-import {motionDuration, motionEasing} from './ui/motion.js?v=78';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=78';
-import {mountAppShell} from './ui/shell.js?v=78';
-import {statCard,plural} from './ui/primitives.js?v=78';
-import {createDialog,createToast} from './ui/dialog.js?v=78';
-import {renderArchiveList} from './ui/components/archive-list.js?v=78';
-import {moveList} from './ui/components/move-list.js?v=78';
-import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=78';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=78';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=78';
-import {closeActivityDay, calendarHTML} from './activity.js?v=78';
-import {createBotClient} from './bot-client.js?v=78';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=78';
-import {signedDelta} from './rating.js?v=78';
-import {Chess} from './chess.js?v=78';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=78';
-import {openChest, craftItem} from './economy.js?v=78';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=78';
-import {pieceSVG, itemPreview} from './pieces.js?v=78';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=78';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=78';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=78';
+import {analyzeGame} from './analysis/analysis-service.js?v=80';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=80';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=80';
+import {analyzeReward} from './economy-analysis.js?v=80';
+import {applyQualityReward} from './reward-quality.js?v=80';
+import {motionDuration, motionEasing} from './ui/motion.js?v=80';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=80';
+import {mountAppShell} from './ui/shell.js?v=80';
+import {statCard,plural} from './ui/primitives.js?v=80';
+import {createDialog,createToast} from './ui/dialog.js?v=80';
+import {renderArchiveList} from './ui/components/archive-list.js?v=80';
+import {moveList} from './ui/components/move-list.js?v=80';
+import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=80';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=80';
+import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=80';
+import {importPgnDialog} from './ui/dialog-content.js?v=80';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=80';
+import {closeActivityDay, calendarHTML} from './activity.js?v=80';
+import {createBotClient} from './bot-client.js?v=80';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=80';
+import {signedDelta} from './rating.js?v=80';
+import {Chess} from './chess.js?v=80';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=80';
+import {openChest, craftItem} from './economy.js?v=80';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=80';
+import {pieceSVG, itemPreview} from './pieces.js?v=80';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=80';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=80';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=80';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -90,7 +92,7 @@ $('#archive-analysis').onclick=()=>void openAnalysis(displayMatch?.config.id);
 let lastBotError=null;
 const exportViewedMatch = () => {
  const config=viewedConfig(),error=config.engineFailure||(!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null);
- const pgn=exportPgn(viewedGame(),config,error);
+ const pgn=config.imported?viewedGame().pgn():exportPgn(viewedGame(),config,error);
  showModal(exportPgnDialog(pgn));
 };
 let pendingActivity=null;
@@ -263,16 +265,18 @@ const renderGameInfo = () => {
   const points=materialBalance(positionAt(viewedGame(),reviewCursor),color);
   const pointsText=`${signedDelta(points)} ${plural(points,['очко','очка','очков'])}`;
   for(const node of [$('#match-points'),$('#match-settings')])node.dataset.balance=points>0?'positive':points<0?'negative':'zero';
-  $('#player-name').textContent=config.mode==='bot'?'Вы':'Игрок 1';
+  $('#player-name').textContent=config.imported?config.white:config.mode==='bot'?'Вы':'Игрок 1';
   $('#opponent-avatar').innerHTML=pieceSVG('n',color==='w'?'b':'w');
   $('#player-avatar').innerHTML=pieceSVG('p',color);
-  $('#opponent').textContent=config.mode==='bot'?`ИИ · ${playStyleName(config.engineProfile?.profile)}`:'Игрок 2';
+  $('#opponent').textContent=config.imported?config.black:config.mode==='bot'?`ИИ · ${playStyleName(config.engineProfile?.profile)}`:'Игрок 2';
   $('#match-points').textContent=pointsText;
   if(state.game.started&&ended()&&!$('#match-surface').hidden){
     $('#resign').disabled=true;renderHistory();return;
   }
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
+  $('#archive-return').setAttribute('aria-label',archiveReturnTarget==='profile'?'В профиль':archiveReturnTarget==='play'?'К игре':'К истории партий');
+  $('#archive-return').title=$('#archive-return').getAttribute('aria-label');
   const archived=displayMatch?.kind==='archive';
   $('#archive-heading-actions').hidden=!archived;
   $('#archive-review-actions').hidden=analysisComplete||!archived||!eligibleEntry(displayMatch.config);
@@ -536,10 +540,28 @@ $('#match-archive').addEventListener('click',event=>{
 });
 $('#archive-return').onclick=()=>{
  if(archiveReturnTarget==='play'){stopAnalysis();stopReplay();displayMatch=null;reviewCursor=null;changeTab('play');render();$('#start-game').focus({preventScroll:true});}
- else changeTab('archive');
+ else changeTab(archiveReturnTarget==='profile'?'profile':'archive');
 };
 $('#export-pgn').onclick=exportViewedMatch;
+$('#open-pgn').onclick=()=>{if(!active()&&!pendingResult)showModal(importPgnDialog());};
+const openImportedPgn = async text => {
+ try {
+  const imported=importPgn(text);
+  if(active()||pendingResult)return;
+  await showModal.close();stopAnalysis();stopReplay();archiveReturnContext=null;archiveReturnTarget='profile';
+  displayMatch={...imported,kind:'archive'};reviewCursor=0;selected=null;changeTab('play');render();
+  $('#archive-return').setAttribute('aria-label','В профиль');$('#archive-return').title='В профиль';
+  $('#match-title').tabIndex=-1;$('#match-title').focus({preventScroll:true});
+ }catch(error){const feedback=$('#pgn-import-error');if(feedback)feedback.textContent=error.message;}
+};
+$('#modal-content').addEventListener('change',async event=>{
+ if(event.target.id!=='pgn-file')return;
+ const file=event.target.files?.[0];if(!file)return;
+ if(file.size>MAX_PGN_BYTES){$('#pgn-import-error').textContent='Файл слишком большой. Максимум — 512 КБ.';return;}
+ try {await openImportedPgn(await file.text());}catch{$('#pgn-import-error').textContent='Не удалось прочитать файл.';}
+});
 $('#modal-content').addEventListener('submit',event=>{
+  if(event.target.id==='import-pgn-form'){event.preventDefault();void openImportedPgn($('#import-pgn-text').value);return;}
   if(active()||event.target.id!=='save-set-form')return;
   event.preventDefault();
   const name=$('#set-name').value.trim();
@@ -550,6 +572,8 @@ $('#modal-content').addEventListener('submit',event=>{
 $('#modal-content').addEventListener('click',async event=>{
   const button=event.target.closest('button');
   if(!button)return;
+  if(button.hasAttribute('data-pgn-paste')){$('#import-pgn-form').hidden=false;$('#import-pgn-text').focus({preventScroll:true});}
+  if(button.hasAttribute('data-pgn-file'))$('#pgn-file').click();
   if(button.dataset.postAnalysis){postGameAnalysisId=button.dataset.postAnalysis;button.disabled=true;await showModal.close();return;}
   if(button.dataset.promote&&promotion){const move={...promotion,promotion:button.dataset.promote};await showModal.close();void applyMove(move);}
   if(button.dataset.confirmDeleteSet&&!active()){
@@ -571,7 +595,17 @@ $('#modal-content').addEventListener('click',async event=>{
   if(button.hasAttribute('data-abort-failed'))abortAfterFailure();
   if(button.hasAttribute('data-download-pgn'))downloadPgn($('#pgn-text').value);
   if(button.hasAttribute('data-share-pgn'))void sharePgn($('#pgn-text').value).catch(()=>toast('Не удалось поделиться PGN. Скачайте файл или скопируйте текст.',{error:true}));
-  if(button.hasAttribute('data-copy-pgn')){const field=$('#pgn-text');field.focus();field.select();if(navigator.clipboard?.writeText)navigator.clipboard.writeText(field.value).then(()=>toast('PGN скопирован')).catch(()=>toast('Текст выделен. Выберите «Копировать».'));else toast('Текст выделен. Выберите «Копировать».');}
+  if(button.hasAttribute('data-copy-pgn')){
+   const field=$('#pgn-text'),feedback=$('#pgn-feedback');button.copyIcon??=button.innerHTML;const original=button.copyIcon;clearTimeout(button.copyTimer);button.disabled=true;
+   try {
+    if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(field.value);
+    else {field.focus({preventScroll:true});field.select();if(!document.execCommand('copy'))throw Error('Clipboard unavailable');button.focus({preventScroll:true});}
+    feedback.dataset.error='false';feedback.textContent='PGN скопирован';
+    button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';
+    button.copyTimer=setTimeout(()=>{if(button.isConnected)button.innerHTML=original;},2000);
+   }catch{button.innerHTML=original;feedback.dataset.error='true';feedback.textContent='Не удалось скопировать. Выделите текст и выберите «Копировать».';}
+   finally{button.disabled=false;}
+  }
   if(button.hasAttribute('data-export-pgn'))void exportViewedMatch();
   if(button.hasAttribute('data-retry-bot')){showModal.close();requestBot();}
 });
@@ -664,32 +698,42 @@ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();ins
 window.addEventListener('appinstalled',()=>{$('#install').hidden=true;toast('Приложение установлено');});
 if(matchMedia('(display-mode: standalone)').matches)$('#install').hidden=true;
 window.addEventListener('storage',event=>{if(event.key===KEY){location.reload();}});
-let refreshPending=false,refreshing=false;
-const applyPendingUpdate = () => {
-  if(!refreshPending||refreshing||active()||pendingResult||animating||$('#modal').open)return;
-  refreshing=true;location.reload();
+let refreshPending=false,refreshing=false,updateAccepted=false,firstIsolationPending=false,updateRegistration=null;
+const syncUpdateButtons = () => {
+ for(const id of ['#update-app','#profile-update-app'])$(id).hidden=!(refreshPending||updateRegistration?.waiting);
 };
+const applyPendingUpdate = () => {
+ if(!refreshPending||refreshing||(!updateAccepted&&!firstIsolationPending)||active()||pendingResult||animating||$('#modal').open)return;
+ refreshing=true;location.reload();
+};
+const acceptUpdate = () => {
+ if(active()||pendingResult||analysisController||disposeAnalysis){toast('Завершите партию или выйдите из разбора перед обновлением.');return;}
+ if(!persist(state,!state.game.started))return;
+ updateAccepted=true;
+ if(updateRegistration?.waiting)updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'});
+ else applyPendingUpdate();
+};
+$('#update-app').onclick=acceptUpdate;$('#profile-update-app').onclick=acceptUpdate;
 if('serviceWorker' in navigator){
-  // First control also needs a safe reload to apply the isolation headers for Stockfish.
-  let controlled=!!navigator.serviceWorker.controller;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(controlled||!globalThis.crossOriginIsolated){refreshPending=true;applyPendingUpdate();}
-    controlled=true;
-  });
-  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(registration=>{
-    const activate = () => registration.waiting?.postMessage({type:'ACTIVATE_UPDATE'});
-    activate();
-    registration.addEventListener('updatefound',()=>registration.installing?.addEventListener('statechange',activate));
-    const check = () => {if(!document.hidden){applyPendingUpdate();void registration.update().catch(()=>{});}};
-    document.addEventListener('visibilitychange',check);
-    window.addEventListener('online',check);
-    check();
-  }).catch(()=>toast('Офлайн-режим недоступен. Игра работает при подключении к сети.',{error:true}));
-
+ let controlled=!!navigator.serviceWorker.controller;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  // Only first installation may reload without user consent to enable WASM isolation.
+  if(!controlled&&!globalThis.crossOriginIsolated)firstIsolationPending=true;
+  refreshPending=true;controlled=true;syncUpdateButtons();applyPendingUpdate();
+ });
+ navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(registration=>{
+  updateRegistration=registration;
+  const announce=()=>{syncUpdateButtons();};
+  announce();registration.addEventListener('updatefound',()=>registration.installing?.addEventListener('statechange',announce));
+  const check=()=>{if(!document.hidden){applyPendingUpdate();void registration.update().then(announce).catch(()=>{});}};
+  document.addEventListener('visibilitychange',check);window.addEventListener('online',check);
+  $('#modal').addEventListener('dialogdismiss',applyPendingUpdate);check();
+ }).catch(()=>toast('Офлайн-режим недоступен. Игра работает при подключении к сети.',{error:true}));
 }
 $('.brand>span:first-child').innerHTML=pieceSVG('n','w');
 $('#chest-art').innerHTML=pieceSVG('q','w','gold');
 $('#status').setAttribute('aria-live','polite');
+setInterval(()=>{if(firstIsolationPending)applyPendingUpdate();},1000);
 currentScreen=navigationTarget(state,game,location.hash.slice(1)||'play');
 changeTab(currentScreen);render();settle(false);render();requestBot();
 if(storageError)toast('Не удалось прочитать сохранённый прогресс. Данные в браузере не удалены.',{error:true});
