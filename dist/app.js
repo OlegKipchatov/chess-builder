@@ -1,24 +1,24 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=60';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=60';
-import {mountAppShell} from './ui/shell.js?v=60';
-import {statCard,plural} from './ui/primitives.js?v=60';
-import {createDialog,createToast} from './ui/dialog.js?v=60';
-import {renderArchiveList} from './ui/components/archive-list.js?v=60';
-import {moveList} from './ui/components/move-list.js?v=60';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=60';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=60';
-import {closeActivityDay, calendarHTML} from './activity.js?v=60';
-import {createBotClient} from './bot-client.js?v=60';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=60';
-import {signedDelta} from './rating.js?v=60';
-import {Chess} from './chess.js?v=60';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=60';
-import {openChest, craftItem} from './economy.js?v=60';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=60';
-import {pieceSVG, itemPreview} from './pieces.js?v=60';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=60';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=60';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=60';
+import {motionDuration, motionEasing} from './ui/motion.js?v=65';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=65';
+import {mountAppShell} from './ui/shell.js?v=65';
+import {statCard,plural} from './ui/primitives.js?v=65';
+import {createDialog,createToast} from './ui/dialog.js?v=65';
+import {renderArchiveList} from './ui/components/archive-list.js?v=65';
+import {moveList} from './ui/components/move-list.js?v=65';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=65';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=65';
+import {closeActivityDay, calendarHTML} from './activity.js?v=65';
+import {createBotClient} from './bot-client.js?v=65';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=65';
+import {signedDelta} from './rating.js?v=65';
+import {Chess} from './chess.js?v=65';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=65';
+import {openChest, craftItem} from './economy.js?v=65';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=65';
+import {pieceSVG, itemPreview} from './pieces.js?v=65';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves} from './board.js?v=65';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=65';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=65';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -162,8 +162,9 @@ const renderProfile = () => {
 };
 const renderHistory = () => {
   const moves=viewedGame().history(), cursor=(queuedCursor===undefined?reviewCursor:queuedCursor)??moves.length;
-  $('#replay-start').hidden=displayMatch?.kind!=='archive'||replayRunning;
-  $('#replay-pause').hidden=displayMatch?.kind!=='archive'||!replayRunning;
+  const canReplay=displayMatch?.kind==='archive';
+  $('#replay-start').hidden=!canReplay||replayRunning;
+  $('#replay-pause').hidden=!canReplay||!replayRunning;
   $('#replay-start').disabled=!moves.length;
   $('#history-live').setAttribute('aria-label',displayMatch?.kind==='archive'?'К последнему ходу':'К текущему ходу');
   $('#history-back').disabled=cursor===0;
@@ -200,14 +201,14 @@ const renderGameInfo = () => {
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
-  $('#status').textContent=displayMatch?(displayMatch.title||'Партия завершена'):reviewCursor!==null?'Просмотр истории':state.game.started?statusText():'Партия';
+  const shownPosition=positionAt(viewedGame(),reviewCursor);
+  $('#status').textContent=reviewCursor!==null||displayMatch?`${shownPosition.isCheck()?'Шах · ход':'Ход'} ${shownPosition.turn()==='w'?'белых':'чёрных'}`:state.game.started?statusText():'Партия';
   $('#resign').disabled=!active();
   $('#resign').hidden=!active()&&!pendingResult&&!(state.game.started&&ended());
   $('#abort-failed').hidden=!canAbortFailedMatch(state,game)||!!displayMatch;
   $('#abort-failed').disabled=animating;
   $('#retry-failed').hidden=$('#abort-failed').hidden;
   $('#retry-failed').disabled=locked();
-  $('#hint').textContent=displayMatch?'Переключайте ходы стрелками или включите воспроизведение.':reviewCursor!==null?'Вы смотрите прошлую позицию. Вернитесь к текущему ходу, чтобы продолжить.':active()?'Выберите фигуру — покажем доступные ходы.':state.game.started?'Можно просмотреть всю партию или вернуться в профиль.':'';
   $('#game-ready').hidden=hasBoard;
   $('#match-title').textContent=displayMatch?'История партии':active()?'Партия':state.game.started?'Итоги партии':'Игра';
   $('#match-settings').textContent='';
@@ -335,7 +336,7 @@ const stopReplay = () => {
   if($('#replay-start'))renderHistory();
 };
 const replayStep = async () => {
-  if(!replayRunning||displayMatch?.kind!=='archive'||currentScreen!=='play')return;
+  if(!replayRunning||displayMatch?.kind!=='archive'||currentScreen!=='play'||pendingResult)return;
   const total=viewedGame().history().length;
   await showHistory(historyCursor(queuedCursor===undefined?reviewCursor:queuedCursor,1,total),true);
   if(!replayRunning)return;
@@ -343,7 +344,7 @@ const replayStep = async () => {
   replayTimer=setTimeout(()=>void replayStep(),375);
 };
 $('#replay-start').onclick=async()=>{
-  if(replayRunning||displayMatch?.kind!=='archive')return;
+  if(replayRunning||displayMatch?.kind!=='archive'||pendingResult||!viewedGame().history().length)return;
   if(reviewCursor===null)await showHistory(0);
   replayRunning=true;renderHistory();replayTimer=setTimeout(()=>void replayStep(),100);
 };

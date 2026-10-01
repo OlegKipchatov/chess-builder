@@ -1,2 +1,17 @@
-import {button,iconButton} from '../primitives.js?v=60';
-export const moveNavigation = () => `<div class="history-controls"><div class="history-buttons">${iconButton({"id":"replay-start","hidden":true,"className":"","variant":"secondary","label":"Начать воспроизведение","icon":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m7 4 13 8-13 8z\" /></svg>"})}${iconButton({"id":"replay-pause","hidden":true,"className":"","variant":"secondary","label":"Приостановить воспроизведение","icon":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M8 4v16M16 4v16\" /></svg>"})}${iconButton({"id":"history-back","className":"","variant":"secondary","label":"Предыдущая позиция","icon":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 5-7 7 7 7\" /></svg>"})}${iconButton({"id":"history-forward","className":"","variant":"secondary","label":"Следующая позиция","icon":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\" /></svg>"})}${iconButton({"id":"history-live","className":"","variant":"secondary","label":"К текущему ходу","icon":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 5 9 7-9 7zM19 5v14\" /></svg>"})}</div><span id="history-position" aria-live="polite">0 / 0</span></div>`;
+import {iconButton} from '../primitives.js?v=65';
+
+const control = (id,label,path,hidden=false) => iconButton({
+  id,label,hidden,variant:'secondary',
+  icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}" /></svg>`
+});
+
+export const moveNavigation = () => `<div class="history-controls" role="group" aria-label="История ходов">
+  <div class="history-buttons">
+    ${control('history-back','Предыдущая позиция','m15 5-7 7 7 7')}
+    ${control('replay-start','Начать воспроизведение','m7 4 13 8-13 8z',true)}
+    ${control('replay-pause','Приостановить воспроизведение','M8 4v16M16 4v16',true)}
+    ${control('history-forward','Следующая позиция','m9 5 7 7-7 7')}
+    ${control('history-live','К текущему ходу','m5 5 9 7-9 7zM19 5v14')}
+  </div>
+  <span id="history-position" aria-live="polite">0 / 0</span>
+</div>`;
