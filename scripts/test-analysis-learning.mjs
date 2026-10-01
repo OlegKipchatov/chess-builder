@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 export const testAnalysisLearning = async (page,url) => {
  const saved=await page.evaluate(async()=>{
   const previous=localStorage.getItem('chess-vault-v3'),state=JSON.parse(previous);
-  const {Chess}=await import('./chess.js?v=75');
-  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=75');
-  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=75');
+  const {Chess}=await import('./chess.js?v=76');
+  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=76');
+  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=76');
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
   const game=new Chess();game.loadPgn(pgn);
   const entry={...state.archive[0],id:'training-fixture',pgn,playerColor:'b'};
@@ -22,6 +22,7 @@ export const testAnalysisLearning = async (page,url) => {
  await page.locator('#history-slider').press('Home');assert.equal(await page.locator('#history-position').innerText(),'0 / 30');
  await page.locator('#archive-analysis').click();
  await page.locator('#match-surface.analysis-active').waitFor({state:'visible'});
+ assert.equal(await page.locator('#analysis-progress').isVisible(),false,'Cached analysis has no loading flash');
  const slider=page.locator('#history-slider');
  const seek=async value=>{await slider.evaluate((node,value)=>{node.value=String(value);node.dispatchEvent(new Event('input',{bubbles:true}));},value);await page.waitForFunction(value=>document.querySelector('#history-position').textContent===`${value} / 30`,value);};
  await slider.press('End');assert.equal(await page.locator('#history-position').innerText(),'30 / 30');
@@ -33,6 +34,7 @@ export const testAnalysisLearning = async (page,url) => {
  await slider.evaluate(node=>node.dispatchEvent(new PointerEvent('pointerup')));
  assert.equal(await slider.inputValue(),'3');
  await seek(5);await page.locator('#replay-start').click();
+ await page.waitForFunction(()=>{const value=Number(document.querySelector('#history-slider').value);return value>5&&value<6;});
  await page.waitForFunction(()=>document.querySelector('#match-surface').dataset.playback==='pausedForInsight');
  assert.equal(await slider.inputValue(),'6');assert.match(await page.locator('#analysis-insight').innerText(),/Неточность/);
  await page.locator('[data-analysis-line]').click();
@@ -70,7 +72,10 @@ export const testAnalysisLearning = async (page,url) => {
  await choose('a5','b5');assert.equal(await state(),'wrong');
  await page.locator('[data-practice-continue]').click();
  assert.match(await square('a5').getAttribute('aria-label'),/ферзь/i);
+ await page.evaluate(()=>{window.finalMoveAnimations=0;const original=Element.prototype.animate;Element.prototype.animate=function(...args){if(this.classList.contains('moving-piece'))window.finalMoveAnimations++;return original.apply(this,args);};});
  await choose('a5','c3');assert.equal(await state(),'success');
+ assert.ok(await page.evaluate(()=>window.finalMoveAnimations>0),'Final mating move is animated');
+ assert.equal(await page.locator('#analysis-practice-tools [data-analysis-return]').isVisible(),false,'Success has only one return action');
  await page.screenshot({path:'/tmp/gacha-training-success.png',fullPage:true});
  await page.locator('[data-practice-continue]').click();
  assert.equal(await page.locator('#board').innerHTML(),actual);
@@ -91,6 +96,9 @@ export const testAnalysisLearning = async (page,url) => {
   });
   const bounds=await page.locator('[data-variation-next]').boundingBox();assert.ok(bounds.y>=0&&bounds.y+bounds.height<=844,`Controls visible at ${width}`);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await page.evaluate(()=>scrollTo(0,0));
+  const headingActions=await page.locator('#archive-heading-actions').boundingBox();
+  assert.ok(headingActions.x>=0&&headingActions.x+headingActions.width<=width&&headingActions.y+headingActions.height<844,'Actions fit next to the heading');
   if(width===1280)assert.equal(await page.locator('#moves').evaluate(node=>[...node.children].every(button=>button.scrollWidth<=button.clientWidth&&button.getBoundingClientRect().right<=node.getBoundingClientRect().right)),true,'Desktop move labels and borders fit');
   await page.screenshot({path:`/tmp/gacha-learning-${width}.png`,fullPage:true});
  }
@@ -98,7 +106,7 @@ export const testAnalysisLearning = async (page,url) => {
  await page.evaluate(()=>document.documentElement.style.fontSize='200%');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await page.evaluate(()=>document.documentElement.style.fontSize='');
- for(let i=0;i<3;i++)await page.locator('[data-variation-next]').click();
+ for(let i=0;i<3;i++){await page.locator('[data-variation-next]').click();await page.waitForFunction(()=>!document.querySelector('#board').getAnimations({subtree:true}).length);}
  assert.match(await page.locator('[data-analysis-context]').innerText(),/Мат/);
  await page.locator('#analysis-variation-tools [data-analysis-return]').click();
  await page.locator('[data-analysis-practice]').click();await choose('d8','b6');

@@ -1,4 +1,5 @@
-import {iconButton} from '../primitives.js?v=75';
+import {iconButton} from '../primitives.js?v=76';
+import {motionDuration} from '../motion.js?v=76';
 
 const control = (id,label,path,hidden=false) => iconButton({
   id,label,hidden,variant:'secondary',
@@ -17,22 +18,33 @@ export const moveNavigation = (prefix='') => `<div class="history-controls" role
   <input id="history-slider" class="history-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Позиция в истории партии" aria-valuetext="0 из 0" disabled>
 </div>`.replace(/id="([^"]+)"/g,(_,id)=>`id="${prefix}${id}"`);
 
-export const syncHistorySlider = (slider,ply,total) => {
- slider.max=String(total);if(slider.dataset?.dragging!=='true')slider.value=String(ply);slider.disabled=total===0;
+const sliderAnimations=new WeakMap();
+const stopSliderAnimation=slider=>{const frame=sliderAnimations.get(slider);if(frame!==undefined)cancelAnimationFrame(frame);sliderAnimations.delete(slider);};
+const setSliderPosition=(slider,value,total)=>{slider.value=String(value);slider.style.setProperty('--history-progress',`${total?value/total*100:0}%`);};
+export const syncHistorySlider = (slider,ply,total,animate=false) => {
+ stopSliderAnimation(slider);slider.max=String(total);slider.disabled=total===0;
  slider.setAttribute('aria-valuetext',`${ply} из ${total}`);
- if(slider.dataset?.dragging!=='true')slider.style.setProperty('--history-progress',`${total?ply/total*100:0}%`);
+ if(slider.dataset?.dragging==='true')return;
+ if(!animate||matchMedia('(prefers-reduced-motion: reduce)').matches){setSliderPosition(slider,ply,total);return;}
+ const from=Number(slider.value),started=performance.now();
+ const tick=now=>{
+  const progress=Math.min(1,(now-started)/motionDuration.board);
+  setSliderPosition(slider,from+(ply-from)*progress,total);
+  if(progress<1)sliderAnimations.set(slider,requestAnimationFrame(tick));else sliderAnimations.delete(slider);
+ };
+ sliderAnimations.set(slider,requestAnimationFrame(tick));
 };
 const sliderBindings=new WeakMap();
 export const bindHistorySlider = (slider,onSeek) => {
  sliderBindings.get(slider)?.();let frame=null;
  slider.step='any';
  const seek=()=>{frame=null;onSeek(Math.round(Number(slider.value)));};
- slider.onpointerdown=()=>{slider.dataset.dragging='true';};
+ slider.onpointerdown=()=>{stopSliderAnimation(slider);slider.dataset.dragging='true';};
  slider.oninput=()=>{
   slider.style.setProperty('--history-progress',`${Number(slider.max)?Number(slider.value)/Number(slider.max)*100:0}%`);
   if(frame!==null)cancelAnimationFrame(frame);frame=requestAnimationFrame(seek);
  };
- const finish=()=>{delete slider.dataset.dragging;if(frame!==null)cancelAnimationFrame(frame);slider.value=String(Math.round(Number(slider.value)));slider.style.setProperty('--history-progress',`${Number(slider.max)?Number(slider.value)/Number(slider.max)*100:0}%`);seek();};
+ const finish=()=>{stopSliderAnimation(slider);delete slider.dataset.dragging;if(frame!==null)cancelAnimationFrame(frame);slider.value=String(Math.round(Number(slider.value)));slider.style.setProperty('--history-progress',`${Number(slider.max)?Number(slider.value)/Number(slider.max)*100:0}%`);seek();};
  slider.onkeydown=event=>{
   const value=Math.round(Number(slider.value)),max=Number(slider.max);
   const targets={ArrowLeft:value-1,ArrowDown:value-1,ArrowRight:value+1,ArrowUp:value+1,PageDown:value-10,PageUp:value+10,Home:0,End:max};
@@ -40,6 +52,6 @@ export const bindHistorySlider = (slider,onSeek) => {
   event.preventDefault();slider.value=String(Math.max(0,Math.min(max,targets[event.key])));finish();
  };
  slider.onchange=finish;slider.onpointerup=finish;slider.onpointercancel=finish;
- const dispose=()=>{if(frame!==null)cancelAnimationFrame(frame);delete slider.dataset.dragging;slider.oninput=slider.onchange=slider.onpointerdown=slider.onpointerup=slider.onpointercancel=slider.onkeydown=null;};
+ const dispose=()=>{stopSliderAnimation(slider);if(frame!==null)cancelAnimationFrame(frame);delete slider.dataset.dragging;slider.oninput=slider.onchange=slider.onpointerdown=slider.onpointerup=slider.onpointercancel=slider.onkeydown=null;};
  sliderBindings.set(slider,dispose);return dispose;
 };

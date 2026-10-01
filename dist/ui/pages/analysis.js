@@ -1,13 +1,13 @@
-import {escapeHTML as esc} from '../primitives.js?v=75';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=75';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=75';
-import {humanMove} from '../components/move-list.js?v=75';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=75';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=75';
-import {Chess} from '../../chess.js?v=75';
-import {positionAt} from '../../session.js?v=75';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=75';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=75';
+import {escapeHTML as esc} from '../primitives.js?v=76';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=76';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=76';
+import {humanMove} from '../components/move-list.js?v=76';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=76';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=76';
+import {Chess} from '../../chess.js?v=76';
+import {positionAt} from '../../session.js?v=76';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=76';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=76';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>
@@ -17,7 +17,7 @@ export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  </div>`;
 export const analysisInsights = () => '<div id="analysis-insight" class="analysis-insight" aria-live="polite" hidden></div><p id="analysis-summary" class="muted" hidden></p>';
 export const showAnalysisProgress = ({stage,done,total}) => {
- document.querySelector('#analysis-loading').textContent=`${stage==='quick'?'Быстрый анализ':'Уточняем важные моменты'} · ${done} из ${total}${stage==='quick'?' ходов':''}`;
+ document.querySelector('#analysis-cancel').setAttribute('aria-label',`${stage==='quick'?'Быстрый анализ':'Уточняем важные моменты'}: ${done} из ${total}. Отменить анализ`);
 };
 export const variationArrowPoints = (token,orientation='w') => {
  if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token||''))return null;
@@ -49,14 +49,19 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   const cell=root.querySelector(`[data-square="${move.playedMove.slice(2,4)}"]`);
   if(cell&&mark){const span=document.createElement('span');span.className='analysis-marker analysis-badge';span.dataset.quality=move.highlight||move.quality;span.textContent=mark;span.setAttribute('aria-hidden','true');cell.append(span);}
  };
- const showVariation=(token,step=0)=>{
+ const showVariation=async(token,step=0)=>{
   const move=analysis.moves[shown-1],line=insightLines(move).find(line=>line.move===token);
   if(!line||disposed)return;
-  const entering=mode!=='variation',position=new Chess(move.fenBefore),{pv}=visibleVariation(move);
+  const entering=mode!=='variation',previous=previewStep,full=new Chess(move.fenBefore),{pv}=visibleVariation(move),before=snapshotBoard(root);
   previewStep=Math.max(0,Math.min(step,pv.length));
-  for(const next of pv.slice(0,previewStep))position.move({from:next.slice(0,2),to:next.slice(2,4),promotion:next[4]});
-  playback.pause();transition++;cancelAnimations();exercise=null;setMode(pv.length===1?'hint':'variation');board(position);
+  for(const next of pv)full.move({from:next.slice(0,2),to:next.slice(2,4),promotion:next[4]});
+  const position=positionAt(full,previewStep);
+  playback.pause();const generation=++transition;cancelAnimations();exercise=null;setMode(pv.length===1?'hint':'variation');board(position);
   root.setAttribute('aria-label',`Вариант: ${previewStep} / ${pv.length}`);root.dataset.variation=token;
+  if(!entering&&previewStep===previous+1){
+   await animateTransition(root,historyMoves(full,previous,previewStep),before);
+   if(disposed||generation!==transition)return;
+  }
   const points=variationArrowPoints(pv[previewStep],entry.playerColor);
   if(points){
    const [x1,y1,x2,y2]=points;
@@ -75,6 +80,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   $('#match-surface').dataset.practice=state;
   $('[data-practice-message]').textContent=({awaitMove:exercise.game.history().length?'Найдите завершающий ход.':`Найдите мат ${mateIn===1?'в один ход':'в два хода'}.`,wrong:'Этот ход не приводит к мату за отведённое число ходов. Попробуйте другое продолжение.',correct:'',opponent:'Соперник отвечает…',success:'Мат! Вы нашли решение.'})[state];
   const next=$('[data-practice-continue]');next.hidden=['awaitMove','correct','opponent'].includes(state);next.textContent=state==='wrong'?'Попробовать снова':state==='success'?'Продолжить разбор':'Продолжить';
+  $('#analysis-practice-tools [data-analysis-return]').hidden=state==='success';
   const promotion=$('[data-practice-promotion]');promotion.hidden=!promotions.length;
   promotion.innerHTML=promotions.length?`<p>Выберите фигуру:</p>${promotions.map(move=>`<button type="button" class="quiet" data-practice-promote="${move.from+move.to+move.promotion}">${({q:'Ферзь',r:'Ладья',b:'Слон',n:'Конь'})[move.promotion]}</button>`).join('')}`:'';
  };
@@ -87,9 +93,11 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
  const submitExercise=async token=>{
   if(!exercise)return;const owned=exercise,generation=++transition,before=snapshotBoard(root);
   exercise.submit(token);selected=null;promotions=[];renderExercise();
+  $('[data-practice-continue]').disabled=true;
+  await animateTransition(root,[owned.game.history({verbose:true}).at(-1)],before);
+  if(disposed||exercise!==owned||generation!==transition)return;
+  $('[data-practice-continue]').disabled=false;
   if(owned.getSnapshot().state==='correct'){
-   await animateTransition(root,[owned.game.history({verbose:true}).at(-1)],before);
-   if(disposed||exercise!==owned||generation!==transition)return;
    const replyBefore=snapshotBoard(root);owned.continue();renderExercise();
    await animateTransition(root,[owned.game.history({verbose:true}).at(-1)],replyBefore);
    if(disposed||exercise!==owned||generation!==transition)return;
@@ -107,7 +115,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   onPly(ply);
   board(positionAt(game,ply));
   $('#history-position').textContent=`${ply} / ${analysis.totalPlies}`;
-  syncHistorySlider($('#history-slider'),ply,analysis.totalPlies);
+  syncHistorySlider($('#history-slider'),ply,analysis.totalPlies,animate);
   $('#history-back').disabled=ply===0;$('#history-forward').disabled=ply===analysis.totalPlies;$('#history-live').disabled=ply===analysis.totalPlies;
   $('#moves').querySelectorAll('[data-analysis-ply]').forEach(button=>button.setAttribute('aria-current',String(Number(button.dataset.analysisPly)===ply)));
   if(animate)await animateTransition(root,steps,before);

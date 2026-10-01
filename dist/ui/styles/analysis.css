@@ -12,8 +12,6 @@
 #analysis-moves{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:540px;overflow:auto}
 #analysis-moves button{text-align:left;min-height:40px;padding:8px;border-radius:8px}
 #analysis-moves button[aria-current=true]{background:var(--panel);outline:1px solid var(--accent)}
-#analysis-loading{min-height:100px;padding:16px 0}
-#analysis-loading[hidden]{display:none}
 .analysis-arrow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;color:var(--accent);opacity:.85}
 .analysis-badge{position:absolute;right:2px;top:2px;z-index:7;font-size:clamp(.7rem,2vw,1rem);font-weight:800;background:var(--bg);border-radius:4px;padding:0 3px;pointer-events:none}
 [data-quality=mistake],[data-quality=blunder]{color:var(--negative)}
@@ -38,10 +36,15 @@
 .archive-viewing .match-secondary{display:flex;flex-direction:column;min-width:0}
 .archive-viewing .move-log{display:block;width:100%;min-width:0}
 .archive-viewing #status{visibility:hidden}
-.archive-viewing #archive-analysis-actions{min-height:104px;overflow-anchor:none}
 .archive-viewing .match-actions{display:flex;flex-direction:column;align-items:stretch;width:100%;gap:8px;margin-top:16px}
-#archive-analysis-actions button{width:100%}
-#analysis-loading{min-height:0;padding:8px 0}
-#analysis-progress{min-height:88px}
 .analysis-active .history-move,.archive-viewing .history-move{min-width:0;white-space:normal;overflow-wrap:anywhere}
 @media(max-width:760px){.archive-viewing .move-log{display:none}.archive-viewing .match-secondary{gap:0}.archive-viewing .match-actions{margin-top:0}}
+#archive-heading-actions{display:flex;align-items:center;gap:4px}
+#archive-heading-actions[hidden],#analysis-progress[hidden]{display:none}
+#archive-analysis-actions,#archive-export-slot{flex:none;min-width:44px;min-height:44px}
+#archive-heading-actions .icon-button{width:44px;height:44px;min-width:44px;padding:10px}
+#archive-heading-actions svg{width:24px;height:24px}
+.analysis-spinner{display:block;width:22px;height:22px;border:2px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:analysis-spin calc(var(--motion-reveal) * 2) linear infinite}
+@keyframes analysis-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.analysis-spinner{animation:none}}
+@media(max-width:760px){.archive-viewing .game-heading{column-gap:8px}.archive-viewing .game-heading h1{font-size:var(--type-section)}}
