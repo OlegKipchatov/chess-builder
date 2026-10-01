@@ -53,4 +53,38 @@ try{
   }
   assert.deepEqual(errors,[]);console.log(`PASS ${width}x${height}: board ${before.width}px at y=${before.y}, move/review/replay stable`);await context.close();
  }
+ // Compare embedded browser and standalone geometry, including simulated iOS safe areas.
+ const layouts=[];
+ for(const scenario of [
+  {name:'embedded',width:402,height:700,top:0,bottom:0},
+  {name:'standalone',width:402,height:874,top:59,bottom:34},
+  {name:'compact-safe-area',width:375,height:667,top:44,bottom:34},
+  {name:'tall-standalone',width:430,height:1100,top:59,bottom:34},
+ ]){
+  const {name,width,height,top,bottom}=scenario;
+  const context=await browser.newContext({viewport:{width,height},serviceWorkers:'block',reducedMotion:'reduce'});
+  // Chromium does not expose iOS safe-area insets: inject their CSS values explicitly.
+  await context.route('**/*.css*',async route=>{
+   const response=await route.fetch();
+   const css=(await response.text()).replaceAll('env(safe-area-inset-top)',`${top}px`).replaceAll('env(safe-area-inset-bottom)',`${bottom}px`);
+   await route.fulfill({response,body:css});
+  });
+  const page=await context.newPage();await page.goto(`http://127.0.0.1:${server.address().port}`);
+  await page.evaluate(()=>{Math.random=()=>.25;});await page.locator('#start-game').click();
+  await page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--app-header-height').trim()===`${document.querySelector('header').getBoundingClientRect().height}px`);
+  const geometry=await page.evaluate(()=>{
+   const box=selector=>document.querySelector(selector).getBoundingClientRect();
+   return {headerBottom:box('header').bottom,summaryTop:box('.match-summary').top,boardWidth:box('#board').width,exportBottom:box('#export-pgn').bottom,height:innerHeight,scrollHeight:document.documentElement.scrollHeight};
+  });
+  const gap=geometry.summaryTop-geometry.headerBottom;
+  assert.ok(gap>=19&&gap<=53,`${name}: header-to-game gap ${gap}px`);
+  assert.ok(geometry.exportBottom<=height-bottom,`${name}: controls reach unsafe bottom area`);
+  assert.ok(geometry.scrollHeight<=height+1,`${name}: vertical overflow`);
+  layouts.push(geometry);
+  await page.screenshot({path:`/tmp/gacha-${name}.png`,fullPage:true});
+  console.log(`PASS ${name}: header gap ${gap}px, board ${geometry.boardWidth}px, controls inside safe area`);
+  await context.close();
+ }
+ assert.equal(layouts[0].boardWidth,layouts[1].boardWidth,'Browser chrome must not shrink the board when height is sufficient');
+ assert.ok(Math.abs((layouts[0].summaryTop-layouts[0].headerBottom)-(layouts[1].summaryTop-layouts[1].headerBottom))<=2,'Embedded and standalone tall screens keep comparable top spacing');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

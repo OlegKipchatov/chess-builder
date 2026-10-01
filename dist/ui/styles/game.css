@@ -17,7 +17,7 @@
 .archive-material [data-balance=positive]{color:var(--positive)}.archive-material [data-balance=negative]{color:var(--negative)}.archive-material [data-balance=zero]{color:var(--text)}
 @media(max-width:359px){.archive-entry{grid-template-columns:36px minmax(0,1fr) auto;column-gap:8px}.archive-status-icon{width:36px;height:40px}.archive-status-icon svg{width:24px;height:24px}.archive-moves{font-size:.8125rem}}
 
-/* Live game: participants → turn → board → playback, with stable geometry. */
+/* Live game: participants → board → playback, with stable geometry. */
 #status.turn-status{position:absolute;width:1px;height:1px;min-height:0;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .match-summary{flex-wrap:nowrap;padding:0 0 12px;min-height:56px}
 #match-points{display:block;min-width:8ch;text-align:right}
@@ -42,16 +42,19 @@
  .match-secondary{padding:0;max-width:600px;margin:0 auto}
  .match-actions{margin:0;align-items:center}
  .game-grid{gap:8px}
- body.match-active main{display:flex;flex-direction:column;min-height:calc(100svh - 68px - env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+ body.match-active main{display:flex;flex-direction:column;min-height:calc(100svh - var(--app-header-height,68px));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
  body.match-active #play,body.match-active #play>.page-content{display:flex;flex-direction:column;flex:1}
- body.match-active #play>.page-content{justify-content:center}
+ /* Share spare height, but cap the space above the game in standalone PWA. */
+ body.match-active #play>.page-content{gap:0}
+ body.match-active #play>.page-content::before,body.match-active #play>.page-content::after{content:'';flex:1 0 0}
+ body.match-active #play>.page-content::before{max-height:32px}
  html:has(body.match-active){scrollbar-gutter:auto}
- body.match-active .board-area{margin-inline:0;align-self:center;max-width:min(600px,calc(100svh - 268px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))}
+ body.match-active .board-area{margin-inline:0;align-self:center;max-width:min(600px,calc(100svh - var(--app-header-height,68px) - 200px - env(safe-area-inset-bottom)))}
  .history-buttons{gap:0}
 }
 /* Only a narrow viewport lets the board escape the page-shell inset. */
 @media(max-width:400px){
- body.match-active .board-area{width:calc(100% + 2 * var(--page-inset) - 8px);max-width:min(calc(100vw - 8px),calc(100svh - 268px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));align-self:center}
+ body.match-active .board-area{width:calc(100% + 2 * var(--page-inset) - 8px);max-width:min(calc(100vw - 8px),calc(100svh - var(--app-header-height,68px) - 200px - env(safe-area-inset-bottom)));align-self:center}
  body.match-active .match-summary{padding-inline:4px;gap:8px}
  body.match-active #status{padding-inline:4px}
  .match-versus{gap:4px}

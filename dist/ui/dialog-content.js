@@ -1,7 +1,7 @@
-import {escapeHTML,plural,button} from './primitives.js?v=65';
-import {itemPreview,pieceSVG} from '../pieces.js?v=65';
-import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=65';
-import {dayLabel} from '../activity.js?v=65';
+import {escapeHTML,plural,button} from './primitives.js?v=66';
+import {itemPreview,pieceSVG} from '../pieces.js?v=66';
+import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=66';
+import {dayLabel} from '../activity.js?v=66';
 export const exportPgnDialog = (pgn) => `<h2>Экспорт партии</h2><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="actions"><button class="quiet" data-download-pgn>Скачать PGN</button><button class="quiet" data-copy-pgn>Скопировать PGN</button><button class="quiet" data-share-pgn>Поделиться PGN</button></div>`;
 export const cancelledDialog = () => '<h2>Партия отменена</h2><p>Вы не сделали ни одного хода, поэтому партия не попала в историю и статистику и не принесла награду.</p>';
 export const matchResultDialog = (title,reward,entry,breakdown,reason='') => `<h2>${escapeHTML(entry?.result||title)}</h2>${reason?`<p class="match-end-reason">${escapeHTML(reason)}</p>`:''}<p class="reward-total">+${reward} ${plural(reward,['монета','монеты','монет'])}</p>${breakdown?`<dl class="reward-breakdown"><div><dt>За партию</dt><dd>+${breakdown.completion}</dd></div><div><dt>Ваши ходы</dt><dd>+${breakdown.moves}</dd></div><div><dt>Результат партии</dt><dd>+${breakdown.result}</dd></div></dl>${breakdown.reason==='early-resignation'?'<p class="reward-note">За эту партию монеты не начислены.</p>':''}`:''}`;

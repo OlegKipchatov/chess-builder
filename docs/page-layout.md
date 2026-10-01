@@ -28,3 +28,7 @@ supervised preview failed before startup (environment mount permission error).
 Check 390px and desktop, expanded FAQ, final collection item, history scrolling,
 profile/statistics/calendar, and history → detail → history. Repeat header-gap
 measurement after adding a technical wrapper and switching block/flex/grid.
+
+### Высота экрана активной партии
+
+На мобильном свободное место распределяется вокруг игрового блока, но дополнительный верхний промежуток ограничен 32px. Высота доступной области и максимальный размер доски учитывают фактическую высоту шапки (`--app-header-height`) и нижнюю safe area. На коротких экранах верхний промежуток сжимается до нуля. Проверять одинаковую ширину с разной доступной высотой, включая standalone PWA и safe areas: обычная проверка размеров viewport не воспроизводит отступы iOS.
