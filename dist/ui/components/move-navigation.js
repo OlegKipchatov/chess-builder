@@ -1,4 +1,4 @@
-import {iconButton} from '../primitives.js?v=71';
+import {iconButton} from '../primitives.js?v=72';
 
 const control = (id,label,path,hidden=false) => iconButton({
   id,label,hidden,variant:'secondary',

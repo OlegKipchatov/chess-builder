@@ -1,11 +1,11 @@
-import {Chess} from '../chess.js?v=71';
-import {createStockfishClient} from '../stockfish-client.js?v=71';
-import {engineLine} from '../stockfish-evaluation.js?v=71';
-import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=71';
-import {classifyMove,needsRefinement} from './analysis-classifier.js?v=71';
-import {uci,describeLine,detectReason} from './analysis-reasons.js?v=71';
-import {selectEvents} from './analysis-events.js?v=71';
-import {eligibleEntry} from './analysis-storage.js?v=71';
+import {Chess} from '../chess.js?v=72';
+import {createStockfishClient} from '../stockfish-client.js?v=72';
+import {engineLine} from '../stockfish-evaluation.js?v=72';
+import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=72';
+import {classifyMove,needsRefinement} from './analysis-classifier.js?v=72';
+import {uci,describeLine,detectReason,verifyShortMate} from './analysis-reasons.js?v=72';
+import {selectEvents} from './analysis-events.js?v=72';
+import {eligibleEntry} from './analysis-storage.js?v=72';
 const abortError = () => new DOMException('Analysis cancelled','AbortError');
 export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=createStockfishClient,profile=PROFILE}={}) => {
  if(!eligibleEntry(entry))throw Error('This archive entry cannot be analyzed');
@@ -49,8 +49,9 @@ export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=c
   const decorate=line=>{const evidence=describeLine(move.fenBefore,line,entry.playerColor);if(!evidence.valid)throw Error('Illegal engine PV');line.san=evidence.san[0];line.pvSan=evidence.san;return evidence;};
   result.bestEvidence=decorate(bestLine);result.playedEvidence=decorate(playedLine);lines.forEach(decorate);
   result.reason=detectReason(result);result.explanationKey=result.reason||result.quality;
+  if(result.mateTransition==='missed_mate')result.shortMate=await verifyShortMate(move.fenBefore,bestLine,check);
   result.alternatives=lines.filter(line=>line.move!==move.playedMove&&(line.move===bestLine.move||(bestLine.expectedScorePlayer-line.expectedScorePlayer<=PROFILE.bestCluster&&(bestLine.score.type!=='mate'||bestLine.score.value<=0||line.score.type==='mate'&&line.score.value>0)))).slice(0,2);
-  result.recommendationRequired=['mistake','blunder'].includes(result.quality);
+  result.recommendationRequired=['mistake','blunder'].includes(result.quality)||result.mateTransition==='missed_mate';
   delete result.bestEvidence;delete result.playedEvidence;
   return result;
  };

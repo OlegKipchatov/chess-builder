@@ -4,6 +4,10 @@
 .analysis-insight h2{font-size:var(--type-section);margin:0 0 12px}
 .analysis-insight p{margin:8px 0;line-height:1.5}
 .analysis-pv{font-variant-numeric:tabular-nums}
+.analysis-pv,.analysis-alternatives{margin:8px 0;line-height:1.5}
+.analysis-variation{min-height:44px;max-width:100%;padding:8px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere}
+.analysis-variation[aria-pressed=true]{outline:1px solid var(--accent);background:var(--panel);color:var(--accent)}
+.analysis-variation-context p{font-size:var(--type-secondary);color:var(--muted)}
 .analysis-history h2{font-size:1rem;margin:0 0 12px}
 #analysis-moves{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:540px;overflow:auto}
 #analysis-moves button{text-align:left;min-height:40px;padding:8px;border-radius:8px}
@@ -17,3 +21,5 @@
 [data-quality=excellent]{color:var(--accent)}
 #analysis-board{position:relative}
 @media(max-width:760px){.analysis-grid{display:block;max-width:560px}.analysis-history{display:none}.analysis-insight{min-height:300px}#analysis-summary{font-size:.875rem}}
+.analysis-variation-controls{display:flex;gap:8px;margin-block:8px}
+.analysis-variation-controls button{min-width:44px;min-height:44px}

@@ -1,5 +1,5 @@
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=71';
-import {matchHeader} from '../components/match-header.js?v=71';
-import {moveNavigation} from '../components/move-navigation.js?v=71';
-import {matchStatusPanel} from '../components/match-status-panel.js?v=71';
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=72';
+import {matchHeader} from '../components/match-header.js?v=72';
+import {moveNavigation} from '../components/move-navigation.js?v=72';
+import {matchStatusPanel} from '../components/match-status-panel.js?v=72';
 export const playPage = () => `<section id="play" class="tab" data-page-kind="root">${pageHeader({title:"Игра",titleId:'match-title',className:'game-heading',startContent:iconButton({id:'archive-return',label:'К истории партий',icon:backIcon,hidden:true}),endContent:'<span id="match-settings" hidden></span>'})}<div class="page-content"><div id="game-ready" class="game-ready"><h2>Сыграем?</h2><div class="actions"><button id="start-game" class="primary">Партия с ИИ</button></div></div><div id="play-stats" class="play-stats" hidden></div><div class="game-grid" id="match-surface" hidden><div class="board-area">${matchHeader()}<p id="status" class="turn-status" aria-live="polite">Ход белых</p><div id="board" class="board" role="group" aria-label="Шахматная доска"></div>${moveNavigation()}<p id="history-notice" class="history-notice" hidden>Вы смотрите прошлую позицию. Вернитесь к текущему ходу, чтобы продолжить.</p></div>${matchStatusPanel()}<button id="archive-analysis" class="quiet" hidden>Разобрать партию</button></div></div></section>`;

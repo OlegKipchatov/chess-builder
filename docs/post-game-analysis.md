@@ -1,6 +1,6 @@
 # Локальный разбор завершённой партии
 
-Реализация спецификации v2 в GachaChess 0.4. Версия ресурсов PWA — v71.
+Реализация спецификации v2 в GachaChess 0.4. Подготовленная версия ресурсов PWA — v72.
 Исходная публичная версия: `f70fe15` (`OlegKipchatov/chess-builder`, main).
 
 ## Границы системы
@@ -27,7 +27,9 @@
 
 Ручные переходы мгновенные. Автовоспроизведение ожидает завершения анимации, затем останавливается на выбранном событии. Prev / Next / выбор хода прекращают автовоспроизведение. Поддерживаются стрелки клавиатуры и reduced motion.
 
-Insight показывает один главный смысл, сыгранный ход, короткое объяснение, рекомендуемую альтернативу, PV и ожидаемый результат. Проценты означают вероятность победы плюс половину вероятности ничьей, а не вероятность победы отдельно. Стрелка рекомендации относится к выбору **вместо** сыгранного хода.
+Insight показывает один главный смысл, сыгранный ход, короткое объяснение, рекомендуемую альтернативу и PV. Проценты ожидаемого результата скрыты; WDL остаётся внутренней метрикой классификации. Обычные best/good отображаются нейтрально как «Ваш ход», а похвала «Отличный ход» сохраняется только для значимых highlights. Равноценные продолжения описываются без упоминания движка.
+
+Основной вариант и дополнительные продолжения доступны как кнопки. Выбор приостанавливает playback, показывает позицию **до** сыгранного хода и одну стрелку первого хода выбранного варианта. Выбранная кнопка отмечена через aria-pressed. Кнопка «К сыгранному ходу» восстанавливает фактическую позицию; Prev / Next / Play также выходят из предпросмотра. Номер разбираемого хода сохраняется, а подпись явно обозначает позицию перед ходом. Просмотр стрелок не обращается к Worker и не меняет сохранённый анализ.
 
 На мобильном список ходов скрыт по существующей responsive-модели. Нижняя навигация скрыта на экране разбора. Зарезервирована минимальная высота insight; нет графика оценок, звуков и настроек движка.
 
@@ -47,11 +49,11 @@ Insight показывает один главный смысл, сыгранн�
 
 ## Проверка
 
-- `npm test`: **194 теста прошли**. Доменная модель, оба цвета, mate semantics, best cluster, forced move, outside MultiPV, deep replacement, события, отмена, stale replies, совместимость и восстановление архива.
+- `npm test`: **204 теста прошли**. Доменная модель, оба цвета, mate semantics, best cluster, forced move, outside MultiPV, deep replacement, события, отмена, stale replies, совместимость, восстановление архива, нейтральные подписи обычных ходов, выбор вариантов и ориентация стрелок; регрессия партии Reina и проверка мата в два против всех ответов.
 - Реальный Stockfish: матовая партия за оба цвета.
 - Шахматные границы: promotion с UCI-суффиксом, castling, en passant, stalemate, threefold, 50-move draw, insufficient material, короткая партия, сдача и технически неучтённые партии.
 - `npm run test:pwa:browser`: онлайн-установка → холодный офлайн-запуск → оба режима ИИ → архив → настоящий анализ в Worker без сети → сохранение → повторное открытие без Worker → playback → завершение post-game без предложения анализа → история → отмена.
-- Обновление с реального v70: неудачная установка сохраняет старую версию; успешная установка сохраняет активную партию, старые URL, пользовательский прогресс и посторонние кэши.
+- Обновление с реального v71 на v72: неудачная установка сохраняет старую версию; успешная установка сохраняет активную партию, старые URL, пользовательский прогресс и посторонние кэши.
 - Браузерные проверки 320, 390 и 1280 px, увеличение текста до 200%: отсутствие горизонтального переполнения и визуальный просмотр скриншотов.
 
 ## Производительность
@@ -77,3 +79,16 @@ Insight показывает один главный смысл, сыгранн�
 ![Мобильный экран](analysis-preview-mobile.png)
 
 ![Десктопный экран](analysis-preview-desktop.png)
+# Mate opportunity refinement
+
+The v2 analysis cache invalidates v1 results. A mate-to-CP transition no longer
+automatically raises decision quality to mistake. With loss <= 0.025 it becomes
+a neutral `mate_opportunity`; actual larger WDL losses retain their normal quality.
+Mate in one/two is checked against every legal defence, yielding between replies
+and respecting cancellation. A bounded search not finding mate is not evidence
+that no longer mate exists. Consecutive player opportunities form one autoplay
+episode; every individual insight remains accessible. Real losses remain separate.
+Selecting the suggested line shows the pre-move board and one next-move arrow.
+Variation controls step through its saved PV (including the mating position),
+without invoking Stockfish or changing game history. Return/history controls
+restore the actual game. Regression coverage includes the supplied Reina PGN.

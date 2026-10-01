@@ -10,10 +10,34 @@ import {initialState,migrateState} from '../dist/state.js';
 import {createStockfishClient} from '../dist/stockfish-client.js';
 import {STOCKFISH} from '../dist/stockfish-config.js';
 import {Chess} from '../dist/chess.js';
-import {uci,detectReason} from '../dist/analysis/analysis-reasons.js';
+import {uci,detectReason,verifyShortMate} from '../dist/analysis/analysis-reasons.js';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
 const line=(score,move='e2e4',mate=null)=>({move,expectedScorePlayer:score,score:{type:mate===null?'cp':'mate',value:mate??0},pv:[move]});
 const entry=(pgn='1. e4 e5 2. Nf3 Nc6',color='w')=>({id:'test-game',mode:'bot',playerColor:color,pgn,finishedAt:'2026-10-01',result:'Поражение'});
+const suppliedPgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3# 0-1';
+test('reported game: both mate-in-two opportunities verified, no invented mistakes, one episode stop',{timeout:60000},async()=>{
+ const result=await analyzeGame(entry(suppliedPgn,'b'),{createClient:()=>createStockfishClient(spawnStockfish)});
+ assert.equal(result.status,'complete');
+ for(const ply of [24,26]){
+  const move=result.moves[ply-1];assert.equal(move.reason,'mate_opportunity');assert.equal(move.quality,'best');
+  assert.deepEqual(move.shortMate,{moves:2,verified:true});assert.equal(move.recommendationRequired,true);
+  const board=new Chess(move.fenBefore);move.bestLine.pv.forEach(token=>board.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]}));assert.ok(board.isCheckmate());
+ }
+ assert.ok(result.focusEvents.includes(24));assert.ok(!result.focusEvents.includes(26));
+});
+test('short mate validation rejects unsupported claims and observes cancellation',async()=>{
+ assert.equal(await verifyShortMate(new Chess().fen(),line(1,'e2e4',2)),null);
+ const game=new Chess();game.loadPgn(suppliedPgn);const fen=game.history({verbose:true})[23].before;
+ await assert.rejects(verifyShortMate(fen,line(1,'d8a5',2),()=>{throw new DOMException('Cancelled','AbortError');}),{name:'AbortError'});
+ assert.equal(await verifyShortMate(fen,line(1,'d8a5',3)),null);
+});
+test('five consecutive opportunities stop once; a new episode and genuine losses still stop',()=>{
+ const rows=Array.from({length:10},(_,i)=>({ply:i+1,actor:i%2?'opponent':'player',status:i%2?'not_analyzed':'complete',quality:'best',reason:i%2?null:'mate_opportunity'}));
+ assert.deepEqual(selectEvents(rows),[1]);assert.equal(rows[8].reason,'mate_opportunity');
+ rows.push({ply:11,actor:'player',status:'complete',quality:'good'}, {ply:13,actor:'player',status:'complete',quality:'best',reason:'mate_opportunity'}, {ply:15,actor:'player',status:'complete',quality:'blunder',reason:'missed_mate',expectedScoreLoss:.5});
+ assert.deepEqual(selectEvents(rows),[1,13,15]);
+ assert.equal(detectReason({mateTransition:'missed_mate',expectedScoreLoss:.5}),'missed_mate');
+});
 const fakeFactory=(requests,{outside=false,stale=false}={})=>()=>{
  const client={terminate:()=>{client.dead=true;},postMessage:data=>{
   requests.push(data);const game=new Chess(data.fen),legal=game.moves({verbose:true}).map(uci);
@@ -38,7 +62,7 @@ test('excellent needs measured significance and excludes forced decisions',()=>{
 });
 test('mate transitions are separate from numeric loss',()=>{
  const allowed=classifyMove({bestLine:line(.02),playedLine:line(0,'e2e4',-3)});assert.equal(allowed.quality,'blunder');assert.equal(allowed.mateTransition,'allowed_mate');
- const missed=classifyMove({bestLine:line(1,'d2d4',4),playedLine:line(.999)});assert.equal(missed.quality,'mistake');assert.equal(missed.mateTransition,'missed_mate');
+ const missed=classifyMove({bestLine:line(1,'d2d4',4),playedLine:line(.999)});assert.equal(missed.quality,'best');assert.equal(missed.mateTransition,'missed_mate');
  assert.equal(classifyMove({bestLine:line(1,'d2d4',4),playedLine:line(1,'e2e4',6)}).quality,'best');
  assert.equal(classifyMove({bestLine:line(0,'d2d4',-10),playedLine:line(0,'e2e4',-1)}).quality,'best');
 });

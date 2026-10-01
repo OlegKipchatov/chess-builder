@@ -1,4 +1,4 @@
-import {PROFILE} from './analysis-config.js?v=71';
+import {PROFILE} from './analysis-config.js?v=72';
 export const mateState = line => line?.score.type==='mate'?(line.score.value>0?'winning':'losing'):'none';
 export const classifyMove = ({bestLine,playedLine,lines=[],forced=false}) => {
  const loss=Math.max(0,bestLine.expectedScorePlayer-playedLine.expectedScorePlayer);
@@ -6,7 +6,8 @@ export const classifyMove = ({bestLine,playedLine,lines=[],forced=false}) => {
  const bestMate=mateState(bestLine),playedMate=mateState(playedLine);
  const mateTransition=bestMate!=='losing'&&playedMate==='losing'?'allowed_mate':bestMate==='winning'&&playedMate!=='winning'?'missed_mate':bestMate==='winning'&&playedMate==='winning'?'preserves_mate':bestMate==='losing'&&playedMate==='losing'?'already_lost':null;
  if(mateTransition==='allowed_mate')quality='blunder';
- if(mateTransition==='missed_mate'&&['best','good','inaccuracy'].includes(quality))quality='mistake';
+ // A bounded search not finding mate is not proof that the played move loses it.
+ // Keep decision quality tied to the measured loss, not a mate/CP format change.
  if(['preserves_mate','already_lost'].includes(mateTransition))quality='best';
  // A meaningful positive requires a measured alternative, not missing MultiPV data.
  const other=lines.filter(line=>line.move!==playedLine.move);
