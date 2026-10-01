@@ -1,8 +1,9 @@
-import {initialActivity, normalizeActivity} from './activity.js?v=70';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=70';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=70';
-import {Chess} from './chess.js?v=70';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=70';
+import {restoreAnalysis} from './analysis/analysis-storage.js?v=71';
+import {initialActivity, normalizeActivity} from './activity.js?v=71';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=71';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=71';
+import {Chess} from './chess.js?v=71';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=71';
 export const KEY = 'chess-vault-v3';
 export const createRecordId = () => {
   if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
@@ -59,7 +60,7 @@ export const migrateState = input => {
     ...(entry.counted===false?{counted:false}:{}),
     ...(typeof entry.engineFailure?.fen==='string'&&typeof entry.engineFailure.message==='string'?{engineFailure:{fen:entry.engineFailure.fen.slice(0,120),message:entry.engineFailure.message.slice(0,240)}}:{}),
     ...(entry.rewardBreakdown?.rewardVersion==='game-economy-v2'?{rewardBreakdown:structuredClone(entry.rewardBreakdown)}:{}),
-    id:entry.id,pgn:entry.pgn,engineProfile:validArchivedProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
+    ...(restoreAnalysis(entry.analysis,entry)?{analysis:restoreAnalysis(entry.analysis,entry)}:{}),id:entry.id,pgn:entry.pgn,engineProfile:validArchivedProfile(entry.engineProfile)?{...entry.engineProfile}:null,finishedAt:typeof entry.finishedAt==='string'?entry.finishedAt:'',
     mode:entry.mode==='local'?'local':'bot',playerColor:entry.playerColor==='b'?'b':'w',equipped:validEquipment(entry.equipped,next.owned),
     result:typeof entry.result==='string'?entry.result.slice(0,40):'Партия завершена',points:integer(entry.points),
     playerRating:integer(entry.playerRating,1000),opponentRating:Number.isSafeInteger(entry.opponentRating)?entry.opponentRating:null,

@@ -1,26 +1,29 @@
-import {analyzeReward} from './economy-analysis.js?v=70';
-import {applyQualityReward} from './reward-quality.js?v=70';
-import {motionDuration, motionEasing} from './ui/motion.js?v=70';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=70';
-import {mountAppShell} from './ui/shell.js?v=70';
-import {statCard,plural} from './ui/primitives.js?v=70';
-import {createDialog,createToast} from './ui/dialog.js?v=70';
-import {renderArchiveList} from './ui/components/archive-list.js?v=70';
-import {moveList} from './ui/components/move-list.js?v=70';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=70';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=70';
-import {closeActivityDay, calendarHTML} from './activity.js?v=70';
-import {createBotClient} from './bot-client.js?v=70';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=70';
-import {signedDelta} from './rating.js?v=70';
-import {Chess} from './chess.js?v=70';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=70';
-import {openChest, craftItem} from './economy.js?v=70';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=70';
-import {pieceSVG, itemPreview} from './pieces.js?v=70';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=70';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=70';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=70';
+import {analyzeGame} from './analysis/analysis-service.js?v=71';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=71';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=71';
+import {analyzeReward} from './economy-analysis.js?v=71';
+import {applyQualityReward} from './reward-quality.js?v=71';
+import {motionDuration, motionEasing} from './ui/motion.js?v=71';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=71';
+import {mountAppShell} from './ui/shell.js?v=71';
+import {statCard,plural} from './ui/primitives.js?v=71';
+import {createDialog,createToast} from './ui/dialog.js?v=71';
+import {renderArchiveList} from './ui/components/archive-list.js?v=71';
+import {moveList} from './ui/components/move-list.js?v=71';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=71';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=71';
+import {closeActivityDay, calendarHTML} from './activity.js?v=71';
+import {createBotClient} from './bot-client.js?v=71';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=71';
+import {signedDelta} from './rating.js?v=71';
+import {Chess} from './chess.js?v=71';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=71';
+import {openChest, craftItem} from './economy.js?v=71';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=71';
+import {pieceSVG, itemPreview} from './pieces.js?v=71';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=71';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=71';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=71';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -44,6 +47,35 @@ let selected=null, promotion=null, busy=false, animating=false, worker=null, tas
 let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play', reviewCursor=null, pendingBotMove=null;
 let queuedCursor=undefined;
 let archiveReturnContext=null;
+let analysisController=null,disposeAnalysis=null,analysisGeneration=0,analysisEntryId=null;
+const stopAnalysis = () => {analysisGeneration++;analysisController?.abort();analysisController=null;disposeAnalysis?.();disposeAnalysis=null;};
+const openAnalysis = async (id,force=false) => {
+ const entry=state.archive.find(row=>row.id===id);if(!eligibleEntry(entry)||active()||pendingResult)return;
+ stopReplay();stopAnalysis();const generation=analysisGeneration;analysisEntryId=id;
+ displayMatch=null;reviewCursor=null;currentScreen='analysis';window.history.replaceState(null,'','#analysis');render();
+ $('#analysis-loading').hidden=false;$('#analysis-loading').textContent='Разбираем партию';$('#analysis-content').hidden=true;$('#analysis-retry').hidden=true;
+ $('#analysis-close').focus({preventScroll:true});
+ analysisController=new AbortController();
+ try {
+  let result=entry.analysis;
+  if(force||!isCompatible(result,entry)){
+   result=await analyzeGame(entry,{signal:analysisController.signal,onProgress:progress=>{if(generation===analysisGeneration)showAnalysisProgress(progress);}});
+   if(generation!==analysisGeneration)return;
+   // Persistence merges into the latest state, including any concurrent economy reward.
+   persist(attachAnalysis(state,id,result));
+  }
+  if(generation!==analysisGeneration)return;
+  $('#analysis-loading').hidden=true;$('#analysis-content').hidden=false;$('#analysis-retry').hidden=false;
+  disposeAnalysis=mountAnalysis({analysis:result,entry,equipped:state.equipped});
+ }catch(error){
+  if(generation!==analysisGeneration||error.name==='AbortError')return;
+  $('#analysis-loading').textContent='Не удалось разобрать партию. Попробуйте ещё раз.';$('#analysis-retry').hidden=false;
+ }
+};
+$('#analysis-close').onclick=()=>changeTab('archive');
+$('#analysis-retry').onclick=()=>void openAnalysis(analysisEntryId,true);
+$('#archive-analysis').onclick=()=>void openAnalysis(displayMatch?.config.id);
+
 let lastBotError=null;
 const exportViewedMatch = () => {
  const config=viewedConfig(),error=config.engineFailure||(!displayMatch&&lastBotError?.fen===game.fen()?lastBotError:null);
@@ -138,7 +170,7 @@ const syncNavigation = () => {
     button.title=button.disabled?(button.dataset.tab==='archive'?'История доступна после завершения партии':'Раздел доступен после завершения партии'):'';
     button.setAttribute('aria-current',button.dataset.tab===currentScreen?'page':'false');
   });
-  $('#app-nav').hidden=active()||pendingResult||displayMatch?.kind==='archive';
+  $('#app-nav').hidden=active()||pendingResult||displayMatch?.kind==='archive'||currentScreen==='analysis';
   document.body.classList.toggle('archive-viewing',displayMatch?.kind==='archive');
   $('#play').dataset.pageKind=displayMatch?.kind==='archive'?'detail':'root';
   $('#profile-avatar').disabled=active()||pendingResult;
@@ -225,6 +257,7 @@ const renderGameInfo = () => {
   }
   $('#match-surface').hidden=!hasBoard;
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
+  $('#archive-analysis').hidden=displayMatch?.kind!=='archive'||!eligibleEntry(displayMatch.config);
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
   const shownPosition=positionAt(viewedGame(),reviewCursor);
   $('#status').textContent=reviewCursor!==null||displayMatch?`${shownPosition.isCheck()?'Шах · ход':'Ход'} ${shownPosition.turn()==='w'?'белых':'чёрных'}`:state.game.started?statusText():'Партия';
@@ -322,6 +355,9 @@ $('#board').addEventListener('keydown',event=>{
   event.preventDefault();cells[Math.max(0,Math.min(63,index+delta))].focus();
 });
 const changeTab = tab => {
+  if(tab==='analysis'){if(currentScreen==='analysis')return;if(analysisEntryId){void openAnalysis(analysisEntryId);return;}}
+  if(currentScreen==='analysis')stopAnalysis();
+  if(tab==='analysis'&&!analysisEntryId)tab='archive';
   stopReplay();
   const returningToArchive=displayMatch?.kind==='archive'&&tab==='archive';
   if(pendingResult||(animating&&!returningToArchive))return;
@@ -526,6 +562,7 @@ $('#modal').addEventListener('dialogdismiss',()=>{
   }
 });
 $('#close-modal').onclick=()=>showModal.close();
+window.addEventListener('pagehide',stopAnalysis);
 $('#open-chest').onclick=()=>{
   if(active())return;
   const opened=openChest(state);

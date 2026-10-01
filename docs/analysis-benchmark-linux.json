@@ -1,0 +1,53 @@
+{
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "node": "v24.19.0",
+    "measurement": "Node client + separate Stockfish WASM process; synthetic legal games; not browser/device results"
+  },
+  "results": [
+    {
+      "fullMoves": 20,
+      "playerDecisions": 20,
+      "status": "complete",
+      "totalMs": 21006,
+      "searches": 68,
+      "averagePositionMs": 1042,
+      "p95PositionMs": 1310,
+      "maximumPositionMs": 1316,
+      "engineProcessPeakRssMiB": null,
+      "maxNodeEventLoopDelayMs": 15,
+      "resultBytes": 40349,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. c3 b5 2. f4 h6 3. f5 h5 4. c4 b4 5. Nf3 h4 6. b3 g5 7. a4 d5 8. h3 Bd7 9. g3 Bxa4 10. bxa4 dxc4 11. Ng1 Qd4 12. Qb3 Qd5 13. Nc3 Qc5 14. Ra3 f6 15. Rh2 Kf7 16. a5 Qxg1 17. Qa2 g4 18. Rb3 Bg7 19. Rxb4 Nc6 20. Rh1 Ke8 *"
+    },
+    {
+      "fullMoves": 40,
+      "playerDecisions": 40,
+      "status": "complete",
+      "totalMs": 36487,
+      "searches": 129,
+      "averagePositionMs": 904,
+      "p95PositionMs": 1321,
+      "maximumPositionMs": 1402,
+      "engineProcessPeakRssMiB": null,
+      "maxNodeEventLoopDelayMs": 26,
+      "resultBytes": 81912,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. c3 h6 2. Qc2 f6 3. a3 g6 4. g3 d5 5. g4 a6 6. Qd1 Bd7 7. Bg2 Bc6 8. f3 e6 9. h3 f5 10. b4 b5 11. Kf1 Bxb4 12. gxf5 Kf8 13. d3 Bxc3 14. Ra2 b4 15. axb4 Ba1 16. f4 e5 17. Bd2 h5 18. Na3 Nf6 19. Bc1 Nfd7 20. Rh2 Nf6 21. Nb5 axb5 22. Rxa1 Ne4 23. Ra6 Rh6 24. Rb6 Qe7 25. Rh1 Nc5 26. Be4 Qg7 27. f6 Ra3 28. Rxb5 Qxf6 29. Kg2 Rh8 30. Qa4 d4 31. Be3 Rb3 32. Qa2 Nbd7 33. Kg3 Rc3 34. h4 Qd6 35. Qa5 Nf6 36. Qa8+ Ke7 37. f5 Ne8 38. Qa1 Kf7 39. Kh2 gxf5 40. Bxd4 Qf8 *"
+    },
+    {
+      "fullMoves": 80,
+      "playerDecisions": 80,
+      "status": "complete",
+      "totalMs": 53953,
+      "searches": 226,
+      "averagePositionMs": 664,
+      "p95PositionMs": 1358,
+      "maximumPositionMs": 1425,
+      "engineProcessPeakRssMiB": null,
+      "maxNodeEventLoopDelayMs": 31,
+      "resultBytes": 161232,
+      "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. c3 e6 2. Nh3 Nc6 3. f3 Be7 4. Na3 Rb8 5. b3 d6 6. Qc2 f5 7. e4 Bf8 8. Bd3 Nce7 9. Nb5 c6 10. Na3 Nd5 11. b4 Bd7 12. exd5 Kf7 13. Qa4 g5 14. Rb1 Be7 15. Bf1 Kg6 16. Rb3 Nf6 17. Ng1 Bc8 18. Nc4 Kf7 19. Kf2 exd5 20. Nh3 dxc4 21. d4 Ke8 22. Bd2 g4 23. Rb2 Rf8 24. Qxa7 c5 25. f4 Kf7 26. Be3 cxd4 27. Kg3 Qb6 28. Bd3 Ra8 29. Bc2 Ne4+ 30. Bxe4 Qd8 31. cxd4 Qe8 32. a4 Bg5 33. Rf1 Qe7 34. Qa5 Re8 35. Qa6 Rf8 36. Qc6 Bd7 37. Rh1 d5 38. Bg1 Qxb4 39. Qd6 Ra7 40. Kf2 Rd8 41. Bxd5+ Kg7 42. Qf8+ Qxf8 43. Rb5 Qe7 44. Be6 Kh6 45. Rb1 Bxe6 46. Ke3 Rc8 47. Rb3 Ra6 48. Rb4 Rcc6 49. g3 Kg6 50. Rb5 Qd7 51. Rb4 Bd8 52. Rb2 Ra7 53. Re2 Be7 54. Ng5 h5 55. Rg2 Ra5 56. Nf7 Rac5 57. h3 Bf8 58. Nh8+ Kf6 59. d5 Qd8 60. dxc6 Bh6 61. Ng6 Bxf4+ 62. Nxf4 Qh8 63. Ke2 Rb5 64. Bb6 Bf7 65. Ba7 Qd8 66. Be3 Kg7 67. Kf1 Qb6 68. Rgg1 Kh7 69. Ng2 Qxc6 70. Bh6 Bd5 71. Nh4 b6 72. Be3 Qc5 73. Bd2 Qf2+ 74. Kxf2 Rc5 75. Ke3 f4+ 76. gxf4 b5 77. Ba5 Rc7 78. Ke2 Ba8 79. f5 Rc6 80. Bd8 Rc7 *"
+    }
+  ]
+}

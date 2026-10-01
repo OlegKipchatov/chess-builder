@@ -1,12 +1,7 @@
 // Frozen launch parameters; calibration requires a new reward version.
 export const REWARD_CONFIG = Object.freeze({version:'game-economy-v2',completion:5,win:18,draw:10,loss:5,qualityMax:10,minResignMoves:10,lambda:8,priorWeight:4,prior:.5});
 export const ECONOMY_PROFILE = Object.freeze({version:'economy-sf19-v1',nodes:50000,hashMb:16});
-export const expectedScore = row => {
- if(row.scoreType==='mate')return row.scoreValue>0?1:0;
- const wdl=row.wdl;
- if(!wdl||wdl.some(value=>!Number.isFinite(value)||value<0)||wdl.reduce((a,b)=>a+b,0)!==1000)throw Error('Missing exact WDL');
- return (wdl[0]+wdl[1]/2)/1000;
-};
+export {expectedScore} from './stockfish-evaluation.js?v=71';
 export const classifyDecision = loss => loss<=.005?'best':loss<=.025?'good':loss<=.060?'inaccuracy':loss<=.150?'mistake':'blunder';
 export const summarizeQuality = decisions => {
  const rows=decisions.filter(row=>!row.forced),n=rows.length;

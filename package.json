@@ -13,7 +13,8 @@
     "simulate:conversion": "node scripts/simulation/conversion-v2.1.mjs",
     "motion:generate": "node scripts/generate-motion.mjs",
     "motion:check": "node scripts/generate-motion.mjs --check",
-    "test:pwa:browser": "node scripts/test-pwa-browser.mjs"
+    "test:pwa:browser": "node scripts/test-pwa-browser.mjs",
+    "benchmark:analysis": "node scripts/benchmark-analysis.mjs docs/analysis-benchmark-linux.json"
   },
   "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами",
   "devDependencies": {
