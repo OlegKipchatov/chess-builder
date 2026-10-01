@@ -40,7 +40,7 @@ test('Only one useful alternative is offered, never the move already played',()=
 test('Mate challenge does not disclose the solution until requested',()=>{
  const best={move:'d8a5',san:'Qa5+',pvSan:['Qa5+','Kd3','Qc3#']};
  const html=analysisInsight({...move,reason:'mate_opportunity',shortMate:{moves:2,verified:true},exercise:{},bestLine:best});
- assert.match(html,/Найти мат самостоятельно/);assert.match(html,/Показать решение/);assert.match(html,/мат в два хода/);
+ assert.match(html,/Найти мат/);assert.doesNotMatch(html,/data-analysis-line|Показать решение/);assert.match(html,/мат в два хода/);
  assert.doesNotMatch(html,/Qa5|Qc3|Ошибка/);
 });
 test('Meaningful positives remain without redundant played-move alternatives',()=>{

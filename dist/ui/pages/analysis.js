@@ -1,13 +1,12 @@
-import {escapeHTML as esc} from '../primitives.js?v=77';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=77';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=77';
-import {humanMove} from '../components/move-list.js?v=77';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=77';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=77';
-import {Chess} from '../../chess.js?v=77';
-import {positionAt} from '../../session.js?v=77';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=77';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=77';
+import {escapeHTML as esc} from '../primitives.js?v=78';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=78';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=78';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=78';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=78';
+import {Chess} from '../../chess.js?v=78';
+import {positionAt} from '../../session.js?v=78';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=78';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=78';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>
@@ -69,7 +68,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
    svg.innerHTML=`<defs><marker id="analysis-tip" markerWidth="3" markerHeight="3" refX="2.3" refY="1.5" orient="auto"><path d="M0 0L3 1.5L0 3z" fill="currentColor"/></marker></defs><path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="currentColor" stroke-width=".1" marker-end="url(#analysis-tip)"/>`;root.append(svg);
   }
   $('[data-analysis-context]').textContent=position.isCheckmate()?'Мат':previewStep===0?'Рекомендуемое продолжение':'Вариант';
-  if(pv.length===1){const button=$('[data-analysis-line]');button.textContent='Скрыть подсказку';button.setAttribute('aria-pressed','true');}
+  if(pv.length===1){const button=$('[data-analysis-line]');button.textContent='Скрыть';button.setAttribute('aria-pressed','true');}
   $('[data-variation-back]').disabled=previewStep===0;$('[data-variation-next]').disabled=previewStep===pv.length;
   if(entering&&pv.length>1)$('[data-variation-next]').focus({preventScroll:true});
  };
@@ -128,7 +127,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   $('#replay-start').setAttribute('aria-label',state==='pausedForInsight'?'Продолжить разбор':'Начать воспроизведение');$('#match-surface').dataset.playback=state;
  }});
  const returnToGame=()=>void showPly(shown,false).then(()=>$('#replay-start').focus({preventScroll:true}));
- $('#moves').innerHTML=analysis.moves.map(move=>`<button class="text-button" data-analysis-ply="${move.ply}" data-quality="${esc(move.highlight||move.quality||'')}" aria-label="${move.ply}. ${esc(humanMove(move.playedSan))}${move.quality&&!['best','good'].includes(move.quality)?', '+esc(qualityLabel[move.quality]):''}"><span>${Math.ceil(move.ply/2)}${move.ply%2?'.':'…'}</span> ${esc(humanMove(move.playedSan))} <small>${move.highlight?'!':({blunder:'??',mistake:'?',inaccuracy:'?!'})[move.quality]||''}</small></button>`).join('');
+ $('#moves').innerHTML=analysis.moves.map(move=>`<button class="text-button" data-analysis-ply="${move.ply}" data-quality="${esc(move.highlight||move.quality||'')}" aria-label="${move.ply}. ${esc(move.playedSan)}${move.quality&&!['best','good'].includes(move.quality)?', '+esc(qualityLabel[move.quality]):''}"><span>${Math.ceil(move.ply/2)}${move.ply%2?'.':'…'}</span> ${esc(move.playedSan)} <small>${move.highlight?'!':({blunder:'??',mistake:'?',inaccuracy:'?!'})[move.quality]||''}</small></button>`).join('');
  $('#analysis-summary').hidden=analysis.status==='complete';
  $('#analysis-summary').textContent=analysis.status==='complete'?'':'Часть ходов не удалось оценить. Можно повторить анализ.';
  $('#history-back').onclick=()=>void playback.seek(playback.getSnapshot().ply-1);

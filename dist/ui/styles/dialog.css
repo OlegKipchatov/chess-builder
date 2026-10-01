@@ -40,3 +40,4 @@ dialog.is-closing::backdrop{animation:backdrop-exit var(--motion-exit) var(--mot
 @media(prefers-reduced-motion:reduce){.reward-epic::before,.reward-legendary::before{animation:none;opacity:.16}}
 
 .match-end-reason{font-size:var(--type-secondary);color:var(--muted);margin:-4px 0 12px}
+#modal-content > button.primary{display:block;width:100%}

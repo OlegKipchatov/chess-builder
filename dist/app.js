@@ -1,30 +1,30 @@
-import {analyzeGame} from './analysis/analysis-service.js?v=77';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=77';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=77';
-import {analyzeReward} from './economy-analysis.js?v=77';
-import {applyQualityReward} from './reward-quality.js?v=77';
-import {motionDuration, motionEasing} from './ui/motion.js?v=77';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=77';
-import {mountAppShell} from './ui/shell.js?v=77';
-import {statCard,plural} from './ui/primitives.js?v=77';
-import {createDialog,createToast} from './ui/dialog.js?v=77';
-import {renderArchiveList} from './ui/components/archive-list.js?v=77';
-import {moveList} from './ui/components/move-list.js?v=77';
-import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=77';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=77';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=77';
-import {closeActivityDay, calendarHTML} from './activity.js?v=77';
-import {createBotClient} from './bot-client.js?v=77';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=77';
-import {signedDelta} from './rating.js?v=77';
-import {Chess} from './chess.js?v=77';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=77';
-import {openChest, craftItem} from './economy.js?v=77';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=77';
-import {pieceSVG, itemPreview} from './pieces.js?v=77';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=77';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=77';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=77';
+import {analyzeGame} from './analysis/analysis-service.js?v=78';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=78';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=78';
+import {analyzeReward} from './economy-analysis.js?v=78';
+import {applyQualityReward} from './reward-quality.js?v=78';
+import {motionDuration, motionEasing} from './ui/motion.js?v=78';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=78';
+import {mountAppShell} from './ui/shell.js?v=78';
+import {statCard,plural} from './ui/primitives.js?v=78';
+import {createDialog,createToast} from './ui/dialog.js?v=78';
+import {renderArchiveList} from './ui/components/archive-list.js?v=78';
+import {moveList} from './ui/components/move-list.js?v=78';
+import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=78';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=78';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=78';
+import {closeActivityDay, calendarHTML} from './activity.js?v=78';
+import {createBotClient} from './bot-client.js?v=78';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=78';
+import {signedDelta} from './rating.js?v=78';
+import {Chess} from './chess.js?v=78';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=78';
+import {openChest, craftItem} from './economy.js?v=78';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=78';
+import {pieceSVG, itemPreview} from './pieces.js?v=78';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=78';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=78';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=78';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -49,9 +49,9 @@ let collectionView='sets', pieceType='k', ownedOnly=false, currentScreen='play',
 let queuedCursor=undefined;
 let queuedHistoryInstant=false;
 let archiveReturnContext=null;
-let analysisController=null,disposeAnalysis=null,analysisGeneration=0,analysisEntryId=null,analysisLoadingTimer=null;
+let analysisController=null,disposeAnalysis=null,analysisGeneration=0,analysisEntryId=null,analysisLoadingTimer=null,analysisComplete=false;
 const stopAnalysis = () => {
- clearTimeout(analysisLoadingTimer);$('#archive-analysis').disabled=false;
+ clearTimeout(analysisLoadingTimer);analysisComplete=false;$('#archive-analysis').disabled=false;
  analysisGeneration++;analysisController?.abort();analysisController=null;disposeAnalysis?.();disposeAnalysis=null;
  $('#match-surface').classList.remove('analysis-active');delete $('#match-surface').dataset.mode;
  $('#analysis-progress').hidden=true;$('#analysis-board-tools').hidden=true;$('#analysis-insight').hidden=true;$('#analysis-summary').hidden=true;
@@ -75,12 +75,12 @@ const openAnalysis = async (id,force=false) => {
    persist(attachAnalysis(state,id,result));
   }
   if(generation!==analysisGeneration)return;
-  clearTimeout(analysisLoadingTimer);analysisController=null;$('#analysis-progress').hidden=true;$('#archive-analysis').hidden=true;$('#analysis-retry').hidden=false;
+  clearTimeout(analysisLoadingTimer);analysisController=null;analysisComplete=result.status==='complete';$('#analysis-progress').hidden=true;$('#archive-analysis').hidden=true;$('#analysis-retry').hidden=analysisComplete;$('#archive-review-actions').hidden=analysisComplete;
   $('#match-surface').classList.add('analysis-active');
   disposeAnalysis=mountAnalysis({analysis:result,entry,equipped:state.equipped,initialPly:reviewCursor??viewedGame().history().length,onPly:ply=>{reviewCursor=ply;if(disposeAnalysis)renderGameInfo();}});
  }catch(error){
   if(generation!==analysisGeneration||error.name==='AbortError')return;
-  clearTimeout(analysisLoadingTimer);analysisController=null;$('#analysis-progress').hidden=true;$('#archive-analysis').hidden=true;$('#analysis-retry').hidden=false;toast('Не удалось разобрать партию. Попробуйте ещё раз.',{error:true});
+  clearTimeout(analysisLoadingTimer);analysisController=null;analysisComplete=false;$('#archive-review-actions').hidden=false;$('#analysis-progress').hidden=true;$('#archive-analysis').hidden=true;$('#analysis-retry').hidden=false;toast('Не удалось разобрать партию. Попробуйте ещё раз.',{error:true});
  }
 };
 $('#analysis-cancel').onclick=()=>{stopAnalysis();render();};
@@ -275,14 +275,14 @@ const renderGameInfo = () => {
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   const archived=displayMatch?.kind==='archive';
   $('#archive-heading-actions').hidden=!archived;
-  $('#archive-review-actions').hidden=!archived||!eligibleEntry(displayMatch.config);
+  $('#archive-review-actions').hidden=analysisComplete||!archived||!eligibleEntry(displayMatch.config);
   const exportParent=archived?$('#archive-export-slot'):$('.match-actions'),exportButton=$('#export-pgn');
   if(exportButton.parentElement!==exportParent){
    exportParent.prepend(exportButton);exportButton.classList.toggle('icon-button',archived);
    exportButton.setAttribute('aria-label','Экспортировать PGN');exportButton.title='Экспортировать PGN';
    exportButton.innerHTML=archived?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>':'Экспортировать PGN';
   }
-  if(!analysisController)$('#archive-analysis').hidden=!!disposeAnalysis||!archived||!eligibleEntry(displayMatch.config);
+  if(!analysisController)$('#archive-analysis').hidden=!!disposeAnalysis||!$('#analysis-retry').hidden||!archived||!eligibleEntry(displayMatch.config);
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
   const shownPosition=positionAt(viewedGame(),reviewCursor);
   $('#status').textContent=reviewCursor!==null||displayMatch?`${shownPosition.isCheck()?'Шах · ход':'Ход'} ${shownPosition.turn()==='w'?'белых':'чёрных'}`:state.game.started?statusText():'Партия';

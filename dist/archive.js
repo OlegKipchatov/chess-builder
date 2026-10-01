@@ -1,7 +1,7 @@
-import {Chess} from './chess.js?v=77';
-import {newGame} from './state.js?v=77';
-import {settleRating} from './rating.js?v=77';
-import {rewardBreakdownFor} from './engine.js?v=77';
+import {Chess} from './chess.js?v=78';
+import {newGame} from './state.js?v=78';
+import {settleRating} from './rating.js?v=78';
+import {rewardBreakdownFor} from './engine.js?v=78';
 export const capturePoints = (game,color) => game.history({verbose:true}).reduce((sum,move)=>sum+(move.color===color?({p:1,n:3,b:3,r:5,q:9}[move.captured]||0):0),0);
 export const completedMatch = (state,game,{id,finishedAt}) => {
   if(!state.game.started||(!state.game.resigned&&!game.isGameOver()))return null;
