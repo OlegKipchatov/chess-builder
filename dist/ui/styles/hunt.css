@@ -1,0 +1,12 @@
+.hunt-entry{width:100%;max-width:600px;margin:28px auto 0;padding-top:24px;border-top:1px solid var(--border)}
+.hunt-entry h2{font-size:var(--font-section,1.25rem);margin:0 0 20px}.hunt-entry h3{font-size:1rem;margin:0 0 8px}.hunt-entry p{color:var(--muted)}
+.hunt-modes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.hunt-modes button{width:100%;min-height:52px;white-space:nowrap}
+.hunt-active #minigames>.page-content>:not(#hunt-root){display:none!important}
+#minigames .hunt-entry{margin-top:0;padding-top:0;border-top:0}
+.hunt-surface{max-width:600px;margin:0 auto}
+.hunt-hud{display:flex;justify-content:space-between;gap:24px;margin-bottom:12px}.hunt-hud>div{display:flex;align-items:baseline;gap:12px}.hunt-hud span{color:var(--muted);font-size:.875rem}.hunt-hud strong{font-size:1.25rem}
+.hunt-recovery{font-size:.875rem;color:var(--muted);margin:0 0 12px}.hunt-result-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.hunt-sides{display:flex;align-items:center;margin-bottom:12px;font-size:.875rem}.hunt-sides>span{display:flex;gap:8px;align-items:center}.hunt-side-piece{display:block;width:26px;height:32px}
+#hunt-again,#hunt-save{width:100%;margin-top:12px}.hunt-result-stats .stat-card{padding:12px 8px}.hunt-result-stats .stat-card span{font-size:.875rem}
+@media(min-width:761px) and (min-height:700px){.hunt-surface{max-width:min(600px,calc(100dvh - 260px))}}
+@media(max-width:380px){.hunt-active #minigames{padding-left:4px;padding-right:4px}.hunt-modes{gap:10px}.hunt-hud>div{gap:6px}}

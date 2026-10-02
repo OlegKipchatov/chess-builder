@@ -7,6 +7,9 @@ body.match-active .brand{cursor:default}body.match-active .balances{opacity:.65}
 
 
 html{scrollbar-gutter:stable}
+#app-nav button>span{white-space:nowrap}
+@media(max-width:400px){#app-nav{width:calc(100% - 8px);padding:6px 3px;gap:0}#app-nav button{padding-inline:2px}}
+@media(max-width:359px){#app-nav button{font-size:.75rem}}
 
 
 body.archive-viewing .notification-stack{bottom:24px}
