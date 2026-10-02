@@ -1,2 +1,2 @@
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=89';
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=92';
 export const archivePage = () => `<section id="archive" class="tab" data-page-kind="subpage" hidden>${pageHeader({title:"История партий",startContent:backButton('profile')})}<div class="page-content"><div id="match-archive" class="archive-viewport" tabindex="0" role="region" aria-label="История партий"></div></div></section>`;

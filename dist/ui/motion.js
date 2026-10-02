@@ -6,6 +6,7 @@ export const motionDuration = Object.freeze({
   enter: 260,
   exit: 180,
   board: 420,
+  autoBoard: 160,
   reveal: 500,
 });
 export const motionEasing = Object.freeze({

@@ -1,34 +1,36 @@
-import {huntEntry,huntFAQ,mountHunt} from './ui/pages/hunt.js?v=89';
-import {awardHunt} from './hunt.js?v=89';
-import {analyzeGame} from './analysis/analysis-service.js?v=89';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=89';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=89';
-import {analyzeReward} from './economy-analysis.js?v=89';
-import {applyQualityReward} from './reward-quality.js?v=89';
-import {motionDuration, motionEasing} from './ui/motion.js?v=89';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=89';
-import {mountAppShell} from './ui/shell.js?v=89';
-import {statCard,plural,pageHeader,iconButton,backIcon} from './ui/primitives.js?v=89';
-import {createDialog,createToast} from './ui/dialog.js?v=89';
-import {renderArchiveList} from './ui/components/archive-list.js?v=89';
-import {moveList} from './ui/components/move-list.js?v=89';
-import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=89';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=89';
-import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=89';
-import {importPgnDialog} from './ui/dialog-content.js?v=89';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=89';
-import {closeActivityDay, calendarHTML} from './activity.js?v=89';
-import {createBotClient} from './bot-client.js?v=89';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=89';
-import {signedDelta} from './rating.js?v=89';
-import {Chess} from './chess.js?v=89';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=89';
-import {openChest, craftItem} from './economy.js?v=89';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=89';
-import {pieceSVG, itemPreview} from './pieces.js?v=89';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=89';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=89';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=89';
+import {awardAutochess,autoRewardCoins,autoSeriesCoins} from './autochess-rewards.js?v=92';
+import {autochessEntry,autochessFAQ,mountAutochess} from './ui/pages/autochess.js?v=92';
+import {huntEntry,huntFAQ,mountHunt} from './ui/pages/hunt.js?v=92';
+import {awardHunt} from './hunt.js?v=92';
+import {analyzeGame} from './analysis/analysis-service.js?v=92';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=92';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=92';
+import {analyzeReward} from './economy-analysis.js?v=92';
+import {applyQualityReward} from './reward-quality.js?v=92';
+import {motionDuration, motionEasing} from './ui/motion.js?v=92';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=92';
+import {mountAppShell} from './ui/shell.js?v=92';
+import {statCard,plural,pageHeader,iconButton,backIcon} from './ui/primitives.js?v=92';
+import {createDialog,createToast} from './ui/dialog.js?v=92';
+import {renderArchiveList} from './ui/components/archive-list.js?v=92';
+import {moveList} from './ui/components/move-list.js?v=92';
+import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=92';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=92';
+import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=92';
+import {importPgnDialog} from './ui/dialog-content.js?v=92';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=92';
+import {closeActivityDay, calendarHTML} from './activity.js?v=92';
+import {createBotClient} from './bot-client.js?v=92';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=92';
+import {signedDelta} from './rating.js?v=92';
+import {Chess} from './chess.js?v=92';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=92';
+import {openChest, craftItem} from './economy.js?v=92';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=92';
+import {pieceSVG, itemPreview} from './pieces.js?v=92';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=92';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=92';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=92';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -108,15 +110,15 @@ const persist = (next,reset=false) => {
   catch {toast('Не удалось сохранить прогресс. Проверьте свободное место и разрешение на хранение данных.',{error:true});return false;}
 };
 const showModal = createDialog($('#modal'),$('#modal-content'),$('#close-modal'));
-let huntController=null;
-$('#play').insertAdjacentHTML('afterend',`<section id="minigames" class="tab" data-page-kind="root" hidden>${pageHeader({title:'Мини-игры',titleId:'minigames-title',startContent:iconButton({id:'hunt-exit',label:'Выйти из охоты',icon:backIcon})})}<div class="page-content">${huntEntry()}<div id="hunt-root" hidden></div></div></section>`);
-$('#faq>.page-content').insertAdjacentHTML('beforeend',huntFAQ());
+let huntController=null,autoController=null;
+$('#play').insertAdjacentHTML('afterend',`<section id="minigames" class="tab" data-page-kind="root" hidden>${pageHeader({title:'Мини-игры',titleId:'minigames-title',startContent:iconButton({id:'hunt-exit',label:'Выйти из охоты',icon:backIcon})})}<div class="page-content">${huntEntry()}${autochessEntry()}<div id="hunt-root" hidden></div><div id="autochess-root" hidden></div></div></section>`);
+$('#faq>.page-content').insertAdjacentHTML('beforeend',huntFAQ()+autochessFAQ());
 const closeHunt = mode => {
   huntController?.dispose();huntController=null;$('#hunt-root').hidden=true;document.body.classList.remove('hunt-active');render();
   if(mode)startHuntMode(mode);else $('[data-hunt-mode="timed"]').focus({preventScroll:true});
 };
 const startHuntMode = mode => {
-  if(active()||pendingResult||animating||huntController)return;
+  if(active()||pendingResult||animating||huntController||autoController)return;
   stopReplay();stopAnalysis();displayMatch=null;
   $('#hunt-root').hidden=false;document.body.classList.add('hunt-active');
   huntController=mountHunt({root:$('#hunt-root'),exitButton:$('#hunt-exit'),mode,runId:createRecordId(),runSeed:createRecordId(),equipped:structuredClone(state.equipped),showModal,onExit:closeHunt,getBest:mode=>state.hunt.records[mode].bestScore,award:run=>{
@@ -126,6 +128,22 @@ const startHuntMode = mode => {
   render();
 };
 document.querySelectorAll('[data-hunt-mode]').forEach(button=>button.onclick=()=>startHuntMode(button.dataset.huntMode));
+$('#autochess-open').onclick=()=>{
+ if(active()||pendingResult||animating||huntController||autoController)return;
+ if(qualityRunning){toast('Дождитесь завершения оценки последней партии.');return;}
+ stopReplay();stopAnalysis();displayMatch=null;
+ $('#autochess-root').hidden=false;document.body.classList.add('autochess-active');
+ autoController=mountAutochess({root:$('#autochess-root'),exitButton:$('#hunt-exit'),equipped:structuredClone(state.equipped),showModal,toast,createId:createRecordId,award:run=>{
+  try {
+   const latest=loadState(localStorage),next=awardAutochess(latest,run);
+   if(next!==latest)localStorage.setItem(KEY,JSON.stringify(next));
+   state=next;$('#coins').textContent=state.coins;$('#coins').nextElementSibling.textContent=plural(state.coins,['монета','монеты','монет']);
+   return {saved:true,coins:autoRewardCoins(run.results.at(-1)),total:autoSeriesCoins(state,run)};
+  }catch{return {saved:false};}
+ },onExit:()=>{
+  const previous=autoController;autoController=null;previous?.dispose();$('#autochess-root').hidden=true;document.body.classList.remove('autochess-active');render();$('#autochess-open').focus({preventScroll:true});
+ }});render();
+};
 const ended = () => state.game.resigned || game.isGameOver();
 const locked = () => busy || animating;
 const active = () => isMatchActive(state,game);
@@ -208,10 +226,10 @@ const syncNavigation = () => {
     button.title=button.disabled?(button.dataset.tab==='archive'?'История доступна после завершения партии':'Раздел доступен после завершения партии'):'';
     button.setAttribute('aria-current',button.dataset.tab===currentScreen?'page':'false');
   });
-  $('#app-nav').hidden=!!huntController||active()||pendingResult||displayMatch?.kind==='archive'||currentScreen==='analysis';
+  $('#app-nav').hidden=!!huntController||!!autoController||active()||pendingResult||displayMatch?.kind==='archive'||currentScreen==='analysis';
   document.body.classList.toggle('archive-viewing',displayMatch?.kind==='archive');
   $('#play').dataset.pageKind=displayMatch?.kind==='archive'?'detail':'root';
-  $('#profile-avatar').disabled=!!huntController||active()||pendingResult;
+  $('#profile-avatar').disabled=!!huntController||!!autoController||active()||pendingResult;
 
   document.body.classList.toggle('match-active',active()||pendingResult);
   $('.brand').setAttribute('aria-disabled',String(active()));
@@ -274,9 +292,10 @@ const renderHistory = () => {
   if(reviewCursor===null)$('#moves').scrollTop=$('#moves').scrollHeight;
 };
 const renderGameInfo = () => {
-  $('#minigames-title').textContent=huntController?'Охота':'Мини-игры';
-  $('#hunt-exit').closest('.page-header-start').hidden=!huntController;
-  if(huntController)return;
+  $('#minigames-title').textContent=autoController?'Автошахматы':huntController?'Охота':'Мини-игры';
+  $('#hunt-exit').closest('.page-header-start').hidden=!huntController&&!autoController;
+  $('#hunt-exit').setAttribute('aria-label',autoController?'Сохранить и выйти из автошахмат':'Выйти из охоты');
+  if(huntController||autoController)return;
   syncBoardAvailability();
   if(pendingResult){
     $('#resign').disabled=true;
@@ -409,6 +428,7 @@ $('#board').addEventListener('keydown',event=>{
   event.preventDefault();cells[Math.max(0,Math.min(63,index+delta))].focus();
 });
 const changeTab = tab => {
+  if(autoController){autoController.requestExit();return;}
   if(huntController){huntController.requestExit();return;}
   if(tab==='analysis')tab='archive';
   if(tab!=='play'&&(analysisController||disposeAnalysis))stopAnalysis();
@@ -729,11 +749,11 @@ const syncUpdateButtons = () => {
  for(const id of ['#update-app','#profile-update-app'])$(id).hidden=!(refreshPending||updateRegistration?.waiting);
 };
 const applyPendingUpdate = () => {
- if(!refreshPending||refreshing||(!updateAccepted&&!firstIsolationPending)||huntController||active()||pendingResult||animating||$('#modal').open)return;
+ if(!refreshPending||refreshing||(!updateAccepted&&!firstIsolationPending)||huntController||autoController||active()||pendingResult||animating||$('#modal').open)return;
  refreshing=true;location.reload();
 };
 const acceptUpdate = () => {
- if(huntController||active()||pendingResult||analysisController||disposeAnalysis){toast('Завершите партию или выйдите из разбора перед обновлением.');return;}
+ if(huntController||autoController||active()||pendingResult||analysisController||disposeAnalysis){toast('Завершите партию или выйдите из разбора перед обновлением.');return;}
  if(!persist(state,!state.game.started))return;
  updateAccepted=true;
  if(updateRegistration?.waiting)updateRegistration.waiting.postMessage({type:'ACTIVATE_UPDATE'});

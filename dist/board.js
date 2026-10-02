@@ -1,7 +1,7 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=89';
-import {Chess} from './chess.js?v=89';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=89';
-import {pieceSVG} from './pieces.js?v=89';
+import {motionDuration, motionEasing} from './ui/motion.js?v=92';
+import {Chess} from './chess.js?v=92';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=92';
+import {pieceSVG} from './pieces.js?v=92';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);
@@ -61,10 +61,10 @@ export const historyMoves = (game,from,to) => {
     return target&&target!==square?[{from:square,to:target}]:[];
   });
 };
-export const animateTransition = async (root, steps, before) => {
+export const animateTransition = async (root, steps, before, duration=motionDuration.board) => {
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||!root.getBoundingClientRect().width||!root.animate)return;
   const rect=root.getBoundingClientRect(), nodes=[],hidden=[],animations=[];
-  const timing={duration:motionDuration.board,easing:motionEasing.board,fill:'forwards'};
+  const timing={duration,easing:motionEasing.board,fill:'forwards'};
   const overlay=source=>{
     if(!source?.icon)return null;
     const node=document.createElement('span');node.className='moving-piece';node.innerHTML=source.icon;

@@ -34,3 +34,8 @@ Every new effect must support prefers-reduced-motion: CSS disables animations an
 transitions; JavaScript checks the preference before animating or awaiting motion;
 programmatic scroll uses instant. Preserve feedback and functionality, with no extra
 wait, spinner or removed information. Reward rarity retains its static accent.
+
+Autochess uses `autoBoard` (160 ms) for piece movement while its logical pace
+is 200 ms per ply including search. Animations never gate the next engine query,
+accepted position, 30-second deadline or saved result. Reduced motion removes
+only the presentation; it does not change the logical pace.

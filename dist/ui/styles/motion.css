@@ -6,6 +6,7 @@
   --motion-enter: 260ms;
   --motion-exit: 180ms;
   --motion-board: 420ms;
+  --motion-autoBoard: 160ms;
   --motion-reveal: 500ms;
   --motion-ease-local: cubic-bezier(.2,0,0,1);
   --motion-ease-enter: ease-out;
