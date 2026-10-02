@@ -1,36 +1,36 @@
-import {awardAutochess,autoRewardCoins,autoSeriesCoins} from './autochess-rewards.js?v=93';
-import {autochessEntry,autochessFAQ,mountAutochess} from './ui/pages/autochess.js?v=93';
-import {huntEntry,huntFAQ,mountHunt} from './ui/pages/hunt.js?v=93';
-import {awardHunt} from './hunt.js?v=93';
-import {analyzeGame} from './analysis/analysis-service.js?v=93';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=93';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=93';
-import {analyzeReward} from './economy-analysis.js?v=93';
-import {applyQualityReward} from './reward-quality.js?v=93';
-import {motionDuration, motionEasing} from './ui/motion.js?v=93';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=93';
-import {mountAppShell} from './ui/shell.js?v=93';
-import {statCard,plural,pageHeader,iconButton,backIcon} from './ui/primitives.js?v=93';
-import {createDialog,createToast} from './ui/dialog.js?v=93';
-import {renderArchiveList} from './ui/components/archive-list.js?v=93';
-import {moveList} from './ui/components/move-list.js?v=93';
-import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=93';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=93';
-import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=93';
-import {importPgnDialog} from './ui/dialog-content.js?v=93';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=93';
-import {closeActivityDay, calendarHTML} from './activity.js?v=93';
-import {createBotClient} from './bot-client.js?v=93';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=93';
-import {signedDelta} from './rating.js?v=93';
-import {Chess} from './chess.js?v=93';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=93';
-import {openChest, craftItem} from './economy.js?v=93';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=93';
-import {pieceSVG, itemPreview} from './pieces.js?v=93';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=93';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=93';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=93';
+import {awardAutochess,autoRewardCoins,autoSeriesCoins} from './autochess-rewards.js?v=94';
+import {autochessEntry,autochessFAQ,mountAutochess} from './ui/pages/autochess.js?v=94';
+import {huntEntry,huntFAQ,mountHunt} from './ui/pages/hunt.js?v=94';
+import {awardHunt} from './hunt.js?v=94';
+import {analyzeGame} from './analysis/analysis-service.js?v=94';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=94';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=94';
+import {analyzeReward} from './economy-analysis.js?v=94';
+import {applyQualityReward} from './reward-quality.js?v=94';
+import {motionDuration, motionEasing} from './ui/motion.js?v=94';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=94';
+import {mountAppShell} from './ui/shell.js?v=94';
+import {statCard,plural,pageHeader,iconButton,backIcon} from './ui/primitives.js?v=94';
+import {createDialog,createToast} from './ui/dialog.js?v=94';
+import {renderArchiveList} from './ui/components/archive-list.js?v=94';
+import {moveList} from './ui/components/move-list.js?v=94';
+import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=94';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=94';
+import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=94';
+import {importPgnDialog} from './ui/dialog-content.js?v=94';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=94';
+import {closeActivityDay, calendarHTML} from './activity.js?v=94';
+import {createBotClient} from './bot-client.js?v=94';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=94';
+import {signedDelta} from './rating.js?v=94';
+import {Chess} from './chess.js?v=94';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=94';
+import {openChest, craftItem} from './economy.js?v=94';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=94';
+import {pieceSVG, itemPreview} from './pieces.js?v=94';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=94';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=94';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=94';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -131,14 +131,14 @@ document.querySelectorAll('[data-hunt-mode]').forEach(button=>button.onclick=()=
 $('#autochess-open').onclick=()=>{
  if(active()||pendingResult||animating||huntController||autoController)return;
  if(qualityRunning){toast('Дождитесь завершения оценки последней партии.');return;}
- stopReplay();stopAnalysis();displayMatch=null;
+ stopReplay();stopAnalysis();stopBot();displayMatch=null;
  $('#autochess-root').hidden=false;document.body.classList.add('autochess-active');
  autoController=mountAutochess({root:$('#autochess-root'),exitButton:$('#hunt-exit'),equipped:structuredClone(state.equipped),showModal,toast,createId:createRecordId,award:run=>{
   try {
    const latest=loadState(localStorage),next=awardAutochess(latest,run);
    if(next!==latest)localStorage.setItem(KEY,JSON.stringify(next));
    state=next;$('#coins').textContent=state.coins;$('#coins').nextElementSibling.textContent=plural(state.coins,['монета','монеты','монет']);
-   return {saved:true,coins:autoRewardCoins(run.results.at(-1)),total:autoSeriesCoins(state,run)};
+   return {saved:true,coins:state.autochessAwards?.[run.battle.id]?.coins||0,total:autoSeriesCoins(state,run)};
   }catch{return {saved:false};}
  },onExit:()=>{
   const previous=autoController;autoController=null;previous?.dispose();$('#autochess-root').hidden=true;document.body.classList.remove('autochess-active');render();$('#autochess-open').focus({preventScroll:true});
@@ -294,7 +294,7 @@ const renderHistory = () => {
 const renderGameInfo = () => {
   $('#minigames-title').textContent=autoController?'Автошахматы':huntController?'Охота':'Мини-игры';
   $('#hunt-exit').closest('.page-header-start').hidden=!huntController&&!autoController;
-  $('#hunt-exit').setAttribute('aria-label',autoController?'Сохранить и выйти из автошахмат':'Выйти из охоты');
+  $('#hunt-exit').setAttribute('aria-label',autoController?'Выйти из автошахмат':'Выйти из охоты');
   if(huntController||autoController)return;
   syncBoardAvailability();
   if(pendingResult){

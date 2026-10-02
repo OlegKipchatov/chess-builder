@@ -1,6 +1,7 @@
-import {AUTO} from './autochess.js?v=93';
+import {AUTO} from './autochess.js?v=94';
+import {createEngineWorker} from './stockfish-lifecycle.js?v=94';
 // One sequential worker per active battle; no rating or difficulty model.
-export const createAutoplayEngine = (spawn=()=>new Worker('./stockfish19-worker.js?v=93',{type:'module'})) => {
+export const createAutoplayEngine = (spawn=createEngineWorker) => {
  const worker=spawn();let pending=null,dead=false,readyResolve,readyReject;
  const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
  const send=command=>worker.postMessage(command);
@@ -12,7 +13,7 @@ export const createAutoplayEngine = (spawn=()=>new Worker('./stockfish19-worker.
   if(dead)return;
   for(const line of String(event.data).split('\n')){
    if(line.trim()==='uciok'){
-    ['setoption name Threads value 1','setoption name Hash value 16','setoption name Skill Level value 20','setoption name UCI_LimitStrength value false','setoption name MultiPV value 1','ucinewgame','isready'].forEach(send);
+    ['setoption name Threads value 1','setoption name Hash value 4','setoption name Skill Level value 20','setoption name UCI_LimitStrength value false','setoption name MultiPV value 1','ucinewgame','isready'].forEach(send);
    }else if(line.trim()==='readyok'){clearTimeout(watchdog);readyResolve();}
    else if(line.startsWith('bestmove ')&&pending){
     const request=pending;pending=null;clearTimeout(watchdog);

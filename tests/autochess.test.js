@@ -1,13 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
-import {AUTO,PRICES,opponentFor,createAutoRun,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun} from '../dist/autochess.js';
+import {AUTO,PRICES,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
 import {createBattleController} from '../dist/autochess-battle.js';
 import {createAutoplayEngine} from '../dist/autochess-engine.js';
+const createAutoRun=(...args)=>({...createModernRun(...args),version:3});
+test('random shop prices persist and probabilities cover all ten levels',()=>{
+ const run=createModernRun('shop');assert.equal(purchasePrice(run),1);assert.equal(levelPrice(run),3);
+ const bought=buyRandomPiece(run);assert.equal(bought.reserve,2);assert.equal(purchasePrice(bought),2);
+ assert.deepEqual(buyRandomPiece(run),bought);assert.equal(salePrice(bought.army.at(-1)),1);
+ const sold=sellPiece(bought,bought.army.at(-1).id);assert.equal(sold.reserve,3);assert.equal(purchasePrice(sold),2);
+ assert.deepEqual(restoreAutoRun(JSON.stringify(sold)),sold);
+ const level=upgradeShop(run);assert.equal(level.level,2);assert.equal(level.reserve,0);assert.equal(levelPrice(level),5);
+ assert.deepEqual(restoreAutoRun(JSON.stringify(level)),level);
+ for(let i=1;i<=10;i++){assert.equal(Object.values(shopOdds(i)).reduce((a,b)=>a+b),100);assert.ok(Object.values(shopOdds(i)).every(n=>n>=0));}
+ assert.equal(upgradeShop({...run,level:10,reserve:100}).level,10);
+});
+test('round income depends on results without resetting shop counters',()=>{
+ for(const outcome of ['win','draw','loss']){
+  let run=buyRandomPiece(createModernRun(outcome));run={...run,phase:'result',results:[{battleId:run.id+':1',outcome}],battle:{result:{winner:null}}};
+  const next=nextRound(run);assert.equal(next.reserve,run.reserve+roundIncome({outcome}));assert.equal(next.purchases,1);assert.equal(next.level,1);
+  assert.equal(purchasePrice(next),2);assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
+ }
+});
 const prepared=()=>{
  let run=buyPiece(createAutoRun('test','fixture'),'n');
  run=placePiece(run,run.army.at(-1).id,run.color==='w'?'d1':'d8');return run;
 };
+test('terminal initial position completes without allocating an engine',async()=>{
+ let run={...createModernRun('terminal'),phase:'paused',battle:{id:'terminal:1',initialFen:'4k3/8/8/8/8/8/8/4K3 w - - 0 1',moves:[],elapsed:0,result:null}};
+ const controller=createBattleController({getRun:()=>run,save:next=>{run=next;return true;},onChange:()=>{},onError:message=>assert.fail(message),engineFactory:()=>assert.fail('Engine must not be allocated')});
+ await controller.start();assert.equal(run.phase,'result');assert.equal(run.results[0].outcome,'draw');assert.equal(run.battle.elapsed,0);controller.dispose();
+});
 test('shop conserves budget, enforces capacity and cannot sell king',()=>{
  let run={...createAutoRun('one'),version:1,reserve:12};const original=run;
  run=buyPiece(run,'q');assert.equal(run.reserve,3);assert.equal(buyPiece(run,'q'),run);
@@ -29,7 +53,9 @@ test('opponents spend equal budget and every round restores bought army',()=>{
 });
 test('placement validates ranks, pending purchases and castling rights',()=>{
  let run=buyPiece({...createAutoRun('one'),version:1,reserve:12},'p');assert.equal(setupError(run),'Расставьте купленные фигуры');
- const id=run.army.at(-1).id;assert.equal(placePiece(run,id,'a4'),run);
+ const id=run.army.at(-1).id;assert.equal(placePiece(run,id,run.color==='w'?'a5':'a4'),run);
+ assert.notEqual(placePiece(run,id,run.color==='w'?'a4':'a5'),run);
+ assert.equal(placePiece(run,id,run.color==='w'?'a1':'a8'),run);
  run=placePiece(run,id,run.color==='w'?'a2':'a7');assert.equal(setupError(run),'');
  run=buyPiece(run,'r');run=placePiece(run,run.army.at(-1).id,run.color==='w'?'h1':'h8');
  assert.ok(setupFen(run).split(' ')[2].includes(run.color==='w'?'K':'k'));
@@ -100,4 +126,25 @@ test('memory failure during engine creation or readiness preserves paused battle
   assert.equal(controller.isActive(),false);assert.equal(controller.isPreparing(),false);
   assert.match(errors[0],/Не хватает памяти/);assert.equal(terminated,Number(asynchronous));controller.dispose();
  }
+});
+
+
+test('series ends at ten wins or three losses; draws allow rounds beyond five',()=>{
+ for(const [outcome,count] of [['win',10],['loss',3],['draw',30]]){
+  let run=prepared();
+  for(let index=0;index<count;index++){
+   // Use a legal fixture independent of generated opponent checks.
+   run={...run,phase:'paused',battle:{id:run.id+':'+run.round,initialFen:setupFen(run),moves:[],elapsed:0,result:null}};
+   run=completeBattle(run,{winner:outcome==='draw'?null:outcome==='win'?run.color:run.color==='w'?'b':'w',reason:'test'});
+   assert.equal(seriesFinished(run),outcome!=='draw'&&index===count-1);
+   if(seriesFinished(run))assert.equal(nextRound(run),run);
+   else {run=nextRound(run);assert.ok(run.reserve+run.army.reduce((sum,p)=>sum+PRICES[p.type],0)<=24);assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);}
+  }
+ }
+});
+test('same-colour bishops may start and immediately draw; first-move capture is legal',()=>{
+ let run={...createAutoRun('bishops'),color:'w',army:[{id:'king',type:'k',square:'e1'},{id:'bishop',type:'b',square:'a1'}],opponent:[{id:'enemy-king',type:'k',square:'e8'},{id:'enemy-bishop',type:'b',square:'h8'}]};
+ assert.equal(setupError(run),'');run=beginBattle(run);assert.equal(run.phase,'paused');
+ assert.equal(battleResult(battleGame(run),0,0).reason,'Недостаточно материала');
+ const game=battleGame(run);assert.equal(game.move('Bxh8').captured,'b');
 });

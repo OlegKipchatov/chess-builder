@@ -1,5 +1,5 @@
-import {iconButton} from '../primitives.js?v=93';
-import {motionDuration} from '../motion.js?v=93';
+import {iconButton} from '../primitives.js?v=94';
+import {motionDuration} from '../motion.js?v=94';
 
 const control = (id,label,path,hidden=false) => iconButton({
   id,label,hidden,variant:'secondary',

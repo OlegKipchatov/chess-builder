@@ -1,7 +1,7 @@
-import {escapeHTML,plural,button,iconButton} from './primitives.js?v=93';
-import {itemPreview,pieceSVG} from '../pieces.js?v=93';
-import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=93';
-import {dayLabel} from '../activity.js?v=93';
+import {escapeHTML,plural,button,iconButton} from './primitives.js?v=94';
+import {itemPreview,pieceSVG} from '../pieces.js?v=94';
+import {craftCost,itemById,PIECE_NAMES,rarityNames} from '../catalog.js?v=94';
+import {dayLabel} from '../activity.js?v=94';
 const exportIcon = path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
 export const exportPgnDialog = pgn => `<h2 tabindex="-1" autofocus>Экспорт партии</h2><textarea id="pgn-text" class="pgn-text" aria-label="PGN партии" readonly>${escapeHTML(pgn)}</textarea><div class="pgn-actions">${iconButton({label:'Скачать PGN',icon:exportIcon('M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5'),'data-download-pgn':true})}${iconButton({label:'Скопировать PGN',icon:exportIcon('M9 9h11v11H9zM15 9V4H4v11h5'),'data-copy-pgn':true})}${iconButton({label:'Поделиться PGN',icon:exportIcon('M12 16V3m-5 5 5-5 5 5M5 13v8h14v-8'),'data-share-pgn':true})}</div><p id="pgn-feedback" class="pgn-feedback" role="status" aria-live="polite"></p>`;
 export const importPgnDialog = () => '<h2 tabindex="-1" autofocus>Открыть PGN</h2><div class="pgn-import-actions"><button type="button" class="quiet" data-pgn-paste>Вставить текст</button><button type="button" class="quiet" data-pgn-file>Выбрать файл</button></div><input id="pgn-file" type="file" accept=".pgn,text/plain,application/x-chess-pgn" hidden><form id="import-pgn-form" hidden><label for="import-pgn-text">PGN партии</label><textarea id="import-pgn-text" class="pgn-text" placeholder="Вставьте текст партии" spellcheck="false" required></textarea><button type="submit" class="primary wide">Открыть</button></form><p id="pgn-import-error" role="alert" class="pgn-feedback"></p>';

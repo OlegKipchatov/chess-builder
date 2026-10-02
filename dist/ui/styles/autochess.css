@@ -20,3 +20,6 @@
 }
 
 #auto-action [data-auto-next],#auto-action [data-auto-retry]{width:100%;min-height:44px}
+#auto-reward>.primary{width:100%;min-height:44px}
+.auto-shop-actions{display:grid;gap:8px}.auto-shop-actions>button{width:100%;min-height:44px}
+@media(min-width:900px){#auto-action{grid-column:1;grid-row:4}#auto-status{grid-row:5}.auto-sidebar{grid-row:1/6}}

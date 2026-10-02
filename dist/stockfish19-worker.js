@@ -1,11 +1,23 @@
 import createStockfish from './vendor/sf19/sf_19_smallnet.js';
 let engine=null;
 const queue=[];
-self.onmessage=event=>{if(engine)engine.uci(event.data);else queue.push(event.data);};
+// Emscripten can create nested pthread workers even with Threads=1.
+const children=new Set(),NativeWorker=self.Worker;
+self.Worker=class extends NativeWorker {
+ constructor(...args){super(...args);children.add(this);}
+ terminate(){children.delete(this);super.terminate();}
+};
+self.onmessage=event=>{
+ if(event.data?.type==='STOP_ENGINE'){
+  for(const child of children)child.terminate();
+  queue.length=0;engine=null;self.postMessage({type:'ENGINE_STOPPED'});self.close();return;
+ }
+ if(engine)engine.uci(event.data);else queue.push(event.data);
+};
 const initialize=async()=>{
  if(!self.crossOriginIsolated||typeof SharedArrayBuffer==='undefined')throw Error('Stockfish 19 requires an isolated page. Reload after the offline update.');
  // The bundled default reserves a shared memory maximum of 2 GiB per worker.
- // Our one-thread/16 MiB hash profiles fit in a bounded 128 MiB heap.
+ // 64 MiB is the import minimum; runtime allocations require growth beyond it.
  const wasmMemory=new WebAssembly.Memory({initial:1024,maximum:2048,shared:true});
  const instance=await createStockfish({wasmMemory});
  instance.listen=data=>self.postMessage(data);

@@ -1,8 +1,9 @@
-import {STOCKFISH as C} from './stockfish-config.js?v=93';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=93';
-import {Chess} from './chess.js?v=93';
-import {validEngineProfile} from './strength.js?v=93';
-import {decisionModeFor} from './cognitive-model.js?v=93';
+import {STOCKFISH as C} from './stockfish-config.js?v=94';
+import {createEngineWorker} from './stockfish-lifecycle.js?v=94';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=94';
+import {Chess} from './chess.js?v=94';
+import {validEngineProfile} from './strength.js?v=94';
+import {decisionModeFor} from './cognitive-model.js?v=94';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -10,7 +11,7 @@ export const uciPosition = data => {
  const history=game.history({verbose:true}),moves=history.map(move=>move.from+move.to+(move.promotion||'')).join(' ');
  return {game,command:`position fen ${history[0]?.before||game.fen()}${moves?' moves '+moves:''}`};
 };
-export const createStockfishClient = (spawn=()=>new Worker('./stockfish19-worker.js?v=93',{type:'module'})) => {
+export const createStockfishClient = (spawn=createEngineWorker) => {
  const client={onmessage:null,onerror:null};
  let worker=null,ready=false,dead=false,current=null,timer=null,stopTimer=null;
  const clearTimers=()=>{clearTimeout(timer);clearTimeout(stopTimer);};

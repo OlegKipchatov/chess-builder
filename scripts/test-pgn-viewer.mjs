@@ -3,7 +3,7 @@ export const testPgnViewer = async (page,url) => {
  await page.goto(url+'#profile');await page.locator('#open-pgn').waitFor();
  const before=await page.evaluate(()=>localStorage.getItem('chess-vault-v3'));
  const pgn=await page.evaluate(async()=>{
-  const {Chess}=await import('./chess.js?v=93'),{exportPgn}=await import('./pgn-export.js?v=93');
+  const {Chess}=await import('./chess.js?v=94'),{exportPgn}=await import('./pgn-export.js?v=94');
   const game=new Chess();['e4','e5','Nf3','Nc6'].forEach(move=>game.move(move));
   return exportPgn(game,{startedAt:'2026-10-01T12:00:00Z',playerColor:'b'});
  });

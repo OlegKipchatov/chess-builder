@@ -1,5 +1,5 @@
-import {AUTO,battleGame,battleResult,completeBattle} from './autochess.js?v=93';
-import {createAutoplayEngine} from './autochess-engine.js?v=93';
+import {AUTO,battleGame,battleResult,completeBattle} from './autochess.js?v=94';
+import {createAutoplayEngine} from './autochess-engine.js?v=94';
 export const createBattleController = ({getRun,save,onChange,onError,engineFactory=createAutoplayEngine,clock=()=>performance.now(),schedule=setTimeout,cancel=clearTimeout}) => {
  let position=null,engine=null,generation=0,active=false,base=0,started=0,deadline=null,next=null;
  const elapsed=()=>Math.min(AUTO.duration,base+(active?Math.max(0,clock()-started):0));
@@ -32,9 +32,12 @@ export const createBattleController = ({getRun,save,onChange,onError,engineFacto
    const run=getRun();if(!run?.battle||run.phase==='result')return;
    const token=++generation;
    try{
+    position=battleGame(run);base=run.battle.elapsed;
+    const initialResult=battleResult(position,run.battle.moves.length,base);
+    if(initialResult){finish(initialResult);return;}
     engine=engineFactory();onChange();
     await engine.ready;if(token!==generation)return;
-    position=battleGame(run);base=run.battle.elapsed;started=clock();active=true;
+    started=clock();active=true;
     const result=battleResult(position,run.battle.moves.length,base);
     if(result){finish(result);return;}
     deadline=schedule(()=>{if(token===generation)finish({winner:null,reason:'Время боя закончилось'});},AUTO.duration-base);
