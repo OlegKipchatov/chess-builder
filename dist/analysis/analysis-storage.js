@@ -1,7 +1,7 @@
-import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=80';
-import {Chess} from '../chess.js?v=80';
+import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=82';
+import {Chess} from '../chess.js?v=82';
 export const eligibleEntry = entry => {
- if(!entry||entry.counted===false||entry.engineFailure||entry.mode!=='bot'||!entry.finishedAt||!['w','b'].includes(entry.playerColor))return false;
+ if(!entry||typeof entry.id!=='string'||!entry.id||typeof entry.pgn!=='string'||!entry.pgn.trim()||entry.imported||entry.counted===false||entry.engineFailure||entry.mode!=='bot'||!entry.finishedAt||!['w','b'].includes(entry.playerColor))return false;
  try {const game=new Chess();game.loadPgn(entry.pgn);return game.history({verbose:true}).some(move=>move.color===entry.playerColor);} catch {return false;}
 };
 export const isCompatible = (analysis,entry) => analysis?.status==='complete'&&analysis.analysisVersion===ANALYSIS_VERSION&&analysis.profileVersion===PROFILE.version&&analysis.engine?.version===ENGINE.version&&analysis.engine?.nnue===ENGINE.nnue&&analysis.gameId===entry.id&&analysis.playerColor===entry.playerColor&&analysis.sourcePgn===entry.pgn&&Array.isArray(analysis.moves)&&analysis.moves.length===analysis.totalPlies;

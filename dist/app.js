@@ -1,32 +1,32 @@
-import {analyzeGame} from './analysis/analysis-service.js?v=80';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=80';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=80';
-import {analyzeReward} from './economy-analysis.js?v=80';
-import {applyQualityReward} from './reward-quality.js?v=80';
-import {motionDuration, motionEasing} from './ui/motion.js?v=80';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=80';
-import {mountAppShell} from './ui/shell.js?v=80';
-import {statCard,plural} from './ui/primitives.js?v=80';
-import {createDialog,createToast} from './ui/dialog.js?v=80';
-import {renderArchiveList} from './ui/components/archive-list.js?v=80';
-import {moveList} from './ui/components/move-list.js?v=80';
-import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=80';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=80';
-import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=80';
-import {importPgnDialog} from './ui/dialog-content.js?v=80';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=80';
-import {closeActivityDay, calendarHTML} from './activity.js?v=80';
-import {createBotClient} from './bot-client.js?v=80';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=80';
-import {signedDelta} from './rating.js?v=80';
-import {Chess} from './chess.js?v=80';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=80';
-import {openChest, craftItem} from './economy.js?v=80';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=80';
-import {pieceSVG, itemPreview} from './pieces.js?v=80';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=80';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=80';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=80';
+import {analyzeGame} from './analysis/analysis-service.js?v=82';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=82';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=82';
+import {analyzeReward} from './economy-analysis.js?v=82';
+import {applyQualityReward} from './reward-quality.js?v=82';
+import {motionDuration, motionEasing} from './ui/motion.js?v=82';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=82';
+import {mountAppShell} from './ui/shell.js?v=82';
+import {statCard,plural} from './ui/primitives.js?v=82';
+import {createDialog,createToast} from './ui/dialog.js?v=82';
+import {renderArchiveList} from './ui/components/archive-list.js?v=82';
+import {moveList} from './ui/components/move-list.js?v=82';
+import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=82';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=82';
+import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=82';
+import {importPgnDialog} from './ui/dialog-content.js?v=82';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=82';
+import {closeActivityDay, calendarHTML} from './activity.js?v=82';
+import {createBotClient} from './bot-client.js?v=82';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=82';
+import {signedDelta} from './rating.js?v=82';
+import {Chess} from './chess.js?v=82';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=82';
+import {openChest, craftItem} from './economy.js?v=82';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=82';
+import {pieceSVG, itemPreview} from './pieces.js?v=82';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=82';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=82';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=82';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -128,6 +128,8 @@ const processPendingRewards = async () => {
    let quality;
    try {quality=await analyzeReward(pending,{onProgress:(done,total)=>{
     if(visibleRewardId===pending.id&&$('#reward-quality-progress'))$('#reward-quality-progress').textContent=`Оценка качества: ${done} из ${total} ходов`;
+   },onRetry:({done,total})=>{
+    if(visibleRewardId===pending.id&&$('#reward-quality-progress'))$('#reward-quality-progress').textContent=`Оценка качества: ${done} из ${total} ходов · возобновляем…`;
    }});}catch(error) {quality={status:'unavailable',diagnostics:error.diagnostics||[{stage:'replay',message:String(error.message||error).slice(0,180)}]};}
    const next=applyQualityReward(state,pending.id,quality);
    if(next===state)continue;
@@ -277,16 +279,16 @@ const renderGameInfo = () => {
   $('#archive-return').hidden=displayMatch?.kind!=='archive';
   $('#archive-return').setAttribute('aria-label',archiveReturnTarget==='profile'?'В профиль':archiveReturnTarget==='play'?'К игре':'К истории партий');
   $('#archive-return').title=$('#archive-return').getAttribute('aria-label');
-  const archived=displayMatch?.kind==='archive';
+  const archived=displayMatch?.kind==='archive',canAnalyze=archived&&eligibleEntry(state.archive.find(entry=>entry.id===displayMatch.config.id));
   $('#archive-heading-actions').hidden=!archived;
-  $('#archive-review-actions').hidden=analysisComplete||!archived||!eligibleEntry(displayMatch.config);
+  $('#archive-review-actions').hidden=analysisComplete||!canAnalyze;
   const exportParent=archived?$('#archive-export-slot'):$('.match-actions'),exportButton=$('#export-pgn');
   if(exportButton.parentElement!==exportParent){
    exportParent.prepend(exportButton);exportButton.classList.toggle('icon-button',archived);
    exportButton.setAttribute('aria-label','Экспортировать PGN');exportButton.title='Экспортировать PGN';
    exportButton.innerHTML=archived?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>':'Экспортировать PGN';
   }
-  if(!analysisController)$('#archive-analysis').hidden=!!disposeAnalysis||!$('#analysis-retry').hidden||!archived||!eligibleEntry(displayMatch.config);
+  if(!analysisController)$('#archive-analysis').hidden=!!disposeAnalysis||!$('#analysis-retry').hidden||!canAnalyze;
   $('#play-stats').hidden=hasBoard||!state.archive.some(entry=>entry.mode==='bot'&&entry.counted!==false);
   const shownPosition=positionAt(viewedGame(),reviewCursor);
   $('#status').textContent=reviewCursor!==null||displayMatch?`${shownPosition.isCheck()?'Шах · ход':'Ход'} ${shownPosition.turn()==='w'?'белых':'чёрных'}`:state.game.started?statusText():'Партия';
@@ -487,13 +489,13 @@ const focusCollectionItem = id => {
   const item=itemById(id);
   if(!item)return;
   pieceType=item.kind==='board'?'board':item.type;
-  collectionView='items';ownedOnly=false;drawCollection();
+  collectionView='items';if(!state.owned.includes(id))ownedOnly=false;drawCollection();
   const card=document.getElementById(`collection-item-${item.id}`);
   card?.classList.add('navigation-target');
   card?.addEventListener('blur',()=>card.classList.remove('navigation-target'),{once:true});
   card?.focus({preventScroll:true});
   if(card){
-    const top=document.querySelector('header').getBoundingClientRect().bottom+($('#collection-content .equipment-strip')?.getBoundingClientRect().height||0)+12;
+    const top=document.querySelector('header').getBoundingClientRect().bottom+($('#collection-content .equipment-strip')?.getBoundingClientRect().height||0)+24;
     const dock=$('#app-nav');
     const bottom=dock.hidden?window.innerHeight:Math.min(window.innerHeight,dock.getBoundingClientRect().top);
     const rect=card.getBoundingClientRect();

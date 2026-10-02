@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 export const testAnalysisLearning = async (page,url) => {
  const saved=await page.evaluate(async()=>{
   const previous=localStorage.getItem('chess-vault-v3'),state=JSON.parse(previous);
-  const {Chess}=await import('./chess.js?v=80');
-  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=80');
-  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=80');
+  const {Chess}=await import('./chess.js?v=82');
+  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=82');
+  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=82');
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
   const game=new Chess();game.loadPgn(pgn);
   const entry={...state.archive[0],id:'training-fixture',pgn,playerColor:'b'};
   const moves=game.history({verbose:true}).map((move,index)=>({ply:index+1,actor:move.color==='b'?'player':'opponent',status:move.color==='b'?'complete':'not_analyzed',fenBefore:move.before,fenAfter:move.after,playedMove:move.from+move.to,playedSan:move.san,quality:move.color==='b'?'best':undefined,alternatives:[],autoPause:false}));
+  Object.assign(moves.at(-1),{highlight:'excellent',reason:'only_move'});
   const target=moves[23];Object.assign(target,{reason:'mate_opportunity',mateTransition:'missed_mate',shortMate:{verified:true,moves:2},expectedScoreLoss:0,recommendationRequired:true,bestLine:{move:'d8a5',san:'Qa5+',pv:['d8a5','d2d3','a5c3'],pvSan:['Qa5+','Kd3','Qc3#']}});
   Object.assign(moves[5],{quality:'inaccuracy',reason:'generic',expectedScoreLoss:.05,bestLine:{move:'g8f6',san:'Nf6',pv:['g8f6','e2e3','c8f5','f1d3'],pvSan:['Nf6','e3','Bf5','Bd3']}});
   const tactical=moves[7],sample=new Chess(tactical.fenBefore),pv=[],pvSan=[];
@@ -36,7 +37,8 @@ export const testAnalysisLearning = async (page,url) => {
  const oneLine=async selector=>assert.equal(await page.locator(selector).evaluate(button=>{const range=document.createRange();range.selectNodeContents(button);return range.getClientRects().length===1;}),true,'Action label occupies one line');
  const seek=async value=>{await slider.evaluate((node,value)=>{node.value=String(value);node.dispatchEvent(new Event('input',{bubbles:true}));},value);await page.waitForFunction(value=>document.querySelector('#history-position').textContent===`${value} / 30`,value);};
  await slider.press('End');assert.equal(await page.locator('#history-position').innerText(),'30 / 30');
- assert.match(await page.locator('#analysis-insight').innerText(),/Партия завершена/);
+ assert.match(await page.locator('#analysis-insight').innerText(),/Отличный ход/);
+ assert.doesNotMatch(await page.locator('#analysis-insight').innerText(),/Партия завершена/);
  await slider.press('Home');assert.equal(await page.locator('#history-position').innerText(),'0 / 30');
  assert.match(await page.locator('#analysis-insight').innerText(),/Начало партии/);
  await page.locator('[data-insight-ply="8"]').click();assert.equal(await page.locator('#history-position').innerText(),'8 / 30');
@@ -52,7 +54,11 @@ export const testAnalysisLearning = async (page,url) => {
  await page.waitForFunction(()=>document.querySelector('#match-surface').dataset.playback==='pausedForInsight');
  assert.equal(await slider.inputValue(),'6');assert.match(await page.locator('#analysis-insight').innerText(),/Неточность/);
  assert.equal(await page.locator('[data-analysis-line]').innerText(),'Подсказка');await oneLine('[data-analysis-line]');
+ const hintBefore=await page.locator('[data-analysis-line]').boundingBox();
  await page.locator('[data-analysis-line]').click();
+ const hintAfter=await page.locator('[data-analysis-line]').boundingBox(),variant=await page.locator('[data-analysis-expand]').boundingBox();
+ assert.deepEqual(hintAfter,hintBefore,'Hint geometry remains unchanged');
+ assert.ok(variant.x+variant.width<=hintAfter.x,'Variation is left of hint');
  assert.equal(await page.locator('[data-analysis-line]').innerText(),'Скрыть');await oneLine('[data-analysis-line]');
  assert.equal(await page.locator('#match-surface').getAttribute('data-mode'),'hint');
  assert.equal(await page.locator('#board .analysis-arrow').count(),1);

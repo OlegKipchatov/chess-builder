@@ -28,7 +28,8 @@ button labels. Tabular numerals alone do not reserve space for additional digits
 Dynamic controls use `.stable-label` and a `data-size-label` sizing label in the
 same grid cell as `.control-label`. An optional `data-size-alt` reserves another
 long form (e.g. a longer currency inflection). The sizing copy has no accessible text.
-Reserve the longest relevant label at the current breakpoint; never truncate or
+Collection select/craft buttons use only their visible content width, without hidden sizing labels.
+For other dynamic controls, reserve the longest relevant label at the current breakpoint; never truncate or
 shrink text to fit. Enlarged text may grow the control, but switching runtime
 states at the same text size must not change its height. Craft controls retain
 Создать · N ✧ while disabled. Chest controls retain the missing-coins message.

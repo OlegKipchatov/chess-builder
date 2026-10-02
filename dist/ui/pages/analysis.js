@@ -1,14 +1,14 @@
-import {matchEndReason} from '../../archive.js?v=80';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=80';
-import {escapeHTML as esc} from '../primitives.js?v=80';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=80';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=80';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=80';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=80';
-import {Chess} from '../../chess.js?v=80';
-import {positionAt} from '../../session.js?v=80';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=80';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=80';
+import {matchEndReason} from '../../archive.js?v=82';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=82';
+import {escapeHTML as esc} from '../primitives.js?v=82';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=82';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=82';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=82';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=82';
+import {Chess} from '../../chess.js?v=82';
+import {positionAt} from '../../session.js?v=82';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=82';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=82';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>
@@ -79,7 +79,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   const {state,mateIn}=exercise.getSnapshot(),interactive=state==='awaitMove'&&!promotions.length;
   board(exercise.game,selected,interactive);root.setAttribute('aria-label','Задание: найдите мат');
   $('#match-surface').dataset.practice=state;
-  $('[data-practice-message]').textContent=({awaitMove:`Найдите мат в ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))} ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))===1?'ход':'хода'}.`,checking:'Проверяем продолжение…',unverified:'Не удалось подтвердить мат за отведённое время. Попробуйте ещё раз или выберите другой ход.',wrong:'Этот ход не приводит к мату за отведённое число ходов. Попробуйте другое продолжение.',correct:'',opponent:'Соперник отвечает…',success:'Мат! Вы нашли решение.'})[state];
+  $('[data-practice-message]').textContent=({awaitMove:`Найдите мат в ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))} ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))===1?'ход':'хода'}.`,checking:'Проверяем продолжение…',unverified:'Не удалось подтвердить мат за отведённое время. Попробуйте ещё раз или выберите другой ход.',wrong:'Есть ход получше. Попробуйте найти его.',correct:'',opponent:'Соперник отвечает…',success:'Мат! Вы нашли решение.'})[state];
   const next=$('[data-practice-continue]');next.hidden=['awaitMove','checking','correct','opponent'].includes(state);next.textContent=['wrong','unverified'].includes(state)?'Попробовать снова':state==='success'?'Продолжить разбор':'Продолжить';
   $('#analysis-practice-tools [data-analysis-return]').hidden=state==='success';
   const promotion=$('[data-practice-promotion]');promotion.hidden=!promotions.length;
@@ -125,7 +125,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   $('#analysis-insight').inert=false;
   const move=analysis.moves[ply-1],card=analysisInsight(move);
   const boundary=ply===0?'<h2>Начало партии</h2><p>Переходите по ходам или выбирайте отметки на шкале, чтобы посмотреть разбор.</p>':ply===analysis.totalPlies?`<div class="analysis-boundary"><h2>Партия завершена</h2><p>${esc([entry.result,matchEndReason(game,entry.result==='Поражение'&&!game.isGameOver())].filter(Boolean).join(' · '))}</p>${analysis.status==='complete'&&!analysis.moves.some(isImportantInsight)?'<p>В этой партии анализ не обнаружил заметных ошибок.</p>':''}</div>`:'';
-  $('#analysis-insight').innerHTML=card+boundary;marker(move);
+  $('#analysis-insight').innerHTML=card||boundary;marker(move);
   $('#history-markers').querySelectorAll('[data-insight-ply]').forEach(button=>button.setAttribute('aria-current',String(Number(button.dataset.insightPly)===ply)));
  };
  const playback=createAnalysisPlayback({analysis,showPly,onChange:({state})=>{

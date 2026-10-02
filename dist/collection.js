@@ -1,3 +1,3 @@
-export {presetEquipment,canEquipPreset} from './collection-model.js?v=80';
-export {escapeHTML} from './ui/primitives.js?v=80';
-export {renderCollection} from './ui/components/collection-view.js?v=80';
+export {presetEquipment,canEquipPreset} from './collection-model.js?v=82';
+export {escapeHTML} from './ui/primitives.js?v=82';
+export {renderCollection} from './ui/components/collection-view.js?v=82';

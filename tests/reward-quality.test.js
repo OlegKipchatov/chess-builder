@@ -81,3 +81,22 @@ test('Reward failure stops after three attempts and old unavailable bonus is com
  assert.equal(paid.coins,105);assert.equal(paid.archive[0].rewardBreakdown.total,15);
  assert.equal(applyQualityReward(paid,'old-failure',{status:'unavailable'}),paid);
 });
+test('Silent reward worker restarts the current search without losing completed moves',async()=>{
+ let created=0,terminated=0;const progress=[],retries=[],requests=[];
+ const quality=await analyzeReward({pgn:'1. e4 e5 2. Nf3',playerColor:'w'},{requestTimeoutMs:15,onProgress:(done,total)=>progress.push([done,total]),onRetry:event=>retries.push(event),createClient:()=>{
+  const attempt=++created,client={terminate:()=>terminated++,postMessage:request=>{
+   requests.push({attempt,fen:request.fen});
+   const second=!request.fen.includes('PPPPPPPP');
+   if(attempt===1&&second)return;
+   queueMicrotask(()=>client.onmessage?.({data:{id:request.id,evaluation:{move:second?'g1f3':'e2e4',wdl:[300,400,300]}}}));
+  }};return client;
+ }});
+ assert.equal(quality.status,'complete');assert.equal(created,2);assert.equal(terminated,2);
+ assert.deepEqual(progress,[[1,2],[2,2]]);assert.deepEqual(retries,[{done:1,total:2,attempt:2}]);
+ assert.equal(requests[1].fen,requests[2].fen);assert.equal(quality.diagnostics[0].message,'Economy request timeout');
+});
+test('Completely silent reward workers stop after a bounded number of restarts',async()=>{
+ let terminated=0;
+ await assert.rejects(analyzeReward({pgn:'1. e4',playerColor:'w'},{requestTimeoutMs:5,createClient:()=>({postMessage:()=>{},terminate:()=>terminated++})}),error=>error.diagnostics.length===3);
+ assert.equal(terminated,3);
+});
