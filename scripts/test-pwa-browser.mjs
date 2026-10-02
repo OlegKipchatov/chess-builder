@@ -231,8 +231,10 @@ try{
  const observer=await context.newPage();await observer.goto(origin+'/upgrade-observer');
  // Observe the exact waiting worker before closing its last old client.
  // Registration.active can temporarily still name the old activated worker.
- await observer.evaluate(async()=>{window.upgradeWorker=(await navigator.serviceWorker.getRegistration('/chess-builder/')).waiting;});
- assert.equal(await observer.evaluate(()=>window.upgradeWorker?.state),'installed');
+ await observer.waitForFunction(async()=>{
+  window.upgradeWorker=(await navigator.serviceWorker.getRegistration('/chess-builder/'))?.waiting;
+  return window.upgradeWorker?.state==='installed';
+ });
  await page.close();page=observer;
  await page.waitForFunction(()=>window.upgradeWorker.state==='activated');
  await page.goto(origin+'/chess-builder/');await isolated(page);
