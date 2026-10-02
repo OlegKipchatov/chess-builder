@@ -1,5 +1,5 @@
-import {createStockfishClient} from '../stockfish-client.js?v=82';
-import {Chess} from '../chess.js?v=82';
+import {createStockfishClient} from '../stockfish-client.js?v=83';
+import {Chess} from '../chess.js?v=83';
 const tokenOf = move => move.from+move.to+(move.promotion||'');
 const play = (game,token) => game.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]});
 // Calculation only: enumerate every solution to mate in one/two, not just top-1.
@@ -27,12 +27,12 @@ export const prepareMateExercise = async (move,check=()=>{}) => {
  return solutions.length?{fen:move.fenBefore,mateIn:move.shortMate.moves,solutions}:null;
 };
 // Playback uses the saved proof tree. Every move waits for an explicit action.
-export const createMateExercise = (exercise,options={}) => {
- if(exercise.type==='engine')return createEngineMateExercise(exercise,options);
+const createSavedMateExercise = (exercise,options={}) => {
  const game=new Chess(exercise.fen);let state='awaitMove',solution=null,reply=null;
  const snapshot=()=>({fen:game.fen(),state,mateIn:exercise.mateIn,turn:game.turn()});
  return {
   game,getSnapshot:snapshot,
+  getHint:()=>reply?reply.finishes[0]:exercise.solutions[0]?.move,
   submit:token=>{
    if(state!=='awaitMove')return snapshot();
    try {play(game,token);}catch{return snapshot();}
@@ -54,7 +54,7 @@ export const createMateExercise = (exercise,options={}) => {
 
 // New positions created by a player's attempt are evaluated only in practice mode.
 // Passive review continues to use saved analysis and sends no engine commands.
-export const createEngineMateExercise = (exercise,{createClient=createStockfishClient,nodes=300000}={}) => {
+const createEngineExercise = (exercise,{createClient=createStockfishClient,nodes=300000}={}) => {
  const game=new Chess(exercise.fen);let state='awaitMove',client=null,request=0,reply=null,disposed=false,rejectPending=null;
  const snapshot=()=>({fen:game.fen(),state,mateIn:exercise.mateIn,turn:game.turn()});
  const search=()=>new Promise((resolve,reject)=>{
@@ -70,6 +70,11 @@ export const createEngineMateExercise = (exercise,{createClient=createStockfishC
  });
  return {
   game,getSnapshot:snapshot,
+  getHint:async()=>{
+   const line=await search();
+   const remaining=exercise.mateIn-Math.floor(game.history().length/2);
+   return !disposed&&line.scoreType==='mate'&&line.scoreValue>0&&line.scoreValue<=remaining?line.move:null;
+  },
   submit:async token=>{
    if(disposed||state!=='awaitMove')return snapshot();
    try{play(game,token);}catch{return snapshot();}
@@ -96,3 +101,27 @@ export const createEngineMateExercise = (exercise,{createClient=createStockfishC
   dispose:()=>{disposed=true;request++;client?.terminate();client=null;rejectPending?.(new DOMException('Cancelled','AbortError'));rejectPending=null;}
  };
 };
+
+// Count only checked legal failures, by position. Unverified searches never cost an attempt.
+const withAttempts = (exercise,{attempts=new Map()}={}) => {
+ let hintPending=false;
+ const position=()=>{const game=exercise.game;return game.fen().split(' ').slice(0,4).join(' ');};
+ const snapshot=()=>({...exercise.getSnapshot(),hintPending,failedAttempts:attempts.get(position())||0,canHint:(attempts.get(position())||0)>=5});
+ return {...exercise,getSnapshot:snapshot,
+  submit:token=>{
+   if(hintPending||exercise.getSnapshot().state!=='awaitMove')return snapshot();
+   const key=position(),before=exercise.game.history().length;
+   const finish=()=>{
+    if(exercise.game.history().length>before&&exercise.getSnapshot().state==='wrong')attempts.set(key,(attempts.get(key)||0)+1);
+    return snapshot();
+   };
+   const result=exercise.submit(token);return result?.then?result.then(finish):finish();
+  },
+  getHint:async()=>{
+   if(hintPending||exercise.getSnapshot().state!=='awaitMove'||!snapshot().canHint)return null;
+   hintPending=true;try{return await exercise.getHint();}catch{return null;}finally{hintPending=false;}
+  }
+ };
+};
+export const createEngineMateExercise = (exercise,options={}) => withAttempts(createEngineExercise(exercise,options),options);
+export const createMateExercise = (exercise,options={}) => exercise.type==='engine'?createEngineMateExercise(exercise,options):withAttempts(createSavedMateExercise(exercise,options),options);

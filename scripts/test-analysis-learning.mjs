@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 export const testAnalysisLearning = async (page,url) => {
  const saved=await page.evaluate(async()=>{
   const previous=localStorage.getItem('chess-vault-v3'),state=JSON.parse(previous);
-  const {Chess}=await import('./chess.js?v=82');
-  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=82');
-  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=82');
+  const {Chess}=await import('./chess.js?v=83');
+  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=83');
+  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=83');
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
   const game=new Chess();game.loadPgn(pgn);
   const entry={...state.archive[0],id:'training-fixture',pgn,playerColor:'b'};
@@ -97,6 +97,17 @@ export const testAnalysisLearning = async (page,url) => {
  await square('a7').click({force:true});assert.equal(await page.locator('#board').innerHTML(),wrong);
  await page.locator('[data-practice-continue]').click();assert.equal(await state(),'awaitMove');
  assert.match(await square('d8').getAttribute('aria-label'),/ферзь/i);
+ for(let attempt=1;attempt<5;attempt++){
+  assert.equal(await page.locator('[data-practice-hint]').isVisible(),false);
+  await choose('d8','b6');
+  await page.locator('[data-practice-continue]').click();
+ }
+ assert.equal(await page.locator('[data-practice-hint]').isVisible(),true);
+ const hintPosition=await page.evaluate(()=>({y:scrollY,top:document.querySelector('#board').getBoundingClientRect().top}));
+ await page.locator('[data-practice-hint]').evaluate(button=>button.click());
+ await page.locator('#board .analysis-arrow').waitFor();
+ assert.deepEqual(await page.evaluate(()=>({y:scrollY,top:document.querySelector('#board').getBoundingClientRect().top})),hintPosition);
+ assert.equal(await page.locator('[data-practice-hint]').innerText(),'Скрыть');
  await choose('d8','a5');
  assert.equal(await page.locator('[data-practice-continue]').isVisible(),false);
  await page.waitForFunction(()=>document.querySelector('#match-surface').dataset.practice==='awaitMove');

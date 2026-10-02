@@ -66,3 +66,8 @@
 .analysis-insight-actions [data-analysis-line]{min-width:calc(9ch + 24px)}
 .analysis-insight-actions [data-analysis-expand][hidden]{display:block!important;visibility:hidden;pointer-events:none}
 .archive-viewing .history-markers[hidden]{display:block!important;visibility:hidden;pointer-events:none}
+
+.analysis-practice-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px}
+.analysis-practice-heading p{flex:1;min-width:0}
+[data-practice-hint]{flex:none;white-space:nowrap;min-width:calc(9ch + 24px)}
+[data-practice-hint][hidden]{display:block!important;visibility:hidden;pointer-events:none}

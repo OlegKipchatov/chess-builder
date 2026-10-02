@@ -1,19 +1,19 @@
-import {matchEndReason} from '../../archive.js?v=82';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=82';
-import {escapeHTML as esc} from '../primitives.js?v=82';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=82';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=82';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=82';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=82';
-import {Chess} from '../../chess.js?v=82';
-import {positionAt} from '../../session.js?v=82';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=82';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=82';
+import {matchEndReason} from '../../archive.js?v=83';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=83';
+import {escapeHTML as esc} from '../primitives.js?v=83';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=83';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=83';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=83';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=83';
+import {Chess} from '../../chess.js?v=83';
+import {positionAt} from '../../session.js?v=83';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=83';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=83';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>
  <div class="analysis-variation-controls"><button type="button" class="quiet" data-variation-back aria-label="Назад по варианту">←</button><button type="button" class="quiet" data-variation-next aria-label="Вперёд по варианту">→</button><button type="button" class="quiet" data-analysis-return>К партии</button></div></div>
- <div id="analysis-practice-tools" hidden><p data-practice-message role="status"></p><div data-practice-promotion hidden></div>
+ <div id="analysis-practice-tools" hidden><div class="analysis-practice-heading"><p data-practice-message role="status"></p><button type="button" class="quiet" data-practice-hint hidden>Подсказка</button></div><div data-practice-promotion hidden></div>
  <div class="analysis-variation-controls"><button type="button" class="primary" data-practice-continue hidden>Продолжить</button><button type="button" class="quiet" data-analysis-return>К партии</button></div></div>
  </div>`;
 export const analysisInsights = () => '<div id="analysis-insight" class="analysis-insight" aria-live="polite" hidden></div><p id="analysis-summary" class="muted" hidden></p>';
@@ -28,6 +28,13 @@ export const variationArrowPoints = (token,orientation='w') => {
 export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}}) => {
  const $=selector=>document.querySelector(selector),root=$('#board'),game=new Chess();game.loadPgn(entry.pgn);
  let shown=0,disposed=false,transition=0,mode='game',previewStep=0,exercise=null,selected=null,promotions=[];
+ const practiceAttempts=new Map();let practiceHint=null;
+ const drawArrow=token=>{
+  const points=variationArrowPoints(token,entry.playerColor);if(!points)return;
+  const [x1,y1,x2,y2]=points,svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 8 8');svg.setAttribute('aria-hidden','true');svg.classList.add('analysis-marker','analysis-arrow');
+  svg.innerHTML=`<defs><marker id="practice-tip" markerWidth="3" markerHeight="3" refX="2.3" refY="1.5" orient="auto"><path d="M0 0L3 1.5L0 3z" fill="currentColor"/></marker></defs><path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="currentColor" stroke-width=".1" marker-end="url(#practice-tip)"/>`;root.append(svg);
+ };
  const cancelAnimations=()=>root.getAnimations({subtree:true}).forEach(animation=>animation.cancel());
  const clearMarkers=()=>root.querySelectorAll('.analysis-marker').forEach(node=>node.remove());
  const board=(position,selection=null,interactive=false)=>{
@@ -76,9 +83,11 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
  };
  const renderExercise=()=>{
   if(!exercise||disposed)return;
-  const {state,mateIn}=exercise.getSnapshot(),interactive=state==='awaitMove'&&!promotions.length;
+  const {state,mateIn,canHint,hintPending}=exercise.getSnapshot(),interactive=state==='awaitMove'&&!hintPending&&!promotions.length;
   board(exercise.game,selected,interactive);root.setAttribute('aria-label','Задание: найдите мат');
   $('#match-surface').dataset.practice=state;
+  const hint=$('[data-practice-hint]');hint.hidden=!canHint||state!=='awaitMove';hint.disabled=hintPending;hint.textContent=practiceHint?'Скрыть':'Подсказка';
+  if(practiceHint&&interactive)drawArrow(practiceHint);
   $('[data-practice-message]').textContent=({awaitMove:`Найдите мат в ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))} ${Math.max(1,mateIn-Math.floor(exercise.game.history().length/2))===1?'ход':'хода'}.`,checking:'Проверяем продолжение…',unverified:'Не удалось подтвердить мат за отведённое время. Попробуйте ещё раз или выберите другой ход.',wrong:'Есть ход получше. Попробуйте найти его.',correct:'',opponent:'Соперник отвечает…',success:'Мат! Вы нашли решение.'})[state];
   const next=$('[data-practice-continue]');next.hidden=['awaitMove','checking','correct','opponent'].includes(state);next.textContent=['wrong','unverified'].includes(state)?'Попробовать снова':state==='success'?'Продолжить разбор':'Продолжить';
   $('#analysis-practice-tools [data-analysis-return]').hidden=state==='success';
@@ -87,13 +96,13 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
  };
  const startExercise=()=>{
   const data=analysis.moves[shown-1]?.exercise;if(!data||disposed)return;
-  playback.pause();transition++;cancelAnimations();exercise?.dispose?.();exercise=createMateExercise(data);selected=null;promotions=[];
+  playback.pause();transition++;cancelAnimations();exercise?.dispose?.();exercise=createMateExercise(data,{attempts:practiceAttempts});practiceHint=null;selected=null;promotions=[];
   delete root.dataset.variation;setMode('practice');renderExercise();
   root.querySelector(`[data-square="${exercise.game.moves({verbose:true})[0]?.from}"]`)?.focus({preventScroll:true});
  };
  const submitExercise=async token=>{
   if(!exercise)return;const owned=exercise,generation=++transition,before=snapshotBoard(root);
-  const result=exercise.submit(token);selected=null;promotions=[];renderExercise();
+  practiceHint=null;const result=exercise.submit(token);selected=null;promotions=[];renderExercise();
   await result;if(disposed||exercise!==owned||generation!==transition)return;renderExercise();
   $('[data-practice-continue]').disabled=true;
   await animateTransition(root,[owned.game.history({verbose:true}).at(-1)],before);
@@ -154,6 +163,11 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   if(event.target.closest('[data-analysis-return]')){returnToGame();return;}
   if(event.target.closest('[data-variation-back]')){showVariation(root.dataset.variation,previewStep-1);return;}
   if(event.target.closest('[data-variation-next]')){showVariation(root.dataset.variation,previewStep+1);return;}
+  if(event.target.closest('[data-practice-hint]')&&exercise){
+   if(practiceHint){practiceHint=null;renderExercise();return;}
+   const owned=exercise,generation=transition,pending=owned.getHint();renderExercise();
+   void pending.then(token=>{if(disposed||exercise!==owned||transition!==generation)return;practiceHint=token;renderExercise();if(!token)$('[data-practice-message]').textContent='Не удалось проверить подсказку. Попробуйте ещё раз.';});return;
+  }
   const promotion=event.target.closest('[data-practice-promote]');if(promotion){submitExercise(promotion.dataset.practicePromote);return;}
   if(event.target.closest('[data-practice-continue]')&&exercise){
    if(exercise.getSnapshot().state==='success'){returnToGame();return;}
@@ -162,7 +176,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   }
  };
  root.onclick=event=>{
-  if(disposed||mode!=='practice'||!exercise||exercise.getSnapshot().state!=='awaitMove'||promotions.length)return;
+  if(disposed||mode!=='practice'||!exercise||exercise.getSnapshot().state!=='awaitMove'||exercise.getSnapshot().hintPending||promotions.length)return;
   const square=event.target.closest('[data-square]')?.dataset.square;if(!square)return;
   const moves=selected?exercise.game.moves({square:selected,verbose:true}).filter(move=>move.to===square):[];
   if(moves.length){

@@ -1,4 +1,4 @@
-import {Chess} from '../chess.js?v=82';
+import {Chess} from '../chess.js?v=83';
 export const uci = move => move.from+move.to+(move.promotion||'');
 // Verify a short mate against every legal defence, not only the principal variation.
 // Yield between replies so closing/cancelling remains responsive.
@@ -46,4 +46,35 @@ export const detectReason = move => {
  }
  if(actual.first?.promotion&&['best','good'].includes(move.quality))return 'promotion';
  return 'generic';
+};
+
+// Explain only concrete legal exchanges. This never changes engine quality.
+export const recommendationEvidence = (move,color) => {
+ if(!move.bestLine||move.bestLine.move===move.playedMove)return null;
+ const values={p:1,n:3,b:3,r:5,q:9,k:0},names={p:'пешку',n:'коня',b:'слона',r:'ладью',q:'ферзя'};
+ const game=new Chess(move.fenBefore),play=token=>game.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]});
+ try {
+  const first=play(move.bestLine.move);
+  const replyToken=move.bestLine.pv?.[1];
+  if(first.captured&&values[first.captured]>values[first.piece]&&replyToken){
+   const reply=play(replyToken);
+   if(reply.captured&&reply.to===first.to)return {text:`Вы заберёте ${names[first.captured]}. Даже если соперник затем заберёт ${names[first.piece]}, этот размен принесёт вам больше материала.`,pv:move.bestLine.pv.slice(0,2)};
+   game.undo();
+  }
+  if(!first.captured){
+   for(const capture of game.moves({verbose:true}).filter(row=>row.to===first.to&&row.captured&&values[row.piece]>values[first.piece])){
+    game.move(capture);
+    const recapture=game.moves({verbose:true}).find(row=>{
+     if(row.to!==capture.to||!row.captured)return false;
+     game.move(row);
+     // Do not call a recapture beneficial if its piece can immediately be lost again.
+     const exposed=game.moves({verbose:true}).some(next=>next.captured&&next.to===row.to&&values[next.captured]>values[capture.piece]-values[first.piece]);
+     game.undo();return !exposed;
+    });
+    game.undo();
+    if(recapture)return {text:`Если соперник заберёт ${names[first.piece]} ${capture.piece==='n'?'конём':'этой фигурой'}, вы сможете в ответ забрать ${names[capture.piece]}. Такой размен выгоден вам.`,pv:[uci(first),uci(capture),uci(recapture)]};
+   }
+  }
+ }catch{return null;}
+ return null;
 };
