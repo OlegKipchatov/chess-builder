@@ -26,6 +26,7 @@ const previousSource = path => {
 const server=createServer(async(req,res)=>{
  try{
   const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/chess-builder\//,'/');
+  if(pathname==='/upgrade-observer'){res.writeHead(200,{'Content-Type':'text/html','Cache-Control':'no-store'});res.end('<!doctype html><title>Upgrade observer</title>');return;}
   const path=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
   if(!path.startsWith(root))throw Error('Invalid path');
   if(rejectAsset&&pathname==='/ui/styles/base.css'){res.writeHead(503);res.end();return;}
@@ -227,14 +228,13 @@ try{
  assert.equal(await page.evaluate(()=>navigator.serviceWorker.controller===window.pwaOldController),true,'A v84 update stays waiting during an active game');
  assert.equal(await page.evaluate(()=>localStorage.getItem('chess-vault-v3')),before);
  // Closing the last old client allows the waiting release to activate naturally.
- await page.close();page=await context.newPage();
- // Keep the replacement client outside the worker scope until natural activation
- // finishes. Reopening the app immediately can attach to the old worker again.
- await page.goto(origin+'/upgrade-observer');
- await page.waitForFunction(async()=>{
-  const registration=await navigator.serviceWorker.getRegistration('/chess-builder/');
-  return registration?.active?.state==='activated'&&!registration.waiting&&!registration.installing;
- });
+ const observer=await context.newPage();await observer.goto(origin+'/upgrade-observer');
+ // Observe the exact waiting worker before closing its last old client.
+ // Registration.active can temporarily still name the old activated worker.
+ await observer.evaluate(async()=>{window.upgradeWorker=(await navigator.serviceWorker.getRegistration('/chess-builder/')).waiting;});
+ assert.equal(await observer.evaluate(()=>window.upgradeWorker?.state),'installed');
+ await page.close();page=observer;
+ await page.waitForFunction(()=>window.upgradeWorker.state==='activated');
  await page.goto(origin+'/chess-builder/');await isolated(page);
  await page.locator('#board [data-square]').first().waitFor();
  await page.waitForFunction(async()=>(await (await fetch('./index.html')).text()).includes('./app.js?v=87'));
