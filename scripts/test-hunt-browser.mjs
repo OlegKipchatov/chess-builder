@@ -20,6 +20,9 @@ try {
     assert.equal(await page.locator('#play #hunt-entry').count(),0);
     await page.locator('[data-tab="minigames"]').click();
     await page.locator('[data-hunt-mode="timed"]').waitFor();
+    const title=await page.locator('#minigames-title').boundingBox(),header=await page.locator('#minigames .page-header').boundingBox();
+    assert.ok(Math.abs(title.x-header.x)<1,'Root title has no reserved back-button gap');
+    assert.equal(await page.locator('[data-hunt-mode="endless"]').textContent(),'На жизни');
     await page.screenshot({path:`/tmp/gachachess-hunt-entry-${width}.png`,fullPage:true});
     await page.clock.install();
     await page.locator('[data-hunt-mode="timed"]').click();
@@ -34,7 +37,7 @@ try {
     // Exercise real clicks against geometry reconstructed from accessible labels.
     for(let i=0;i<18;i++){
       const move=await page.evaluate(async()=>{
-        const {PIECE_NAMES}=await import('./catalog.js?v=88'),{playerMoves,resolvePlayerMove,materialValues}=await import('./hunt.js?v=88');
+        const {PIECE_NAMES}=await import('./catalog.js?v=89'),{playerMoves,resolvePlayerMove,materialValues}=await import('./hunt.js?v=89');
         const pieces=Object.fromEntries([...document.querySelectorAll('#hunt-board .occupied')].map(cell=>{
           const label=cell.getAttribute('aria-label');return [cell.dataset.square,{type:Object.entries(PIECE_NAMES).find(([,name])=>label.includes(': '+name))[0],color:label.includes('белые')?'w':'b'}];
         }));
@@ -50,6 +53,8 @@ try {
     const boardBefore=await page.locator('#hunt-board').boundingBox();
     await page.clock.fastForward(61000);
     await page.locator('#modal #hunt-result').waitFor();
+    assert.match(await page.locator('#hunt-result').textContent(),/рекорд/i);
+    assert.doesNotMatch(await page.locator('#hunt-result').textContent(),/Взятый материал/);
     await page.evaluate(()=>Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
     assert.equal(await page.locator('#hunt-root #hunt-result').count(),0);
     const boardAfter=await page.locator('#hunt-board').boundingBox();
@@ -57,7 +62,7 @@ try {
     await page.screenshot({path:`/tmp/gachachess-hunt-result-${width}.png`,fullPage:true});
     await page.locator('#close-modal').click();
     await page.locator('#hunt-reward').waitFor();
-    assert.match(await page.locator('#hunt-reward').textContent(),/рекорд/i);
+    assert.doesNotMatch(await page.locator('#hunt-reward').textContent(),/рекорд|Взятый материал|Очки/i);
     await page.evaluate(()=>Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
     await page.screenshot({path:`/tmp/gachachess-hunt-reward-${width}.png`,fullPage:true});
     const action=await page.locator('#hunt-again').boundingBox(),reward=await page.locator('#hunt-reward').boundingBox();assert.ok(Math.abs(action.width-reward.width)<2);
@@ -75,9 +80,9 @@ try {
       await page.locator('[data-hunt-mode="endless"]').click();
       for(let turn=0;turn<100&&!await page.locator('#modal #hunt-result').count();turn++){
         const move=await page.evaluate(async()=>{
-          const {PIECE_NAMES}=await import('./catalog.js?v=88'),{playerMoves,resolvePlayerMove}=await import('./hunt.js?v=88');
+          const {PIECE_NAMES}=await import('./catalog.js?v=89'),{playerMoves,resolvePlayerMove}=await import('./hunt.js?v=89');
           const pieces=Object.fromEntries([...document.querySelectorAll('#hunt-board .occupied')].map(cell=>{const label=cell.getAttribute('aria-label');return [cell.dataset.square,{type:Object.entries(PIECE_NAMES).find(([,name])=>label.includes(': '+name))[0],color:label.includes('белые')?'w':'b'}];}));
-          const state={pieces,phase:'awaitingPlayer',mode:'endless',lives:3,lifeRecoveryMaterial:0,score:0,capturedMaterial:0,playerMoveCount:0,rngState:1};
+          const state={pieces,phase:'awaitingPlayer',mode:'endless',lives:5,lifeRecoveryMaterial:0,score:0,capturedMaterial:0,playerMoveCount:0,rngState:1};
           return playerMoves(state).map(move=>{
             const result=resolvePlayerMove(state,move),loss=result.events.some(e=>e.type==='opponentCaptured');
             const distance=Math.min(...Object.entries(pieces).filter(([,p])=>p.color==='b').map(([square])=>Math.abs(square.charCodeAt(0)-move.to.charCodeAt(0))+Math.abs(Number(square[1])-Number(move.to[1]))));
@@ -87,10 +92,10 @@ try {
         assert.ok(move);await page.locator(`#hunt-board [data-square="${move.from}"]`).click();await page.locator(`#hunt-board [data-square="${move.to}"]`).click();
       }
       await page.locator('#modal #hunt-result').waitFor();
-      assert.equal(await page.locator('#hunt-resource').textContent(),'0 / 3');
+      assert.equal(await page.locator('#hunt-resource').textContent(),'0');
       const ended=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')));assert.equal(Object.keys(ended.hunt.awards).length,2);
       await page.locator('#close-modal').click();await page.locator('#hunt-reward').waitFor();
-      await page.locator('#hunt-again').click();await page.waitForFunction(()=>!document.querySelector('#modal').open&&document.querySelector('#hunt-resource').textContent==='3 / 3');
+      await page.locator('#hunt-again').click();await page.waitForFunction(()=>!document.querySelector('#modal').open&&document.querySelector('#hunt-resource').textContent==='5');
       await page.locator('#hunt-exit').click();await page.locator('[data-hunt-abandon]').click();
       console.log('PASS Endless: repeated losses, replacements, zero lives, completed result, idempotent wallet');
     }

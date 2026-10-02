@@ -1,7 +1,7 @@
 // Hunt rules are independent of the regular chess engine and presentation.
 export const huntConfig = Object.freeze({
   initialPlayerPieces:2, initialOpponentPieces:2, opponentSpawnEveryPlayerMoves:2,
-  timedDurationMs:60_000, endlessMaxLives:3, materialPerRecoveredLife:20,
+  timedDurationMs:60_000, endlessStartingLives:5, materialPerRecoveredLife:20,
   rewardMultiplier:1.25, placementAttemptLimit:32,
   opponentMoveWeights:{threat:4,danger:6,distance:1,reversal:2},
   playerPool:['n','b','r','q'], opponentWeights:{p:6,n:3,b:3,r:2,q:1},
@@ -81,7 +81,7 @@ export const placePiece = (state,color,config=huntConfig,{initial=false}={}) => 
 };
 export const createHunt = ({mode,runId,runSeed},config=huntConfig) => {
   if(!['timed','endless'].includes(mode))throw new Error('Unknown Hunt mode');
-  const state={runId,runSeed,mode,phase:'idle',pieces:{},rngState:seedNumber(runSeed),score:0,capturedMaterial:0,playerMoveCount:0,lives:config.endlessMaxLives,lifeRecoveryMaterial:0};
+  const state={runId,runSeed,mode,phase:'idle',pieces:{},rngState:seedNumber(runSeed),score:0,capturedMaterial:0,playerMoveCount:0,lives:config.endlessStartingLives,lifeRecoveryMaterial:0};
   for(let attempt=0;attempt<config.placementAttemptLimit;attempt++){
     state.pieces={};
     for(let i=0;i<config.initialPlayerPieces;i++)placePiece(state,'w',config,{initial:true});
@@ -97,8 +97,7 @@ const expired = (state,now) => state.mode==='timed'&&state.targetEndAtMs!==undef
 export const finishHunt = (state,reason,now) => state.phase==='finished'?state:{...state,phase:'finished',finishReason:reason,finishedAtMs:now};
 export const recoverLife = (state,material,config=huntConfig) => {
   let progress=state.lifeRecoveryMaterial+material,lives=state.lives;
-  while(progress>=config.materialPerRecoveredLife&&lives<config.endlessMaxLives){progress-=config.materialPerRecoveredLife;lives++;}
-  if(lives===config.endlessMaxLives)progress=Math.min(progress,config.materialPerRecoveredLife-1);
+  while(progress>=config.materialPerRecoveredLife){progress-=config.materialPerRecoveredLife;lives++;}
   return {...state,lives,lifeRecoveryMaterial:progress};
 };
 export const resolvePlayerMove = (input,move,{now=Date.now(),clock=()=>now,config=huntConfig}={}) => {

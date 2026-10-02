@@ -40,7 +40,7 @@ test('Opponent responds once, highest material first and stable tie ordering',()
   assert.deepEqual(opponentCaptures(state.pieces)[0],{from:'a1',to:'a3'});
   const result=resolve(state,'d4','e5');
   assert.equal(result.events.filter(e=>e.type==='opponentCaptured').length,1);
-  assert.equal(result.state.lives,2);assert.equal(result.events.find(e=>e.type==='opponentCaptured').captured,'q');
+  assert.equal(result.state.lives,4);assert.equal(result.events.find(e=>e.type==='opponentCaptured').captured,'q');
   assert.deepEqual(opponentCaptures({...state.pieces,h3:piece('q')})[0],{from:'a1',to:'a3'});
 });
 test('Opponent makes one ordinary reply when no capture exists, without life or score penalties',()=>{
@@ -48,7 +48,7 @@ test('Opponent makes one ordinary reply when no capture exists, without life or 
   const result=resolve(state,'b1','c3'),replies=result.events.filter(e=>e.type.startsWith('opponent'));
   assert.equal(replies.length,1);assert.equal(replies[0].type,'opponentMoved');
   assert.ok(canMove(result.events[0].pieces,replies[0].from,replies[0].to));
-  assert.equal(result.state.lives,3);assert.equal(result.state.score,0);
+  assert.equal(result.state.lives,5);assert.equal(result.state.score,0);
   assert.deepEqual(result,resolve(state,'b1','c3'));
 });
 test('Black pawn promotes on the last rank, including a non-capturing reply',()=>{
@@ -61,7 +61,7 @@ test('Non-capturing moves have no direct penalty; spawn follows moves 2 and 4',(
   for(let turn=1;turn<=4;turn++){
     const result=resolve(state,turn%2?'b1':'c3',turn%2?'c3':'b1');
     assert.equal(result.events.filter(e=>e.type==='opponentSpawned').length,turn%2===0?1:0);
-    assert.equal(result.state.playerMoveCount,turn);assert.equal(result.state.score,0);assert.equal(result.state.lives,3);
+    assert.equal(result.state.playerMoveCount,turn);assert.equal(result.state.score,0);assert.equal(result.state.lives,5);
     assert.equal(resolve(result.state,'g1','f3').state,result.state,'resolving ignores repeated input');
     state=releaseHuntInput(result.state,101);
   }
@@ -71,7 +71,7 @@ test('Player capture precedes opponent capture, respawn and scheduled spawning',
   const result=resolve(state,'a1','a3');
   assert.deepEqual(result.events.map(e=>e.type),['playerMoved','opponentCaptured','playerRespawned','opponentSpawned']);
   assert.equal(result.state.score,1);assert.equal(result.state.capturedMaterial,1);
-  assert.equal(result.state.lives,2);
+  assert.equal(result.state.lives,4);
   assert.equal(result.events.at(-1).type,'opponentSpawned','new spawn has no capture event this cycle');
 });
 test('Timed replacement contains no pawn and keeps exactly two player pieces',()=>{
@@ -101,10 +101,12 @@ test('Expiration during presentation drops only the pending spawn, preserving ac
   assert.equal(skipExpiredSpawn(result.state,event,101),result.state);
   const expired=skipExpiredSpawn(result.state,event,103);assert.equal(expired.finishReason,'timer');assert.equal(expired.pieces[event.square],undefined);assert.equal(expired.pieces.c3.type,'n');assert.equal(expired.playerMoveCount,2);
 });
-test('Recovery preserves overflow, clamps at maximum and uses material not score',()=>{
+test('Extra lives start at five, preserve overflow without a cap and use material not score',()=>{
   assert.deepEqual([recoverLife({lives:1,lifeRecoveryMaterial:18},9).lives,recoverLife({lives:1,lifeRecoveryMaterial:18},9).lifeRecoveryMaterial],[2,7]);
-  assert.equal(recoverLife({lives:3,lifeRecoveryMaterial:18},9).lifeRecoveryMaterial,19);
-  assert.equal(recoverLife({lives:2,lifeRecoveryMaterial:19},60).lifeRecoveryMaterial,19);
+  assert.equal(createHunt({mode:'endless',runId:'five',runSeed:1}).lives,5);
+  assert.deepEqual(recoverLife({lives:5,lifeRecoveryMaterial:18},9),{lives:6,lifeRecoveryMaterial:7});
+  assert.deepEqual(recoverLife({lives:8,lifeRecoveryMaterial:19},60),{lives:11,lifeRecoveryMaterial:19});
+  assert.deepEqual(recoverLife({lives:5,lifeRecoveryMaterial:19},1),{lives:6,lifeRecoveryMaterial:0});
   const state=run({a1:piece('r'),a3:piece('q','b')},{lives:1,lifeRecoveryMaterial:18,score:999,capturedMaterial:18});
   const result=resolve(state,'a1','a3').state;assert.equal(result.score,27);assert.equal(result.lives,2);assert.equal(result.lifeRecoveryMaterial,7);
 });

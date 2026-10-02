@@ -20,7 +20,7 @@ main:has(>#app-nav[hidden]){--page-bottom:calc(var(--page-section-gap) + env(saf
 .tab>.page-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:16px;row-gap:var(--page-meta-gap);margin:0;padding:0}
 .tab>.page-header>.page-header-start{grid-column:1;grid-row:1}
 .tab>.page-header>.page-header-content{grid-column:2;grid-row:1;display:flex;align-items:center;min-height:var(--control-height)}
-.tab>.page-header:not(:has(>.page-header-start>button:not([hidden])))>.page-header-content{grid-column:1/3}
+.tab>.page-header:not(:has(>.page-header-start:not([hidden])>button:not([hidden])))>.page-header-content{grid-column:1/3}
 .tab>.page-header>.page-header-end{grid-column:3;grid-row:1}
 .tab>.page-header>.page-description{grid-column:1/-1;margin:0;font-size:var(--page-meta-size);color:var(--muted)}
 .page-content{display:flex;flex-direction:column;gap:var(--page-section-gap);padding-block-start:var(--page-header-gap);min-width:0}

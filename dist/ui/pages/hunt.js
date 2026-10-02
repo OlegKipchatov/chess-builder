@@ -1,9 +1,9 @@
-import {createHunt,startHunt,resolvePlayerMove,releaseHuntInput,skipExpiredSpawn,tickHunt,finishHunt,remainingTime,huntBoardAdapter,huntConfig,calculateMiniGameCoins} from '../../hunt.js?v=88';
-import {renderBoard,snapshotBoard,animateTransition,showCaptureMaterial} from '../../board.js?v=88';
-import {statCard,disclosure} from '../primitives.js?v=88';
-export const huntFAQ = () => disclosure('Как играть в «Охоту»?','<p>Управляйте двумя белыми фигурами и набирайте очки взятиями: пешка — 1, конь и слон — 3, ладья — 5, ферзь — 9. Вам выпадают только кони, слоны, ладьи и ферзи — никогда пешки. Используется выбранное оформление из коллекции.</p><p>В начале на доске две фигуры соперника. После каждых двух ваших ходов появляется ещё одна. Новая фигура не может взять вашу в момент появления. Королей и шаха нет; фигуры ходят и берут по обычной геометрии. Можно ходить без взятия — штрафа за это нет.</p><p>Вы играете белыми. После каждого вашего хода одна чёрная фигура делает ответный ход. Если доступно взятие, соперник выбирает самую ценную фигуру; иначе перемещается, создавая угрозы. Пешка ходит на одну клетку вперёд, берёт по диагонали и на последней горизонтали становится ферзём.</p><p>На время: игра длится 60 секунд, потерянные фигуры заменяются. Время идёт и при сворачивании приложения. Бесконечный режим: у вас 3 жизни, потеря фигуры отнимает одну. Пока жизни остаются, фигура заменяется. Каждые 20 единиц взятого материала восстанавливают жизнь. Остаток сохраняется; при трёх жизнях можно накопить не больше 19.</p><p>За завершённую охоту начисляются монеты: чем выше счёт, тем больше награда, но она не равна взятому материалу. Рекорды режимов сохраняются отдельно. Ранний выход не даёт монет и не обновляет рекорд.</p>');
+import {createHunt,startHunt,resolvePlayerMove,releaseHuntInput,skipExpiredSpawn,tickHunt,finishHunt,remainingTime,huntBoardAdapter,huntConfig,calculateMiniGameCoins} from '../../hunt.js?v=89';
+import {renderBoard,snapshotBoard,animateTransition,showCaptureMaterial} from '../../board.js?v=89';
+import {statCard,disclosure} from '../primitives.js?v=89';
+export const huntFAQ = () => disclosure('Как играть в «Охоту»?','<p>Управляйте двумя белыми фигурами и набирайте очки взятиями: пешка — 1, конь и слон — 3, ладья — 5, ферзь — 9. Вам выпадают только кони, слоны, ладьи и ферзи — никогда пешки. Используется выбранное оформление из коллекции.</p><p>В начале на доске две фигуры соперника. После каждых двух ваших ходов появляется ещё одна. Новая фигура не может взять вашу в момент появления. Королей и шаха нет; фигуры ходят и берут по обычной геометрии. Можно ходить без взятия — штрафа за это нет.</p><p>Вы играете белыми. После каждого вашего хода одна чёрная фигура делает ответный ход. Если доступно взятие, соперник выбирает самую ценную фигуру; иначе перемещается, создавая угрозы. Пешка ходит на одну клетку вперёд, берёт по диагонали и на последней горизонтали становится ферзём.</p><p>На время: игра длится 60 секунд, потерянные фигуры заменяются. Время идёт и при сворачивании приложения. Режим «На жизни»: в начале у вас 5 жизней, потеря фигуры отнимает одну. Пока жизни остаются, фигура заменяется. Каждые 20 очков взятого материала дают дополнительную жизнь без верхнего лимита. Остаток сохраняется.</p><p>За завершённую охоту начисляются монеты: чем выше счёт, тем больше награда, но она не равна взятому материалу. Рекорды режимов сохраняются отдельно. Ранний выход не даёт монет и не обновляет рекорд.</p>');
 
-export const huntEntry = () => `<section id="hunt-entry" class="hunt-entry"><h2>Поохотимся?</h2><div class="hunt-modes"><button class="primary" data-hunt-mode="timed">На время</button><button class="primary" data-hunt-mode="endless">Бесконечный</button></div></section>`;
+export const huntEntry = () => `<section id="hunt-entry" class="hunt-entry"><h2>Поохотимся?</h2><div class="hunt-modes"><button class="primary" data-hunt-mode="timed">На время</button><button class="primary" data-hunt-mode="endless">На жизни</button></div></section>`;
 
 export const mountHunt = ({root,exitButton,mode,runId,runSeed,equipped,award,onExit,showModal,getBest,config=huntConfig}) => {
   let run=createHunt({mode,runId,runSeed},config),selected=null,disposed=false,presenting=false,resultShown=false,rewardSaved=false,restartMode;
@@ -16,9 +16,9 @@ export const mountHunt = ({root,exitButton,mode,runId,runSeed,equipped,award,onE
   };
   const draw = (pieces=run.pieces) => {renderBoard(board,huntBoardAdapter({...run,pieces}),equipped,selected);availability();};
   const hud = () => {
-    root.querySelector('#hunt-resource').textContent=mode==='timed'?`${Math.ceil(remainingTime(run,Date.now())/1000)} с`:`${run.lives} / ${config.endlessMaxLives}`;
+    root.querySelector('#hunt-resource').textContent=mode==='timed'?`${Math.ceil(remainingTime(run,Date.now())/1000)} с`:String(run.lives);
     root.querySelector('#hunt-score').textContent=run.score;
-    if(mode==='endless')root.querySelector('#hunt-recovery').textContent=`До восстановления жизни: ${run.lifeRecoveryMaterial} / ${config.materialPerRecoveredLife}`;
+    if(mode==='endless')root.querySelector('#hunt-recovery').textContent=`До дополнительной жизни: ${run.lifeRecoveryMaterial} / ${config.materialPerRecoveredLife}`;
   };
   const complete = () => {
     if(disposed||run.phase!=='finished'||run.finishReason==='abandoned'||resultShown)return;
@@ -29,8 +29,8 @@ export const mountHunt = ({root,exitButton,mode,runId,runSeed,equipped,award,onE
       void showModal('<h2>Не удалось сохранить награду</h2><p>Проверьте свободное место и повторите сохранение.</p><button id="hunt-save" class="primary">Сохранить награду</button>',{hideClose:true});
       return;
     }
-    const rewardStep=()=>({html:`<div id="hunt-reward"><h2>Награда за охоту</h2>${statCard(coins,'Монеты')}<p>${run.score>best?'Новый рекорд · ':'Рекорд · '}${Math.max(best,run.score)}</p><button id="hunt-again" class="primary">Ещё раз</button></div>`,options:{closeLabel:'К мини-играм'}});
-    void showModal(`<div id="hunt-result"><h2>${run.finishReason==='timer'?'Время вышло':run.finishReason==='lives'?'Жизни закончились':'На доске нет места'}</h2><div class="hunt-result-stats">${statCard(run.score,'Очки')}${statCard(run.capturedMaterial,'Взятый материал')}</div></div>`,{closeLabel:'Далее',closeVariant:'primary',next:rewardStep});
+    const rewardStep=()=>({html:`<div id="hunt-reward"><h2>Награда за охоту</h2>${statCard(coins,'Монеты')}<button id="hunt-again" class="primary">Ещё раз</button></div>`,options:{closeLabel:'К мини-играм'}});
+    void showModal(`<div id="hunt-result"><h2>${run.finishReason==='timer'?'Время вышло':run.finishReason==='lives'?'Жизни закончились':'На доске нет места'}</h2><div class="hunt-result-stats">${statCard(run.score,'Очки')}${statCard(Math.max(best,run.score),run.score>best?'Новый рекорд':'Рекорд')}</div></div>`,{closeLabel:'Далее',closeVariant:'primary',next:rewardStep});
     availability();
   };
   const tick = () => {
