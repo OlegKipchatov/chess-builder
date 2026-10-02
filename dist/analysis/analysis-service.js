@@ -1,12 +1,12 @@
-import {Chess} from '../chess.js?v=83';
-import {createStockfishClient} from '../stockfish-client.js?v=83';
-import {engineLine} from '../stockfish-evaluation.js?v=83';
-import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=83';
-import {classifyMove,needsRefinement} from './analysis-classifier.js?v=83';
-import {uci,describeLine,detectReason,verifyShortMate,recommendationEvidence} from './analysis-reasons.js?v=83';
-import {selectEvents} from './analysis-events.js?v=83';
-import {eligibleEntry} from './analysis-storage.js?v=83';
-import {prepareMateExercise} from './analysis-training.js?v=83';
+import {Chess} from '../chess.js?v=84';
+import {createStockfishClient} from '../stockfish-client.js?v=84';
+import {engineLine} from '../stockfish-evaluation.js?v=84';
+import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=84';
+import {classifyMove,needsRefinement} from './analysis-classifier.js?v=84';
+import {uci,describeLine,detectReason,verifyShortMate,recommendationEvidence} from './analysis-reasons.js?v=84';
+import {selectEvents} from './analysis-events.js?v=84';
+import {eligibleEntry} from './analysis-storage.js?v=84';
+import {prepareMateExercise} from './analysis-training.js?v=84';
 const abortError = () => new DOMException('Analysis cancelled','AbortError');
 export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=createStockfishClient,profile=PROFILE}={}) => {
  if(!eligibleEntry(entry))throw Error('This archive entry cannot be analyzed');
@@ -40,9 +40,9 @@ export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=c
   const raw=await search(move,nodes);check();
   const expected=Math.min(profile.multiPv,board.moves().length);
   if(raw.length!==expected)throw Error('Incomplete MultiPV');
-  const lines=raw.map(row=>engineLine(row,board.turn(),entry.playerColor));
+  const lines=raw.map(row=>engineLine(row,board.turn(),entry.playerColor,{pvLimit:12}));
   let playedLine=lines.find(line=>line.move===move.playedMove);
-  if(!playedLine){const [row]=await search(move,nodes,move.playedMove);if(row?.move!==move.playedMove)throw Error('Wrong restricted result');playedLine=engineLine(row,board.turn(),entry.playerColor);}
+  if(!playedLine){const [row]=await search(move,nodes,move.playedMove);if(row?.move!==move.playedMove)throw Error('Wrong restricted result');playedLine=engineLine(row,board.turn(),entry.playerColor,{pvLimit:12});}
   check();
   // Separate searches may improve the actual line. Never recommend a weaker line.
   const bestLine=[...lines,playedLine].sort((a,b)=>b.expectedScorePlayer-a.expectedScorePlayer)[0];
@@ -54,6 +54,10 @@ export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=c
   if(result.mateTransition==='missed_mate')result.shortMate=await verifyShortMate(move.fenBefore,bestLine,check);
   result.alternatives=lines.filter(line=>line.move!==move.playedMove&&(line.move===bestLine.move||(bestLine.expectedScorePlayer-line.expectedScorePlayer<=PROFILE.bestCluster&&(bestLine.score.type!=='mate'||bestLine.score.value<=0||line.score.type==='mate'&&line.score.value>0)))).slice(0,2);
   result.recommendationRequired=['mistake','blunder'].includes(result.quality)||result.mateTransition==='missed_mate';
+  // Keep only the chosen short proof separately; discard unused diagnostic PV tails.
+  for(const line of new Set([...lines,playedLine,bestLine])){
+   const limit=line.score.type==='mate'?8:4;line.pv=line.pv.slice(0,limit);line.pvSan=line.pvSan.slice(0,limit);
+  }
   delete result.bestEvidence;delete result.playedEvidence;
   return result;
  };

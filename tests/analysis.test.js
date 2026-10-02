@@ -10,7 +10,7 @@ import {initialState,migrateState} from '../dist/state.js';
 import {createStockfishClient} from '../dist/stockfish-client.js';
 import {STOCKFISH} from '../dist/stockfish-config.js';
 import {Chess} from '../dist/chess.js';
-import {uci,detectReason,verifyShortMate} from '../dist/analysis/analysis-reasons.js';
+import {uci,detectReason,verifyShortMate,recommendationEvidence} from '../dist/analysis/analysis-reasons.js';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
 const line=(score,move='e2e4',mate=null)=>({move,expectedScorePlayer:score,score:{type:mate===null?'cp':'mate',value:mate??0},pv:[move]});
 const entry=(pgn='1. e4 e5 2. Nf3 Nc6',color='w')=>({id:'test-game',mode:'bot',playerColor:color,pgn,finishedAt:'2026-10-01',result:'Поражение'});
@@ -138,7 +138,9 @@ test('incomplete quick/deep search never produces a complete cached result',asyn
 });
 test('reason detector remains generic without evidence and confirms material loss with legal PV evidence',()=>{
  assert.equal(detectReason({quality:'blunder'}),'generic');
- assert.equal(detectReason({quality:'blunder',bestEvidence:{valid:true,delta:0},playedEvidence:{valid:true,delta:-3}}),'lost_material');
+ const move={quality:'blunder',fenBefore:'4k3/8/8/8/8/8/q7/R3K3 w - - 0 1',playedMove:'e1f1',bestLine:{move:'a1a2',pv:['a1a2','e8d7']},playedLine:{move:'e1f1',pv:['e1f1','a2a1']}};
+ move.recommendationEvidence=recommendationEvidence(move,'w');
+ assert.equal(detectReason(move),'lost_material');
 });
 test('deep refinement replaces preliminary mistake rather than retaining its event',async()=>{
  const e=entry('1. e4'),calls=[];

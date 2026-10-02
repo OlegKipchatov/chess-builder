@@ -1,21 +1,36 @@
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
 import {recommendationEvidence} from '../dist/analysis/analysis-reasons.js';
 import {prepareMateExercise,createMateExercise} from '../dist/analysis/analysis-training.js';
 import {selectEvents,isImportantInsight} from '../dist/analysis/analysis-events.js';
 import {analysisInsight,visibleVariation} from '../dist/ui/components/analysis-insight.js';
+import {explanationFor} from '../dist/analysis/analysis-explanations.js';
+import {analyzeGame} from '../dist/analysis/analysis-service.js';
+import {createStockfishClient} from '../dist/stockfish-client.js';
+import {spawnStockfish} from '../scripts/stockfish-process.mjs';
 
-const pgn='1. e4 Nc6 2. f3 a5 3. Nc3 Nf6 4. Nb5 b6 5. c3 e5 6. d4 exd4 7. cxd4 Bd6 8. d5 Bxh2 9. Rxh2 Nxe4 10. fxe4 Ne5 11. b3 h5 12. Bb2 f5 13. Bxe5 Bb7 14. Bxg7 Rh6 15. Bxh6 fxe4 16. g4 Bxd5 17. Bg2 Ra6 18. Rc1 Ke7 19. Ne2 c5 20. Rxh5 Bf7 21. Rf5 c4 22. bxc4 d5 23. cxd5 Bxd5 24. Rxd5 Qxd5 25. Qxd5 e3 26. Qb7+ Ke6 27. Qxa6 a4 28. Qxb6+ Ke5 29. Rc4 a3 30. Qxe3+ Kf6 31. Rf4+ Kg6 32. Qe6+ Kh7 33. Bf8 Kh8 34. g5 Kh7 35. Rh4#';
+const pgn=readFileSync(new URL('./fixtures/reina-oct2.pgn',import.meta.url),'utf8').trim();
 const game=new Chess();game.loadPgn(pgn);
 const history=game.history({verbose:true});
+test('Real Stockfish pipeline groups opening advice and generates a factual explanation for move 8',{timeout:60000},async()=>{
+ const analysis=await analyzeGame({id:'reina-oct2',pgn,mode:'bot',playerColor:'w',finishedAt:'2026-10-02'},{createClient:()=>createStockfishClient(spawnStockfish)});
+ assert.equal(analysis.status,'complete');assert.deepEqual(analysis.moves[2].relatedPlies,[3,5,7]);
+ const move=analysis.moves[14];assert.equal(move.recommendationEvidence.coverage,'verified_line');
+ assert.equal(move.recommendationEvidence.kind,'target_escape');
+ assert.match(explanationFor(move),/пешка нападает на коня/);
+ assert.doesNotMatch(explanationFor(move),/заметно ухудшил/);
+ assert.ok(move.recommendationEvidence.facts.length);
+ assert.ok(analysis.moves.every(row=>!row.bestLine||row.bestLine.pv.length<=(row.bestLine.score.type==='mate'?8:4)));
+});
 const mateMove=async index=>{
  const move={ply:index+1,actor:'player',status:'complete',quality:'good',reason:'mate_opportunity',fenBefore:history[index].before,shortMate:{verified:true,moves:1}};
  move.exercise=await prepareMateExercise(move);return move;
 };
 
 test('Reported opening: d4 is protected, with a legal explanatory capture and recapture',()=>{
- const move={fenBefore:history[2].before,playedMove:'f2f3',bestLine:{move:'d2d4',pv:['d2d4']}};
+ const move={fenBefore:history[2].before,playedMove:'f2f3',playedLine:{pv:['f2f3']},bestLine:{move:'d2d4',pv:['d2d4']}};
  const evidence=recommendationEvidence(move,'w');
  assert.deepEqual(evidence.pv,['d2d4','c6d4','d1d4']);
  assert.match(evidence.text,/конём/);
@@ -26,8 +41,33 @@ test('Reported opening: d4 is protected, with a legal explanatory capture and re
 });
 
 test('A knight taking a queen is explained even when the knight is recaptured',()=>{
- const evidence=recommendationEvidence({fenBefore:'4k3/8/4p3/3q4/5N2/8/8/4K3 w - - 0 1',playedMove:'e1d1',bestLine:{move:'f4d5',pv:['f4d5','e6d5']}},'w');
+ const evidence=recommendationEvidence({fenBefore:'4k3/8/4p3/3q4/5N2/8/8/4K3 w - - 0 1',playedMove:'e1f1',playedLine:{pv:['e1f1']},bestLine:{move:'f4d5',pv:['f4d5','e6d5']}},'w');
  assert.match(evidence.text,/ферзя/);assert.match(evidence.text,/коня/);assert.equal(evidence.pv.length,2);
+});
+
+test('Screenshot: explain the forcing bishop exchange before d5, not a fictitious material win',()=>{
+ const move={actor:'player',status:'complete',quality:'blunder',reason:'generic',playedSan:'d5',fenBefore:history[14].before,playedMove:'d4d5',bestLine:{move:'b5d6',pv:['b5d6','c7d6','d4d5','c6e5']},playedLine:{pv:['d4d5','d6b4','c1d2','c6e5']}};
+ move.recommendationEvidence=recommendationEvidence(move,'w');
+ assert.equal(move.recommendationEvidence.kind,'target_escape');
+ assert.deepEqual(visibleVariation(move,true).pv,['b5d6','c7d6','d4d5']);
+ assert.match(explanationFor(move),/разменять коня на слона с шахом/);
+ assert.match(analysisInsight(move),/увести слона с шахом/);
+ assert.doesNotMatch(analysisInsight(move),/заметно ухудшил|выиграть материал/);
+ assert.notEqual(recommendationEvidence({...move,playedLine:{pv:['d4d5','c6e5']}},'w')?.kind,'target_escape','Do not claim an escape without supporting evidence');
+});
+
+test('Repeated d4 advice at plies 3, 5, 7 produces one card and stop without changing quality',()=>{
+ const moves=[2,4,6].map((index,i)=>{
+  const move={ply:index+1,actor:'player',status:'complete',quality:i===1?'mistake':'blunder',reason:'generic',fenBefore:history[index].before,playedMove:history[index].from+history[index].to,bestLine:{move:'d2d4',pv:['d2d4']},playedLine:{expectedScorePlayer:.45,pv:[history[index].from+history[index].to]}};
+  move.recommendationEvidence=recommendationEvidence(move,'w');return move;
+ });
+ assert.deepEqual(selectEvents(moves),[3]);assert.deepEqual(moves[0].relatedPlies,[3,5,7]);
+ assert.equal(moves[2].quality,'blunder');assert.equal(analysisInsight(moves[2]),'');
+ assert.match(analysisInsight(moves[0]),/Разберём её один раз/);
+ moves[2].reason='lost_material';assert.deepEqual(selectEvents(moves),[3,7]);
+ moves[2].reason='generic';moves[2].playedLine.expectedScorePlayer=.05;
+ assert.deepEqual(selectEvents(moves),[3,7],'A new losing outcome remains visible');
+ assert.deepEqual(selectEvents([moves[0],{actor:'player',status:'unavailable'},moves[1]]),[3,5],'Unavailable decisions break the episode');
 });
 
 test('Reported moves 29 and 30 share three mates: one card and one autoplay event',async()=>{

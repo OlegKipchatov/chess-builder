@@ -8,10 +8,21 @@ export const eventFor = move => {
  return {primaryEvent,eventPriority,autoPause:false};
 };
 export const selectEvents = moves => {
- let previous=null;
+ let previous=null,theme=null;
  moves.forEach(move=>{
   delete move.repeatedOpportunity;
+  delete move.relatedPlies;
+  delete move.repeatedFromPly;
   if(move.actor!=='player')return;
+  const themeKey=move.status==='complete'&&!move.forced&&!move.highlight&&!move.mateTransition&&move.reason==='generic'&&['inaccuracy','mistake','blunder'].includes(move.quality)?move.recommendationEvidence?.themeKey:null;
+  // Group consecutive advice with the same concrete proof, retaining raw quality.
+  // A new material/mate reason or a new outcome breaks the episode.
+  const outcome=move.playedLine?.expectedScorePlayer<=.1?'lost':move.playedLine?.expectedScorePlayer>=.9?'winning':'contested';
+  if(themeKey&&theme?.key===themeKey&&theme.outcome===outcome){
+   move.repeatedOpportunity=true;move.repeatedFromPly=theme.owner.ply;
+   theme.owner.relatedPlies.push(move.ply);
+  }else theme=themeKey?{key:themeKey,outcome,owner:move}:null;
+  if(theme?.owner===move)move.relatedPlies=[move.ply];
   const opportunity=['mate_opportunity','missed_mate'].includes(move.reason)&&move.shortMate?.verified;
   const solutions=move.exercise?.solutions?.map(row=>row.move)||[];
   // Require a shared verified solution in consecutive player decisions, not just a mate label.

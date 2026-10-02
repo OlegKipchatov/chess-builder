@@ -1,7 +1,7 @@
-import {escapeHTML as esc} from '../primitives.js?v=83';
-import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=83';
-import {humanMove} from './move-list.js?v=83';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=83';
+import {escapeHTML as esc} from '../primitives.js?v=84';
+import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=84';
+import {humanMove} from './move-list.js?v=84';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=84';
 export {isImportantInsight};
 export const visibleVariation = (move,expanded=false) => {
  const line=move?.bestLine;if(!line)return {pv:[],san:[]};
@@ -22,5 +22,5 @@ export const analysisInsight = move => {
  const exercise=move.exercise?'<button type="button" class="primary analysis-variation" data-analysis-practice>Найти мат</button>':'';
  // Mate exercises offer practice only; do not disclose their saved solution.
  const recommendation=!move.exercise&&line?`<button type="button" class="quiet analysis-variation" data-analysis-line="${esc(line.move)}" aria-pressed="false">Подсказка</button>`:'';
- return `<div class="analysis-insight-heading"><h2 data-quality="${esc(move.highlight||move.quality)}">${esc(label)}</h2><div class="analysis-insight-actions">${!move.exercise&&line?.pv?.length>1?`<button type="button" class="quiet analysis-variation" data-analysis-expand="${esc(line.move)}" hidden>Вариант</button>`:''}${exercise||recommendation}</div></div><p>Вы сыграли: <strong>${esc(humanMove(move.playedSan))}</strong></p>${explanation?`<p>${esc(explanation)}</p>`:''}${move.recommendationEvidence?`<p>${esc(move.recommendationEvidence.text)}</p>`:''}`;
+ return `<div class="analysis-insight-heading"><h2 data-quality="${esc(move.highlight||move.quality)}">${esc(label)}</h2><div class="analysis-insight-actions">${!move.exercise&&line&&visibleVariation(move,true).pv.length>1?`<button type="button" class="quiet analysis-variation" data-analysis-expand="${esc(line.move)}" hidden>Вариант</button>`:''}${exercise||recommendation}</div></div><p>Вы сыграли: <strong>${esc(humanMove(move.playedSan))}</strong></p>${explanation?`<p>${esc(explanation)}</p>`:''}${move.relatedPlies?.length>1?'<p>В следующих ходах сохранялась та же возможность. Разберём её один раз.</p>':''}${move.recommendationEvidence&&!move.recommendationEvidence.primary?`<p>${esc(move.recommendationEvidence.text)}</p>`:''}`;
 };

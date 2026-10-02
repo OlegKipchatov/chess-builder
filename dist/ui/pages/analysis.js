@@ -1,14 +1,14 @@
-import {matchEndReason} from '../../archive.js?v=83';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=83';
-import {escapeHTML as esc} from '../primitives.js?v=83';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=83';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=83';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=83';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=83';
-import {Chess} from '../../chess.js?v=83';
-import {positionAt} from '../../session.js?v=83';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=83';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=83';
+import {matchEndReason} from '../../archive.js?v=84';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=84';
+import {escapeHTML as esc} from '../primitives.js?v=84';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=84';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=84';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=84';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=84';
+import {Chess} from '../../chess.js?v=84';
+import {positionAt} from '../../session.js?v=84';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=84';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=84';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>
@@ -52,7 +52,7 @@ export const mountAnalysis = ({analysis,entry,equipped,initialPly=0,onPly=()=>{}
   $('#analysis-insight').hidden=!['game','hint'].includes(next);$('#match-surface').dataset.mode=next;
  };
  const marker=move=>{
-  if(move?.status!=='complete')return;
+  if(move?.status!=='complete'||move.repeatedOpportunity)return;
   const mark=move.highlight?'!':({blunder:'??',mistake:'?',inaccuracy:'?!'})[move.quality];
   const cell=root.querySelector(`[data-square="${move.playedMove.slice(2,4)}"]`);
   if(cell&&mark){const span=document.createElement('span');span.className='analysis-marker analysis-badge';span.dataset.quality=move.highlight||move.quality;span.textContent=mark;span.setAttribute('aria-hidden','true');cell.append(span);}

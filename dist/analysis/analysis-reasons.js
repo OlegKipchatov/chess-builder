@@ -1,4 +1,4 @@
-import {Chess} from '../chess.js?v=83';
+import {Chess} from '../chess.js?v=84';
 export const uci = move => move.from+move.to+(move.promotion||'');
 // Verify a short mate against every legal defence, not only the principal variation.
 // Yield between replies so closing/cancelling remains responsive.
@@ -25,7 +25,7 @@ export const verifyShortMate = async (fen,line,check=()=>{}) => {
 export const material = (game,color) => game.board().flat().filter(Boolean).reduce((sum,piece)=>sum+({p:1,n:3,b:3,r:5,q:9,k:0}[piece.type])*(piece.color===color?1:-1),0);
 export const describeLine = (fen,line,color) => {
  const game=new Chess(fen),before=material(game,color),san=[],moves=[];let first=null;
- try {for(const token of line.pv.slice(0,line.score?.type==='mate'?8:4)){const move=game.move({from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})});first ||= move;moves.push(move);san.push(move.san);}}
+ try {for(const token of line.pv.slice(0,12)){const move=game.move({from:token.slice(0,2),to:token.slice(2,4),...(token[4]?{promotion:token[4]}:{})});first ||= move;moves.push(move);san.push(move.san);}}
  catch {return {valid:false,san:[],delta:0,first:null};}
  return {valid:!!san.length,san,delta:material(game,color)-before,first,moves};
 };
@@ -34,47 +34,9 @@ export const detectReason = move => {
  if(move.mateTransition==='allowed_mate')return 'allowed_mate';
  if(move.mateTransition==='missed_mate')return move.expectedScoreLoss<=.025?'mate_opportunity':'missed_mate';
  if(move.highlight)return move.playedLine.score.type==='mate'&&move.playedLine.score.value>0?'found_mate':'only_move';
- const best=move.bestEvidence,actual=move.playedEvidence;
- if(!best?.valid||!actual?.valid)return 'generic';
- if(['mistake','blunder','inaccuracy'].includes(move.quality)){
-  if(best.delta>=0&&actual.delta<=-3){
-   if(actual.moves?.[1]?.captured&&actual.moves[1].to===actual.first?.to)return 'hung_piece';
-   return 'lost_material';
-  }
-  if(best.first?.captured&&best.delta>=1&&best.delta>actual.delta&&move.expectedScoreLoss>=.025)return 'missed_capture';
-  if(best.delta-actual.delta>=3&&best.san.length>=3&&move.expectedScoreLoss>=.06)return 'missed_tactic';
- }
- if(actual.first?.promotion&&['best','good'].includes(move.quality))return 'promotion';
+ if(move.recommendationEvidence?.reason)return move.recommendationEvidence.reason;
+ if(move.playedEvidence?.first?.promotion&&['best','good'].includes(move.quality))return 'promotion';
  return 'generic';
 };
 
-// Explain only concrete legal exchanges. This never changes engine quality.
-export const recommendationEvidence = (move,color) => {
- if(!move.bestLine||move.bestLine.move===move.playedMove)return null;
- const values={p:1,n:3,b:3,r:5,q:9,k:0},names={p:'пешку',n:'коня',b:'слона',r:'ладью',q:'ферзя'};
- const game=new Chess(move.fenBefore),play=token=>game.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]});
- try {
-  const first=play(move.bestLine.move);
-  const replyToken=move.bestLine.pv?.[1];
-  if(first.captured&&values[first.captured]>values[first.piece]&&replyToken){
-   const reply=play(replyToken);
-   if(reply.captured&&reply.to===first.to)return {text:`Вы заберёте ${names[first.captured]}. Даже если соперник затем заберёт ${names[first.piece]}, этот размен принесёт вам больше материала.`,pv:move.bestLine.pv.slice(0,2)};
-   game.undo();
-  }
-  if(!first.captured){
-   for(const capture of game.moves({verbose:true}).filter(row=>row.to===first.to&&row.captured&&values[row.piece]>values[first.piece])){
-    game.move(capture);
-    const recapture=game.moves({verbose:true}).find(row=>{
-     if(row.to!==capture.to||!row.captured)return false;
-     game.move(row);
-     // Do not call a recapture beneficial if its piece can immediately be lost again.
-     const exposed=game.moves({verbose:true}).some(next=>next.captured&&next.to===row.to&&values[next.captured]>values[capture.piece]-values[first.piece]);
-     game.undo();return !exposed;
-    });
-    game.undo();
-    if(recapture)return {text:`Если соперник заберёт ${names[first.piece]} ${capture.piece==='n'?'конём':'этой фигурой'}, вы сможете в ответ забрать ${names[capture.piece]}. Такой размен выгоден вам.`,pv:[uci(first),uci(capture),uci(recapture)]};
-   }
-  }
- }catch{return null;}
- return null;
-};
+export {buildRecommendation as recommendationEvidence} from "./analysis-recommendations.js?v=84";

@@ -9,6 +9,7 @@ export const explanationFor = move => {
  }
  if(move.reason==='found_mate')return 'Вы нашли точное продолжение с форсированным матом.';
  if(move.reason==='only_move')return 'Вы нашли точное решение. Другие проверенные продолжения заметно хуже.';
+ if(move.recommendationEvidence?.primary)return move.recommendationEvidence.text;
  if(move.reason==='hung_piece')return 'После этого хода соперник может взять вашу фигуру и выиграть материал.';
  if(move.reason==='lost_material')return 'Этот ход позволяет сопернику выиграть материал.';
  if(move.reason==='missed_capture')return 'Здесь можно было выиграть материал взятием.';
