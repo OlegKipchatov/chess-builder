@@ -1,4 +1,4 @@
-import {motionDuration, motionEasing} from './motion.js?v=87';
+import {motionDuration, motionEasing} from './motion.js?v=88';
 // Serialize replacements so result/activity content never changes mid-animation.
 export const createDialog = (root,content,closeButton) => {
   let returnFocus=null,returnId='',returnData=[],queue=Promise.resolve(),dismissPending=false,hideClose=false,nextStep=null;
