@@ -1,13 +1,16 @@
-import {AUTO,AUTO_KEY,PRICES,createAutoRun,buyPiece,sellPiece,placePiece,placementSquares,setupFen,setupError,beginBattle,nextRound,restoreAutoRun,seriesFinished,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome} from '../../autochess.js?v=94';
-import {createBattleController} from '../../autochess-battle.js?v=94';
-import {Chess} from '../../chess.js?v=94';
-import {renderBoard,snapshotBoard,animateTransition,animationMoves} from '../../board.js?v=94';
-import {motionDuration} from '../motion.js?v=94';
-import {pieceSVG} from '../../pieces.js?v=94';
-import {PIECE_NAMES,itemById} from '../../catalog.js?v=94';
-import {disclosure,statCard,plural} from '../primitives.js?v=94';
+import {AUTO,AUTO_KEY,PRICES,createAutoRun,buyPiece,sellPiece,placePiece,placementSquares,setupFen,setupError,beginBattle,nextRound,restoreAutoRun,seriesFinished,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,benchPiece} from '../../autochess.js?v=95';
+import {createBattleController} from '../../autochess-battle.js?v=95';
+import {Chess} from '../../chess.js?v=95';
+import {renderBoard,snapshotBoard,animateTransition,animationMoves,clearBoardTransition} from '../../board.js?v=95';
+import {motionDuration} from '../motion.js?v=95';
+import {pieceSVG} from '../../pieces.js?v=95';
+import {PIECE_NAMES,itemById} from '../../catalog.js?v=95';
+import {disclosure,statCard,plural} from '../primitives.js?v=95';
+const shopIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const levelIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m5 13 7-7 7 7M12 6v14"/></svg>';
+const oddsFAQ=()=>'<div class="auto-odds-table"><table><caption>Шансы фигур по уровню магазина</caption><thead><tr><th>Уровень</th><th>Пешка</th><th>Конь</th><th>Слон</th><th>Ладья</th><th>Ферзь</th></tr></thead><tbody>'+Array.from({length:10},(_,i)=>'<tr><th>'+(i+1)+'</th>'+Object.values(shopOdds(i+1)).map(n=>'<td>'+n+'%</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
 export const autochessEntry=()=>`<section id="autochess-entry" class="autochess-entry"><h2>Автошахматы</h2><button id="autochess-open" class="primary">Играть</button></section>`;
-export const autochessFAQ=()=>disclosure('Как играть в автошахматы?','<p>Серия идёт до десяти побед или трёх поражений. Ничья не приближает ни к победе в серии, ни к её завершению. Вы покупаете армию и расставляете её, а Stockfish играет за обе стороны с одинаковыми настройками, без адаптации к рейтингу. Король, шах, мат и обычные шахматные правила сохраняются. Ваш цвет известен заранее. Фигуры соперника открываются только после начала боя; белые ходят первыми.</p><p>В начале доступны король и 3 монеты серии. Кнопка покупки даёт случайную фигуру: первая стоит 1 монету, каждая следующая дороже на 1 до конца забега. У магазина 10 уровней: первое повышение стоит 3 монеты, каждое следующее дороже на 2. Уровень повышает шансы ладьи и ферзя; точные вероятности доступны в магазине. В армии не больше восьми фигур вместе с королём. Продажа возвращает номинальную стоимость фигуры, но не больше цены покупки, короля продать нельзя. Монеты серии используются только в автошахматах. Основные монеты и осколки не расходуются.</p><p>Выберите фигуру и нажмите на клетку или перетащите её. Доступны четыре ближних ряда: 1–4 для белых и 5–8 для чёрных. Пешки не ставятся на крайнюю линию 1 или 8. Рокировка доступна только с обычных исходных клеток. Все покупки нужно расставить перед боем. Взятие первым ходом разрешено. Если материала недостаточно для мата, в том числе при королях и слонах только на клетках одного цвета, бой сразу заканчивается ничьей.</p><p>Бой длится до 30 секунд или 60 полных ходов (120 полуходов). По любому лимиту — ничья, независимо от перевеса. Победу даёт только мат. При скрытии приложения или выходе бой сохраняется на паузе; подготовка не ограничена по времени.</p><p>На следующий бой выдаются монеты серии: 5 за победу, 3 за ничью, 2 за поражение. Они не переводятся в основной кошелёк. Уровень магазина сам по себе доход не увеличивает. Армия соперника развивается по номеру боя с бюджетом до 24. Сохранённые забеги прежних версий сохраняют прежний магазин и доход. Все купленные фигуры восстанавливаются, превращённые пешки снова становятся пешками. Результаты не влияют на рейтинг, календарь и статистику обычных партий. Награда за серию в основном кошельке: 3 монеты за победу и 1 за каждую из первых пяти ничьих, максимум 30 монет за всю серию. Монеты сохраняются по мере завершения боёв; итоговое окно показывает общую сумму. Награда сохраняется при выходе и не начисляется повторно. За незавершённый бой и техническое прерывание награды нет.</p>');
+export const autochessFAQ=()=>disclosure('Как играть в автошахматы?','<p>Серия идёт до десяти побед или трёх поражений. Ничья не приближает ни к победе в серии, ни к её завершению. Вы покупаете армию и расставляете её, а Stockfish играет за обе стороны с одинаковыми настройками, без адаптации к рейтингу. Король, шах, мат и обычные шахматные правила сохраняются. Ваш цвет известен заранее. Фигуры соперника открываются только после начала боя; белые ходят первыми.</p><p>В начале доступны король и 3 монеты серии. Кнопка покупки даёт случайную фигуру: первая стоит 1 монету, каждая следующая дороже на 1 до конца забега. У магазина 10 уровней: первое повышение стоит 3 монеты, каждое следующее дороже на 2. Уровень повышает шансы ладьи и ферзя; точные вероятности приведены в таблице ниже. В армии не больше восьми фигур вместе с королём. Продажа возвращает полную цену покупки, короля продать нельзя. Монеты серии используются только в автошахматах. Основные монеты и осколки не расходуются.</p><p>Выберите фигуру и нажмите на клетку или перетащите её. Доступны четыре ближних ряда: 1–4 для белых и 5–8 для чёрных. Пешки не ставятся на крайнюю линию 1 или 8. Рокировка доступна только с обычных исходных клеток. Фигуру можно снять с поля в запас и вернуть позже; она остаётся вашей и занимает место в армии. Король перед боем должен быть на поле. Повторное нажатие на выбранную фигуру или Escape снимает выбор. При смене цвета расположение относительно вас сохраняется. Взятие первым ходом разрешено. Если материала недостаточно для мата, в том числе при королях и слонах только на клетках одного цвета, бой сразу заканчивается ничьей.</p><p>Бой длится до 30 секунд или 60 полных ходов (120 полуходов). По любому лимиту — ничья, независимо от перевеса. Победу даёт только мат. При скрытии приложения или выходе бой сохраняется на паузе; подготовка не ограничена по времени.</p><p>На следующий бой выдаются монеты серии: 5 за победу, 3 за ничью, 2 за поражение. Они не переводятся в основной кошелёк. Каждый уровень выше первого добавляет 1 монету к доходу: например, на уровне 3 победа даёт 7, ничья — 5, поражение — 4. Учитывается уровень на момент завершения боя. Армия соперника развивается по номеру боя с бюджетом до 24. Сохранённые забеги прежних версий сохраняют прежний магазин и доход. Все купленные фигуры восстанавливаются, превращённые пешки снова становятся пешками. Результаты не влияют на рейтинг, календарь и статистику обычных партий. Награда за серию в основном кошельке: 3 монеты за победу и 1 за каждую из первых пяти ничьих, максимум 30 монет за всю серию. Монеты сохраняются по мере завершения боёв; итоговое окно показывает общую сумму. Награда сохраняется при выходе и не начисляется повторно. За незавершённый бой и техническое прерывание награды нет.</p>'+oddsFAQ());
 export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,createId,award,storage=localStorage})=>{
  let run=null,selected=null,disposed=false,hasLock=false,releaseLock=null,message='',shownResult=null,lastFen=null,lastPreparation=null,lastMoves=0,replay=null,replayId=null,replayPly=0,lastReplayMove=null;
  const icon=type=>pieceSVG(type,run.color,itemById(equipped.pieces[type])?.style);
@@ -30,7 +33,7 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   if(final){
    const totals=`<div class="auto-results">${statCard(run.results.filter(row=>row.outcome==='win').length,'Победы')}${statCard(run.results.filter(row=>row.outcome==='draw').length,'Ничьи')}${statCard(run.results.filter(row=>row.outcome==='loss').length,'Поражения')}</div>`;
    void showModal(`<div id="auto-result"><h2>Серия завершена</h2>${totals}</div>`,{closeLabel:'Далее',closeVariant:'primary',next:rewardStep});
-  }else actions.innerHTML=`${reward.saved?`<p class="auto-reward">+${reward.coins} ${plural(reward.coins,['монета','монеты','монет'])}</p>`:rewardError}<button class="primary" data-auto-next ${reward.saved?'':'disabled'}>К следующему бою</button>`;
+  }else actions.innerHTML=`<p class="auto-reward">На следующий бой: +${run.version===4?roundIncome(run.results.at(-1)):Math.max(0,Math.min(AUTO.income,AUTO.maxBudget-(run.version===1?12:AUTO.budget)-(run.round-1)*AUTO.income))} монет серии</p>${reward.saved?`<p class="auto-reward">+${reward.coins} ${plural(reward.coins,['монета','монеты','монет'])} в основной кошелёк</p>`:rewardError}<button class="primary" data-auto-next ${reward.saved?'':'disabled'}>К следующему бою</button>`;
  };
  const hud=()=>{
   if(!run)return;
@@ -43,7 +46,7 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   hud();const preparation=run.phase==='preparation',playing=controller.isActive(),warming=controller.isPreparing();
   root.querySelector('#auto-side').textContent=`Победы ${run.results.filter(row=>row.outcome==='win').length} / ${AUTO.wins} · Поражения ${run.results.filter(row=>row.outcome==='loss').length} / ${AUTO.losses} · Вы — ${run.color==='w'?'белые':'чёрные'}`;
   let game;
-  if(preparation){game=new Chess(setupFen(run));replay=null;replayId=null;lastReplayMove=null;}
+  if(preparation){game={fen:()=>JSON.stringify(run.army)+run.color,board:()=>Array.from({length:8},(_,r)=>[...'abcdefgh'].map(file=>{const piece=run.army.find(piece=>piece.square===file+(8-r));return piece?{...piece,color:run.color}:null;})),turn:()=>run.color,isCheck:()=>false};replay=null;replayId=null;lastReplayMove=null;}
   else {
    if(!replay||replayId!==run.battle.id||replayPly>run.battle.moves.length){replay=new Chess(run.battle.initialFen);replayId=run.battle.id;replayPly=0;lastReplayMove=null;}
    for(;replayPly<run.battle.moves.length;replayPly++){const move=run.battle.moves[replayPly];lastReplayMove=replay.move({from:move.slice(0,2),to:move.slice(2,4),...(move[4]?{promotion:move[4]}:{})});}
@@ -52,7 +55,7 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   const fen=game.fen();
   const focused=document.activeElement?.dataset.autoPiece;
   if(lastFen!==fen||preparation||lastPreparation!==preparation){
-   board.getAnimations({subtree:true}).forEach(animation=>animation.cancel());
+   clearBoardTransition(board);
    const before=snapshotBoard(board);
    renderBoard(board,{board:()=>game.board().map(row=>row.map(piece=>preparation&&piece?.color!==run.color?null:piece)),history:()=>[],turn:()=>game.turn(),isCheck:()=>!preparation&&game.isCheck()},equipped,null,run.color);
    const moved=!preparation&&run.battle.moves.length===lastMoves+1;
@@ -71,10 +74,10 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   root.querySelector('#auto-status').textContent=message||(preparation?(reason||(run.army.length===1?'Добавьте фигуры к королю':piece?'Выберите выделенную клетку':'')):warming?'Готовим движок…':playing?'Бой идёт автоматически':run.phase==='result'?`${resultTitle()} · ${run.battle.result.reason}`:'Бой на паузе. Можно продолжить.');
   shop.hidden=!preparation;
   if(preparation){
-   shop.innerHTML=`<div class="auto-army" aria-label="Ваша армия">${run.army.map(piece=>`<button data-auto-piece="${piece.id}" draggable="true" aria-pressed="${piece.id===selected}" aria-label="${PIECE_NAMES[piece.type]}, ${piece.square||'не расставлена'}">${icon(piece.type)}<span>${piece.square||'На поле'}</span></button>`).join('')}</div><div class="auto-selection">${piece?`<span>${PIECE_NAMES[piece.type]} · ${piece.square||'не расставлена'}</span>${piece.type!=='k'?`<button class="primary" data-auto-sell="${piece.id}">Продать · ${salePrice(piece)}</button>`:`<span>${run.army.length} / ${AUTO.maxPieces}</span>`}`:`<span>Выберите фигуру</span><span>${run.army.length} / ${AUTO.maxPieces}</span>`}</div><div class="auto-section-title"><h2>Магазин</h2><strong id="auto-coins" aria-label="Монеты серии">${run.reserve} ${plural(run.reserve,['монета','монеты','монет'])}</strong></div><div class="auto-catalog">${['p','n','b','r','q'].map(type=>`<button data-auto-buy="${type}" ${run.reserve<PRICES[type]||run.army.length>=AUTO.maxPieces?'disabled':''} aria-label="Купить: ${PIECE_NAMES[type]}, монеты серии ${PRICES[type]}">${icon(type)}<span>${PIECE_NAMES[type]}</span><strong>${PRICES[type]}</strong></button>`).join('')}</div>`;
+   shop.innerHTML=`<div class="auto-army" aria-label="Ваша армия">${run.army.map(piece=>`<button data-auto-piece="${piece.id}" draggable="true" aria-pressed="${piece.id===selected}" aria-label="${PIECE_NAMES[piece.type]}, ${piece.square||'не расставлена'}">${icon(piece.type)}<span>${piece.square||'В запасе'}</span></button>`).join('')}</div><div class="auto-selection">${piece?`<span>${PIECE_NAMES[piece.type]} · ${piece.square||'не расставлена'}</span>${piece.square?`<button class="quiet" data-auto-bench="${piece.id}">Снять с поля</button>`:''}${piece.type!=='k'?`<button class="primary" data-auto-sell="${piece.id}">Продать · ${salePrice(piece)}</button>`:`<span>${run.army.length} / ${AUTO.maxPieces}</span>`}`:`<span>Выберите фигуру</span><span>${run.army.length} / ${AUTO.maxPieces}</span>`}</div><div class="auto-section-title"><h2>Магазин</h2><strong id="auto-coins" aria-label="Монеты серии">${run.reserve} ${plural(run.reserve,['монета','монеты','монет'])}</strong></div><div class="auto-catalog">${['p','n','b','r','q'].map(type=>`<button data-auto-buy="${type}" ${run.reserve<PRICES[type]||run.army.length>=AUTO.maxPieces?'disabled':''} aria-label="Купить: ${PIECE_NAMES[type]}, монеты серии ${PRICES[type]}">${icon(type)}<span>${PIECE_NAMES[type]}</span><strong>${PRICES[type]}</strong></button>`).join('')}</div>`;
    if(run.version===4){
-    shop.querySelector('.auto-catalog').outerHTML=`<div class="auto-shop-actions"><button class="primary" data-auto-random ${run.reserve<purchasePrice(run)||run.army.length>=AUTO.maxPieces?'disabled':''}>Купить фигуру · ${purchasePrice(run)}</button><button data-auto-level ${run.level>=10||run.reserve<levelPrice(run)?'disabled':''}>${run.level>=10?'Максимальный уровень':`Повысить уровень · ${levelPrice(run)}`}</button></div><p>Уровень магазина ${run.level} / 10</p><details><summary>Шансы фигур</summary><p>${Object.entries(shopOdds(run.level)).map(([type,chance])=>`${PIECE_NAMES[type]} — ${chance}%`).join(' · ')}</p></details>`;
-   }else shop.insertAdjacentHTML('beforeend','<p class="auto-secondary">Сохранённый забег: прежний магазин. Новый магазин доступен в новой игре.</p>');
+    shop.querySelector('.auto-catalog').outerHTML=`<div class="auto-shop-actions"><button class="primary" data-auto-random ${run.reserve<purchasePrice(run)||run.army.length>=AUTO.maxPieces?'disabled':''}>${shopIcon}<span>Купить фигуру · ${purchasePrice(run)}</span></button><button data-auto-level ${run.level>=10||run.reserve<levelPrice(run)?'disabled':''}>${levelIcon}<span>${run.level>=10?'Уровень 10 / 10':`Повысить уровень · ${levelPrice(run)}`}</span></button></div><p>Уровень магазина ${run.level} / 10</p>`;
+   }
    if(focused)shop.querySelector(`[data-auto-piece="${focused}"]`)?.focus({preventScroll:true});
   }
   const label=preparation?'Начать бой':run.phase==='result'?'Результат боя':warming?'Готовим движок…':playing?'Бой идёт':'Продолжить бой';
@@ -89,7 +92,7 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
  };
  root.onclick=event=>{
   if(!hasLock||!run)return;
-  const target=event.target.closest('button');if(!target)return;
+  const target=event.target.closest('button');if(!target){if(selected&&run.phase==='preparation'){selected=null;draw();}return;}
   if(target.matches('[data-auto-next],[data-auto-retry]')){void next(event);return;}
   if(target.id==='auto-start'){start();return;}
   if(run.phase!=='preparation')return;
@@ -97,12 +100,14 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   else if(target.hasAttribute('data-auto-level'))mutate(upgradeShop(run));
   else if(target.dataset.autoBuy){const next=buyPiece(run,target.dataset.autoBuy);if(next!==run)selected=next.army.at(-1).id;mutate(next);}
   else if(target.dataset.autoSell){const next=sellPiece(run,target.dataset.autoSell);selected=null;mutate(next);}
-  else if(target.dataset.autoPiece){selected=target.dataset.autoPiece;draw();}
+  else if(target.dataset.autoBench){mutate(benchPiece(run,target.dataset.autoBench));}
+  else if(target.dataset.autoPiece){selected=selected===target.dataset.autoPiece?null:target.dataset.autoPiece;draw();}
   else if(target.dataset.square){
    const square=target.dataset.square,own=run.army.find(piece=>piece.square===square);
-   if(own){selected=own.id;draw();}else if(selected)mutate(placePiece(run,selected,square));
+   if(own){selected=selected===own.id?null:own.id;draw();}else if(selected)mutate(placePiece(run,selected,square));
   }
  };
+ root.onkeydown=event=>{if(event.key==='Escape'&&run?.phase==='preparation'&&selected){event.preventDefault();selected=null;draw();}};
  root.ondragstart=event=>{
   if(run?.phase!=='preparation')return;
   const target=event.target.closest('button');selected=target?.dataset.autoPiece||run.army.find(piece=>piece.square===target?.dataset.square)?.id;
@@ -158,5 +163,5 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   });
  };
  void acquire().catch(error=>{if(!disposed)root.querySelector('#auto-loading').textContent=error.message;});
- return {requestExit,dispose:()=>{controller.pause();disposed=true;controller.dispose();clearInterval(interval);replay=null;lastReplayMove=null;run=null;releaseLock?.();modal.removeEventListener('click',next);document.removeEventListener('visibilitychange',hidden);window.removeEventListener('pagehide',pagehide);board.getAnimations({subtree:true}).forEach(animation=>animation.cancel());root.replaceChildren();}};
+ return {requestExit,dispose:()=>{controller.pause();disposed=true;controller.dispose();clearInterval(interval);replay=null;lastReplayMove=null;run=null;releaseLock?.();modal.removeEventListener('click',next);document.removeEventListener('visibilitychange',hidden);window.removeEventListener('pagehide',pagehide);clearBoardTransition(board);root.replaceChildren();}};
 };

@@ -6,7 +6,7 @@ export const createEngineWorker = () => {
  const proxy={onmessage:null,onerror:null,postMessage:data=>{if(closed)return;if(worker)worker.postMessage(data);else queued.push(data);},terminate:()=>{
   if(closed)return;closed=true;queued.length=0;proxy.onmessage=null;proxy.onerror=null;
   const previous=worker;worker=null;if(!previous)return;
-  retirement=new Promise(resolve=>{
+  const shutdown=new Promise(resolve=>{
    let timer,finished=false;
    const finish=()=>{if(finished)return;finished=true;clearTimeout(timer);previous.onmessage=null;previous.onerror=null;previous.terminate();resolve();};
    previous.onmessage=event=>{if(event.data?.type==='ENGINE_STOPPED')finish();};
@@ -14,11 +14,12 @@ export const createEngineWorker = () => {
    timer=setTimeout(finish,750);
    try{previous.postMessage({type:'STOP_ENGINE'});}catch{finish();}
   });
+  retirement=Promise.all([retirement,shutdown]);
  }};
  void retirement.then(()=>{
   if(closed)return;
   try{
-   worker=new Worker('./stockfish19-worker.js?v=94',{type:'module'});
+   worker=new Worker('./stockfish19-worker.js?v=95',{type:'module'});
    worker.onmessage=event=>proxy.onmessage?.(event);
    worker.onerror=event=>proxy.onerror?.(event);
    queued.splice(0).forEach(data=>worker.postMessage(data));

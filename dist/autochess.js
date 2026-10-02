@@ -1,4 +1,4 @@
-import {Chess} from './chess.js?v=94';
+import {Chess} from './chess.js?v=95';
 export const AUTO = Object.freeze({version:4,wins:10,losses:3,maxBudget:24,budget:3,income:3,maxPieces:8,maxPly:120,duration:30000,movetime:100,pace:200});
 export const AUTO_KEY='gachachess-autochess-v1';
 export const PRICES=Object.freeze({k:0,p:1,n:3,b:3,r:5,q:9});
@@ -9,13 +9,13 @@ const hash = text => [...String(text)].reduce((n,c)=>Math.imul(n^c.charCodeAt(0)
 const startingBudget = run => run.version===1?12:AUTO.budget;
 export const purchasePrice = run => 1+run.purchases;
 export const levelPrice = run => 3+2*(run.level-1);
-export const roundIncome = result => result?.outcome==='win'?5:result?.outcome==='draw'?3:2;
+export const roundIncome = result => (result?.outcome==='win'?5:result?.outcome==='draw'?3:2)+Math.max(0,(result?.shopLevel||1)-1);
 export const shopOdds = level => {
  const step=Math.max(0,Math.min(9,level-1));
  const p=40-4*step,n=25-step,b=25-step,q=1+2*step;
  return {p,n,b,r:100-p-n-b-q,q};
 };
-export const salePrice = piece => Math.min(PRICES[piece.type],piece.paid??PRICES[piece.type]);
+export const salePrice = piece => piece.paid??PRICES[piece.type];
 export const buyRandomPiece = run => {
  if(run.version!==4||run.phase!=='preparation'||run.army.length>=AUTO.maxPieces||run.reserve<purchasePrice(run))return run;
  const next=copy(run),paid=purchasePrice(run);let roll=hash(run.seed+':shop:'+run.purchases)%100,type='p';
@@ -54,7 +54,12 @@ export const sellPiece = (run,id) => {
 export const placePiece = (run,id,square) => {
  const piece=run.army.find(piece=>piece.id===id);
  if(run.phase!=='preparation'||!piece||!placementSquares(piece.type,run.color).includes(square)||run.army.some(other=>other.id!==id&&other.square===square))return run;
- const next=copy(run);next.army.find(piece=>piece.id===id).square=square;return next;
+ const next=copy(run),placed=next.army.find(piece=>piece.id===id);placed.square=square;delete placed.benched;return next;
+};
+export const benchPiece = (run,id) => {
+ const piece=run.army.find(piece=>piece.id===id);
+ if(run.phase!=='preparation'||!piece)return run;
+ const next=copy(run),benched=next.army.find(piece=>piece.id===id);benched.square=null;benched.benched=true;return next;
 };
 export const setupFen = run => {
  const pieces=[...run.army.filter(piece=>piece.square).map(piece=>({...piece,color:run.color})),...run.opponent.map(piece=>({...piece,color:run.color==='w'?'b':'w'}))];
@@ -72,10 +77,11 @@ export const setupFen = run => {
  return rows.join('/')+' w '+(castling||'-')+' - 0 1';
 };
 export const setupError = run => {
- if(run.army.some(piece=>!piece.square))return 'Расставьте купленные фигуры';
+ if(run.army.some(piece=>piece.type==='k'&&!piece.square))return 'Поставьте короля на поле';
+ if(run.army.some(piece=>!piece.square&&!piece.benched))return 'Расставьте купленные фигуры';
  if(run.army.filter(piece=>piece.type==='k').length!==1||run.opponent.filter(piece=>piece.type==='k').length!==1)return 'На поле должны быть оба короля';
- if(run.army.length>AUTO.maxPieces||run.army.some(piece=>!placementSquares(piece.type,run.color).includes(piece.square)))return 'Проверьте расстановку';
- const squares=[...run.army,...run.opponent].map(piece=>piece.square);if(new Set(squares).size!==squares.length)return 'Фигуры не могут занимать одну клетку';
+ if(run.army.length>AUTO.maxPieces||run.army.some(piece=>piece.square&&!placementSquares(piece.type,run.color).includes(piece.square)))return 'Проверьте расстановку';
+ const squares=[...run.army,...run.opponent].map(piece=>piece.square).filter(Boolean);if(new Set(squares).size!==squares.length)return 'Фигуры не могут занимать одну клетку';
  try{
   const fen=setupFen(run),game=new Chess(fen);
   if(game.isCheck()||new Chess(fen.replace(' w ',' b ')).isCheck())return 'Король под шахом';
@@ -105,14 +111,14 @@ export const battleResult = (game,ply,elapsed) => {
 export const completeBattle = (run,result) => {
  if(run.phase==='result'||!run.battle||run.battle.result)return run;
  const next=copy(run);next.phase='result';next.battle.result=result;
- next.results.push({...result,battleId:next.battle.id,outcome:result.winner===null?'draw':result.winner===run.color?'win':'loss'});return next;
+ next.results.push({...result,shopLevel:run.version===4?run.level:1,battleId:next.battle.id,outcome:result.winner===null?'draw':result.winner===run.color?'win':'loss'});return next;
 };
 export const seriesFinished = run => run.results.filter(row=>row.outcome==='win').length>=AUTO.wins||run.results.filter(row=>row.outcome==='loss').length>=AUTO.losses;
 export const nextRound = run => {
  if(run.phase!=='result'||seriesFinished(run))return run;
  const next=copy(run);next.round++;next.reserve+=run.version===4?roundIncome(run.results.at(-1)):Math.max(0,Math.min(AUTO.income,AUTO.maxBudget-startingBudget(run)-(run.round-1)*AUTO.income));next.phase='preparation';next.battle=null;
  const color=hash(next.seed+':'+next.round+':color')%2?'b':'w';
- if(color!==next.color)next.army=next.army.map(piece=>({...piece,square:piece.square?piece.square[0]+(9-Number(piece.square[1])):null}));
+ if(color!==next.color)next.army=next.army.map(piece=>({...piece,square:piece.square?'abcdefgh'[7-'abcdefgh'.indexOf(piece.square[0])]+(9-Number(piece.square[1])):null}));
  next.color=color;next.opponent=opponentFor(next.seed,next.round,color==='w'?'b':'w',startingBudget(next));return next;
 };
 export const restoreAutoRun = value => {
@@ -129,7 +135,7 @@ export const restoreAutoRun = value => {
   const income=run.results.slice(0,run.round-1).reduce((sum,row)=>sum+roundIncome(row),0),upgrades=run.level-1;
   if(run.reserve!==AUTO.budget+income+run.sales-run.purchases*(run.purchases+1)/2-upgrades*(upgrades+2))throw Error('Повреждён запас магазина');
  }
- if(run.results.some((row,index)=>!['win','draw','loss'].includes(row.outcome)||row.battleId!==run.id+':'+(index+1))||seriesFinished({...run,results:run.phase==='result'?run.results.slice(0,-1):run.results}))throw Error('Повреждены результаты серии');
+ if(run.results.some((row,index)=>!['win','draw','loss'].includes(row.outcome)||row.battleId!==run.id+':'+(index+1)||(row.shopLevel!==undefined&&(!Number.isInteger(row.shopLevel)||row.shopLevel<1||row.shopLevel>10)))||seriesFinished({...run,results:run.phase==='result'?run.results.slice(0,-1):run.results}))throw Error('Повреждены результаты серии');
  if(run.battle){
   if(run.battle.initialFen!==setupFen(run)||!Array.isArray(run.battle.moves)||run.battle.moves.length>AUTO.maxPly||!Number.isFinite(run.battle.elapsed)||run.battle.elapsed<0||run.battle.elapsed>AUTO.duration)throw Error('Повреждён бой');
   battleGame(run);

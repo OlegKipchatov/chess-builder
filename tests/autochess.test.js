@@ -4,6 +4,30 @@ import {Chess} from '../dist/chess.js';
 import {AUTO,PRICES,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
 import {createBattleController} from '../dist/autochess-battle.js';
 import {createAutoplayEngine} from '../dist/autochess-engine.js';
+import {benchPiece} from '../dist/autochess.js';
+test('bench preserves ownership and pending kings prevent battle start',()=>{
+ let run=prepared(),id=run.army.at(-1).id;
+ run=benchPiece(run,id);assert.equal(run.army.at(-1).square,null);assert.equal(run.army.at(-1).benched,true);assert.equal(setupError(run),'');
+ run=placePiece(run,id,run.color==='w'?'d1':'d8');assert.equal(run.army.at(-1).benched,undefined);
+ const withoutKing=benchPiece(run,'king');assert.match(setupError(withoutKing),/короля/);assert.equal(beginBattle(withoutKing),withoutKing);
+});
+test('colour changes preserve screen coordinates for every deployed piece',()=>{
+ const index=(square,color)=>{const i=(8-Number(square[1]))*8+'abcdefgh'.indexOf(square[0]);return color==='w'?i:63-i;};
+ let changed=0;
+ for(let seed=0;seed<30;seed++){
+  const run={...createAutoRun('flip-'+seed,String(seed)),phase:'result',results:[{outcome:'draw'}]};
+  const next=nextRound(run);if(run.color!==next.color)changed++;
+  assert.equal(index(run.army[0].square,run.color),index(next.army[0].square,next.color));
+ }
+ assert.ok(changed>0);
+});
+test('paid pawn sells for full price and income records the completed shop level',()=>{
+ assert.equal(salePrice({type:'p',paid:7}),7);
+ const run=upgradeShop(createModernRun('income'));
+ const battle=beginBattle(run),finished=completeBattle(battle,{winner:null,reason:'test'}),next=nextRound(finished);
+ assert.equal(finished.results[0].shopLevel,2);assert.equal(next.reserve,4);assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
+ assert.equal(roundIncome({outcome:'win',shopLevel:10}),14);
+});
 const createAutoRun=(...args)=>({...createModernRun(...args),version:3});
 test('random shop prices persist and probabilities cover all ten levels',()=>{
  const run=createModernRun('shop');assert.equal(purchasePrice(run),1);assert.equal(levelPrice(run),3);

@@ -1,9 +1,9 @@
-import {STOCKFISH as C} from './stockfish-config.js?v=94';
-import {createEngineWorker} from './stockfish-lifecycle.js?v=94';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=94';
-import {Chess} from './chess.js?v=94';
-import {validEngineProfile} from './strength.js?v=94';
-import {decisionModeFor} from './cognitive-model.js?v=94';
+import {STOCKFISH as C} from './stockfish-config.js?v=95';
+import {createEngineWorker} from './stockfish-lifecycle.js?v=95';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=95';
+import {Chess} from './chess.js?v=95';
+import {validEngineProfile} from './strength.js?v=95';
+import {decisionModeFor} from './cognitive-model.js?v=95';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);

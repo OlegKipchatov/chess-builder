@@ -1,5 +1,27 @@
 # Autochess first playable version
 
+## Release 95 draft
+
+Figures can be explicitly benched, including the king. Ownership and paid
+price persist; a benched king prevents starting. Newly bought figures must
+be placed or explicitly benched. Repeat selection, Escape and empty panel
+clicks clear selection. Four-rank placement limits remain unchanged.
+When colour changes, both axes rotate so every piece retains its screen cell.
+
+Sales refund the actual paid price (legacy pieces retain their original
+nominal price). Level income is base 5/3/2 plus shopLevel-1. Completed results
+store the level; older results without this field use level 1, so existing
+balances are not recalculated. Probabilities and rules live in FAQ; the two
+shop actions share one row and have labelled decorative icons.
+
+Board animation cleanup is synchronous and idempotent before each render:
+old completion handlers cannot reveal an icon hidden by a newer animation.
+Worker retirement waits for all pending shutdowns, not just the last one.
+The browser regression runs sixteen real engine starts/searches/shutdowns
+and checks one live parent worker at most, zero after shutdown. It also
+interrupts overlapping animations and checks for hidden icons or overlays.
+This is a Chromium regression check, not a measurement of iOS memory use.
+
 Release 94: deployment spans the nearest four ranks (white 1–4, black 5–8),
 with pawns excluded from ranks 1 and 8. Enemy pieces, square accessibility
 labels and check markers are concealed during preparation and revealed on

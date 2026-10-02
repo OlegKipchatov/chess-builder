@@ -1,7 +1,7 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=94';
-import {Chess} from './chess.js?v=94';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=94';
-import {pieceSVG} from './pieces.js?v=94';
+import {motionDuration, motionEasing} from './ui/motion.js?v=95';
+import {Chess} from './chess.js?v=95';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=95';
+import {pieceSVG} from './pieces.js?v=95';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   root.style.setProperty('--square-light',style.light);
@@ -61,9 +61,20 @@ export const historyMoves = (game,from,to) => {
     return target&&target!==square?[{from:square,to:target}]:[];
   });
 };
+const boardTransitions=new WeakMap();
+export const clearBoardTransition = root => boardTransitions.get(root)?.();
 export const animateTransition = async (root, steps, before, duration=motionDuration.board) => {
+  clearBoardTransition(root);
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||!root.getBoundingClientRect().width||!root.animate)return;
   const rect=root.getBoundingClientRect(), nodes=[],hidden=[],animations=[];
+  let cleaned=false;
+  const cleanup=()=>{
+    if(cleaned)return;cleaned=true;
+    nodes.forEach(node=>{node.getAnimations().forEach(animation=>animation.cancel());node.remove();});
+    hidden.forEach(icon=>icon.style.visibility='');
+    if(boardTransitions.get(root)===cleanup)boardTransitions.delete(root);
+  };
+  boardTransitions.set(root,cleanup);
   const timing={duration,easing:motionEasing.board,fill:'forwards'};
   const overlay=source=>{
     if(!source?.icon)return null;
@@ -87,7 +98,7 @@ export const animateTransition = async (root, steps, before, duration=motionDura
       if(icon&&!arrives){const node=overlay({...source,icon:icon.outerHTML});hide(icon);animations.push(node.animate([{opacity:0},{opacity:1}],timing).finished);}
     }
     await Promise.allSettled(animations);
-  } finally {nodes.forEach(node=>node.remove());hidden.forEach(icon=>icon.style.visibility='');}
+  } finally {cleanup();}
 };
 export const animateMove = (root,move,before) => animateTransition(root,animationMoves(move),before);
 
