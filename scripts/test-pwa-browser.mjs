@@ -88,10 +88,10 @@ try{
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),saved.game.pgn);
   // A completed game resumes its pending quality bonus offline exactly once.
   await page.evaluate(async()=>{
-   const {Chess}=await import('./chess.js?v=89');
-   const {completedMatch}=await import('./archive.js?v=89');
-   const {initialState}=await import('./state.js?v=89');
-   const {createStartedGame}=await import('./session.js?v=89');
+   const {Chess}=await import('./chess.js?v=92');
+   const {completedMatch}=await import('./archive.js?v=92');
+   const {initialState}=await import('./state.js?v=92');
+   const {createStartedGame}=await import('./session.js?v=92');
    const game=new Chess();['f3','e5','g4','Qh4#'].forEach(move=>game.move(move));
    const state=initialState();state.game=createStartedGame(state,()=>.9);
    const settled=completedMatch(state,game,{id:'offline-reward',finishedAt:new Date().toISOString()});
@@ -153,8 +153,8 @@ try{
    await testAnalysisLearning(page,origin+base);
    await page.setViewportSize({width:390,height:844});
    await page.evaluate(async()=>{
-    const {initialState}=await import('./state.js?v=89');
-    const {createStartedGame}=await import('./session.js?v=89');
+    const {initialState}=await import('./state.js?v=92');
+    const {createStartedGame}=await import('./session.js?v=92');
     const state=initialState();state.game={...createStartedGame(state,()=>.9),pgn:'1. f3 e5 2. g4 Qh4#'};
     localStorage.setItem('chess-vault-v3',JSON.stringify(state));
    });
