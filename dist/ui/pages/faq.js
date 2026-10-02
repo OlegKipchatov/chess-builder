@@ -1,4 +1,4 @@
-import {pageHeader,backButton,disclosure} from '../primitives.js?v=92';
+import {pageHeader,backButton,disclosure} from '../primitives.js?v=93';
 
 const probabilityList = (title, rows) => `<section class="faq-probability-group"><h3>${title}</h3><dl class="probability-list">${rows.map(([label,value])=>`<div><dt>${label}</dt><dd>${value}%</dd></div>`).join('')}</dl></section>`;
 const chestProbabilities = () => `<div class="chest-probabilities">${probabilityList('Что выпадает',[['Одна фигура',85],['Одна доска',10],['15 осколков',5]])}${probabilityList('Редкость предмета',[['Обычный',60],['Редкий',30],['Эпический',9],['Легендарный',1]])}<section class="faq-guarantee"><h3>Гарантия</h3><p>Десятое открытие без эпического или легендарного предмета гарантирует одну из этих редкостей.</p>${probabilityList('Редкость на гарантии',[['Эпический',90],['Легендарный',10]])}${probabilityList('Тип предмета на гарантии',[['Фигура',90],['Доска',10]])}<p>Повторы возможны и компенсируются осколками.</p></section></div>`;

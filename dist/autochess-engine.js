@@ -1,6 +1,6 @@
-import {AUTO} from './autochess.js?v=92';
+import {AUTO} from './autochess.js?v=93';
 // One sequential worker per active battle; no rating or difficulty model.
-export const createAutoplayEngine = (spawn=()=>new Worker('./stockfish19-worker.js?v=92',{type:'module'})) => {
+export const createAutoplayEngine = (spawn=()=>new Worker('./stockfish19-worker.js?v=93',{type:'module'})) => {
  const worker=spawn();let pending=null,dead=false,readyResolve,readyReject;
  const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
  const send=command=>worker.postMessage(command);

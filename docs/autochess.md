@@ -44,3 +44,16 @@ depth remain prototype observations, not established balance/performance guarant
 Rules v2 start at three series coins. Existing v1 series retain their original twelve-coin budget and opponent schedule; they are not reset or silently reduced. The wallet sits beside the shop heading. Desktop uses a board/shop grid; mobile keeps the shop below the board with compact spacing.
 
 Rewards use the existing wallet state: balance and receipt with outcome/reason are persisted in one write. The saved battle remains replayable if that write fails; result/exit/next-round retry idempotently by battleId. Autochess Web Lock prevents duplicate settlement from two mode windows. Reloading state preserves receipts. Series summaries add already paid receipts without paying twice.
+
+### v93: память и результаты
+
+Stockfish получает shared WebAssembly.Memory с начальным размером 64 MiB и
+максимумом 128 MiB вместо стандартного максимума 2 GiB. Профили по-прежнему
+используют один поток и Hash 16 MiB. Контроллер и доска продолжают сохранённую
+позицию по одному ходу, без повторного проигрывания всей истории при каждом
+обновлении. Ошибка создания или запуска движка переводит бой на паузу и
+сохраняет ходы и прошедшее время.
+
+Результаты боёв 1–4 и награда показываются на странице с кнопкой следующего
+боя. Модальное окно появляется только после пятого боя с итогами серии.
+Повторное открытие результатов не начисляет награду второй раз.

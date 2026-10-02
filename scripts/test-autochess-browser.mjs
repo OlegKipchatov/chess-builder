@@ -51,14 +51,28 @@ try{
  const finished=await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')));
  assert.equal(finished.phase,'result');assert.equal(finished.results.length,1);assert.ok(finished.battle.elapsed<=30000&&finished.battle.moves.length<=120);
  const once=await page.evaluate(()=>localStorage.getItem('chess-vault-v3'));
- await page.locator('#close-modal').click();await page.locator('#auto-start').click();await page.locator('[data-auto-next]').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('chess-vault-v3')),once);
- const button=await page.locator('[data-auto-next]').boundingBox(),content=await page.locator('#modal-content').boundingBox();assert.ok(button.width>=content.width-2);
+ assert.equal(await page.locator('#modal').isVisible(),false);
+ await page.locator('#hunt-exit').click();await page.locator('#autochess-open').click();await page.locator('[data-auto-next]').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('chess-vault-v3')),once);
+ assert.equal(await page.locator('#modal').isVisible(),false);
+ const button=await page.locator('[data-auto-next]').boundingBox(),content=await page.locator('#auto-action').boundingBox();assert.ok(button.width>=content.width-2);
  await page.screenshot({path:'/tmp/autochess-result.png',fullPage:true});
  await page.locator('[data-auto-next]').click();await page.locator('[data-auto-buy="n"]').waitFor();
  const next=await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')));assert.equal(next.round,2);assert.equal(next.reserve,3);assert.equal(next.army.length,2);
  const wallet=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3'))),beforeWallet=JSON.parse(original);
  const receipt=wallet.autochessAwards[finished.battle.id];assert.ok(receipt);assert.equal(wallet.coins,beforeWallet.coins+receipt.coins);
  const {coins:afterCoins,autochessAwards,...afterRest}=wallet,{coins:beforeCoins,autochessAwards:beforeAwards,...beforeRest}=beforeWallet;assert.deepEqual(afterRest,beforeRest);
+ await page.locator('#hunt-exit').click();
+ await page.evaluate(async()=>{
+  const {beginBattle,completeBattle,nextRound}=await import('./autochess.js?v=93');
+  let run=JSON.parse(localStorage.getItem('gachachess-autochess-v1'));
+  while(run.round<=5){run=completeBattle(beginBattle(run),{winner:null,reason:'Тест итогов серии'});if(run.round===5)break;run=nextRound(run);}
+  localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));
+ });
+ await page.locator('#autochess-open').click();await page.locator('#modal [data-auto-next]').waitFor();
+ assert.equal(await page.locator('#modal').isVisible(),true);await page.getByText('Серия завершена',{exact:true}).waitFor();
+ const finalButton=await page.locator('#modal [data-auto-next]').boundingBox(),finalContent=await page.locator('#modal-content').boundingBox();assert.ok(finalButton.width>=finalContent.width-2);
+ await page.locator('#modal [data-auto-next]').click();await page.locator('#autochess-open').waitFor();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('gachachess-autochess-v1')),null);
  assert.deepEqual(errors,[]);
  await context.close();console.log('PASS Autochess: mobile/desktop, real Stockfish offline battle, board stability, pause, cold resume, tab lock, next round, isolated progress');
 }finally{await browser.close();await new Promise(done=>server.close(done));}

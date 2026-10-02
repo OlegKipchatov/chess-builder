@@ -1,3 +1,3 @@
-import {chestCard} from '../components/chest-card.js?v=92';
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=92';
+import {chestCard} from '../components/chest-card.js?v=93';
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=93';
 export const chestsPage = () => `<section id="chests" class="tab" data-page-kind="root" hidden>${pageHeader({title:"Сундуки"})}<div class="page-content">${chestCard()}</div></section>`;

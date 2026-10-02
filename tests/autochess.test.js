@@ -86,3 +86,18 @@ test('new series starts with three coins; previous series keep their budget',()=
  assert.deepEqual(restoreAutoRun(JSON.stringify(old)),old);
  const advanced=nextRound(completeBattle(beginBattle(old),{winner:null,reason:'test'}));assert.equal(advanced.reserve,15);assert.deepEqual(restoreAutoRun(JSON.stringify(advanced)),advanced);
 });
+
+
+test('memory failure during engine creation or readiness preserves paused battle',async()=>{
+ for(const asynchronous of [false,true]){
+  let run=beginBattle(prepared());run={...run,battle:{...run.battle,elapsed:4321}};
+  const before=structuredClone(run.battle),errors=[];let terminated=0;
+  const controller=createBattleController({getRun:()=>run,save:next=>{run=next;return true;},onChange:()=>{},onError:message=>errors.push(message),engineFactory:()=>{
+   if(!asynchronous)throw new RangeError('Out of memory');
+   return {ready:Promise.reject(new RangeError('Out of memory')),terminate:()=>terminated++};
+  }});
+  await controller.start();assert.equal(run.phase,'paused');assert.deepEqual(run.battle,before);
+  assert.equal(controller.isActive(),false);assert.equal(controller.isPreparing(),false);
+  assert.match(errors[0],/Не хватает памяти/);assert.equal(terminated,Number(asynchronous));controller.dispose();
+ }
+});

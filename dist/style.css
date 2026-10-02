@@ -1,17 +1,17 @@
 /* UI styles are owned by their modules; order: tokens, primitives, shell, features. */
-@import url('./ui/styles/tokens.css?v=92');
-@import url('./ui/styles/motion.css?v=92');
-@import url('./ui/styles/base.css?v=92');
-@import url('./ui/styles/shell.css?v=92');
-@import url('./ui/styles/board.css?v=92');
-@import url('./ui/styles/game.css?v=92');
-@import url('./ui/styles/collection.css?v=92');
-@import url('./ui/styles/content.css?v=92');
-@import url('./ui/styles/dialog.css?v=92');
+@import url('./ui/styles/tokens.css?v=93');
+@import url('./ui/styles/motion.css?v=93');
+@import url('./ui/styles/base.css?v=93');
+@import url('./ui/styles/shell.css?v=93');
+@import url('./ui/styles/board.css?v=93');
+@import url('./ui/styles/game.css?v=93');
+@import url('./ui/styles/collection.css?v=93');
+@import url('./ui/styles/content.css?v=93');
+@import url('./ui/styles/dialog.css?v=93');
 
-@import url('./ui/styles/analysis.css?v=92');
-@import url('./ui/styles/hunt.css?v=92');
-@import url('./ui/styles/autochess.css?v=92');
+@import url('./ui/styles/analysis.css?v=93');
+@import url('./ui/styles/hunt.css?v=93');
+@import url('./ui/styles/autochess.css?v=93');
 
 /* Also covers transparent buttons after native tap highlight is suppressed. */
 .square:active:not(:disabled):not([aria-disabled="true"]),button:active:not(:disabled):not([aria-disabled="true"]),a:active:not([aria-disabled="true"]),summary:active{filter:brightness(.92);background-image:linear-gradient(#ffffff0d,#ffffff0d);transition:none}

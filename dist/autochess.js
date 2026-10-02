@@ -1,4 +1,4 @@
-import {Chess} from './chess.js?v=92';
+import {Chess} from './chess.js?v=93';
 export const AUTO = Object.freeze({version:2,rounds:5,budget:3,income:3,maxPieces:8,maxPly:120,duration:30000,movetime:100,pace:200});
 export const AUTO_KEY='gachachess-autochess-v1';
 export const PRICES=Object.freeze({k:0,p:1,n:3,b:3,r:5,q:9});
