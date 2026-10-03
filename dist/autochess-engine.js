@@ -1,5 +1,5 @@
-import {AUTO} from './autochess.js?v=100';
-import {createEngineWorker} from './stockfish-lifecycle.js?v=100';
+import {AUTO} from './autochess.js?v=102';
+import {createEngineWorker} from './stockfish-lifecycle.js?v=102';
 // One sequential worker per active battle; no rating or difficulty model.
 export const createAutoplayEngine = (spawn=createEngineWorker) => {
  const worker=spawn();let pending=null,dead=false,initialized=false,readyResolve,readyReject;
@@ -12,6 +12,7 @@ export const createAutoplayEngine = (spawn=createEngineWorker) => {
  worker.onmessage=event=>{
   if(dead)return;
   for(const line of String(event.data).split('\n')){
+   if(/Unsupported position|Invalid FEN/i.test(line)){fail(Error('Состав или расстановка не поддерживаются движком. Вернитесь к подготовке и исправьте состав.'));return;}
    if(line.trim()==='uciok'){
     ['setoption name Threads value 1','setoption name Hash value 4','setoption name Skill Level value 20','setoption name UCI_LimitStrength value false','setoption name MultiPV value 1','ucinewgame','isready'].forEach(send);
    }else if(line.trim()==='readyok'){clearTimeout(watchdog);initialized=true;readyResolve();}

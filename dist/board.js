@@ -1,7 +1,7 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=100';
-import {Chess} from './chess.js?v=100';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=100';
-import {pieceSVG} from './pieces.js?v=100';
+import {motionDuration, motionEasing} from './ui/motion.js?v=102';
+import {Chess} from './chess.js?v=102';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=102';
+import {pieceSVG} from './pieces.js?v=102';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   if(root.style.getPropertyValue('--square-light')!==style.light)root.style.setProperty('--square-light',style.light);

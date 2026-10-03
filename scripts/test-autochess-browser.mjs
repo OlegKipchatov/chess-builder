@@ -17,7 +17,7 @@ try{
  page.on('pageerror',error=>errors.push(error.message));await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);
  const seed=async(count=0,overflow=false)=>{
   await page.evaluate(async({count,overflow})=>{
-   const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=100');const run=createAutoRun('compact-fixture');
+   const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=102');const run=createAutoRun('compact-fixture');
    run.color='w';run.level=3;run.round=21;run.purchases=7;run.nextId=8;run.reserve=27;
    run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
    run.opponent=arrangeOpponent(run.opponent,'b');
@@ -60,6 +60,35 @@ try{
  await seed(7,true);await page.getByText('Резерв старого забега',{exact:true}).waitFor();assert.equal(await page.locator('[data-auto-overflow-piece]').count(),7);
  await page.locator('[data-auto-overflow-piece="piece-7"]').click();await page.locator('#auto-board [data-square="d2"]').click();assert.equal((await stored()).army.length,8);assert.equal((await stored()).army.filter(p=>!p.square).length,6);
  await seed(1);await page.locator('#auto-board [data-square="b2"]').tap();await page.locator('#auto-board [data-square="b2"]').tap();assert.equal((await stored()).army.filter(p=>!p.square).length,2);
+ // Legacy invalid composition stays visible; explanation and repair do not move the board.
+ await seed(0);
+ await page.evaluate(async()=>{
+  const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=102');
+  const run=createAutoRun('composition-browser');run.color='w';run.level=10;run.round=51;run.purchases=15;run.nextId=16;run.reserve=384;
+  run.results=Array.from({length:50},(_,i)=>({outcome:'draw',incomeRule:2,shopLevel:10,battleId:run.id+':'+(i+1)}));
+  run.opponent=arrangeOpponent(run.opponent,'b');
+  run.army=[{id:'king',type:'k',square:'e1'},...['p','p','p','p','p','p','p','p','n','n','n','b','b','r','q'].map((type,i)=>({id:'piece-'+(i+1),type,paid:i+1,square:i<8?'abcdefgh'[i]+'2':['a1','b1','c3','d1','f1','g1','h1'][i-8]}))];
+  localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));
+ });
+ await page.reload();await page.locator('[data-tab="minigames"]').click();await page.locator('#autochess-open').click();await page.locator('#auto-board .square').first().waitFor();
+ await page.waitForFunction(()=>document.querySelector('#auto-board').style.width);
+ assert.equal(await page.locator('#auto-start').textContent(),'Исправить состав');const invalidGeometry=await geometry(),incompatibleSaved=await stored();
+ await page.locator('#auto-start').click();await page.getByText('Исправьте состав',{exact:true}).waitFor();assert.match(await page.locator('#modal').textContent(),/Обычный состав/);
+ await page.getByRole('button',{name:'К доске',exact:true}).click();assert.deepEqual(await geometry(),invalidGeometry);
+ await page.locator('#auto-board [data-square="a2"]').dblclick();assert.equal(await page.locator('#auto-start').textContent(),'Начать бой');assert.deepEqual(await geometry(),invalidGeometry);
+ await page.locator('[data-auto-piece="piece-1"]').click();const beforeInvalid=await stored();
+ await page.locator('#auto-board [data-square="a3"]').click();assert.deepEqual(await stored(),beforeInvalid);assert.deepEqual(await geometry(),invalidGeometry);
+ await page.locator('#auto-board [data-square="c3"]').click();assert.equal((await stored()).army.find(p=>p.id==='piece-11').square,null);assert.equal((await stored()).army.find(p=>p.id==='piece-1').square,'c3');
+ // An old paused unsupported battle requires an explicit return to preparation.
+ await page.evaluate(async run=>{
+  const {setupFen}=await import('./autochess.js?v=102');
+  run.phase='paused';run.battle={id:run.id+':'+run.round,initialFen:setupFen(run),moves:[],elapsed:0};
+  localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));
+ },incompatibleSaved);
+ await page.reload();await page.locator('[data-tab="minigames"]').click();await page.locator('#autochess-open').click();await page.locator('#auto-start').waitFor();
+ assert.equal(await page.locator('#auto-start').textContent(),'Исправить состав');await page.locator('#auto-start').click();
+ await page.locator('[data-auto-repair]').click();await page.locator('#modal').waitFor({state:'hidden'});
+ const returned=await stored();assert.equal(returned.phase,'preparation');assert.equal(returned.battle,null);assert.deepEqual(returned.army,incompatibleSaved.army);assert.equal(returned.reserve,incompatibleSaved.reserve);assert.deepEqual(returned.results,incompatibleSaved.results);
  // Enlarge text: scrolling is allowed, clipping and horizontal overflow are not.
  await seed(0);await page.evaluate(()=>document.documentElement.style.fontSize='200%');await page.waitForTimeout(100);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.equal(await page.locator('[data-auto-random]').isVisible(),true);

@@ -5,7 +5,7 @@ import {initialState,migrateState} from '../dist/state.js';
 const runFor=(outcome,id='battle-1')=>({phase:'result',battle:{id,result:{winner:outcome==='draw'?null:outcome==='win'?'w':'b'}},results:[{battleId:id,outcome,reason:'test'}]});
 test('series caps draws at five and total at thirty including partial last credit',()=>{
  let wallet=initialState();const results=[];
- for(const [i,outcome] of [...Array(12).fill('draw'),...Array(10).fill('win')].entries()){
+ for(const [i,outcome] of [...Array(12).fill('draw'),...Array(15).fill('win')].entries()){
   const run=runFor(outcome,'capped-'+i);results.push(run.results[0]);run.results=[...results];
   wallet=awardAutochess(wallet,run);assert.ok(wallet.coins<=130);
   assert.equal(awardAutochess(wallet,run),wallet);

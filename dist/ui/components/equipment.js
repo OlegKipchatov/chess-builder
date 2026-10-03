@@ -1,6 +1,6 @@
-import {TYPES,itemById,rarityNames} from '../../catalog.js?v=100';
-import {pieceSVG,itemPreview} from '../../pieces.js?v=100';
-import {escapeHTML,button,iconButton} from '../primitives.js?v=100';
+import {TYPES,itemById,rarityNames} from '../../catalog.js?v=102';
+import {pieceSVG,itemPreview} from '../../pieces.js?v=102';
+import {escapeHTML,button,iconButton} from '../primitives.js?v=102';
 export const rarityLabel = rarity => `<span class="rarity ${escapeHTML(rarity)}">${escapeHTML(rarityNames[rarity])}</span>`;
 export const equipmentPreviewItem = (id,owned=true) => {
   const item=itemById(id),label=`${item.name}${owned?'':' · не получен'}`;

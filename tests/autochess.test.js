@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
-import {AUTO,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
+import {AUTO,compositionIssue,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
 import {createBattleController} from '../dist/autochess-battle.js';
 import {createAutoplayEngine} from '../dist/autochess-engine.js';
 import {benchPiece} from '../dist/autochess.js';
@@ -9,7 +9,7 @@ test('army capacity grows from eight to sixteen with the shop level',()=>{
  assert.deepEqual(Array.from({length:10},(_,i)=>armyCapacity({version:4,level:i+1})),[8,9,10,11,12,13,14,15,16,16]);
  assert.equal(armyCapacity({version:3,level:10}),8);
  let run=createModernRun('capacity');run.round=21;
- run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
+ run.results=Array.from({length:20},(_,i)=>({outcome:'draw',incomeRule:2,shopLevel:1,battleId:run.id+':'+(i+1)}));
  run.purchases=7;run.nextId=8;run.reserve=35;
  run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:placementSquares('p',run.color)[i]})));
  assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);
@@ -22,8 +22,8 @@ test('army capacity grows from eight to sixteen with the shop level',()=>{
 });
 test('sixteen owned pieces survive saving, placement and the level-ten cap',()=>{
  const run=createModernRun('sixteen');run.level=10;run.round=51;run.purchases=15;run.nextId=16;run.reserve=384;
- run.results=Array.from({length:50},(_,i)=>({outcome:'draw',shopLevel:10,battleId:run.id+':'+(i+1)}));
- run.army.push(...Array.from({length:15},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:placementSquares('p',run.color)[i]})));
+ run.results=Array.from({length:50},(_,i)=>({outcome:'draw',incomeRule:2,shopLevel:10,battleId:run.id+':'+(i+1)}));
+ run.army=arrangeOpponent([...run.army,...['p','p','p','p','p','p','p','p','n','n','b','b','r','r','q'].map((type,i)=>({id:'piece-'+(i+1),type,paid:i+1,square:null}))],run.color);
  assert.equal(run.army.length,16);assert.equal(setupError(run),'');
  assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);assert.equal(buyRandomPiece(run),run);assert.equal(upgradeShop(run),run);
  const sold=sellPiece(run,'piece-1');assert.equal(buyRandomPiece(sold).army.length,16);
@@ -46,7 +46,7 @@ test('four reserve slots guard purchases and return; a full swap is atomic',()=>
 });
 test('old overflow is preserved explicitly, resolved manually and cannot grow',()=>{
  let run=createModernRun('old-overflow');delete run.reserveRule;run.round=21;run.purchases=7;run.nextId=8;run.reserve=35;
- run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
+ run.results=Array.from({length:20},(_,i)=>({outcome:'draw',incomeRule:2,shopLevel:1,battleId:run.id+':'+(i+1)}));
  run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:null,benched:true})));
  run=restoreAutoRun(JSON.stringify(run));assert.equal(run.legacyReserveOverflow,true);assert.equal(reservePieces(run).length,7);
  assert.equal(buyRandomPiece(run),run);assert.equal(benchPiece(run,'king'),run);assert.match(setupError(run),/резерв/);
@@ -66,6 +66,7 @@ test('opponent budget is conserved through a long series and saves',()=>{
   const p=next.opponentProgress;
   assert.equal(p.reserve,3+p.income+p.sales-p.purchases*(p.purchases+1)/2-(p.level-1)*(p.level+1));
   assert.ok(next.opponent.length<=armyCapacity({version:4,level:p.level}));assert.ok(p.level<=10);
+  assert.equal(compositionIssue(next.opponent).excess,0,'bot composition must stay supported throughout the series');
   assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);run=next;
  }
  assert.ok(run.opponentProgress.level>1,'bot independently upgrades even when player stays at level one');
@@ -129,7 +130,7 @@ test('shelter leaves an escape off the king rank for varied full armies',()=>{
 });
 test('losing opponent invests early and still fields new troops before series end',()=>{
  let run=createModernRun('economy-check');
- for(let i=0;i<8;i++){
+ for(let i=0;i<AUTO.wins-2;i++){
   run.results.push({outcome:'win'});
   const enemy=advanceOpponent(run,'b');run={...run,color:'w',opponent:enemy.army,opponentProgress:enemy.progress};
   if(i===1)assert.ok(run.opponentProgress.level>=2,'upgrade contributes income in later rounds');
@@ -173,7 +174,7 @@ test('paid pawn sells for full price and income records the completed shop level
  const run=upgradeShop(createModernRun('income'));
  const battle=beginBattle(run),finished=completeBattle(battle,{winner:null,reason:'test'}),next=nextRound(finished);
  assert.equal(finished.results[0].shopLevel,2);assert.equal(next.reserve,4);assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
- assert.equal(roundIncome({outcome:'win',shopLevel:10}),14);
+ assert.equal(roundIncome({outcome:'win',shopLevel:10}),13);
 });
 const createAutoRun=(...args)=>{const run=createModernRun(...args);delete run.opponentProgress;return {...run,version:3,opponent:opponentFor(run.seed,1,run.color==='w'?'b':'w')};};
 test('random shop prices persist and probabilities cover all ten levels',()=>{
@@ -189,7 +190,7 @@ test('random shop prices persist and probabilities cover all ten levels',()=>{
 });
 test('round income depends on results without resetting shop counters',()=>{
  for(const outcome of ['win','draw','loss']){
-  let run=buyRandomPiece(createModernRun(outcome));run={...run,phase:'result',results:[{battleId:run.id+':1',outcome}],battle:{result:{winner:null}}};
+  let run=buyRandomPiece(createModernRun(outcome));run={...run,phase:'result',results:[{battleId:run.id+':1',outcome,incomeRule:2}],battle:{result:{winner:null}}};
   const next=nextRound(run);assert.equal(next.reserve,run.reserve+roundIncome({outcome}));assert.equal(next.purchases,1);assert.equal(next.level,1);
   assert.equal(purchasePrice(next),2);assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
  }
@@ -300,8 +301,8 @@ test('memory failure during engine creation or readiness preserves paused battle
 });
 
 
-test('series ends at ten wins or three losses; draws allow rounds beyond five',()=>{
- for(const [outcome,count] of [['win',10],['loss',3],['draw',30]]){
+test('series ends at fifteen wins or five losses; draws allow rounds beyond five',()=>{
+ for(const [outcome,count] of [['win',15],['loss',5],['draw',30]]){
   let run=prepared();
   for(let index=0;index<count;index++){
    // Use a legal fixture independent of generated opponent checks.
@@ -332,4 +333,44 @@ test('white always starts; bot repairs black check without changing player or ec
 test('white can start in check without moving the opponent or changing turn',()=>{
  const run={...prepared(),color:'w',army:[{id:'king',type:'k',square:'a1'}],opponent:[{id:'enemy-king',type:'k',square:'h8'},{id:'enemy-rook',type:'r',square:'a8'}]};
  const started=beginBattle(run);assert.equal(battleGame(started).turn(),'w');assert.equal(battleGame(started).isCheck(),true);assert.deepEqual(started.opponent,run.opponent);
+});
+
+test('pawn-first odds are exact at every level and shared by bot purchases',()=>{
+ const rows=[[100,0,0,0,0],[80,10,10,0,0],[60,20,20,0,0],[45,25,25,5,0],[30,28,28,14,0],[22,27,27,22,2],[16,25,25,30,4],[10,23,23,37,7],[6,21,21,42,10],[4,18,18,45,15]];
+ rows.forEach((row,i)=>assert.deepEqual(Object.values(shopOdds(i+1)),row));
+ for(let i=0;i<32;i++){const run=createModernRun('pawn-only-'+i);assert.equal(buyRandomPiece(run).army.at(-1).type,'p');assert.ok(run.opponent.every(p=>p.type==='k'||p.type==='p'));}
+});
+test('completed old series stays complete while unfinished saves use new goals',()=>{
+ let run=createModernRun('old-goal');delete run.seriesGoal;
+ assert.deepEqual(restoreAutoRun(JSON.stringify(run)).seriesGoal,{wins:15,losses:5});
+ for(let i=0;i<3;i++){
+  run={...run,phase:'paused',battle:{id:run.id+':'+run.round,initialFen:setupFen(run),moves:[],elapsed:0,result:null}};
+  run=completeBattle(run,{winner:run.color==='w'?'b':'w',reason:'test'});
+  if(i<2)run=nextRound(run);
+ }
+ delete run.seriesGoal;const restored=restoreAutoRun(JSON.stringify(run));assert.deepEqual(restored.seriesGoal,{wins:10,losses:3});assert.equal(seriesFinished(restored),true);
+});
+
+test('4/3/3 income is shared, level-scaled, and legacy results keep their earned amount',()=>{
+ for(const [outcome,base] of [['win',4],['draw',3],['loss',3]])for(const level of [1,3,10])assert.equal(roundIncome({outcome,shopLevel:level}),base+level-1);
+ assert.equal(roundIncome({outcome:'win',shopLevel:3,incomeRule:1}),7);
+ assert.equal(roundIncome({outcome:'loss',shopLevel:3,incomeRule:1}),4);
+});
+test('old 5/3/2 saved balance survives and subsequent battles pay 4/3/3',()=>{
+ let run=createModernRun('income-migration');
+ run={...run,round:2,reserve:8,results:[{outcome:'win',shopLevel:1,battleId:run.id+':1'}]};
+ run=restoreAutoRun(JSON.stringify(run));assert.equal(run.reserve,8);assert.equal(run.results[0].incomeRule,1);
+ run=beginBattle(run);run=completeBattle(run,{winner:run.color,reason:'test'});assert.equal(run.results.at(-1).incomeRule,2);
+ const next=nextRound(run);assert.equal(next.reserve,12);
+ assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
+ const expected=roundIncome({outcome:'loss',shopLevel:run.opponentProgress.level});
+ assert.equal(next.opponentProgress.income-run.opponentProgress.income,expected);
+});
+
+test('pending old result credits the old amount once to both sides',()=>{
+ let run=beginBattle(createModernRun('pending-income'));run=completeBattle(run,{winner:run.color,reason:'test'});delete run.results[0].incomeRule;
+ run=restoreAutoRun(JSON.stringify(run));assert.equal(run.results[0].incomeRule,1);
+ const next=nextRound(run);assert.equal(next.reserve-run.reserve,5);
+ assert.equal(next.opponentProgress.income-run.opponentProgress.income,2);
+ assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
 });

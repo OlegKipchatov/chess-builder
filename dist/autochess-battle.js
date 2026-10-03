@@ -1,5 +1,5 @@
-import {AUTO,battleGame,battleResult,completeBattle} from './autochess.js?v=100';
-import {createAutoplayEngine} from './autochess-engine.js?v=100';
+import {AUTO,positionCompositionError,battleGame,battleResult,completeBattle} from './autochess.js?v=102';
+import {createAutoplayEngine} from './autochess-engine.js?v=102';
 export const createBattleController = ({getRun,save,onChange,onError,engineFactory=createAutoplayEngine,clock=()=>performance.now(),schedule=setTimeout,cancel=clearTimeout}) => {
  let position=null,engine=null,generation=0,active=false,base=0,started=0,next=null;
  const elapsed=()=>base+(active?Math.max(0,clock()-started):0);
@@ -31,6 +31,7 @@ export const createBattleController = ({getRun,save,onChange,onError,engineFacto
    const run=getRun();if(!run?.battle||run.phase==='result')return;
    const token=++generation;
    try{
+    const issue=positionCompositionError(run.battle.initialFen);if(issue)throw Error(issue);
     position=battleGame(run);base=run.battle.elapsed;
     const initialResult=battleResult(position,run.battle.moves.length,base);
     if(initialResult){finish(initialResult);return;}

@@ -1,5 +1,5 @@
-import {Chess} from './chess.js?v=100';
-export const AUTO = Object.freeze({version:4,wins:10,losses:3,maxBudget:24,budget:3,income:3,reserveSlots:4,maxPieces:16,maxPly:120,movetime:100,pace:200});
+import {Chess} from './chess.js?v=102';
+export const AUTO = Object.freeze({version:4,wins:15,losses:5,maxBudget:24,budget:3,income:3,reserveSlots:4,maxPieces:16,maxPly:120,movetime:100,pace:200});
 export const AUTO_KEY='gachachess-autochess-v1';
 export const PRICES=Object.freeze({k:0,p:1,n:3,b:3,r:5,q:9});
 const copy = value => structuredClone(value);
@@ -16,6 +16,37 @@ const settleReserve = run => {
  if(reserve.length<=AUTO.reserveSlots)delete run.legacyReserveOverflow;
  return run;
 };
+// Stockfish promotion budget, applied only to deployed pieces (never inventory).
+export const compositionIssue = pieces => {
+ const counts={p:0,n:0,b:0,r:0,q:0};
+ for(const piece of pieces)if(piece.square&&piece.type in counts)counts[piece.type]++;
+ const extra=Object.entries({n:2,b:2,r:2,q:1}).reduce((sum,[type,limit])=>sum+Math.max(0,counts[type]-limit),0);
+ return {counts,extra,excess:Math.max(0,counts.p-8,counts.p+extra-8)};
+};
+export const compositionError = pieces => {
+ const {counts,excess}=compositionIssue(pieces);
+ if(!excess)return '';
+ if(counts.p>8)return `На поле можно выставить не больше 8 пешек. Уберите с поля: ${counts.p-8}.`;
+ return `Состав превышает допустимый на ${excess}. Уберите с поля пешки или фигуры сверх обычного количества: ${excess}. Обычный состав — до 2 коней, 2 слонов, 2 ладей и 1 ферзя.`;
+};
+export const positionCompositionError = fen => {
+ const pieces=new Chess(fen).board().flat().filter(Boolean);
+ return compositionError(pieces.filter(piece=>piece.color==='w'))||compositionError(pieces.filter(piece=>piece.color==='b'));
+};
+export const placementError = (run,id,square) => {
+ const piece=run.army.find(piece=>piece.id===id),occupant=run.army.find(other=>other.square===square&&other.id!==id);
+ if(!piece||!placementSquares(piece.type,run.color).includes(square)||(occupant&&piece.square))return '';
+ const proposed=run.army.map(other=>other.id===id?{...other,square}:other.id===occupant?.id?{...other,square:null}:other);
+ const issue=compositionIssue(proposed);
+ // Old invalid armies may be repaired step by step, without losing figures.
+ if(!issue.excess||issue.excess<compositionIssue(run.army).excess||piece.square)return '';
+ const before=compositionIssue(run.army);
+ if(issue.excess===1&&issue.counts.p<=8&&before.excess===0){
+  const names={n:'коня',b:'слона',r:'ладью',q:'ферзя'};
+  if(names[piece.type]&&issue.counts.p>0)return `Чтобы выставить ${names[piece.type]}, уберите с поля одну пешку или другую фигуру сверх обычного количества.`;
+ }
+ return compositionError(proposed);
+};
 export const purchaseError = (run,price=purchasePrice(run)) => {
  if(run.phase!=='preparation')return 'Бой идёт';
  if(run.army.length>=armyCapacity(run))return 'Армия заполнена';
@@ -26,11 +57,11 @@ export const purchaseError = (run,price=purchasePrice(run)) => {
 export const upgradeError = run => run.phase!=='preparation'?'Бой идёт':run.level>=10?'Максимальный уровень':run.reserve<levelPrice(run)?`Не хватает ${levelPrice(run)-run.reserve} монет`:'';
 export const purchasePrice = run => 1+run.purchases;
 export const levelPrice = run => 3+2*(run.level-1);
-export const roundIncome = result => (result?.outcome==='win'?5:result?.outcome==='draw'?3:2)+Math.max(0,(result?.shopLevel||1)-1);
+export const roundIncome = result => (result?.incomeRule===1?(result?.outcome==='win'?5:result?.outcome==='draw'?3:2):(result?.outcome==='win'?4:3))+Math.max(0,(result?.shopLevel||1)-1);
 export const shopOdds = level => {
- const step=Math.max(0,Math.min(9,level-1));
- const p=40-4*step,n=25-step,b=25-step,q=1+2*step;
- return {p,n,b,r:100-p-n-b-q,q};
+ const rows=[[100,0,0,0,0],[80,10,10,0,0],[60,20,20,0,0],[45,25,25,5,0],[30,28,28,14,0],[22,27,27,22,2],[16,25,25,30,4],[10,23,23,37,7],[6,21,21,42,10],[4,18,18,45,15]];
+ const row=rows[Math.max(0,Math.min(9,level-1))];
+ return Object.fromEntries(['p','n','b','r','q'].map((type,i)=>[type,row[i]]));
 };
 export const salePrice = piece => Math.max(1,Math.floor((piece.paid??PRICES[piece.type])*0.5));
 export const buyRandomPiece = run => {
@@ -58,7 +89,7 @@ export const opponentFor = (seed,round,color,initialBudget=AUTO.budget) => {
 export const createAutoRun = (id,seed=id) => {
  const color=hash(seed+':1:color')%2?'b':'w';
  const enemyColor=color==='w'?'b':'w',enemy=planOpponent([{id:'enemy-king',type:'k',square:'e'+rank(enemyColor),paid:0}],{reserve:AUTO.budget,level:1,purchases:0,sales:0,income:0,openingBalance:AUTO.budget},seed,enemyColor);
- return {version:AUTO.version,reserveRule:1,id,seed,round:1,color,reserve:AUTO.budget,level:1,purchases:0,sales:0,nextId:1,army:[{id:'king',type:'k',square:'e'+rank(color)}],opponent:enemy.army,opponentProgress:enemy.progress,phase:'preparation',battle:null,results:[]};
+ return {version:AUTO.version,seriesGoal:{wins:AUTO.wins,losses:AUTO.losses},reserveRule:1,id,seed,round:1,color,reserve:AUTO.budget,level:1,purchases:0,sales:0,nextId:1,army:[{id:'king',type:'k',square:'e'+rank(color)}],opponent:enemy.army,opponentProgress:enemy.progress,phase:'preparation',battle:null,results:[]};
 };
 export const buyPiece = (run,type) => {
  if(run.version===4||!PRICES[type]||purchaseError(run,PRICES[type]))return run;
@@ -71,7 +102,7 @@ export const sellPiece = (run,id) => {
 };
 export const placePiece = (run,id,square) => {
  const piece=run.army.find(piece=>piece.id===id),occupant=run.army.find(other=>other.square===square&&other.id!==id);
- if(run.phase!=='preparation'||!piece||!placementSquares(piece.type,run.color).includes(square)||(occupant&&piece.square))return run;
+ if(run.phase!=='preparation'||!piece||!placementSquares(piece.type,run.color).includes(square)||(occupant&&piece.square)||placementError(run,id,square))return run;
  const next=copy(run),placed=next.army.find(piece=>piece.id===id);
  if(occupant){const swapped=next.army.find(piece=>piece.id===occupant.id);swapped.square=null;swapped.benched=true;swapped.reserveSlot=piece.reserveSlot??reservePieces(run).findIndex(other=>other.id===id);}
  placed.square=square;delete placed.benched;delete placed.reserveSlot;return settleReserve(next);
@@ -97,6 +128,8 @@ export const setupFen = run => {
  return rows.join('/')+' w '+(castling||'-')+' - 0 1';
 };
 export const setupError = run => {
+ if(compositionError(run.army))return compositionError(run.army);
+ if(compositionError(run.opponent))return 'Сопернику нужно исправить состав';
  if(reservePieces(run).length>AUTO.reserveSlots)return 'Разберите сохранённый резерв';
  if(run.army.some(piece=>piece.type==='k'&&!piece.square))return 'Поставьте короля на поле';
 
@@ -133,8 +166,10 @@ export const legalOpponentSetup = run => {
  return count?null:next;
 };
 export const beginBattle = run => {
- if(run.phase!=='preparation'||setupError(run))return run;
- const next=legalOpponentSetup(run);if(!next)return run;
+ if(run.phase!=='preparation')return run;
+ const repaired=repairOpponentComposition(run);
+ if(setupError(repaired))return run;
+ const next=legalOpponentSetup(repaired);if(!next)return run;
  return {...next,opponentSetupVersion:1,phase:'paused',battle:{id:run.id+':'+run.round,initialFen:setupFen(next),moves:[],elapsed:0,profile:'sf19-autoplay-100ms-v1',result:null}};
 };
 export const battleGame = run => {
@@ -154,9 +189,10 @@ export const battleResult = (game,ply,elapsed) => {
 export const completeBattle = (run,result) => {
  if(run.phase==='result'||!run.battle||run.battle.result)return run;
  const next=copy(run);next.phase='result';next.battle.result=result;
- next.results.push({...result,shopLevel:run.version===4?run.level:1,battleId:next.battle.id,outcome:result.winner===null?'draw':result.winner===run.color?'win':'loss'});return next;
+ next.results.push({...result,incomeRule:2,shopLevel:run.version===4?run.level:1,battleId:next.battle.id,outcome:result.winner===null?'draw':result.winner===run.color?'win':'loss'});return next;
 };
-export const seriesFinished = run => run.results.filter(row=>row.outcome==='win').length>=AUTO.wins||run.results.filter(row=>row.outcome==='loss').length>=AUTO.losses;
+export const seriesGoal = run => run.seriesGoal||{wins:AUTO.wins,losses:AUTO.losses};
+export const seriesFinished = run => run.results.filter(row=>row.outcome==='win').length>=seriesGoal(run).wins||run.results.filter(row=>row.outcome==='loss').length>=seriesGoal(run).losses;
 // This planner receives only its own inventory/economy. It never inspects the player's board.
 const expectedPieceValue = level => Object.entries(shopOdds(level)).reduce((sum,[type,chance])=>sum+PRICES[type]*chance/100,0);
 const attacksFrom = (piece,army,color) => {
@@ -169,7 +205,12 @@ const attacksFrom = (piece,army,color) => {
  return result;
 };
 export const arrangeOpponent = (pieces,color) => {
- const army=copy(pieces);
+ const accepted=[],waiting=[];
+ for(const piece of copy(pieces).sort((a,b)=>(b.type==='k'?100:PRICES[b.type])-(a.type==='k'?100:PRICES[a.type]))){
+  if(compositionIssue([...accepted,{...piece,square:'a2'}]).excess){waiting.push({...piece,square:null,benched:true,reserveSlot:waiting.length});}
+  else accepted.push({...piece,square:'a2'});
+ }
+ const army=accepted;
  // Start from a valid compact position, then make two bounded coordinate-descent passes.
  for(const piece of army){piece.square=placementSquares(piece.type,color).find(square=>!army.some(other=>other!==piece&&other.square===square));delete piece.reserveSlot;delete piece.benched;}
  const score = () => {
@@ -206,7 +247,7 @@ export const arrangeOpponent = (pieces,color) => {
   }
   piece.square=best;
  }
- return army;
+ return [...army,...waiting];
 };
 // Eight-round beam forecast: compares buying, upgrading and saving using expected
 // draws, never the actual next random result. Numerical states only; no chess worker.
@@ -240,13 +281,34 @@ const opponentShopAction = (shop,baseIncome,horizon) => {
  }
  return beam.sort((a,b)=>rankState(b)-rankState(a))[0]?.first||'save';
 };
+// A bot sells undeployable leftovers through the same refund transaction as the player.
+// This preserves its budget ledger and prevents an unusable reserve from stalling development.
+const settleOpponentComposition = (shop,color) => {
+ let next={...shop,army:arrangeOpponent(shop.army,color)};
+ for(const piece of reservePieces(next))next=sellPiece(next,piece.id);
+ return next;
+};
+export const repairOpponentComposition = run => {
+ if(!compositionError(run.opponent))return run;
+ const progress=run.opponentProgress;
+ if(!progress)return run;
+ const shop=settleOpponentComposition({version:4,phase:'preparation',army:run.opponent,...progress,sales:progress.sales||0},run.color==='w'?'b':'w');
+ return {...run,opponent:shop.army,opponentProgress:{...progress,reserve:shop.reserve,sales:shop.sales}};
+};
+const usableDrawValue = shop => Object.entries(shopOdds(shop.level)).reduce((sum,[type,chance])=>{
+ const candidate={type,square:'a2'},field=shop.army.filter(piece=>piece.square);
+ if(!compositionIssue([...field,candidate]).excess&&shop.army.length<armyCapacity(shop))return sum+chance*PRICES[type]/100;
+ const gains=field.filter(piece=>piece.type!=='k').map(piece=>compositionIssue([...field.filter(other=>other!==piece),candidate]).excess?0:Math.max(0,PRICES[type]-PRICES[piece.type]));
+ return sum+chance*Math.max(0,...gains)/100;
+},0);
 export const planOpponent = (pieces,progress,seed,color,baseIncome=3,horizon=8) => {
  let shop={version:4,phase:'preparation',army:copy(pieces),seed:seed+':opponent',nextId:progress.purchases+1,...progress};
  const openingBalance=progress.openingBalance??(progress.reserve+progress.purchases*(progress.purchases+1)/2+(progress.level-1)*(progress.level+1)-(progress.sales||0)-(progress.income||0));
- shop.sales=shop.sales||0;
+ shop.sales=shop.sales||0;shop=settleOpponentComposition(shop,color);
  for(let action=0;action<32;action++){
   if(reservePieces(shop).length>=AUTO.reserveSlots)shop.army=arrangeOpponent(shop.army,color);
-  const decision=opponentShopAction(shop,baseIncome,horizon);
+  let decision=opponentShopAction(shop,baseIncome,horizon);
+  if(decision==='buy'&&usableDrawValue(shop)===0)decision=upgradeError(shop)?'save':'upgrade';
   if(decision==='save')break;
   if(decision==='upgrade'){shop=upgradeShop(shop);continue;}
   if(shop.army.length>=armyCapacity(shop)){
@@ -254,6 +316,7 @@ export const planOpponent = (pieces,progress,seed,color,baseIncome=3,horizon=8) 
    shop=sellPiece(shop,weakest.id); // Commit the sale before the random draw.
   }
   shop=buyRandomPiece(shop);
+  shop=settleOpponentComposition(shop,color);
  }
  return {army:arrangeOpponent(shop.army,color),progress:{strategy:1,reserve:shop.reserve,level:shop.level,purchases:shop.purchases,sales:shop.sales,income:progress.income||0,openingBalance}};
 };
@@ -263,9 +326,9 @@ export const advanceOpponent = (run,color) => {
  // Legacy armies retain their inventory and cash; anchor their historical balance once.
  progress.openingBalance??=progress.reserve+progress.purchases*(progress.purchases+1)/2+(progress.level-1)*(progress.level+1)-(progress.sales||0)-(progress.income||0);
  const outcome=run.results.at(-1)?.outcome;
- const income=roundIncome({outcome:outcome==='win'?'loss':outcome==='loss'?'win':'draw',shopLevel:progress.level});
+ const income=roundIncome({outcome:outcome==='win'?'loss':outcome==='loss'?'win':'draw',shopLevel:progress.level,incomeRule:run.results.at(-1)?.incomeRule});
  progress.reserve+=income;progress.income=(progress.income||0)+income;
- return planOpponent(army,progress,run.seed,color,roundIncome({outcome:outcome==='win'?'loss':outcome==='loss'?'win':'draw',shopLevel:1}),Math.max(1,Math.min(8,AUTO.wins-run.results.filter(result=>result.outcome==='win').length)));
+ return planOpponent(army,progress,run.seed,color,roundIncome({outcome:outcome==='win'?'loss':outcome==='loss'?'win':'draw',shopLevel:1}),Math.max(1,Math.min(8,seriesGoal(run).wins-run.results.filter(result=>result.outcome==='win').length)));
 };
 export const nextRound = run => {
  if(run.phase!=='result'||seriesFinished(run))return run;
@@ -293,13 +356,16 @@ export const restoreAutoRun = value => {
   const valid=run.opponentSetupVersion===1?JSON.stringify(identity(run.opponent))===JSON.stringify(identity(expected))&&run.opponent.every(piece=>placementSquares(piece.type,run.color==='w'?'b':'w').includes(piece.square))&&new Set(run.opponent.map(piece=>piece.square)).size===run.opponent.length:JSON.stringify(run.opponent)===JSON.stringify(expected);
   if(!valid)throw Error('Повреждён соперник');
  }
+ if(!run.seriesGoal){const finished=run.phase==='result'&&Array.isArray(run.results)&&(run.results.filter(row=>row.outcome==='win').length>=10||run.results.filter(row=>row.outcome==='loss').length>=3);run.seriesGoal=finished?{wins:10,losses:3}:{wins:AUTO.wins,losses:AUTO.losses};}
+ if(!((run.seriesGoal.wins===15&&run.seriesGoal.losses===5)||(run.seriesGoal.wins===10&&run.seriesGoal.losses===3)))throw Error('Повреждены условия серии');
  if(!Array.isArray(run.results)||run.results.length!==(run.phase==='result'?run.round:run.round-1))throw Error('Повреждены результаты');
+ if(Array.isArray(run.results))for(const row of run.results)if(row.incomeRule===undefined)row.incomeRule=1;
  if(run.version===4){
   if(!Number.isInteger(run.level)||run.level<1||run.level>10||!Number.isSafeInteger(run.purchases)||run.purchases<0||!Number.isSafeInteger(run.sales)||run.sales<0||run.army.some(piece=>piece.type!=='k'&&(!Number.isInteger(piece.paid)||piece.paid<1||piece.paid>run.purchases)))throw Error('Повреждён магазин');
   const income=run.results.slice(0,run.round-1).reduce((sum,row)=>sum+roundIncome(row),0),upgrades=run.level-1;
   if(run.reserve!==AUTO.budget+income+run.sales-run.purchases*(run.purchases+1)/2-upgrades*(upgrades+2))throw Error('Повреждён запас магазина');
  }
- if(run.results.some((row,index)=>!['win','draw','loss'].includes(row.outcome)||row.battleId!==run.id+':'+(index+1)||(row.shopLevel!==undefined&&(!Number.isInteger(row.shopLevel)||row.shopLevel<1||row.shopLevel>10)))||seriesFinished({...run,results:run.phase==='result'?run.results.slice(0,-1):run.results}))throw Error('Повреждены результаты серии');
+ if(run.results.some((row,index)=>!['win','draw','loss'].includes(row.outcome)||![1,2].includes(row.incomeRule)||row.battleId!==run.id+':'+(index+1)||(row.shopLevel!==undefined&&(!Number.isInteger(row.shopLevel)||row.shopLevel<1||row.shopLevel>10)))||seriesFinished({...run,results:run.phase==='result'?run.results.slice(0,-1):run.results}))throw Error('Повреждены результаты серии');
  if(run.battle){
   if(run.battle.initialFen!==setupFen(run)||!Array.isArray(run.battle.moves)||run.battle.moves.length>AUTO.maxPly||!Number.isFinite(run.battle.elapsed)||run.battle.elapsed<0)throw Error('Повреждён бой');
   battleGame(run);
