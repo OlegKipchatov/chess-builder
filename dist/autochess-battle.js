@@ -1,5 +1,5 @@
-import {AUTO,battleGame,battleResult,completeBattle} from './autochess.js?v=96';
-import {createAutoplayEngine} from './autochess-engine.js?v=96';
+import {AUTO,battleGame,battleResult,completeBattle} from './autochess.js?v=97';
+import {createAutoplayEngine} from './autochess-engine.js?v=97';
 export const createBattleController = ({getRun,save,onChange,onError,engineFactory=createAutoplayEngine,clock=()=>performance.now(),schedule=setTimeout,cancel=clearTimeout}) => {
  let position=null,engine=null,generation=0,active=false,base=0,started=0,deadline=null,next=null;
  const elapsed=()=>Math.min(AUTO.duration,base+(active?Math.max(0,clock()-started):0));

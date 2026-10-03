@@ -19,7 +19,7 @@ export const createEngineWorker = () => {
  void retirement.then(()=>{
   if(closed)return;
   try{
-   worker=new Worker('./stockfish19-worker.js?v=96',{type:'module'});
+   worker=new Worker('./stockfish19-worker.js?v=97',{type:'module'});
    worker.onmessage=event=>proxy.onmessage?.(event);
    worker.onerror=event=>proxy.onerror?.(event);
    queued.splice(0).forEach(data=>worker.postMessage(data));

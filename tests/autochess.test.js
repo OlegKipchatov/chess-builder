@@ -1,10 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
-import {AUTO,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
+import {AUTO,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
 import {createBattleController} from '../dist/autochess-battle.js';
 import {createAutoplayEngine} from '../dist/autochess-engine.js';
 import {benchPiece} from '../dist/autochess.js';
+test('army capacity grows from eight to sixteen with the shop level',()=>{
+ assert.deepEqual(Array.from({length:10},(_,i)=>armyCapacity({version:4,level:i+1})),[8,9,10,11,12,13,14,15,16,16]);
+ assert.equal(armyCapacity({version:3,level:10}),8);
+ let run=createModernRun('capacity');run.round=21;
+ run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
+ run.purchases=7;run.nextId=8;run.reserve=35;
+ run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:null,benched:true})));
+ assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);
+ assert.equal(buyRandomPiece(run),run);
+ run=upgradeShop(run);assert.equal(armyCapacity(run),9);
+ run=buyRandomPiece(run);assert.equal(run.army.length,9);assert.equal(run.reserve,24);
+ assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);
+ assert.equal(buyRandomPiece(run),run);
+ assert.throws(()=>restoreAutoRun(JSON.stringify({...run,level:1})),/армия/);
+});
+test('sixteen owned pieces survive saving, placement and the level-ten cap',()=>{
+ const run=createModernRun('sixteen');run.level=10;run.round=51;run.purchases=15;run.nextId=16;run.reserve=384;
+ run.results=Array.from({length:50},(_,i)=>({outcome:'draw',shopLevel:10,battleId:run.id+':'+(i+1)}));
+ run.army.push(...Array.from({length:15},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:placementSquares('p',run.color)[i]})));
+ assert.equal(run.army.length,16);assert.equal(setupError(run),'');
+ assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);assert.equal(buyRandomPiece(run),run);assert.equal(upgradeShop(run),run);
+ const sold=sellPiece(run,'piece-1');assert.equal(buyRandomPiece(sold).army.length,16);
+ const enemy=planOpponent(run.army,{reserve:20,level:10,purchases:15,sales:0,income:0},'sixteen-enemy',run.color);
+ assert.equal(enemy.army.length,16);assert.equal(new Set(enemy.army.map(piece=>piece.square)).size,16);
+});
 test('opponent budget is conserved through a long series and saves',()=>{
  let run=createModernRun('persistent-opponent');
  for(let i=0;i<40;i++){
@@ -15,7 +40,7 @@ test('opponent budget is conserved through a long series and saves',()=>{
   const next=nextRound(completeBattle(run,{winner:null,reason:'test'}));
   const p=next.opponentProgress;
   assert.equal(p.reserve,3+p.income+p.sales-p.purchases*(p.purchases+1)/2-(p.level-1)*(p.level+1));
-  assert.ok(next.opponent.length<=8);assert.ok(p.level<=10);
+  assert.ok(next.opponent.length<=armyCapacity({version:4,level:p.level}));assert.ok(p.level<=10);
   assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);run=next;
  }
  assert.ok(run.opponentProgress.level>1,'bot independently upgrades even when player stays at level one');
@@ -31,13 +56,13 @@ test('opponent decisions do not inspect player inventory, level or reserve',()=>
  assert.deepEqual(advanceOpponent(run,'b'),advanceOpponent({...run,army:[],level:10,reserve:99999},'b'));
 });
 test('opponent sale uses half the paid price and purchases are not free replacements',()=>{
- const army=[{id:'king',type:'k',square:'e8',paid:0},...Array.from({length:7},(_,i)=>({id:'old-'+i,type:'p',paid:i+1,square:'abcdefgh'[i]+'7'}))];
- const p={reserve:8,level:10,purchases:7,sales:0,income:0};
+ const army=[{id:'king',type:'k',square:'e8',paid:0},...Array.from({length:15},(_,i)=>({id:'old-'+i,type:'p',paid:i+1,square:'abcdefgh'[i%8]+(i<8?'7':'6')}))];
+ const p={reserve:16,level:10,purchases:15,sales:0,income:0};
  const result=planOpponent(army,p,'sale-test','b');
- assert.ok(result.progress.purchases>7);assert.ok(result.progress.sales>=3);
+ assert.ok(result.progress.purchases>15);assert.ok(result.progress.sales>=3);
  assert.equal(result.progress.reserve,result.progress.openingBalance+result.progress.sales-result.progress.purchases*(result.progress.purchases+1)/2-99);
  assert.ok(result.army.some(piece=>piece.id.startsWith('old-')),'retains existing pieces');
- assert.ok(result.army.length<=8);
+ assert.ok(result.army.length<=16);
 });
 test('opponent can save money and never spends unaffordable coins',()=>{
  const run=createModernRun('save'),p={...run.opponentProgress,reserve:0};
@@ -55,6 +80,45 @@ test('placement is deterministic, valid for either colour and independent of ene
   assert.ok(army.every(piece=>piece.square===null));
   assert.equal(arranged[0].square[1],color==='w'?'1':'8');
  }
+});
+test('setup avoids the back-rank mate pattern with either colour',()=>{
+ const enemy=[['k','d8'],['n','b7'],['b','c7'],['p','d7'],['p','e7'],['n','f7']];
+ const player=[['k','d1'],['r','g1'],['r','h1'],['p','a4'],['p','b4'],['n','c3'],['n','d3'],['n','e3']];
+ for(const color of ['w','b']){
+  const pieces=rows=>rows.map(([type,square],i)=>({id:String(i),type,paid:i,square:color==='w'?square:'abcdefgh'[7-'abcdefgh'.indexOf(square[0])]+(9-Number(square[1]))}));
+  const run={color,army:pieces(player),opponent:pieces(enemy)};
+  const matingMoves=position=>{const game=new Chess(setupFen(position).replace(' w ',' '+color+' ')),mates=[];for(const move of game.moves()){game.move(move);if(game.isCheckmate())mates.push(move);game.undo();}return mates;};
+  assert.ok(matingMoves(run).length>0,'fixture reproduces a first-move mate');
+  const fixed={...run,opponent:arrangeOpponent(run.opponent,color==='w'?'b':'w')};
+  assert.deepEqual(matingMoves(fixed),[],'same owned pieces must leave a defence');
+  assert.equal(setupError(fixed),'');
+ }
+});
+test('shelter leaves an escape off the king rank for varied full armies',()=>{
+ for(const color of ['w','b'])for(const type of ['p','n','b','r','q']){
+  const army=arrangeOpponent(['k',type,type,'p','p','n','b','r'].map((type,i)=>({id:String(i),type,square:null,paid:i})),color);
+  const king=army.find(piece=>piece.type==='k'),x='abcdefgh'.indexOf(king.square[0]),y=Number(king.square[1]);
+  const exits=[-1,1].flatMap(dy=>[-1,0,1].map(dx=>[x+dx,y+dy])).filter(([file,row])=>file>=0&&file<8&&row>=1&&row<=8).map(([file,row])=>'abcdefgh'[file]+row);
+  assert.ok(exits.some(square=>!army.some(piece=>piece.square===square)));
+ }
+});
+test('losing opponent invests early and still fields new troops before series end',()=>{
+ let run=createModernRun('economy-check');
+ for(let i=0;i<8;i++){
+  run.results.push({outcome:'win'});
+  const enemy=advanceOpponent(run,'b');run={...run,color:'w',opponent:enemy.army,opponentProgress:enemy.progress};
+  if(i===1)assert.ok(run.opponentProgress.level>=2,'upgrade contributes income in later rounds');
+ }
+ assert.ok(run.opponentProgress.purchases>=6,'investment must not starve the army');
+ assert.ok(run.opponentProgress.reserve>=0);
+});
+test('last-battle forecast spends on strength instead of buying future income',()=>{
+ const army=[{id:'k',type:'k',paid:0,square:'e8'},{id:'p1',type:'p',paid:1,square:'d7'},{id:'p2',type:'p',paid:2,square:'e7'}];
+ const result=planOpponent(army,{reserve:10,level:1,purchases:2,sales:0,income:0},'last-battle','b',2,1);
+ assert.ok(result.progress.purchases>2,'any upgrade must still leave an immediate purchase');
+ const noPurchase=planOpponent(army,{reserve:3,level:1,purchases:9,sales:0,income:0},'last-battle','b',2,1);
+ assert.equal(noPurchase.progress.level,1,'no upgrade solely for income beyond final battle');
+ assert.equal(noPurchase.progress.reserve,3);
 });
 test('legacy opponent migration keeps inventory and anchors existing economy',()=>{
  const run=createModernRun('migration');delete run.opponentProgress;
@@ -90,8 +154,8 @@ const createAutoRun=(...args)=>{const run=createModernRun(...args);delete run.op
 test('random shop prices persist and probabilities cover all ten levels',()=>{
  const run=createModernRun('shop');assert.equal(purchasePrice(run),1);assert.equal(levelPrice(run),3);
  const bought=buyRandomPiece(run);assert.equal(bought.reserve,2);assert.equal(purchasePrice(bought),2);
- assert.deepEqual(buyRandomPiece(run),bought);assert.equal(salePrice(bought.army.at(-1)),0);
- const sold=sellPiece(bought,bought.army.at(-1).id);assert.equal(sold.reserve,2);assert.equal(purchasePrice(sold),2);
+ assert.deepEqual(buyRandomPiece(run),bought);assert.equal(salePrice(bought.army.at(-1)),1);
+ const sold=sellPiece(bought,bought.army.at(-1).id);assert.equal(sold.reserve,3);assert.equal(purchasePrice(sold),2);
  assert.deepEqual(restoreAutoRun(JSON.stringify(sold)),sold);
  const level=upgradeShop(run);assert.equal(level.level,2);assert.equal(level.reserve,0);assert.equal(levelPrice(level),5);
  assert.deepEqual(restoreAutoRun(JSON.stringify(level)),level);

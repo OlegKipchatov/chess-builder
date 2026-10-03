@@ -1,6 +1,41 @@
 # Autochess first playable version
 
-## Release 96 draft
+## Release 97 draft
+
+Modern army capacity is min(16, 7 + shopLevel), including king and bench:
+8 at level 1, 9 at level 2, through 16 at levels 9 and 10. Player, opponent
+forecast, purchases, setup validation and restored saves share the same rule.
+Legacy fixed-price formats retain eight slots. A full modern shop button says
+«Армия заполнена». Upgrading immediately opens the next slot up to level 9.
+
+Sale returns max(1, floor(paidPrice / 2)) for both participants. The selection
+row always reserves label and button space; an unavailable sale button is
+invisible, disabled and excluded from accessibility/focus. Selecting/deselecting
+a piece does not move the shop.
+
+Opponent safety/economy follow-up: shelter scoring now rewards free king escape
+squares off its rank, penalizes a blocked king, and prefers supported exits.
+A reconstructed back-rank rook-mate fixture and its colour-rotated equivalent
+verify that the same inventory no longer permits mate in one. The planner does
+not see player placement; it cannot guarantee safety against every hidden army.
+
+The old one-step shop ratio is replaced by a numerical beam forecast of up to
+eight rounds (12 retained states, three spending actions per forecast round).
+It compares expected draws, upgrades, cash retention and fielded material;
+forecast income uses the opponent's last result and its own level. The horizon
+shrinks as the player approaches ten wins. Actual purchases still use the same
+shop and paid-price ledger. No bonus money, guaranteed drops or extra Stockfish
+workers. The 5/3/2 income rule still creates a winner/loser budget gap.
+
+Local comparison against the pre-fix planner in commit 7d3b148: 100 seeds
+(`benchmark-0` through `benchmark-99`), eight consecutive opponent losses,
+material before battle 9 averaged 13.10 previously and 15.98 now. Same budgets,
+shop odds and random-draw seeds; no extra funds. This measures army material,
+not win rate or equal strength. The reconstructed mate fixture, both colours,
+long-series budget checks and 295 tests pass, together with offline browser
+and v96-to-v97 PWA upgrade checks.
+
+## Release 96
 
 Double-click/tap removes a piece from the board and clears selection; the
 remove button is gone. Purchase labels are «Фигура» and «Уровень»; level is

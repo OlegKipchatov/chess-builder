@@ -18,7 +18,7 @@ try{
  await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);await page.locator('#start-game').waitFor();
  const original=await page.evaluate(()=>localStorage.getItem('chess-vault-v3'));
  await context.setOffline(true);
- await page.evaluate(async()=>{const {createAutoRun,opponentFor}=await import('./autochess.js?v=96');const run={...createAutoRun('legacy-browser','fixture'),version:3};delete run.opponentProgress;run.opponent=opponentFor(run.seed,1,run.color==='w'?'b':'w');localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));});
+ await page.evaluate(async()=>{const {createAutoRun,opponentFor}=await import('./autochess.js?v=97');const run={...createAutoRun('legacy-browser','fixture'),version:3};delete run.opponentProgress;run.opponent=opponentFor(run.seed,1,run.color==='w'?'b':'w');localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));});
  await page.locator('[data-tab="minigames"]').click();await page.locator('#autochess-open').click();await page.locator('[data-auto-buy="n"]').waitFor();
  assert.equal(await page.locator('#hunt-exit').isVisible(),true);
  assert.equal(await page.locator('#app-nav').isVisible(),false);
@@ -28,6 +28,13 @@ try{
  for(const width of [320,390,1280]){
   await page.setViewportSize({width,height:900});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  const geometry=await page.evaluate(()=>{
+   const result=[],troop=document.querySelector('[data-auto-piece]:not([data-auto-piece="king"])');
+   const capture=()=>{const row=document.querySelector('.auto-selection').getBoundingClientRect(),shop=document.querySelector('.auto-section-title').getBoundingClientRect();result.push([row.height,shop.top+scrollY]);};
+   capture();document.querySelector('[data-auto-piece="king"]').click();capture();document.querySelector('[data-auto-piece="king"]').click();capture();troop.click();capture();return result;
+  });
+  for(const box of geometry)assert.deepEqual(box,geometry[0],'selection and sale must not shift shop');
+
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`/tmp/autochess-setup-${width}.png`,fullPage:true});
  }
  await page.setViewportSize({width:390,height:844});
@@ -65,7 +72,7 @@ try{
  const {coins:afterCoins,autochessAwards,...afterRest}=wallet,{coins:beforeCoins,autochessAwards:beforeAwards,...beforeRest}=beforeWallet;assert.deepEqual(afterRest,beforeRest);
  await page.locator('#hunt-exit').click();await page.locator('[data-auto-exit="save"]').click();
  await page.evaluate(async()=>{
-  const {completeBattle,nextRound,seriesFinished,setupFen}=await import('./autochess.js?v=96');
+  const {completeBattle,nextRound,seriesFinished,setupFen}=await import('./autochess.js?v=97');
   let run=JSON.parse(localStorage.getItem('gachachess-autochess-v1'));
   while(!seriesFinished(run)){run={...run,phase:'paused',battle:{id:run.id+':'+run.round,initialFen:setupFen(run),moves:[],elapsed:0,result:null}};run=completeBattle(run,{winner:run.color==='w'?'b':'w',reason:'Тест итогов серии'});if(seriesFinished(run))break;run=nextRound(run);}
   localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));
@@ -78,7 +85,7 @@ try{
  await page.screenshot({path:'/tmp/autochess-score94.png',fullPage:true});
  await page.locator('#close-modal').click();await page.locator('#auto-reward').waitFor();
  assert.equal(await page.locator('#auto-result').count(),0);assert.equal(await page.locator('#auto-reward .stat-card').count(),1);
- const total=await page.evaluate(async()=>{const {autoSeriesCoins}=await import('./autochess-rewards.js?v=96');return autoSeriesCoins(JSON.parse(localStorage.getItem('chess-vault-v3')),JSON.parse(localStorage.getItem('gachachess-autochess-v1')));});
+ const total=await page.evaluate(async()=>{const {autoSeriesCoins}=await import('./autochess-rewards.js?v=97');return autoSeriesCoins(JSON.parse(localStorage.getItem('chess-vault-v3')),JSON.parse(localStorage.getItem('gachachess-autochess-v1')));});
  assert.equal(await page.locator('#auto-reward .stat-card strong').textContent(),String(total));
  assert.equal(await page.evaluate(()=>localStorage.getItem('chess-vault-v3')),finalWallet);
  await page.screenshot({path:'/tmp/autochess-coins94.png',fullPage:true});
@@ -86,7 +93,7 @@ try{
  await page.locator('#modal [data-auto-next]').click();await page.locator('#autochess-open').waitFor();
  assert.equal(await page.evaluate(()=>localStorage.getItem('gachachess-autochess-v1')),null);
  await page.evaluate(async()=>{
-  const {createAutoRun,opponentFor,buyPiece,placePiece}=await import('./autochess.js?v=96');
+  const {createAutoRun,opponentFor,buyPiece,placePiece}=await import('./autochess.js?v=97');
   for(let seed=0;seed<10000;seed++){
    let run={...createAutoRun('bishop-check',String(seed)),version:3};delete run.opponentProgress;run.opponent=opponentFor(run.seed,1,run.color==='w'?'b':'w');
    if(run.color!=='w'||run.opponent.length!==2||run.opponent[1].type!=='b'||run.opponent[1].square!=='h8')continue;
@@ -113,6 +120,7 @@ try{
  let modern=await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')));
  assert.equal(modern.purchases,1);assert.equal(modern.reserve,2);
  await page.locator('[data-auto-sell]').click();
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')).reserve),3);
  await page.locator('#hunt-exit').click();await page.locator('[data-auto-exit="discard"]').click();
  await page.locator('#autochess-open').click();await page.locator('[data-auto-level]').click();
  modern=await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')));
@@ -138,7 +146,7 @@ try{
   await page.screenshot({path:'/tmp/auto-shop95-'+width+'.png',fullPage:true});
  }
  await page.evaluate(async()=>{
-  const {animateTransition,clearBoardTransition,snapshotBoard}=await import('./board.js?v=96');
+  const {animateTransition,clearBoardTransition,snapshotBoard}=await import('./board.js?v=97');
   const source=document.querySelector('#auto-board'),board=source.cloneNode(true);board.removeAttribute('id');document.body.append(board);
   const occupied=board.querySelector('.occupied').dataset.square;
   const pending=[];
@@ -148,8 +156,8 @@ try{
   board.remove();
  });
  await page.evaluate(async()=>{
-  const {createAutoplayEngine,createAutoplaySession}=await import('./autochess-engine.js?v=96');
-  const {Chess}=await import('./chess.js?v=96');
+  const {createAutoplayEngine,createAutoplaySession}=await import('./autochess-engine.js?v=97');
+  const {Chess}=await import('./chess.js?v=97');
   const Native=window.Worker;let alive=0,peak=0,started=0;
   window.Worker=class extends Native{
    constructor(...args){super(...args);this.stopped=false;alive++;started++;peak=Math.max(peak,alive);}
@@ -167,7 +175,7 @@ try{
   }finally{window.Worker=Native;}
  });
  await page.evaluate(async()=>{
-  const {renderBoard}=await import('./board.js?v=96'),{Chess}=await import('./chess.js?v=96');
+  const {renderBoard}=await import('./board.js?v=97'),{Chess}=await import('./chess.js?v=97');
   const state=JSON.parse(localStorage.getItem('chess-vault-v3')),board=document.createElement('div'),game=new Chess();
   document.body.append(board);renderBoard(board,game,state.equipped,null);
   const originals=new Map([...board.querySelectorAll('.occupied')].map(cell=>[cell.dataset.square,cell.querySelector('svg')]));
@@ -175,6 +183,29 @@ try{
   for(const [square,icon] of originals)if(square!=='e2'&&board.querySelector('[data-square="'+square+'"] svg')!==icon)throw Error('Stationary SVG replaced: '+square);
   board.remove();
  });
+
+ for(const width of [320,390,1280]){
+  await page.setViewportSize({width,height:900});
+  await page.evaluate(async()=>{
+   const {createAutoRun}=await import('./autochess.js?v=97');const run=createAutoRun('capacity-browser');
+   run.round=21;run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
+   run.purchases=7;run.nextId=8;run.reserve=35;
+   run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:null,benched:true})));
+   localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));history.replaceState(null,'','#play');
+  });
+  await page.reload();await page.locator('#start-game').waitFor();
+  await page.locator('[data-tab="minigames"]').click();await page.locator('#autochess-open').click();
+  const buy=page.locator('[data-auto-random]');await buy.waitFor();
+  assert.equal(await buy.isDisabled(),true);assert.match(await buy.textContent(),/Армия заполнена/);
+  const fullHeight=(await buy.boundingBox()).height;
+  await page.locator('[data-auto-level]').click();assert.equal(await buy.isEnabled(),true);assert.match(await buy.textContent(),/Фигура · 8/);
+  assert.equal((await buy.boundingBox()).height,fullHeight,'full-army label must not change action height');
+  await buy.click();assert.equal(await buy.isDisabled(),true);assert.match(await buy.textContent(),/Армия заполнена/);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')).army.length),9);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  if(width===320)await page.screenshot({path:'/tmp/autochess-capacity-320.png',fullPage:true});
+  await page.locator('#hunt-exit').click();await page.locator('[data-auto-exit="discard"]').click();
+ }
  assert.deepEqual(errors,[]);
  await context.close();console.log('PASS Autochess: mobile/desktop, real Stockfish offline battle, board stability, pause, cold resume, tab lock, next round, isolated progress');
 }finally{await browser.close();await new Promise(done=>server.close(done));}
