@@ -255,16 +255,16 @@ const harness=()=>{
  return {controller,get:()=>run,setTime:value=>{now=value;},move:()=>{const m=battleGame(run).moves({verbose:true})[0];resolveMove(m.from+m.to+(m.promotion||''));},timers,errors,terminated:()=>terminated};
 };
 test('battle continues beyond the former time limit',async()=>{
- const h=harness();await h.controller.start();h.setTime(60000);h.move();await Promise.resolve();
+ const h=harness();await h.controller.start();h.setTime(60000);h.move();await new Promise(resolve=>setImmediate(resolve));
  assert.notEqual(h.get().phase,'result');assert.equal(h.get().battle.moves.length,1);assert.equal(h.get().battle.elapsed,60000);assert.equal(h.terminated(),0);assert.deepEqual(restoreAutoRun(JSON.stringify(h.get())),h.get());h.controller.dispose();
 });
 test('pause preserves elapsed time, rejects old answer and resumes remaining time',async()=>{
- const h=harness();await h.controller.start();h.setTime(4321);h.controller.pause();h.move();await Promise.resolve();
+ const h=harness();await h.controller.start();h.setTime(4321);h.controller.pause();h.move();await new Promise(resolve=>setImmediate(resolve));
  assert.equal(h.get().battle.elapsed,4321);assert.equal(h.get().battle.moves.length,0);
  h.setTime(20000);await h.controller.start();assert.equal(h.timers.size,0);h.controller.dispose();
 });
 test('accepted move persists actual history and duplicate completion is inert',async()=>{
- const h=harness();await h.controller.start();h.setTime(100);h.move();await Promise.resolve();
+ const h=harness();await h.controller.start();h.setTime(100);h.move();await new Promise(resolve=>setImmediate(resolve));
  assert.equal(h.get().battle.moves.length,1);assert.equal(h.get().battle.elapsed,100);
  const finished=completeBattle(h.get(),{winner:null,reason:'test'});assert.equal(completeBattle(finished,{winner:'w',reason:'test'}),finished);h.controller.dispose();
 });
@@ -296,7 +296,7 @@ test('memory failure during engine creation or readiness preserves paused battle
   }});
   await controller.start();assert.equal(run.phase,'paused');assert.deepEqual(run.battle,before);
   assert.equal(controller.isActive(),false);assert.equal(controller.isPreparing(),false);
-  assert.match(errors[0],/Не хватает памяти/);assert.equal(terminated,Number(asynchronous));controller.dispose();
+  assert.match(errors[0],/Не хватает памяти/);assert.equal(terminated,3*Number(asynchronous));controller.dispose();
  }
 });
 

@@ -1,4 +1,4 @@
-import {Chess} from '../chess.js?v=102';
+import {Chess} from '../chess.js?v=103';
 
 export const RECOMMENDATION_VERSION='consequences-v1';
 export const MAX_EVIDENCE_PLIES=12;

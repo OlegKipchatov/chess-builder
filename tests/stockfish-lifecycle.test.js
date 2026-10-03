@@ -19,3 +19,16 @@ test('successive engine starts wait for shutdown acknowledgement and release han
   assert.ok(instances.every(worker=>worker.onmessage===null&&worker.onerror===null));
  }finally{globalThis.Worker=original;}
 });
+test('unresponsive worker is forcibly stopped before the replacement starts',async()=>{
+ const OriginalWorker=globalThis.Worker,originalSet=globalThis.setTimeout,originalClear=globalThis.clearTimeout;
+ const timers=new Map();let serial=0,live=0,peak=0,created=0;
+ globalThis.setTimeout=fn=>{timers.set(++serial,fn);return serial;};globalThis.clearTimeout=id=>timers.delete(id);
+ globalThis.Worker=class {constructor(){created++;live++;peak=Math.max(peak,live);}postMessage(){}terminate(){live--;}};
+ const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+ try{
+  const first=createEngineWorker();await flush();first.terminate();
+  const second=createEngineWorker();await flush();assert.equal(created,1);assert.equal(live,1);
+  [...timers.values()][0]();await flush();assert.equal(created,2);assert.equal(live,1);assert.equal(peak,1);
+  second.terminate();[...timers.values()][0]();await flush();assert.equal(live,0);assert.equal(timers.size,0);
+ }finally{globalThis.Worker=OriginalWorker;globalThis.setTimeout=originalSet;globalThis.clearTimeout=originalClear;}
+});

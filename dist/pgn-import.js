@@ -1,4 +1,4 @@
-import {Chess} from './chess.js?v=102';
+import {Chess} from './chess.js?v=103';
 export const MAX_PGN_BYTES=512*1024;
 export const importPgn = value => {
  if(typeof value!=='string'||!value.trim())throw Error('Вставьте текст PGN или выберите файл.');

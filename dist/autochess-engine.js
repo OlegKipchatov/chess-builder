@@ -1,21 +1,21 @@
-import {AUTO} from './autochess.js?v=102';
-import {createEngineWorker} from './stockfish-lifecycle.js?v=102';
+import {AUTO} from './autochess.js?v=103';
+import {createEngineWorker} from './stockfish-lifecycle.js?v=103';
 // One sequential worker per active battle; no rating or difficulty model.
 export const createAutoplayEngine = (spawn=createEngineWorker) => {
  const worker=spawn();let pending=null,dead=false,initialized=false,readyResolve,readyReject;
  const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
  const send=command=>worker.postMessage(command);
  let watchdog;
- const fail=error=>{if(dead)return;dead=true;clearTimeout(watchdog);worker.terminate();readyReject(error);pending?.reject(error);pending=null;};
+ const fail=error=>{if(dead)return;dead=true;clearTimeout(watchdog);worker.terminate();initialized=false;worker.onmessage=null;worker.onerror=null;readyReject?.(error);readyResolve=null;readyReject=null;pending?.reject(error);pending=null;};
  watchdog=setTimeout(()=>fail(Error('Не удалось подготовить движок')),20000);
  worker.onerror=event=>fail(Error(event.message||'Движок остановился'));
  worker.onmessage=event=>{
   if(dead)return;
   for(const line of String(event.data).split('\n')){
-   if(/Unsupported position|Invalid FEN/i.test(line)){fail(Error('Состав или расстановка не поддерживаются движком. Вернитесь к подготовке и исправьте состав.'));return;}
+   if(/Unsupported position|Invalid FEN/i.test(line)){fail(Object.assign(Error('Состав или расстановка не поддерживаются движком. Вернитесь к подготовке и исправьте состав.'),{code:'UNSUPPORTED_POSITION'}));return;}
    if(line.trim()==='uciok'){
     ['setoption name Threads value 1','setoption name Hash value 4','setoption name Skill Level value 20','setoption name UCI_LimitStrength value false','setoption name MultiPV value 1','ucinewgame','isready'].forEach(send);
-   }else if(line.trim()==='readyok'){clearTimeout(watchdog);initialized=true;readyResolve();}
+   }else if(line.trim()==='readyok'){clearTimeout(watchdog);initialized=true;readyResolve?.();readyResolve=null;readyReject=null;}
    else if(line.startsWith('bestmove ')&&pending){
     const request=pending;pending=null;clearTimeout(watchdog);
     const token=line.split(/\s+/)[1];
@@ -36,13 +36,13 @@ export const createAutoplayEngine = (spawn=createEngineWorker) => {
   });
  },terminate:()=>fail(Object.assign(Error('Бой приостановлен'),{name:'AbortError'}))};
 };
-// One WASM allocation across consecutive completed rounds, released on exit/pause.
+// Each battle owns a fresh worker tree. Completion, pause and exit release it.
 export const createAutoplaySession = (factory=createAutoplayEngine) => {
  let client=null;
  const dispose=()=>{client?.terminate();client=null;};
  return {dispose,create:()=>{
-  if(client&&!client.isIdle())dispose();
-  const reused=!!client;client??=factory();const owned=client;
-  return {ready:reused?owned.newGame():owned.ready,search:(...args)=>owned.search(...args),release:()=>{if(!owned.isIdle()){owned.terminate();if(client===owned)client=null;}},terminate:()=>{owned.terminate();if(client===owned)client=null;}};
+  dispose();const owned=factory();client=owned;
+  const release=()=>{owned.terminate();if(client===owned)client=null;};
+  return {ready:owned.ready,search:(...args)=>owned.search(...args),release,terminate:release};
  }};
 };
