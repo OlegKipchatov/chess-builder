@@ -14,7 +14,9 @@
     "motion:generate": "node scripts/generate-motion.mjs",
     "motion:check": "node scripts/generate-motion.mjs --check",
     "test:pwa:browser": "node scripts/test-pwa-browser.mjs",
-    "benchmark:analysis": "node scripts/benchmark-analysis.mjs docs/analysis-benchmark-linux.json"
+    "benchmark:analysis": "node scripts/benchmark-analysis.mjs docs/analysis-benchmark-linux.json",
+    "test:stockfish:browser": "node scripts/test-stockfish-compatibility-browser.mjs",
+    "test:pwa:single": "PWA_NO_ISOLATION=1 node scripts/test-pwa-browser.mjs"
   },
   "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами",
   "devDependencies": {

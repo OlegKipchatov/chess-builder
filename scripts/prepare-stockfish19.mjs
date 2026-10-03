@@ -18,3 +18,34 @@ if(!net||!createHash('sha256').update(net).digest('hex').startsWith('61e7af4bb97
 if(!createHash('sha256').update(net).digest('hex').startsWith('61e7af4bb97d'))throw Error('Stockfish 19 network integrity mismatch');
 await writeFile(new URL(name,root),net);await writeFile(new URL('package.json',root),'{"type":"module"}\n');
 console.log('Verified Stockfish 19 smallnet and NNUE.');
+// Independent single-threaded SF19 port, with NNUE embedded in its WASM.
+const singleRoot=new URL('../dist/vendor/sf19-single/',import.meta.url);
+await mkdir(singleRoot,{recursive:true});
+const packageCache=new URL('../node_modules/.cache/stockfish19/',import.meta.url);
+await mkdir(packageCache,{recursive:true});
+const singleIntegrity='jDyYLbqNpboQcMs5HodTHI2CrKL74zkQWb1+sgoNXw5HI6avTblW4G0X7afFt3BBOc6VbTSkOV64EUxm/DWSpg==';
+let singlePackage=await readFile(new URL('package.tgz',packageCache)).catch(()=>null);
+if(!singlePackage||createHash('sha512').update(singlePackage).digest('base64')!==singleIntegrity)singlePackage=await fetchBytes('https://registry.npmjs.org/stockfish/-/stockfish-19.0.0.tgz');
+if(createHash('sha512').update(singlePackage).digest('base64')!==singleIntegrity)throw Error('Single-threaded Stockfish package integrity mismatch');
+await writeFile(new URL('package.tgz',packageCache),singlePackage);
+const singleTar=gunzipSync(singlePackage),singleRequired=new Map([
+ ['package/bin/stockfish-19-lite-single.js','stockfish-19-lite-single.js'],
+ ['package/bin/stockfish-19-lite-single.wasm','stockfish-19-lite-single.wasm'],
+ ['package/Copying.txt','COPYING.txt']
+]);
+for(let offset=0;offset+512<=singleTar.length;){
+ const name=singleTar.subarray(offset,offset+100).toString().split('\0')[0];
+ const size=parseInt(singleTar.subarray(offset+124,offset+136).toString().replace(/\0/g,'').trim(),8)||0;
+ if(singleRequired.has(name)){await writeFile(new URL(singleRequired.get(name),singleRoot),singleTar.subarray(offset+512,offset+512+size));singleRequired.delete(name);}
+ offset+=512+Math.ceil(size/512)*512;
+}
+if(singleRequired.size)throw Error('Single-threaded Stockfish files missing');
+console.log('Verified Stockfish 19 lite-single with embedded NNUE.');
+
+// Keep the exact WASM release URL across Service Worker cached responses, which
+// need not preserve a worker constructor URL fragment. No engine code changes.
+const singleJs=new URL('stockfish-19-lite-single.js',singleRoot);
+const locator='location.origin+location.pathname.replace(/\\.js$/i,".wasm")';
+const source=await readFile(singleJs,'utf8');
+if(source.split(locator).length!==2)throw Error('Pinned Stockfish WASM locator changed');
+await writeFile(singleJs,source.replace(locator,'self.STOCKFISH_WASM_URL'));

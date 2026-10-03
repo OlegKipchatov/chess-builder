@@ -1,9 +1,9 @@
-import {STOCKFISH as C} from './stockfish-config.js?v=103';
-import {createEngineWorker} from './stockfish-lifecycle.js?v=103';
-import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=103';
-import {Chess} from './chess.js?v=103';
-import {validEngineProfile} from './strength.js?v=103';
-import {decisionModeFor} from './cognitive-model.js?v=103';
+import {STOCKFISH as C} from './stockfish-config.js?v=104';
+import {createEngineWorker,recordStockfishRestart} from './stockfish-lifecycle.js?v=104';
+import {parseInfo,completeCandidates,prepareCandidates} from './candidate-analysis.js?v=104';
+import {Chess} from './chess.js?v=104';
+import {validEngineProfile} from './strength.js?v=104';
+import {decisionModeFor} from './cognitive-model.js?v=104';
 export const uciPosition = data => {
  const game=new Chess();
  if(data.pgn)game.loadPgn(data.pgn);else if(data.fen)game.load(data.fen);
@@ -36,7 +36,7 @@ export const createStockfishClient = (spawn=createEngineWorker) => {
    client.onmessage?.({data:{id:request.id,jobId:request.jobId,moveIndex:request.moveIndex,requestId:request.requestId,move,...(request.analysis?.mode==='nodes'?{lines:rows}:{}),...(evaluation?{evaluation}:{}),...(request.analysisOnly?{analysis,durationMs:performance.now()-request.startedAt,recovered:recover}:{})}});
   }catch(error){fail(error.message);}
  };
- const watchdog=(ms,stage)=>{clearTimeout(timer);timer=setTimeout(()=>stage==='search'?finish(null,true):fail(`Stockfish ${stage} timeout`),ms);};
+ const watchdog=(ms,stage)=>{clearTimeout(timer);timer=setTimeout(()=>{if(stage==='search'){recordStockfishRestart('search watchdog');finish(null,true);}else fail(`Stockfish ${stage} timeout`);},ms);};
  const search=()=>{
   if(!ready||!current||dead)return;
   try{

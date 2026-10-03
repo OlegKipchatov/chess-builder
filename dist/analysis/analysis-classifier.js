@@ -1,4 +1,4 @@
-import {PROFILE} from './analysis-config.js?v=103';
+import {PROFILE} from './analysis-config.js?v=104';
 export const mateState = line => line?.score.type==='mate'?(line.score.value>0?'winning':'losing'):'none';
 export const classifyMove = ({bestLine,playedLine,lines=[],forced=false}) => {
  const loss=Math.max(0,bestLine.expectedScorePlayer-playedLine.expectedScorePlayer);

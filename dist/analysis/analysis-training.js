@@ -1,5 +1,5 @@
-import {createStockfishClient} from '../stockfish-client.js?v=103';
-import {Chess} from '../chess.js?v=103';
+import {createStockfishClient} from '../stockfish-client.js?v=104';
+import {Chess} from '../chess.js?v=104';
 const tokenOf = move => move.from+move.to+(move.promotion||'');
 const play = (game,token) => game.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]});
 // Calculation only: enumerate every solution to mate in one/two, not just top-1.

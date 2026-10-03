@@ -34,6 +34,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Test cold offline launch and PWA upgrade
         run: npm run test:pwa:browser
+      - name: Test both Stockfish runtimes and initialization fallback
+        run: npm run test:stockfish:browser
+      - name: Test offline single-threaded PWA
+        run: npm run test:pwa:single
       - name: Check JavaScript syntax
         run: |
           for source in dist/*.js; do

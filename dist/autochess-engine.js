@@ -1,5 +1,6 @@
-import {AUTO} from './autochess.js?v=103';
-import {createEngineWorker} from './stockfish-lifecycle.js?v=103';
+import {STOCKFISH as C} from './stockfish-config.js?v=104';
+import {AUTO} from './autochess.js?v=104';
+import {createEngineWorker,recordStockfishRestart} from './stockfish-lifecycle.js?v=104';
 // One sequential worker per active battle; no rating or difficulty model.
 export const createAutoplayEngine = (spawn=createEngineWorker) => {
  const worker=spawn();let pending=null,dead=false,initialized=false,readyResolve,readyReject;
@@ -7,7 +8,7 @@ export const createAutoplayEngine = (spawn=createEngineWorker) => {
  const send=command=>worker.postMessage(command);
  let watchdog;
  const fail=error=>{if(dead)return;dead=true;clearTimeout(watchdog);worker.terminate();initialized=false;worker.onmessage=null;worker.onerror=null;readyReject?.(error);readyResolve=null;readyReject=null;pending?.reject(error);pending=null;};
- watchdog=setTimeout(()=>fail(Error('Не удалось подготовить движок')),20000);
+ watchdog=setTimeout(()=>fail(Error('Не удалось подготовить движок')),C.initializationMs);
  worker.onerror=event=>fail(Error(event.message||'Движок остановился'));
  worker.onmessage=event=>{
   if(dead)return;
@@ -27,11 +28,11 @@ export const createAutoplayEngine = (spawn=createEngineWorker) => {
  return {ready,isIdle:()=>!dead&&initialized&&!pending,newGame:()=>{
   if(dead||pending)return Promise.reject(Error('Движок недоступен'));
   initialized=false;const prepared=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
-  watchdog=setTimeout(()=>fail(Error('Не удалось подготовить движок')),20000);send('ucinewgame');send('isready');return prepared;
+  watchdog=setTimeout(()=>fail(Error('Не удалось подготовить движок')),C.initializationMs);send('ucinewgame');send('isready');return prepared;
  },search:(initialFen,moves)=>{
   if(dead||pending)return Promise.reject(Error('Движок недоступен'));
   return new Promise((resolve,reject)=>{
-   pending={resolve,reject};watchdog=setTimeout(()=>fail(Error('Движок не ответил')),4000);
+   pending={resolve,reject};watchdog=setTimeout(()=>{recordStockfishRestart('Autochess search watchdog');fail(Error('Движок не ответил'));},4000);
    send(`position fen ${initialFen}${moves.length?' moves '+moves.join(' '):''}`);send(`go movetime ${AUTO.movetime}`);
   });
  },terminate:()=>fail(Object.assign(Error('Бой приостановлен'),{name:'AbortError'}))};

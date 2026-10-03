@@ -1,8 +1,10 @@
-import {Chess} from './chess.js?v=103';
-import {createStockfishClient} from './stockfish-client.js?v=103';
-import {expectedScore,summarizeQuality} from './reward-quality.js?v=103';
+import {recordStockfishRestart} from './stockfish-lifecycle.js?v=104';
+import {STOCKFISH as C} from './stockfish-config.js?v=104';
+import {Chess} from './chess.js?v=104';
+import {createStockfishClient} from './stockfish-client.js?v=104';
+import {expectedScore,summarizeQuality} from './reward-quality.js?v=104';
 // A separate full-strength fixed-node profile, never the adaptive opponent.
-export const analyzeReward = async (entry,{onProgress=()=>{},onRetry=()=>{},createClient=createStockfishClient,requestTimeoutMs=20000}={}) => {
+export const analyzeReward = async (entry,{onProgress=()=>{},onRetry=()=>{},createClient=createStockfishClient,requestTimeoutMs=C.economyRequestMs}={}) => {
  const final=new Chess();final.loadPgn(entry.pgn);
  const history=final.history({verbose:true}),position=new Chess(history[0]?.before||final.fen());
  const decisions=[],diagnostics=[];let client=null,id=0,done=0;
@@ -34,6 +36,7 @@ export const analyzeReward = async (entry,{onProgress=()=>{},onRetry=()=>{},crea
     client?.terminate();client=null;
     diagnostics.push({ply:position.history().length+1,stage:searchMove?'played':'best',attempt,message:String(error.message||error).slice(0,180)});
     if(attempt===3){const failure=Error('Economy evaluation failed after 3 attempts');failure.diagnostics=diagnostics.slice(-9);throw failure;}
+    recordStockfishRestart('economy: '+String(error.message||error));
     onRetry({done,total,attempt:attempt+1});
     await new Promise(resolve=>setTimeout(resolve,0));
    }
