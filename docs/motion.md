@@ -39,3 +39,14 @@ Autochess uses `autoBoard` (160 ms) for piece movement while its logical pace
 is 200 ms per ply including search. Animations never gate the next engine query,
 accepted position, 30-second deadline or saved result. Reduced motion removes
 only the presentation; it does not change the logical pace.
+
+## Autochess geometry (v98)
+
+Keep the same 8×8 board bounds across preparation, battle and result for a fixed
+viewport. Reserve always renders four fixed-size slots and a fixed-width sale
+action. Do not collapse preparation controls during battle; disable them.
+Selection, price labels and reserve occupancy must not resize the panels.
+Use viewport/header geometry to size the board on short screens; no clipping,
+scroll locking or height animations. Enlarged text takes priority over fit.
+Notifications use the existing overlay toast. Check 360×740, 390×844, 430×932,
+a short portrait screen, desktop and 200% text before changing this layout.

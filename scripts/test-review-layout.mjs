@@ -13,8 +13,8 @@ try{
  const context=await browser.newContext({serviceWorkers:'block'}),page=await context.newPage(),url=`http://127.0.0.1:${server.address().port}/`;
  await page.goto(url);await page.locator('#start-game').waitFor();
  await page.evaluate(async()=>{
-  const {initialState}=await import('./state.js?v=97');const state=initialState();
-  const {ITEMS}=await import('./catalog.js?v=97');state.owned.push(ITEMS.find(item=>item.kind==='board'&&!state.owned.includes(item.id)).id);
+  const {initialState}=await import('./state.js?v=100');const state=initialState();
+  const {ITEMS}=await import('./catalog.js?v=100');state.owned.push(ITEMS.find(item=>item.kind==='board'&&!state.owned.includes(item.id)).id);
   state.sets=[{id:'saved',name:'Мой набор',...state.equipped}];
   const entry={id:'old',pgn:'1. e4 e5 2. Nf3',mode:'bot',playerColor:'w',finishedAt:'2025-01-01T12:00:00Z',result:'Поражение',equipped:state.equipped};
   state.archive=[entry,{...entry,id:'unavailable',finishedAt:''}];localStorage.setItem('chess-vault-v3',JSON.stringify(state));

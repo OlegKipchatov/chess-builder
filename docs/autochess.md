@@ -1,4 +1,57 @@
+## Изменения 100
+
+Продажа оформлена outlined-кнопкой с акцентной рамкой и прозрачным фоном.
+При выборе фигуры меняется только цена, без скачка яркости и размеров.
+
+## Изменения 99
+
+Бой не ограничен временем; лимит 120 полуходов сохранён. История и накопленное
+время по-прежнему сохраняются для продолжения, включая бои длиннее 30 секунд.
+Счётчик ходов объединён со строкой статуса; таймер и дублирующая ошибка удалены.
+Размер доски и резерв места под статус сохраняются. Продажа имеет одинаковую
+контурную поверхность при любом выборе; доступность обозначает цена вместо тире.
+Белые всегда начинают. Перед боем бот корректирует только собственные позиции,
+если чёрный король под шахом; состав армий и экономика сохраняются. Шах белому
+королю допустим. Если безопасную позицию подобрать не удалось, бой не запускается
+и показывается уведомление, без незаконного взятия короля.
+
 # Autochess first playable version
+
+## Release 98 — compact screen and reserve
+
+Validation: 299 unit/integration tests pass. Browser scenarios cover 360×740,
+390×844, 430×932, 360×640 and 1280×900, empty/one/four reserve pieces,
+full-reserve return refusal, atomic king swap, sale, duplicate purchase clicks,
+double touch return, overflow migration, 200% text, real offline Stockfish play
+and stable result geometry. Full offline suite passes root/subpath cold starts
+and the published v97 → v98 upgrade. Screenshots are in docs/screenshots.
+
+Limits: tests ran in Chromium on Linux, not physical iOS Safari. Enlarged text
+and exceptionally short viewports may scroll for accessibility. Existing saves
+with excess reserve intentionally require manual resolution. Internal Sites
+uses a new origin, so existing public-site local progress is not transferred.
+
+
+Four fixed slots store all undeployed pieces, including a benched king. A buy
+requires cash, army capacity and a free reserve slot. A reserve/board swap is
+atomic and reuses the incoming piece’s slot. Pawns still cannot enter ranks
+1/8, kings cannot be sold and a benched king prevents starting. Purchased pieces
+may stay in reserve during a battle. Opponent planning is unchanged; it places
+its acquired batch before purchasing into an already full reserve.
+
+Old saves without reserveRule migrate without deleting or automatically placing
+any pieces. More than four reserve pieces are preserved with an explicit
+legacyReserveOverflow marker. A dialog lists every piece and lets the player
+select one to place or sell; an always available “Разобрать” action reopens it.
+Purchases, returning more pieces and starting the next battle are blocked until
+the excess is resolved. A currently paused battle remains resumable.
+
+The screen retains the global header, 64 squares, four reserve slots and a
+fixed sale button. Purchase/upgrade share the same row, and start/next-battle
+is last. Controls remain present but disabled in battle/result. Board size
+uses viewport height and fixed panel geometry, never piece count or selection.
+At enlarged text, content may scroll instead of being clipped.
+
 
 ## Release 97 draft
 

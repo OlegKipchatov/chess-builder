@@ -1,29 +1,33 @@
 .autochess-entry{width:100%;max-width:600px;margin:28px auto 0;padding-top:24px;border-top:1px solid var(--border)}
-.autochess-entry h2,.autochess-surface h2{font-size:var(--text-section,1.25rem);margin:0 0 12px}.autochess-entry p{color:var(--muted);margin:0 0 16px}.autochess-entry>button{width:100%;min-height:52px}
+.autochess-entry h2{font-size:var(--type-section);margin:0 0 12px}.autochess-entry>button{width:100%;min-height:52px}
 .autochess-active #minigames>.page-content>:not(#autochess-root){display:none!important}
-.autochess-surface{max-width:600px;margin:0 auto}.auto-hud,.auto-section-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.auto-hud{margin-bottom:8px}.auto-hud span,.auto-secondary,.auto-selection,.auto-section-title>span{font-size:.875rem;color:var(--muted)}.auto-secondary{margin:0 0 12px}.auto-status{min-height:42px;font-size:.875rem;line-height:1.5;color:var(--muted);margin:12px 0}
-.auto-army{display:flex;flex-wrap:wrap;gap:8px}.auto-army button{display:flex;flex-direction:column;align-items:center;min-width:52px;padding:8px;border:1px solid var(--border)}.auto-army button[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:1px}.auto-army svg{width:32px;height:36px}.auto-army span{font-size:.8125rem}.auto-selection{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 16px}.auto-selection button{min-height:44px}
-.auto-catalog{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.auto-catalog button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;min-height:96px}.auto-catalog button:disabled{opacity:1;color:var(--muted)}.auto-catalog button:disabled svg{opacity:.55}.auto-catalog svg{width:32px;height:36px}.auto-catalog span{font-size:.8125rem}.auto-catalog strong{font-size:.875rem}
-#auto-action{margin-top:20px}#auto-start{width:100%;min-height:48px}.auto-place::after{content:'';position:absolute;inset:4px;border:2px solid var(--accent);border-radius:3px;pointer-events:none}.auto-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.auto-results .stat-card{padding:12px 4px}.auto-results .stat-card span{font-size:.875rem}
-@media(max-width:380px){.auto-catalog{gap:4px}.auto-hud{font-size:.875rem}.autochess-active #minigames{padding-inline:0}.autochess-active #minigames-title{font-size:1.375rem}}
-
-/* Compact preparation keeps the board stable and brings the wallet to the shop. */
-.autochess-surface h2{font-size:1rem;margin:0}.auto-status{min-height:21px;margin:6px 0;line-height:1.4}.auto-hud{margin-bottom:4px}.auto-secondary{margin-bottom:8px}
-.auto-section-title{align-items:center;margin:8px 0}.auto-section-title h2{margin:0}#auto-coins{font-size:.875rem;color:var(--accent);white-space:nowrap}
-.auto-army{gap:6px}.auto-army button{min-width:44px;padding:4px 6px}.auto-army svg{width:26px;height:28px}.auto-selection{min-height:44px;margin:4px 0 8px}.auto-selection button{padding:6px 10px}
-.auto-catalog{gap:6px}.auto-catalog button{min-height:76px;padding:6px 2px;gap:2px}.auto-catalog svg{width:26px;height:28px}#auto-action{margin-top:12px}#auto-start{min-height:44px}
-.autochess-active #minigames>.page-content{padding-block-start:16px}
-@media(min-width:900px){
- .autochess-surface{max-width:780px}#auto-content{display:grid;grid-template-columns:minmax(0,440px) minmax(0,280px);column-gap:24px;align-items:start}
- #auto-content>.auto-hud{grid-column:1;grid-row:1}#auto-side{grid-column:1;grid-row:2}#auto-board{grid-column:1;grid-row:3}#auto-status{grid-column:1;grid-row:4}
- .auto-sidebar{grid-column:2;grid-row:1/5;min-width:0}
-}
-
-#auto-action [data-auto-next],#auto-action [data-auto-retry]{width:100%;min-height:44px}
-#auto-reward>.primary{width:100%;min-height:44px}
-.auto-shop-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.auto-shop-actions>button{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-width:0;min-height:60px;padding:8px;font-size:.875rem}.auto-shop-actions>button svg{width:20px;height:20px;flex:none}.auto-shop-actions>button span{min-width:0}
-.auto-odds-table{overflow:auto}.auto-odds-table table{width:100%;border-collapse:collapse;font-size:.8125rem}.auto-odds-table th,.auto-odds-table td{padding:8px 4px;text-align:center}.auto-odds-table caption{text-align:left;margin:12px 0}
+body.autochess-active main{padding:8px 12px calc(12px + env(safe-area-inset-bottom));max-width:860px}
+.autochess-active #minigames>.page-content{padding:0}
+.autochess-active #minigames>.page-header{column-gap:8px;align-items:center;margin:0 0 4px;grid-template-columns:44px minmax(0,1fr) auto}
+.autochess-active #minigames-title{font-size:var(--type-section);letter-spacing:-.3px}
+.auto-round{grid-column:3;grid-row:1;font-size:var(--type-secondary);white-space:nowrap;color:var(--muted)}
+.autochess-surface{max-width:600px;margin:auto}#auto-content{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+#auto-side{font-size:var(--type-secondary);color:var(--muted);margin:0;min-height:1.5em}
+#auto-board{align-self:center;flex:none;width:100%;max-width:100%;box-shadow:none}
+#auto-shop{display:grid;gap:6px;flex:none}.auto-reserve-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:8px;min-height:44px}
+.auto-reserve{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.auto-reserve button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:3px;border:1px solid var(--border);background:var(--panel)}
+.auto-reserve .auto-empty-slot{opacity:1;background:transparent}.auto-reserve svg{width:28px;height:34px}.auto-reserve button[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:-2px}
+.auto-sale{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;width:76px;height:44px;padding:6px}.auto-sale span{min-width:3ch;text-align:center}.auto-sale svg{height:20px;width:20px;flex:none}
+.auto-shop-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--type-secondary);min-height:24px;color:var(--muted)}.auto-shop-meta button{padding:0;min-height:24px;font-size:inherit}.auto-shop-meta strong{color:var(--accent);white-space:nowrap}
+.auto-shop-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.auto-shop-actions>button{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;height:44px;padding:2px 4px;font-size:var(--type-secondary);line-height:1.35}.auto-shop-actions svg{width:18px;height:18px;flex:none}.auto-shop-actions>button>span{min-width:0}
 .auto-level-outlined{background:transparent;border:1px solid var(--accent);color:var(--accent)}.auto-level-outlined:disabled{border-color:var(--border);color:var(--muted)}
-@media(min-width:900px){#auto-action{grid-column:1;grid-row:4}#auto-status{grid-row:5}.auto-sidebar{grid-row:1/6}}
+.auto-status{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:2.8em;margin:0;font-size:var(--type-secondary);line-height:1.4;color:var(--muted)}#auto-status{min-width:0}#auto-resource{white-space:nowrap;font-size:var(--type-micro)}
+#auto-action{min-height:44px}#auto-action>button,#auto-reward>.primary{width:100%;min-height:44px}#auto-action p{margin:0}
+.auto-place::after{content:'';position:absolute;inset:4px;border:2px solid var(--accent);border-radius:3px;pointer-events:none}
+.auto-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.auto-results .stat-card{padding:12px 4px}
+.auto-catalog{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.auto-catalog button{display:flex;align-items:center;justify-content:center;gap:2px;min-height:44px;min-width:0;padding:4px}.auto-catalog svg{width:24px;height:30px}
+.auto-odds-table{overflow:auto}.auto-odds-table table{width:100%;border-collapse:collapse;font-size:var(--type-micro)}.auto-odds-table th,.auto-odds-table td{padding:8px 4px;text-align:center}.auto-odds-table caption{text-align:left;margin:12px 0}
+.auto-overflow-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.auto-overflow-list button{display:flex;align-items:center;gap:8px;background:var(--panel)}.auto-overflow-list svg{width:28px;height:32px}
+@media(min-width:900px){.autochess-surface{max-width:480px}.autochess-active #minigames>.page-header{max-width:480px;margin-inline:auto}}
+@media(max-width:400px){.autochess-active .app-version{display:inline}.autochess-active .brand{font-size:.75rem}}
+@media(min-resolution:1dppx){.auto-shop-actions>button{overflow-wrap:normal}}
 
-.auto-selection{display:grid;grid-template-columns:minmax(0,1fr) max-content;min-height:44px}.auto-selection-label{min-block-size:2lh;line-height:1.4}.auto-selection-label>span{display:block}.auto-selection button{white-space:nowrap}.auto-sale-placeholder{visibility:hidden;pointer-events:none}
+.auto-large-text .auto-shop-actions>button{height:auto;min-height:44px;padding:6px 4px}.auto-large-text .auto-shop-meta{flex-wrap:wrap}.auto-large-text .auto-reserve-row{grid-template-columns:minmax(0,1fr) 76px}
+
+/* Outlined sale keeps the same surface in both states; price communicates availability. */
+.auto-sale,.auto-sale:disabled{background:transparent;border:1px solid var(--accent);color:var(--accent);opacity:1}

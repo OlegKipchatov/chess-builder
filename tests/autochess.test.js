@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
-import {AUTO,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
+import {AUTO,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
 import {createBattleController} from '../dist/autochess-battle.js';
 import {createAutoplayEngine} from '../dist/autochess-engine.js';
 import {benchPiece} from '../dist/autochess.js';
@@ -11,7 +11,7 @@ test('army capacity grows from eight to sixteen with the shop level',()=>{
  let run=createModernRun('capacity');run.round=21;
  run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
  run.purchases=7;run.nextId=8;run.reserve=35;
- run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:null,benched:true})));
+ run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:placementSquares('p',run.color)[i]})));
  assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);
  assert.equal(buyRandomPiece(run),run);
  run=upgradeShop(run);assert.equal(armyCapacity(run),9);
@@ -29,6 +29,31 @@ test('sixteen owned pieces survive saving, placement and the level-ten cap',()=>
  const sold=sellPiece(run,'piece-1');assert.equal(buyRandomPiece(sold).army.length,16);
  const enemy=planOpponent(run.army,{reserve:20,level:10,purchases:15,sales:0,income:0},'sixteen-enemy',run.color);
  assert.equal(enemy.army.length,16);assert.equal(new Set(enemy.army.map(piece=>piece.square)).size,16);
+});
+test('four reserve slots guard purchases and return; a full swap is atomic',()=>{
+ let run={...createModernRun('reserve'),reserve:100};
+ for(let i=0;i<8;i++)run=buyRandomPiece(run);
+ assert.equal(reservePieces(run).length,4);assert.equal(run.purchases,4);assert.equal(run.reserve,90);
+ assert.equal(purchaseError(run),'Резерв заполнен');assert.equal(benchPiece(run,'king'),run);
+ const incoming=run.army[1],square=placementSquares(incoming.type,run.color).find(square=>!run.army.some(piece=>piece.square===square));
+ run=placePiece(run,incoming.id,square);run=buyRandomPiece(run);assert.equal(reservePieces(run).length,4);
+ const selected=reservePieces(run)[0],slot=selected.reserveSlot,before=structuredClone(run),ids=run.army.map(piece=>piece.id).sort();
+ const swapped=placePiece(run,selected.id,square);
+ if(!placementSquares(selected.type,run.color).includes(square)){assert.equal(swapped,run);return;}
+ assert.deepEqual(run,before);assert.equal(swapped.army.find(piece=>piece.id===incoming.id).reserveSlot,slot);
+ assert.equal(swapped.army.find(piece=>piece.id===selected.id).square,square);assert.equal(reservePieces(swapped).length,4);
+ assert.deepEqual(swapped.army.map(piece=>piece.id).sort(),ids);assert.equal(swapped.reserve,run.reserve);
+});
+test('old overflow is preserved explicitly, resolved manually and cannot grow',()=>{
+ let run=createModernRun('old-overflow');delete run.reserveRule;run.round=21;run.purchases=7;run.nextId=8;run.reserve=35;
+ run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
+ run.army.push(...Array.from({length:7},(_,i)=>({id:'piece-'+(i+1),type:'p',paid:i+1,square:null,benched:true})));
+ run=restoreAutoRun(JSON.stringify(run));assert.equal(run.legacyReserveOverflow,true);assert.equal(reservePieces(run).length,7);
+ assert.equal(buyRandomPiece(run),run);assert.equal(benchPiece(run,'king'),run);assert.match(setupError(run),/резерв/);
+ for(let i=0;i<3;i++)run=placePiece(run,'piece-'+(i+1),placementSquares('p',run.color)[i]);
+ assert.equal(reservePieces(run).length,4);assert.equal(run.legacyReserveOverflow,undefined);
+ assert.deepEqual(reservePieces(run).map(piece=>piece.reserveSlot).sort(),[0,1,2,3]);
+ assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);
 });
 test('opponent budget is conserved through a long series and saves',()=>{
  let run=createModernRun('persistent-opponent');
@@ -182,7 +207,7 @@ test('shop conserves budget, enforces capacity and cannot sell king',()=>{
  let run={...createAutoRun('one'),version:1,reserve:12};const original=run;
  run=buyPiece(run,'q');assert.equal(run.reserve,3);assert.equal(buyPiece(run,'q'),run);
  run=sellPiece(run,run.army.at(-1).id);assert.equal(run.reserve,7);assert.equal(sellPiece(run,'king'),run);
- for(let i=0;i<20;i++)run=buyPiece(run,'p');assert.equal(run.army.length,8);assert.equal(run.reserve,0);assert.equal(original.army.length,1);
+ for(let i=0;i<20;i++){const next=buyPiece(run,'p');if(next!==run)run=placePiece(next,next.army.at(-1).id,placementSquares('p',run.color).find(square=>!run.army.some(piece=>piece.square===square)));}assert.equal(run.army.length,8);assert.equal(run.reserve,0);assert.equal(original.army.length,1);
 });
 test('opponents spend equal budget and every round restores bought army',()=>{
  for(let seed=0;seed<100;seed++){
@@ -198,7 +223,7 @@ test('opponents spend equal budget and every round restores bought army',()=>{
  }
 });
 test('placement validates ranks, pending purchases and castling rights',()=>{
- let run=buyPiece({...createAutoRun('one'),version:1,reserve:12},'p');assert.equal(setupError(run),'Расставьте купленные фигуры');
+ let run=buyPiece({...createAutoRun('one'),version:1,reserve:12},'p');assert.equal(setupError(run),'');
  const id=run.army.at(-1).id;assert.equal(placePiece(run,id,run.color==='w'?'a5':'a4'),run);
  assert.notEqual(placePiece(run,id,run.color==='w'?'a4':'a5'),run);
  assert.equal(placePiece(run,id,run.color==='w'?'a1':'a8'),run);
@@ -211,7 +236,7 @@ test('limits preserve actual mate on last ply and ordinary draws',()=>{
  const mate=new Chess('7k/6Q1/6K1/8/8/8/8/8 b - - 0 1');
  for(const ply of [119,120])assert.equal(battleResult(mate,ply,29999).winner,'w');
  assert.equal(battleResult(new Chess(),120,0).reason,'Достигнут лимит ходов');
- assert.equal(battleResult(new Chess(),2,30000).reason,'Время боя закончилось');
+ assert.equal(battleResult(new Chess(),2,300000),null);
  assert.equal(battleResult(new Chess('7k/5Q2/6K1/8/8/8/8/8 b - - 0 1'),1,0).reason,'Пат');
  const repeat=new Chess();for(let i=0;i<2;i++)for(const m of ['Nf3','Nf6','Ng1','Ng8'])repeat.move(m);
  assert.equal(battleResult(repeat,8,0).reason,'Троекратное повторение');
@@ -228,14 +253,14 @@ const harness=()=>{
  const controller=createBattleController({getRun:()=>run,save:next=>{run=next;return true;},onChange:()=>{},onError:message=>errors.push(message),clock:()=>now,schedule:(fn,ms)=>{timers.set(++timerId,{fn,ms});return timerId;},cancel:id=>timers.delete(id),engineFactory:()=>({ready:Promise.resolve(),search:()=>new Promise(resolve=>{resolveMove=resolve;}),terminate:()=>{terminated++;}})});
  return {controller,get:()=>run,setTime:value=>{now=value;},move:()=>{const m=battleGame(run).moves({verbose:true})[0];resolveMove(m.from+m.to+(m.promotion||''));},timers,errors,terminated:()=>terminated};
 };
-test('late engine answer at deadline is discarded',async()=>{
- const h=harness();await h.controller.start();h.setTime(30000);h.move();await Promise.resolve();
- assert.equal(h.get().phase,'result');assert.equal(h.get().battle.moves.length,0);assert.equal(h.get().battle.elapsed,30000);assert.equal(h.terminated(),1);
+test('battle continues beyond the former time limit',async()=>{
+ const h=harness();await h.controller.start();h.setTime(60000);h.move();await Promise.resolve();
+ assert.notEqual(h.get().phase,'result');assert.equal(h.get().battle.moves.length,1);assert.equal(h.get().battle.elapsed,60000);assert.equal(h.terminated(),0);assert.deepEqual(restoreAutoRun(JSON.stringify(h.get())),h.get());h.controller.dispose();
 });
 test('pause preserves elapsed time, rejects old answer and resumes remaining time',async()=>{
  const h=harness();await h.controller.start();h.setTime(4321);h.controller.pause();h.move();await Promise.resolve();
  assert.equal(h.get().battle.elapsed,4321);assert.equal(h.get().battle.moves.length,0);
- h.setTime(20000);await h.controller.start();assert.ok([...h.timers.values()].some(timer=>timer.ms===25679));h.controller.dispose();
+ h.setTime(20000);await h.controller.start();assert.equal(h.timers.size,0);h.controller.dispose();
 });
 test('accepted move persists actual history and duplicate completion is inert',async()=>{
  const h=harness();await h.controller.start();h.setTime(100);h.move();await Promise.resolve();
@@ -293,4 +318,18 @@ test('same-colour bishops may start and immediately draw; first-move capture is 
  assert.equal(setupError(run),'');run=beginBattle(run);assert.equal(run.phase,'paused');
  assert.equal(battleResult(battleGame(run),0,0).reason,'Недостаточно материала');
  const game=battleGame(run);assert.equal(game.move('Bxh8').captured,'b');
+});
+
+test('white always starts; bot repairs black check without changing player or economy',()=>{
+ for(const color of ['w','b']){
+  const run={...prepared(),color,army:[{id:'king',type:'k',square:color==='w'?'a1':'a8'},{id:'rook',type:'r',square:color==='w'?'h1':'h8'}],opponent:[{id:'enemy-king',type:'k',square:color==='w'?'h8':'h1'},{id:'enemy-rook',type:'r',square:color==='w'?'b8':'a1'}]};
+  const snapshot=structuredClone(run),started=beginBattle(run),game=battleGame(started);
+  assert.equal(game.turn(),'w');assert.equal(new Chess(game.fen().replace(' w ',' b ')).isCheck(),false);
+  assert.deepEqual(run,snapshot);assert.deepEqual(started.army,run.army);assert.equal(started.reserve,run.reserve);
+  assert.deepEqual(started.opponent.map(({square,...piece})=>piece),run.opponent.map(({square,...piece})=>piece));
+ }
+});
+test('white can start in check without moving the opponent or changing turn',()=>{
+ const run={...prepared(),color:'w',army:[{id:'king',type:'k',square:'a1'}],opponent:[{id:'enemy-king',type:'k',square:'h8'},{id:'enemy-rook',type:'r',square:'a8'}]};
+ const started=beginBattle(run);assert.equal(battleGame(started).turn(),'w');assert.equal(battleGame(started).isCheck(),true);assert.deepEqual(started.opponent,run.opponent);
 });
