@@ -1,11 +1,11 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=95';
-import {Chess} from './chess.js?v=95';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=95';
-import {pieceSVG} from './pieces.js?v=95';
+import {motionDuration, motionEasing} from './ui/motion.js?v=96';
+import {Chess} from './chess.js?v=96';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=96';
+import {pieceSVG} from './pieces.js?v=96';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
-  root.style.setProperty('--square-light',style.light);
-  root.style.setProperty('--square-dark',style.dark);
+  if(root.style.getPropertyValue('--square-light')!==style.light)root.style.setProperty('--square-light',style.light);
+  if(root.style.getPropertyValue('--square-dark')!==style.dark)root.style.setProperty('--square-dark',style.dark);
   root.classList.toggle('has-selection',Boolean(selected));
   const legal = selected ? game.moves({square:selected,verbose:true}).map(move=>move.to) : [];
   const last = game.history({verbose:true}).at(-1);
@@ -14,7 +14,7 @@ export const renderBoard = (root, game, equipped, selected, orientation='w') => 
     const square = 'abcdefgh'[c]+(8-r);
     const check = piece?.type === 'k' && piece.color === game.turn() && game.isCheck();
     const classes = ['square',(r+c)%2?'dark':'',piece?'occupied':'',selected===square?'selected':'',legal.includes(square)?'legal':'',last&&(last.from===square||last.to===square)?'last':'',check?'check':''].join(' ');
-    return `<button class="${classes}" data-square="${square}" aria-label="${square}${piece?`, ${piece.color==='w'?'белые':'чёрные'}: ${PIECE_NAMES[piece.type]}`:', пусто'}${legal.includes(square)?', доступный ход':''}" aria-pressed="${selected===square}">${piece?pieceSVG(piece.type,piece.color,itemById(equipped.pieces[piece.type])?.style):''}${c===(orientation==='b'?7:0)?`<span class="coord rank" aria-hidden="true">${8-r}</span>`:''}${r===(orientation==='b'?0:7)?`<span class="coord" aria-hidden="true">${'abcdefgh'[c]}</span>`:''}</button>`;
+    return `<button class="${classes}" data-render-key="${piece?piece.color+piece.type+equipped.pieces[piece.type]:'empty'}:${orientation}" data-square="${square}" aria-label="${square}${piece?`, ${piece.color==='w'?'белые':'чёрные'}: ${PIECE_NAMES[piece.type]}`:', пусто'}${legal.includes(square)?', доступный ход':''}" aria-pressed="${selected===square}">${piece?pieceSVG(piece.type,piece.color,itemById(equipped.pieces[piece.type])?.style):''}${c===(orientation==='b'?7:0)?`<span class="coord rank" aria-hidden="true">${8-r}</span>`:''}${r===(orientation==='b'?0:7)?`<span class="coord" aria-hidden="true">${'abcdefgh'[c]}</span>`:''}</button>`;
   })).filter(Boolean)[orientation==='b'?'reverse':'slice']().join('');
   const template=document.createElement('template');template.innerHTML=html;
   const current=[...root.querySelectorAll('[data-square]')];
@@ -26,7 +26,7 @@ export const renderBoard = (root, game, equipped, selected, orientation='w') => 
       const cell=current[index],target=next[index];
       if(cell.className!==target.className)cell.className=target.className;
       for(const name of ['aria-label','aria-pressed'])if(cell.getAttribute(name)!==target.getAttribute(name))cell.setAttribute(name,target.getAttribute(name));
-      if(cell.innerHTML!==target.innerHTML)cell.innerHTML=target.innerHTML;
+      if(cell.dataset.renderKey!==target.dataset.renderKey){cell.innerHTML=target.innerHTML;cell.dataset.renderKey=target.dataset.renderKey;}
     }
   }
   if (focused) root.querySelector(`[data-square="${focused}"]`)?.focus({preventScroll:true});

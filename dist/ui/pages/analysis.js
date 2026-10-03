@@ -1,14 +1,14 @@
-import {matchEndReason} from '../../archive.js?v=95';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=95';
-import {escapeHTML as esc} from '../primitives.js?v=95';
-import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=95';
-import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=95';
-import {qualityLabel} from '../../analysis/analysis-explanations.js?v=95';
-import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=95';
-import {Chess} from '../../chess.js?v=95';
-import {positionAt} from '../../session.js?v=95';
-import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=95';
-import {createMateExercise} from '../../analysis/analysis-training.js?v=95';
+import {matchEndReason} from '../../archive.js?v=96';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=96';
+import {escapeHTML as esc} from '../primitives.js?v=96';
+import {syncHistorySlider,bindHistorySlider} from '../components/move-navigation.js?v=96';
+import {analysisInsight,insightLines,visibleVariation} from '../components/analysis-insight.js?v=96';
+import {qualityLabel} from '../../analysis/analysis-explanations.js?v=96';
+import {renderBoard,snapshotBoard,animateTransition,historyMoves} from '../../board.js?v=96';
+import {Chess} from '../../chess.js?v=96';
+import {positionAt} from '../../session.js?v=96';
+import {createAnalysisPlayback} from '../../analysis/analysis-playback.js?v=96';
+import {createMateExercise} from '../../analysis/analysis-training.js?v=96';
 
 export const analysisBoardTools = () => `<div id="analysis-board-tools" hidden>
  <div id="analysis-variation-tools" hidden><p data-analysis-context role="status"></p>

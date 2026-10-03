@@ -1,4 +1,4 @@
-import {Chess} from './chess.js?v=95';
+import {Chess} from './chess.js?v=96';
 export const AUTO = Object.freeze({version:4,wins:10,losses:3,maxBudget:24,budget:3,income:3,maxPieces:8,maxPly:120,duration:30000,movetime:100,pace:200});
 export const AUTO_KEY='gachachess-autochess-v1';
 export const PRICES=Object.freeze({k:0,p:1,n:3,b:3,r:5,q:9});
@@ -15,7 +15,7 @@ export const shopOdds = level => {
  const p=40-4*step,n=25-step,b=25-step,q=1+2*step;
  return {p,n,b,r:100-p-n-b-q,q};
 };
-export const salePrice = piece => piece.paid??PRICES[piece.type];
+export const salePrice = piece => Math.floor((piece.paid??PRICES[piece.type])*0.5);
 export const buyRandomPiece = run => {
  if(run.version!==4||run.phase!=='preparation'||run.army.length>=AUTO.maxPieces||run.reserve<purchasePrice(run))return run;
  const next=copy(run),paid=purchasePrice(run);let roll=hash(run.seed+':shop:'+run.purchases)%100,type='p';
@@ -40,7 +40,8 @@ export const opponentFor = (seed,round,color,initialBudget=AUTO.budget) => {
 };
 export const createAutoRun = (id,seed=id) => {
  const color=hash(seed+':1:color')%2?'b':'w';
- return {version:AUTO.version,id,seed,round:1,color,reserve:AUTO.budget,level:1,purchases:0,sales:0,nextId:1,army:[{id:'king',type:'k',square:'e'+rank(color)}],opponent:opponentFor(seed,1,color==='w'?'b':'w'),phase:'preparation',battle:null,results:[]};
+ const enemyColor=color==='w'?'b':'w',enemy=planOpponent([{id:'enemy-king',type:'k',square:'e'+rank(enemyColor),paid:0}],{reserve:AUTO.budget,level:1,purchases:0,sales:0,income:0,openingBalance:AUTO.budget},seed,enemyColor);
+ return {version:AUTO.version,id,seed,round:1,color,reserve:AUTO.budget,level:1,purchases:0,sales:0,nextId:1,army:[{id:'king',type:'k',square:'e'+rank(color)}],opponent:enemy.army,opponentProgress:enemy.progress,phase:'preparation',battle:null,results:[]};
 };
 export const buyPiece = (run,type) => {
  if(run.version===4||run.phase!=='preparation'||!PRICES[type]||run.reserve<PRICES[type]||run.army.length>=AUTO.maxPieces)return run;
@@ -49,7 +50,7 @@ export const buyPiece = (run,type) => {
 export const sellPiece = (run,id) => {
  const piece=run.army.find(piece=>piece.id===id);
  if(run.phase!=='preparation'||!piece||piece.type==='k')return run;
- const next=copy(run),refund=salePrice(piece);next.reserve+=refund;if(run.version===4)next.sales+=refund;next.army=next.army.filter(piece=>piece.id!==id);return next;
+ const next=copy(run),refund=salePrice(piece);next.reserve+=refund;if(run.version===4)next.sales+=refund;else next.saleLoss=(next.saleLoss||0)+PRICES[piece.type]-refund;next.army=next.army.filter(piece=>piece.id!==id);return next;
 };
 export const placePiece = (run,id,square) => {
  const piece=run.army.find(piece=>piece.id===id);
@@ -114,12 +115,87 @@ export const completeBattle = (run,result) => {
  next.results.push({...result,shopLevel:run.version===4?run.level:1,battleId:next.battle.id,outcome:result.winner===null?'draw':result.winner===run.color?'win':'loss'});return next;
 };
 export const seriesFinished = run => run.results.filter(row=>row.outcome==='win').length>=AUTO.wins||run.results.filter(row=>row.outcome==='loss').length>=AUTO.losses;
+// This planner receives only its own inventory/economy. It never inspects the player's board.
+const expectedPieceValue = level => Object.entries(shopOdds(level)).reduce((sum,[type,chance])=>sum+PRICES[type]*chance/100,0);
+const attacksFrom = (piece,army,color) => {
+ const x='abcdefgh'.indexOf(piece.square[0]),y=Number(piece.square[1]),result=[];
+ const directions=piece.type==='n'?[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]:piece.type==='p'?[[-1,color==='w'?1:-1],[1,color==='w'?1:-1]]:piece.type==='b'?[[1,1],[1,-1],[-1,1],[-1,-1]]:piece.type==='r'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+ for(const [dx,dy] of directions)for(let step=1;step<=(['b','r','q'].includes(piece.type)?7:1);step++){
+  const file=x+dx*step,row=y+dy*step;if(file<0||file>7||row<1||row>8)break;
+  const square='abcdefgh'[file]+row;result.push(square);if(army.some(other=>other.square===square))break;
+ }
+ return result;
+};
+export const arrangeOpponent = (pieces,color) => {
+ const army=copy(pieces);
+ // Start from a valid compact position, then make two bounded coordinate-descent passes.
+ for(const piece of army)piece.square=placementSquares(piece.type,color).find(square=>!army.some(other=>other!==piece&&other.square===square));
+ const score = () => {
+  let value=0;const king=army.find(piece=>piece.type==='k');
+  for(const piece of army){
+   const row=color==='w'?Number(piece.square[1]):9-Number(piece.square[1]),file='abcdefgh'.indexOf(piece.square[0]);
+   const attacks=attacksFrom(piece,army,color),friends=army.filter(other=>other!==piece&&attacks.includes(other.square));
+   value+=friends.reduce((sum,other)=>sum+(other.type==='k'?1.4:0.3*Math.sqrt(PRICES[other.type])),0);
+   if(piece.type==='k')value-=8*(row-1)+0.2*Math.abs(file-4);
+   else{
+    value+=0.12*attacks.filter(square=>!army.some(other=>other.square===square)).length;
+    // Keep an army behind the centre, avoiding an exposed front line before reveal.
+    value-=row>2?(row-2)*2:0;
+    if(piece.type==='n'||piece.type==='p')value+=0.15*(3.5-Math.abs(file-3.5));
+    if(piece.type==='p'&&Math.abs(file-'abcdefgh'.indexOf(king.square[0]))<=1)value+=0.8;
+   }
+  }
+  return value;
+ };
+ for(let pass=0;pass<2;pass++)for(const piece of army){
+  let best=piece.square,bestScore=score();
+  for(const square of placementSquares(piece.type,color)){
+   if(army.some(other=>other!==piece&&other.square===square))continue;
+   piece.square=square;const candidate=score();if(candidate>bestScore+0.00001){bestScore=candidate;best=square;}
+  }
+  piece.square=best;
+ }
+ return army;
+};
+export const planOpponent = (pieces,progress,seed,color) => {
+ let shop={version:4,phase:'preparation',army:copy(pieces),seed:seed+':opponent',nextId:progress.purchases+1,...progress};
+ const openingBalance=progress.openingBalance??(progress.reserve+progress.purchases*(progress.purchases+1)/2+(progress.level-1)*(progress.level+1)-(progress.sales||0)-(progress.income||0));
+ shop.sales=shop.sales||0;
+ // Bounds also make a malformed or very old rich save inexpensive to prepare.
+ for(let action=0;action<32;action++){
+  const troops=shop.army.filter(piece=>piece.type!=='k'),weakest=[...troops].sort((a,b)=>PRICES[a.type]-PRICES[b.type]||salePrice(b)-salePrice(a))[0];
+  const full=shop.army.length>=AUTO.maxPieces,cost=purchasePrice(shop),refund=full?salePrice(weakest):0;
+  const expectedGain=full?Object.entries(shopOdds(shop.level)).reduce((sum,[type,chance])=>sum+(PRICES[type]-PRICES[weakest.type])*chance/100,0):expectedPieceValue(shop.level);
+  const buyScore=expectedGain/Math.max(1,cost-refund);
+  const upgradeCost=levelPrice(shop),upgradeScore=shop.level<10?(1.5+3*(expectedPieceValue(shop.level+1)-expectedPieceValue(shop.level)))/upgradeCost:0;
+  // Fill a small army first; then compare immediate strength with future odds/income.
+  const preferUpgrade=troops.length>=2&&upgradeScore>Math.max(0,buyScore);
+  if(preferUpgrade){if(shop.reserve<upgradeCost)break;shop=upgradeShop(shop);continue;}
+  if(expectedGain<=0){if(shop.level<10&&shop.reserve>=upgradeCost){shop=upgradeShop(shop);continue;}break;}
+  if(shop.reserve+refund<cost)break;
+  if(full)shop=sellPiece(shop,weakest.id); // Decide to sell before drawing, never peek at the random result.
+  shop=buyRandomPiece(shop);
+ }
+ return {army:arrangeOpponent(shop.army,color),progress:{strategy:1,reserve:shop.reserve,level:shop.level,purchases:shop.purchases,sales:shop.sales,income:progress.income||0,openingBalance}};
+};
+export const advanceOpponent = (run,color) => {
+ const army=copy(run.opponent).map(piece=>({...piece,paid:piece.paid??PRICES[piece.type]}));
+ const progress={...(run.opponentProgress||{reserve:0,level:1,purchases:army.length-1})};
+ // Legacy armies retain their inventory and cash; anchor their historical balance once.
+ progress.openingBalance??=progress.reserve+progress.purchases*(progress.purchases+1)/2+(progress.level-1)*(progress.level+1)-(progress.sales||0)-(progress.income||0);
+ const outcome=run.results.at(-1)?.outcome;
+ const income=roundIncome({outcome:outcome==='win'?'loss':outcome==='loss'?'win':'draw',shopLevel:progress.level});
+ progress.reserve+=income;progress.income=(progress.income||0)+income;
+ return planOpponent(army,progress,run.seed,color);
+};
 export const nextRound = run => {
  if(run.phase!=='result'||seriesFinished(run))return run;
  const next=copy(run);next.round++;next.reserve+=run.version===4?roundIncome(run.results.at(-1)):Math.max(0,Math.min(AUTO.income,AUTO.maxBudget-startingBudget(run)-(run.round-1)*AUTO.income));next.phase='preparation';next.battle=null;
  const color=hash(next.seed+':'+next.round+':color')%2?'b':'w';
  if(color!==next.color)next.army=next.army.map(piece=>({...piece,square:piece.square?'abcdefgh'[7-'abcdefgh'.indexOf(piece.square[0])]+(9-Number(piece.square[1])):null}));
- next.color=color;next.opponent=opponentFor(next.seed,next.round,color==='w'?'b':'w',startingBudget(next));return next;
+ if(run.version===4){const enemy=advanceOpponent(run,color==='w'?'b':'w');next.opponent=enemy.army;next.opponentProgress=enemy.progress;}
+ else next.opponent=opponentFor(next.seed,next.round,color==='w'?'b':'w',startingBudget(next));
+ next.color=color;return next;
 };
 export const restoreAutoRun = value => {
  if(!value)return null;
@@ -127,8 +203,12 @@ export const restoreAutoRun = value => {
  if(![1,2,3,AUTO.version].includes(run.version)||typeof run.id!=='string'||typeof run.seed!=='string'||!['preparation','paused','result'].includes(run.phase)||!['w','b'].includes(run.color)||!Number.isInteger(run.round)||run.round<1)throw Error('Несовместимое сохранение автошахмат');
  if(!Array.isArray(run.army)||!run.army.length||run.army.length>AUTO.maxPieces||!Number.isInteger(run.reserve)||run.reserve<0||!Number.isInteger(run.nextId))throw Error('Повреждена армия');
  if(run.army.some(piece=>typeof piece.id!=='string'||!(piece.type in PRICES)||(piece.square!==null&&!placementSquares(piece.type,run.color).includes(piece.square)))||new Set(run.army.map(piece=>piece.id)).size!==run.army.length||run.army.filter(piece=>piece.type==='k').length!==1)throw Error('Повреждена расстановка');
- if(run.version!==4&&run.reserve+run.army.reduce((sum,piece)=>sum+PRICES[piece.type],0)!==Math.min(AUTO.maxBudget,startingBudget(run)+(run.round-1)*AUTO.income))throw Error('Повреждён запас');
- if(JSON.stringify(run.opponent)!==JSON.stringify(opponentFor(run.seed,run.round,run.color==='w'?'b':'w',startingBudget(run))))throw Error('Повреждён соперник');
+ if(run.version!==4&&run.reserve+run.army.reduce((sum,piece)=>sum+PRICES[piece.type],0)+(run.saleLoss||0)!==Math.min(AUTO.maxBudget,startingBudget(run)+(run.round-1)*AUTO.income))throw Error('Повреждён запас');
+ if(run.opponentProgress){
+  const p=run.opponentProgress,enemyColor=run.color==='w'?'b':'w';
+  if(p.strategy===1&&(![p.sales,p.income,p.openingBalance].every(value=>Number.isSafeInteger(value)&&value>=0)||p.reserve!==p.openingBalance+p.income+p.sales-p.purchases*(p.purchases+1)/2-(p.level-1)*(p.level+1)||run.opponent.some(piece=>!Number.isSafeInteger(piece.paid)||piece.paid<0)))throw Error('Повреждён бюджет соперника');
+  if(!Number.isSafeInteger(p.reserve)||p.reserve<0||!Number.isSafeInteger(p.purchases)||p.purchases<0||!Number.isInteger(p.level)||p.level<1||p.level>10||!Array.isArray(run.opponent)||run.opponent.length>AUTO.maxPieces||run.opponent.filter(piece=>piece.type==='k').length!==1||run.opponent.some(piece=>!(piece.type in PRICES)||!placementSquares(piece.type,enemyColor).includes(piece.square))||new Set(run.opponent.map(piece=>piece.square)).size!==run.opponent.length||new Set(run.opponent.map(piece=>piece.id)).size!==run.opponent.length)throw Error('Повреждён соперник');
+ }else if(JSON.stringify(run.opponent)!==JSON.stringify(opponentFor(run.seed,run.round,run.color==='w'?'b':'w',startingBudget(run))))throw Error('Повреждён соперник');
  if(!Array.isArray(run.results)||run.results.length!==(run.phase==='result'?run.round:run.round-1))throw Error('Повреждены результаты');
  if(run.version===4){
   if(!Number.isInteger(run.level)||run.level<1||run.level>10||!Number.isSafeInteger(run.purchases)||run.purchases<0||!Number.isSafeInteger(run.sales)||run.sales<0||run.army.some(piece=>piece.type!=='k'&&(!Number.isInteger(piece.paid)||piece.paid<1||piece.paid>run.purchases)))throw Error('Повреждён магазин');

@@ -1,10 +1,68 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from '../dist/chess.js';
-import {AUTO,PRICES,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
+import {AUTO,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
 import {createBattleController} from '../dist/autochess-battle.js';
 import {createAutoplayEngine} from '../dist/autochess-engine.js';
 import {benchPiece} from '../dist/autochess.js';
+test('opponent budget is conserved through a long series and saves',()=>{
+ let run=createModernRun('persistent-opponent');
+ for(let i=0;i<40;i++){
+  const before=structuredClone(run);
+  const enemy=advanceOpponent(run,run.color==='w'?'b':'w');
+  assert.deepEqual(run,before,'planner must not mutate its input');
+  run={...run,phase:'paused',battle:{id:run.id+':'+run.round,initialFen:setupFen(run),moves:[],elapsed:0,result:null}};
+  const next=nextRound(completeBattle(run,{winner:null,reason:'test'}));
+  const p=next.opponentProgress;
+  assert.equal(p.reserve,3+p.income+p.sales-p.purchases*(p.purchases+1)/2-(p.level-1)*(p.level+1));
+  assert.ok(next.opponent.length<=8);assert.ok(p.level<=10);
+  assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);run=next;
+ }
+ assert.ok(run.opponentProgress.level>1,'bot independently upgrades even when player stays at level one');
+});
+test('opponent starts with the same three coins and can make several purchases',()=>{
+ const run=createModernRun('initial-economy'),p=run.opponentProgress;
+ assert.equal(p.openingBalance,3);assert.equal(p.purchases,2);assert.equal(p.reserve,0);
+ assert.deepEqual(run,createModernRun('initial-economy'));
+ assert.deepEqual(restoreAutoRun(JSON.stringify(run)),run);
+});
+test('opponent decisions do not inspect player inventory, level or reserve',()=>{
+ const run=createModernRun('blind');
+ assert.deepEqual(advanceOpponent(run,'b'),advanceOpponent({...run,army:[],level:10,reserve:99999},'b'));
+});
+test('opponent sale uses half the paid price and purchases are not free replacements',()=>{
+ const army=[{id:'king',type:'k',square:'e8',paid:0},...Array.from({length:7},(_,i)=>({id:'old-'+i,type:'p',paid:i+1,square:'abcdefgh'[i]+'7'}))];
+ const p={reserve:8,level:10,purchases:7,sales:0,income:0};
+ const result=planOpponent(army,p,'sale-test','b');
+ assert.ok(result.progress.purchases>7);assert.ok(result.progress.sales>=3);
+ assert.equal(result.progress.reserve,result.progress.openingBalance+result.progress.sales-result.progress.purchases*(result.progress.purchases+1)/2-99);
+ assert.ok(result.army.some(piece=>piece.id.startsWith('old-')),'retains existing pieces');
+ assert.ok(result.army.length<=8);
+});
+test('opponent can save money and never spends unaffordable coins',()=>{
+ const run=createModernRun('save'),p={...run.opponentProgress,reserve:0};
+ const result=planOpponent(run.opponent,p,run.seed,'b');
+ assert.equal(result.progress.purchases,p.purchases);assert.equal(result.progress.reserve,0);
+});
+test('placement is deterministic, valid for either colour and independent of enemies',()=>{
+ const types=['k','q','r','b','b','n','p','p'];
+ for(const color of ['w','b']){
+  const army=types.map((type,i)=>({id:String(i),type,square:null,paid:i}));
+  const arranged=arrangeOpponent(army,color);
+  assert.equal(new Set(arranged.map(piece=>piece.square)).size,8);
+  assert.ok(arranged.every(piece=>placementSquares(piece.type,color).includes(piece.square)));
+  assert.deepEqual(arrangeOpponent(army,color),arranged);
+  assert.ok(army.every(piece=>piece.square===null));
+  assert.equal(arranged[0].square[1],color==='w'?'1':'8');
+ }
+});
+test('legacy opponent migration keeps inventory and anchors existing economy',()=>{
+ const run=createModernRun('migration');delete run.opponentProgress;
+ run.opponent=opponentFor(run.seed,1,run.color==='w'?'b':'w');
+ const result=advanceOpponent(run,'b');
+ assert.ok(run.opponent.every(old=>result.army.some(piece=>piece.id===old.id&&piece.type===old.type)));
+ assert.equal(result.progress.strategy,1);
+});
 test('bench preserves ownership and pending kings prevent battle start',()=>{
  let run=prepared(),id=run.army.at(-1).id;
  run=benchPiece(run,id);assert.equal(run.army.at(-1).square,null);assert.equal(run.army.at(-1).benched,true);assert.equal(setupError(run),'');
@@ -22,18 +80,18 @@ test('colour changes preserve screen coordinates for every deployed piece',()=>{
  assert.ok(changed>0);
 });
 test('paid pawn sells for full price and income records the completed shop level',()=>{
- assert.equal(salePrice({type:'p',paid:7}),7);
+ assert.equal(salePrice({type:'p',paid:7}),3);
  const run=upgradeShop(createModernRun('income'));
  const battle=beginBattle(run),finished=completeBattle(battle,{winner:null,reason:'test'}),next=nextRound(finished);
  assert.equal(finished.results[0].shopLevel,2);assert.equal(next.reserve,4);assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
  assert.equal(roundIncome({outcome:'win',shopLevel:10}),14);
 });
-const createAutoRun=(...args)=>({...createModernRun(...args),version:3});
+const createAutoRun=(...args)=>{const run=createModernRun(...args);delete run.opponentProgress;return {...run,version:3,opponent:opponentFor(run.seed,1,run.color==='w'?'b':'w')};};
 test('random shop prices persist and probabilities cover all ten levels',()=>{
  const run=createModernRun('shop');assert.equal(purchasePrice(run),1);assert.equal(levelPrice(run),3);
  const bought=buyRandomPiece(run);assert.equal(bought.reserve,2);assert.equal(purchasePrice(bought),2);
- assert.deepEqual(buyRandomPiece(run),bought);assert.equal(salePrice(bought.army.at(-1)),1);
- const sold=sellPiece(bought,bought.army.at(-1).id);assert.equal(sold.reserve,3);assert.equal(purchasePrice(sold),2);
+ assert.deepEqual(buyRandomPiece(run),bought);assert.equal(salePrice(bought.army.at(-1)),0);
+ const sold=sellPiece(bought,bought.army.at(-1).id);assert.equal(sold.reserve,2);assert.equal(purchasePrice(sold),2);
  assert.deepEqual(restoreAutoRun(JSON.stringify(sold)),sold);
  const level=upgradeShop(run);assert.equal(level.level,2);assert.equal(level.reserve,0);assert.equal(levelPrice(level),5);
  assert.deepEqual(restoreAutoRun(JSON.stringify(level)),level);
@@ -59,8 +117,8 @@ test('terminal initial position completes without allocating an engine',async()=
 test('shop conserves budget, enforces capacity and cannot sell king',()=>{
  let run={...createAutoRun('one'),version:1,reserve:12};const original=run;
  run=buyPiece(run,'q');assert.equal(run.reserve,3);assert.equal(buyPiece(run,'q'),run);
- run=sellPiece(run,run.army.at(-1).id);assert.equal(run.reserve,12);assert.equal(sellPiece(run,'king'),run);
- for(let i=0;i<20;i++)run=buyPiece(run,'p');assert.equal(run.army.length,8);assert.equal(run.reserve,5);assert.equal(original.army.length,1);
+ run=sellPiece(run,run.army.at(-1).id);assert.equal(run.reserve,7);assert.equal(sellPiece(run,'king'),run);
+ for(let i=0;i<20;i++)run=buyPiece(run,'p');assert.equal(run.army.length,8);assert.equal(run.reserve,0);assert.equal(original.army.length,1);
 });
 test('opponents spend equal budget and every round restores bought army',()=>{
  for(let seed=0;seed<100;seed++){

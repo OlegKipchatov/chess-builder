@@ -37,7 +37,7 @@ try {
     // Exercise real clicks against geometry reconstructed from accessible labels.
     for(let i=0;i<18;i++){
       const move=await page.evaluate(async()=>{
-        const {PIECE_NAMES}=await import('./catalog.js?v=95'),{playerMoves,resolvePlayerMove,materialValues}=await import('./hunt.js?v=95');
+        const {PIECE_NAMES}=await import('./catalog.js?v=96'),{playerMoves,resolvePlayerMove,materialValues}=await import('./hunt.js?v=96');
         const pieces=Object.fromEntries([...document.querySelectorAll('#hunt-board .occupied')].map(cell=>{
           const label=cell.getAttribute('aria-label');return [cell.dataset.square,{type:Object.entries(PIECE_NAMES).find(([,name])=>label.includes(': '+name))[0],color:label.includes('белые')?'w':'b'}];
         }));
@@ -80,7 +80,7 @@ try {
       await page.locator('[data-hunt-mode="endless"]').click();
       for(let turn=0;turn<100&&!await page.locator('#modal #hunt-result').count();turn++){
         const move=await page.evaluate(async()=>{
-          const {PIECE_NAMES}=await import('./catalog.js?v=95'),{playerMoves,resolvePlayerMove}=await import('./hunt.js?v=95');
+          const {PIECE_NAMES}=await import('./catalog.js?v=96'),{playerMoves,resolvePlayerMove}=await import('./hunt.js?v=96');
           const pieces=Object.fromEntries([...document.querySelectorAll('#hunt-board .occupied')].map(cell=>{const label=cell.getAttribute('aria-label');return [cell.dataset.square,{type:Object.entries(PIECE_NAMES).find(([,name])=>label.includes(': '+name))[0],color:label.includes('белые')?'w':'b'}];}));
           const state={pieces,phase:'awaitingPlayer',mode:'endless',lives:5,lifeRecoveryMaterial:0,score:0,capturedMaterial:0,playerMoveCount:0,rngState:1};
           return playerMoves(state).map(move=>{

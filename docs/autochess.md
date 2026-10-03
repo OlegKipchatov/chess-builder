@@ -1,5 +1,45 @@
 # Autochess first playable version
 
+## Release 96 draft
+
+Double-click/tap removes a piece from the board and clears selection; the
+remove button is gone. Purchase labels are «Фигура» and «Уровень»; level is
+outlined and disabled at level 10. Capacity, instruction and level-counter
+paragraphs are removed. Intermediate results show one outcome/reason and a
+next-round action, without duplicate currency explanations. Sale returns
+floor(paidPrice / 2); old nominal-price runs track sale losses for validation.
+
+Modern opponents have an independent deterministic shop planner, starting with
+three coins and a king. They use the same random shop odds, persistent purchase
+prices, upgrade prices and 50% sale refunds as the player. Income uses their own
+result and level. A bounded (32-action) planner compares expected material per
+coin with an upgrade's future odds/income benefit, or saves until affordable.
+A full army sells its weakest piece BEFORE the random purchase, only when the
+expected replacement gain is positive. No free replacements or hidden previews.
+The planner never receives the player's inventory, level, cash or placement.
+
+Two bounded placement passes score friendly protection, king shelter and open
+lines using only the opponent's pieces. This is a heuristic, not Stockfish or
+a learned model, and does not promise optimal play. The planner currently fields
+all owned pieces; it does not bench pieces without a reason to reduce its force.
+No extra worker, WASM allocation or retained search tree is introduced.
+
+Economy persists as reserve/level/purchases/sales/income/openingBalance; restore
+checks the cash identity. Legacy armies migrate without reset and retain their
+existing cash; missing historical paid prices use the old nominal prices.
+Old shop formats retain their original opponent schedule. New format-4 runs
+start with the bot immediately. Release 96 remains unpublished, so all changed
+assets keep the same pending v96 cache URLs (public upgrade baseline is v95).
+
+Board cells use semantic piece/style keys so transient animation style
+attributes cannot cause stationary SVG nodes to be replaced. The browser
+test checks node identity after a move. Consecutive completed rounds reuse
+one Stockfish worker, sending ucinewgame/isready between rounds. Pending or
+failed searches are terminated; exit, hiding and disposal release the pool.
+A browser test runs 20 searches with new-game resets on one worker and checks
+that it is terminated on disposal. This reduces repeated WASM allocation,
+but does not prove that an iOS process reload was a memory crash or is fixed.
+
 ## Release 95 draft
 
 Figures can be explicitly benched, including the king. Ownership and paid

@@ -10,11 +10,11 @@ import {renderCollection} from '../dist/collection.js';
 const setupBoard = (states=[]) => {
  const parse = html => [...html.matchAll(/<button ([^>]+)>([\s\S]*?)<\/button>/g)].map(([,attributes,innerHTML])=>{
   const attrs=Object.fromEntries([...attributes.matchAll(/([\w-]+)="([^"]*)"/g)].map(([,key,value])=>[key,value]));
-  return {dataset:{square:attrs['data-square']},className:attrs.class,innerHTML,getAttribute:name=>attrs[name],setAttribute:(name,value)=>{attrs[name]=value;},get outerHTML(){return `<button class="${this.className}" data-square="${this.dataset.square}">${this.innerHTML}</button>`;}};
+  return {dataset:{square:attrs['data-square'],renderKey:attrs['data-render-key']},className:attrs.class,innerHTML,getAttribute:name=>attrs[name],setAttribute:(name,value)=>{attrs[name]=value;},get outerHTML(){return `<button class="${this.className}" data-square="${this.dataset.square}">${this.innerHTML}</button>`;}};
  });
  globalThis.document={activeElement:null,createElement:()=>({content:{children:[]},set innerHTML(html){this.content.children=parse(html);}})};
- let cells=[];
- return {style:{setProperty:()=>{}},classList:{toggle:(name,value)=>states.push([name,value])},contains:()=>false,querySelectorAll:()=>cells,replaceChildren:(...next)=>{cells=next;},get innerHTML(){return cells.map(cell=>cell.outerHTML).join('');}};
+ let cells=[];const styles=new Map();
+ return {style:{setProperty:(name,value)=>styles.set(name,value),getPropertyValue:name=>styles.get(name)||''},classList:{toggle:(name,value)=>states.push([name,value])},contains:()=>false,querySelectorAll:()=>cells,replaceChildren:(...next)=>{cells=next;},get innerHTML(){return cells.map(cell=>cell.outerHTML).join('');}};
 };
 const play = moves => {const game=new Chess();moves.forEach(move=>game.move(move));return game;};
 test('Стартовый экран — игра; коллекция доступна только вне партии',()=>{const state=initialState(),game=new Chess();assert.equal(navigationTarget(state,game,''),'play');assert.equal(navigationTarget(state,game,'collection'),'collection');state.game=createStartedGame(state,()=>0);assert.equal(navigationTarget(state,game,'craft'),'play');});

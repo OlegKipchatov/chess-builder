@@ -1,8 +1,8 @@
-import {AUTO} from './autochess.js?v=95';
-import {createEngineWorker} from './stockfish-lifecycle.js?v=95';
+import {AUTO} from './autochess.js?v=96';
+import {createEngineWorker} from './stockfish-lifecycle.js?v=96';
 // One sequential worker per active battle; no rating or difficulty model.
 export const createAutoplayEngine = (spawn=createEngineWorker) => {
- const worker=spawn();let pending=null,dead=false,readyResolve,readyReject;
+ const worker=spawn();let pending=null,dead=false,initialized=false,readyResolve,readyReject;
  const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
  const send=command=>worker.postMessage(command);
  let watchdog;
@@ -14,7 +14,7 @@ export const createAutoplayEngine = (spawn=createEngineWorker) => {
   for(const line of String(event.data).split('\n')){
    if(line.trim()==='uciok'){
     ['setoption name Threads value 1','setoption name Hash value 4','setoption name Skill Level value 20','setoption name UCI_LimitStrength value false','setoption name MultiPV value 1','ucinewgame','isready'].forEach(send);
-   }else if(line.trim()==='readyok'){clearTimeout(watchdog);readyResolve();}
+   }else if(line.trim()==='readyok'){clearTimeout(watchdog);initialized=true;readyResolve();}
    else if(line.startsWith('bestmove ')&&pending){
     const request=pending;pending=null;clearTimeout(watchdog);
     const token=line.split(/\s+/)[1];
@@ -23,11 +23,25 @@ export const createAutoplayEngine = (spawn=createEngineWorker) => {
   }
  };
  send('uci');
- return {ready,search:(initialFen,moves)=>{
+ return {ready,isIdle:()=>!dead&&initialized&&!pending,newGame:()=>{
+  if(dead||pending)return Promise.reject(Error('Движок недоступен'));
+  initialized=false;const prepared=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
+  watchdog=setTimeout(()=>fail(Error('Не удалось подготовить движок')),20000);send('ucinewgame');send('isready');return prepared;
+ },search:(initialFen,moves)=>{
   if(dead||pending)return Promise.reject(Error('Движок недоступен'));
   return new Promise((resolve,reject)=>{
    pending={resolve,reject};watchdog=setTimeout(()=>fail(Error('Движок не ответил')),4000);
    send(`position fen ${initialFen}${moves.length?' moves '+moves.join(' '):''}`);send(`go movetime ${AUTO.movetime}`);
   });
  },terminate:()=>fail(Object.assign(Error('Бой приостановлен'),{name:'AbortError'}))};
+};
+// One WASM allocation across consecutive completed rounds, released on exit/pause.
+export const createAutoplaySession = (factory=createAutoplayEngine) => {
+ let client=null;
+ const dispose=()=>{client?.terminate();client=null;};
+ return {dispose,create:()=>{
+  if(client&&!client.isIdle())dispose();
+  const reused=!!client;client??=factory();const owned=client;
+  return {ready:reused?owned.newGame():owned.ready,search:(...args)=>owned.search(...args),release:()=>{if(!owned.isIdle()){owned.terminate();if(client===owned)client=null;}},terminate:()=>{owned.terminate();if(client===owned)client=null;}};
+ }};
 };
