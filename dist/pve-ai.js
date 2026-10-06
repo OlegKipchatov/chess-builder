@@ -1,5 +1,5 @@
-import {allMoves,resolveAction,unitAt,livingUnits} from './pve-battle.js?v=111';
-import {unitPower,damage} from './pve-model.js?v=111';
+import {allMoves,resolveAction,unitAt,livingUnits} from './pve-battle.js?v=112';
+import {unitPower,damage} from './pve-model.js?v=112';
 const value = unit => unit.type==='k'?240+unitPower(unit):unitPower(unit);
 const evaluate = (battle,color) => {
  if(battle.result?.reason==='king')return (battle.result.outcome===(color==='w'?'win':'loss')?1:-1)*100000;

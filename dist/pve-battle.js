@@ -1,4 +1,4 @@
-import {PVE,NODES,DEATH_RATE,activeArmy,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=111';
+import {PVE,NODES,DEATH_RATE,activeArmy,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=112';
 const files='abcdefgh';
 const coords = square => [files.indexOf(square[0]),Number(square[1])-1];
 const squareAt = (x,y) => x>=0&&x<8&&y>=0&&y<8?files[x]+(y+1):null;
@@ -32,7 +32,7 @@ export const movesFor = (battle,unit) => {
 };
 export const allMoves = (battle,color=battle.turn) => livingUnits(battle).filter(unit=>unit.color===color).flatMap(unit=>movesFor(battle,unit));
 export const positionKey = battle => `${battle.turn}|${livingUnits(battle).map(unit=>`${unit.id}:${unit.type}:${unit.square}:${unit.hp}:${unit.moved?1:0}`).sort().join('|')}`;
-const formation = (units,color) => {
+export const formation = (units,color) => {
  const used=new Set(),preferred={k:['e1'],r:['a1','h1'],n:['b1','g1'],b:['f1','c1'],q:['d1'],p:['a2','c2','e2','g2','b2','f2','d2','h2']};
  return [...units].sort((a,b)=>(a.type==='k'?-1:b.type==='k'?1:0)).map(unit=>{
   const square=[...preferred[unit.type],...['a2','b2','c2','d2','e2','f2','g2','h2','a1','b1','c1','d1','f1','g1','h1']].find(square=>!used.has(square));used.add(square);

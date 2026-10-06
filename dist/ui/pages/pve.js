@@ -1,10 +1,10 @@
-import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit} from '../../pve-model.js?v=111';
-import {beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves} from '../../pve-battle.js?v=111';
-import {renderBoard,snapshotBoard,animateTransition,clearBoardTransition} from '../../board.js?v=111';
-import {pieceSVG} from '../../pieces.js?v=111';
-import {PIECE_NAMES,itemById} from '../../catalog.js?v=111';
-import {disclosure,statCard,backIcon} from '../primitives.js?v=111';
-import {motionDuration,motionEasing} from '../motion.js?v=111';
+import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit} from '../../pve-model.js?v=112';
+import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves} from '../../pve-battle.js?v=112';
+import {renderBoard,snapshotBoard,animateTransition,clearBoardTransition} from '../../board.js?v=112';
+import {pieceSVG} from '../../pieces.js?v=112';
+import {PIECE_NAMES,itemById} from '../../catalog.js?v=112';
+import {disclosure,statCard,backIcon} from '../primitives.js?v=112';
+import {motionDuration,motionEasing} from '../motion.js?v=112';
 const pathIcon='<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 40c-7-13 31-9 24-22S15 17 18 6" stroke-dasharray="4 4"/><circle cx="10" cy="40" r="3"/><path d="M18 6h13l-3 5 3 5H18M18 6v17"/></svg>';
 const stoneIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m10 4 13 3 5 14-13 8L4 18Z M10 4l5 25M23 7 4 18l24 3M10 4l18 17"/></svg>';
 const coreIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 11 6.5v13L16 29 5 22.5v-13Z"/><circle cx="16" cy="16" r="5"/><path d="M16 3v5M27 9.5l-4.3 2.5M27 22.5 22.7 20M16 29v-5M5 22.5 9.3 20M5 9.5 9.3 12"/></svg>';
@@ -17,7 +17,7 @@ export const pveFAQ = () => [
  disclosure('Какие награды даёт поход?', '<p>Первая победа на обычном участке приносит 5 монет и 1 камень опыта; на Каменной заставе — 6 монет и 2 камня; над боссом — 10 монет, 3 камня и ядро эволюции.</p><p>Повторная победа даёт 1 монету, над боссом — 2. Камень опыта выдаётся за каждую третью победу на этом участке. Дневного лимита монет нет.</p><p>Поражение, сдача и ничья не дают монет и камней. Полученный в бою опыт и штрафы за погибшие фигуры сохраняются. Поход не меняет рейтинг, обычную историю партий и календарь.</p>'),
 ].join('');
 export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,toast,onExit,onTitle}) => {
- let profile=getProfile(),view='map',selected=null,selectedNode=null,disposed=false,presenting=false,worker=null,workerTimer=null,requestId=0,botError=false,modalKind=null,resultShownId=null,presentationGeneration=0,scrollPositions={map:0,army:0,bag:0};
+ let profile=getProfile(),view='map',selected=null,armySelected=null,selectedNode=null,disposed=false,presenting=false,worker=null,workerTimer=null,requestId=0,botError=false,modalKind=null,resultShownId=null,presentationGeneration=0,scrollPositions={map:0,army:0,bag:0};
  const modal=document.querySelector('#modal');
  const icon = (unit,color='w') => pieceSVG(unit.type,color,itemById(equipped.pieces[unit.type])?.style);
  const title = () => view==='battle'?'Бой · PvE':'Поход';
@@ -55,7 +55,23 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   <button class="quiet pve-stone-use" data-pve-stone="${unit.id}" ${!profile.stones||locked||full?'disabled':''}>${full?'Достигнут лимит опыта':`Камень опыта · +${Math.ceil(xpThreshold(unit.level)*.1)} XP`}</button>
   ${unit.type==='p'?`<button class="quiet pve-evolve" data-pve-evolve="${unit.id}" ${!campaignComplete(profile)||!profile.cores||locked?'disabled':''}>Эволюция в ладью · 1 ядро</button>`:''}</article>`;
  };
- const armyHTML = () => `<div class="pve-page"><div class="pve-section-intro"><strong>В строю ${activeArmy(profile).length} / 8</strong><span class="pve-meta">Лимит уровня ${profile.levelCap} · Ядра ${profile.cores}</span></div><p class="pve-note">${profile.battle?'Состав и прокачка доступны после боя.':'Для боя нужны 8 фигур, включая короля. Поменяйте бойца на фигуру из резерва.'}</p><div class="pve-army-list">${profile.units.map(unit=>unitHTML(unit)).join('')}</div><p class="pve-note">После боя HP восстанавливается у всех. ${campaignComplete(profile)?'Эволюция сохраняет уровень, опыт и историю фигуры.':'Первый босс откроет уровень 5 и даст ядро для одной эволюции пешки в ладью.'}</p></div>`;
+ const armyLayout = () => formation(activeArmy(profile),'w');
+ const armyHTML = () => {
+  const chosen=profile.units.find(unit=>unit.id===armySelected)||profile.units.find(unit=>unit.active);armySelected=chosen.id;
+  const reserve=profile.units.filter(unit=>!unit.active);
+  return `<div class="pve-page pve-army-page"><div class="pve-section-intro"><strong>В строю ${activeArmy(profile).length} / 8</strong><span class="pve-meta">Камни ${profile.stones} · Ядра ${profile.cores}</span></div>${profile.battle?'<p class="pve-note">Состав и прокачка доступны после боя.</p>':''}<div id="pve-army-board" class="board" role="group" aria-label="Стартовая расстановка армии"></div><section class="pve-reserve"><h2>Резерв</h2><div class="pve-reserve-slots">${reserve.map(unit=>`<button class="quiet pve-reserve-unit ${unit.id===armySelected?'is-selected':''}" data-pve-unit="${unit.id}" aria-pressed="${unit.id===armySelected}" aria-label="${name(unit)}, уровень ${unit.level}, резерв"><span>${icon(unit)}</span><small>${unit.level}</small></button>`).join('')}${Array.from({length:Math.max(0,2-reserve.length)},()=>'<span class="pve-reserve-empty" aria-hidden="true"></span>').join('')}</div></section><div id="pve-army-details">${unitHTML(chosen)}</div></div>`;
+ };
+ const drawArmy = () => {
+  const units=armyLayout(),board=root.querySelector('#pve-army-board'),selectedUnit=units.find(unit=>unit.id===armySelected);
+  renderBoard(board,{...pveBoardAdapter({units,turn:'w'}),moves:()=>[]},equipped,selectedUnit?.square);
+  for(const cell of board.querySelectorAll('[data-square]')){
+   const unit=units.find(unit=>unit.square===cell.dataset.square);
+   if(Number(cell.dataset.square[1])>4){cell.hidden=true;continue;}
+   cell.disabled=!unit;
+   if(unit){cell.dataset.pveUnit=unit.id;cell.setAttribute('aria-label',`${cell.dataset.square}, ${name(unit)}, уровень ${unit.level}`);cell.insertAdjacentHTML('beforeend',`<span class="pve-army-level" aria-hidden="true">${unit.level}</span>`);}
+  }
+  const heading=root.querySelector('#pve-army-details h2');heading.textContent=`${PIECE_NAMES[profile.units.find(unit=>unit.id===armySelected).type]} · ${selectedUnit?.square||'Резерв'}`;
+ };
  const bagHTML = () => `<div class="pve-page"><div class="pve-resource"><span>${stoneIcon}</span><div><h2>Камни опыта · ${profile.stones}</h2><p>Добавляют фигуре 10% порога опыта её уровня.</p></div></div><div class="pve-resource"><span>${coreIcon}</span><div><h2>Ядра эволюции · ${profile.cores}</h2><p>Превращают пешку в ладью, сохраняя уровень и опыт.</p></div></div></div>`;
  const navigationHTML = () => `<nav id="pve-nav" aria-label="Разделы похода"><button class="quiet pve-nav-exit" data-pve-action="exit" aria-label="Выйти из похода" title="Выйти из похода">${backIcon}</button>${[
   ['map','Карта',pathIcon],
@@ -67,7 +83,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   if(disposed)return;
   onTitle(title());exitButton.setAttribute('aria-label','К карте');exitButton.innerHTML=`${backIcon}<span>К карте</span>`;exitButton.classList.add('pve-back');exitButton.hidden=view!=='battle';if(exitButton.closest('.page-header-start'))exitButton.closest('.page-header-start').hidden=view!=='battle';
   if(view==='battle'&&profile.battle){if(!root.querySelector('#pve-board'))root.innerHTML=battleHTML();drawBattle();}
-  else root.innerHTML=(view==='army'?armyHTML():view==='bag'?bagHTML():mapHTML())+navigationHTML();
+  else {root.innerHTML=(view==='army'?armyHTML():view==='bag'?bagHTML():mapHTML())+navigationHTML();if(view==='army')drawArmy();}
  };
  const drawBattle = () => {
   const battle=profile.battle,board=root.querySelector('#pve-board');if(!battle||!board)return;
@@ -131,7 +147,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   const id=++requestId;
   const failed = () => {if(disposed||id!==requestId)return;stopWorker();botError=true;drawBattle();};
   try{
-   worker=new Worker(new URL('../../pve-worker.js?v=111',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('../../pve-worker.js?v=112',import.meta.url),{type:'module'});
    worker.onerror=failed;workerTimer=setTimeout(failed,10000);
    worker.onmessage=({data})=>{
     if(disposed||data.id!==requestId)return;
@@ -158,6 +174,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
  };
  const click = async event => {
   if(disposed)return;
+  const armyUnit=event.target.closest('[data-pve-unit]');if(armyUnit){armySelected=armyUnit.dataset.pveUnit;render();root.querySelector(`[data-pve-unit="${armySelected}"]`)?.focus({preventScroll:true});return;}
   if(event.target.closest('#pve-board')){clickBoard(event);return;}
   const node=event.target.closest('[data-pve-node]');if(node){void openNode(node.dataset.pveNode);return;}
   const toggle=event.target.closest('[data-pve-toggle]'),stone=event.target.closest('[data-pve-stone]'),evolve=event.target.closest('[data-pve-evolve]');
@@ -197,9 +214,9 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   if(kind==='resign')scheduleBot();
  };
  const keyboard = event => {
-  if(!event.target.closest('#pve-board'))return;
+  if(!event.target.closest('#pve-board,#pve-army-board'))return;
   const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-8,ArrowDown:8}[event.key];if(!delta)return;
-  const cells=[...root.querySelectorAll('[data-square]')],index=cells.indexOf(event.target);if(index<0)return;
+  const cells=[...event.target.closest('.board').querySelectorAll('[data-square]:not([hidden])')],index=cells.indexOf(event.target);if(index<0)return;
   event.preventDefault();cells[Math.max(0,Math.min(63,index+delta))].focus({preventScroll:true});
  };
  root.addEventListener('click',click);root.addEventListener('keydown',keyboard);modal.addEventListener('click',modalClick);modal.addEventListener('dialogdismiss',dismissed);exitButton.onclick=requestExit;

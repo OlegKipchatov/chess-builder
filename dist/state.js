@@ -1,12 +1,12 @@
-import {initialPve,normalizePve} from './pve-model.js?v=111';
-import {normalizeAutoAwards} from './autochess-rewards.js?v=111';
-import {initialHuntProgress,normalizeHuntProgress} from './hunt.js?v=111';
-import {restoreAnalysis} from './analysis/analysis-storage.js?v=111';
-import {initialActivity, normalizeActivity} from './activity.js?v=111';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=111';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=111';
-import {Chess} from './chess.js?v=111';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=111';
+import {initialPve,normalizePve} from './pve-model.js?v=112';
+import {normalizeAutoAwards} from './autochess-rewards.js?v=112';
+import {initialHuntProgress,normalizeHuntProgress} from './hunt.js?v=112';
+import {restoreAnalysis} from './analysis/analysis-storage.js?v=112';
+import {initialActivity, normalizeActivity} from './activity.js?v=112';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=112';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=112';
+import {Chess} from './chess.js?v=112';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=112';
 export const KEY = 'chess-vault-v3';
 export const createRecordId = () => {
   if(typeof crypto.randomUUID==='function')return crypto.randomUUID();

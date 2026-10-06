@@ -1,10 +1,10 @@
-import {CONFIG as C} from './cognitive-config.js?v=111';
-import {CONVERSION as V} from './conversion-config.js?v=111';
-import {random,clamp} from './cognitive-model.js?v=111';
-import {profileAdjustment} from './cognitive-profile.js?v=111';
-import {conversionFeatures,conversionSignature,conversionValue} from './conversion-model.js?v=111';
-import {conversionHistory,positionKey,advanceProgress,stagnationPenalty} from './conversion-history.js?v=111';
-import {conversionMoves,withConversionMove,halfmoveClock} from './conversion-board.js?v=111';
+import {CONFIG as C} from './cognitive-config.js?v=112';
+import {CONVERSION as V} from './conversion-config.js?v=112';
+import {random,clamp} from './cognitive-model.js?v=112';
+import {profileAdjustment} from './cognitive-profile.js?v=112';
+import {conversionFeatures,conversionSignature,conversionValue} from './conversion-model.js?v=112';
+import {conversionHistory,positionKey,advanceProgress,stagnationPenalty} from './conversion-history.js?v=112';
+import {conversionMoves,withConversionMove,halfmoveClock} from './conversion-board.js?v=112';
 
 const compare = (a,b) => b.order-a.order||(a.move.uci<b.move.uci?-1:a.move.uci>b.move.uci?1:0);
 export const conversionRootPool = candidates => {

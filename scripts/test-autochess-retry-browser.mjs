@@ -31,8 +31,8 @@ try{
  });
  const page=await context.newPage();await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);
  const battle=async(drops)=>page.evaluate(async drops=>{
-  const {createBattleController}=await import('./autochess-battle.js?v=111');
-  const {createAutoplaySession}=await import('./autochess-engine.js?v=111');
+  const {createBattleController}=await import('./autochess-battle.js?v=112');
+  const {createAutoplaySession}=await import('./autochess-engine.js?v=112');
   const probe=window.engineProbe;probe.drops=drops;const before=probe.created,queryStart=probe.queries.length;
   let run={color:'w',phase:'paused',results:[],battle:{id:'retry:1',initialFen:'7k/5Q2/6K1/8/8/8/8/8 w - - 0 1',moves:[],elapsed:0}};
   const errors=[],session=createAutoplaySession();let done;

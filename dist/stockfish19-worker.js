@@ -1,4 +1,4 @@
-import createStockfish from './vendor/sf19/sf_19_smallnet.js?v=111';
+import createStockfish from './vendor/sf19/sf_19_smallnet.js?v=112';
 let engine=null,closed=false;
 const queue=[];
 // Emscripten can create nested pthread workers even with Threads=1.
@@ -21,12 +21,12 @@ const initialize=async()=>{
  let instance;
  try{
   const wasmMemory=new WebAssembly.Memory({initial:1024,maximum:2048,shared:true});
-  instance=await createStockfish({wasmMemory,mainScriptUrlOrBlob:new URL('./vendor/sf19/sf_19_smallnet.js?v=111',import.meta.url).href,locateFile:path=>new URL('./vendor/sf19/'+path+'?v=111',import.meta.url).href});
+  instance=await createStockfish({wasmMemory,mainScriptUrlOrBlob:new URL('./vendor/sf19/sf_19_smallnet.js?v=112',import.meta.url).href,locateFile:path=>new URL('./vendor/sf19/'+path+'?v=112',import.meta.url).href});
  }catch(error){if(!(error instanceof ReferenceError)&&!(error instanceof SyntaxError)&&(error instanceof WebAssembly.CompileError||error instanceof WebAssembly.LinkError||error instanceof WebAssembly.RuntimeError||error instanceof RangeError||/wasm|memory|pthread|Atomics/i.test(error.message)))error.recoverable=true;throw error;}
  if(closed)return;
  instance.listen=data=>self.postMessage(data);
  instance.onError=message=>{throw Error(message);};
- const response=await fetch('./vendor/sf19/nn-61e7af4bb97d.nnue?v=111');
+ const response=await fetch('./vendor/sf19/nn-61e7af4bb97d.nnue?v=112');
  if(!response.ok)throw Error('Stockfish 19 network unavailable');
  instance.setNnueBuffer(new Uint8Array(await response.arrayBuffer()),0);
  if(closed)return;
