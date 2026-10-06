@@ -1,4 +1,4 @@
-import {PVE,NODES,DEATH_RATE,activeArmy,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=112';
+import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=113';
 const files='abcdefgh';
 const coords = square => [files.indexOf(square[0]),Number(square[1])-1];
 const squareAt = (x,y) => x>=0&&x<8&&y>=0&&y<8?files[x]+(y+1):null;
@@ -35,15 +35,15 @@ export const positionKey = battle => `${battle.turn}|${livingUnits(battle).map(u
 export const formation = (units,color) => {
  const used=new Set(),preferred={k:['e1'],r:['a1','h1'],n:['b1','g1'],b:['f1','c1'],q:['d1'],p:['a2','c2','e2','g2','b2','f2','d2','h2']};
  return [...units].sort((a,b)=>(a.type==='k'?-1:b.type==='k'?1:0)).map(unit=>{
-  const square=[...preferred[unit.type],...['a2','b2','c2','d2','e2','f2','g2','h2','a1','b1','c1','d1','f1','g1','h1']].find(square=>!used.has(square));used.add(square);
+  const square=(color==='w'&&unit.id.startsWith('pve-unit-')?homeSquare(unit.id):null)||[...preferred[unit.type],...['a2','b2','c2','d2','e2','f2','g2','h2','a1','b1','c1','d1','f1','g1','h1']].find(square=>!used.has(square));used.add(square);
   return {...unit,color,square:color==='b'?square[0]+(9-Number(square[1])):square,hp:maxHp(unit),moved:false};
  });
 };
-export const beginPveBattle = (profile,nodeId) => {
+export const beginPveBattle = (profile,nodeId,rng=Math.random) => {
  const node=NODES.find(node=>node.id===nodeId);
  if(profile.battle||!isUnlocked(profile,node)||activeArmy(profile).length!==PVE.armySize)return profile;
  const enemy=encounter(profile,node),sequence=profile.sequence+1;
- const battle={id:`pve-${sequence}`,nodeId,phase:'playing',turn:'w',ply:0,units:[...formation(activeArmy(profile),'w'),...formation(enemy.units,'b')],xp:{},positions:{},lastEvent:null,result:null,settled:false};
+ const battle={id:`pve-${sequence}`,nodeId,rewardRoll:{coins:rng(),stones:rng()},phase:'playing',turn:'w',ply:0,units:[...formation(activeArmy(profile),'w'),...formation(enemy.units,'b')],xp:{},positions:{},lastEvent:null,result:null,settled:false};
  battle.positions[positionKey(battle)]=1;
  const record=profile.nodes[nodeId]||{attempts:0,wins:0,openedAt:profile.stats.battles};
  return {...profile,revision:profile.revision+1,sequence,battle,nodes:{...profile.nodes,[nodeId]:{...record,attempts:record.attempts+1}}};
@@ -77,14 +77,27 @@ export const playPveAction = (profile,action) => {
 };
 export const resignPve = profile => !profile.battle||profile.battle.phase!=='playing'?profile:{...profile,revision:profile.revision+1,battle:{...profile.battle,phase:'result',result:{outcome:'loss',reason:'resigned'}}};
 // Wallet, unit changes, node clear and receipt are committed in a single write.
+export const pveRewards = (battle,node,first) => {
+ const outcome=battle.result.outcome;
+ const ranges=node.boss?{win:[23,33],draw:[15,25],loss:[10,20]}:{win:[12,17],draw:[8,13],loss:[5,10]};
+ const roll = key => {
+  const saved=battle.rewardRoll?.[key];if(Number.isFinite(saved)&&saved>=0&&saved<1)return saved;
+  // Older saved battles have no roll: a stable fallback prevents reload rerolls.
+  let hash=2166136261;for(const char of `${battle.id}:${battle.nodeId}:${key}`)hash=Math.imul(hash^char.charCodeAt(0),16777619);
+  return (hash>>>0)/4294967296;
+ };
+ const pick = (range,key) => range[0]+Math.floor(roll(key)*(range[1]-range[0]+1));
+ const earlyResign=battle.result.reason==='resigned'&&Math.ceil(battle.ply/2)<10;
+ const bonusCoins=first?(node.boss?10:node.bonus?6:5):0,bonusStones=first?(node.boss?3:node.bonus?2:1):0;
+ return {coins:(earlyResign?0:pick(ranges[outcome],'coins'))+bonusCoins,stones:pick(outcome==='win'?[2,3]:outcome==='draw'?[1,2]:[1,1],'stones')+bonusStones,cores:first&&node.boss?1:0,bonusCoins,bonusStones};
+};
 export const settlePve = (wallet,now=new Date().toISOString()) => {
  const profile=wallet.pve,battle=profile?.battle;
  if(!battle||battle.phase!=='result'||battle.settled)return wallet;
  const node=NODES.find(node=>node.id===battle.nodeId),win=battle.result.outcome==='win',first=win&&!profile.cleared.includes(node.id);
  const levelCap=first&&node.boss?PVE.bossCap:profile.levelCap;
- const coins=win?(first?(node.boss?10:node.bonus?6:5):(node.boss?2:1)):0;
+ const {coins,stones,cores,bonusCoins,bonusStones}=pveRewards(battle,node,first);
  const record=profile.nodes[node.id]||{attempts:1,wins:0,openedAt:0},wins=record.wins+(win?1:0);
- const stones=win?(first?(node.boss?3:node.bonus?2:1):(wins%3===0?1:0)):0,cores=first&&node.boss?1:0;
  const deaths={...profile.stats.deaths},changes=[];
  const units=profile.units.map(unit=>{
   const fighter=battle.units.find(row=>row.id===unit.id);if(!fighter)return unit;
@@ -93,10 +106,10 @@ export const settlePve = (wallet,now=new Date().toISOString()) => {
   const penalized=fighter.hp===0?deathPenalty(unit):unit;
   const next=earnXp(penalized,earned,levelCap);
   if(fighter.hp===0)deaths[unit.type]=(deaths[unit.type]||0)+1;
-  changes.push({id:unit.id,type:unit.type,beforeLevel:unit.level,afterLevel:next.level,earned,penalty:fighter.hp===0?Math.ceil(xpThreshold(unit.level)*DEATH_RATE[unit.type]):0,died:fighter.hp===0});
+  changes.push({id:unit.id,type:unit.type,square:fighter.square,beforeLevel:unit.level,afterLevel:next.level,beforeXp:unit.xp,afterXp:next.xp,earned,penalty:fighter.hp===0?Math.ceil(xpThreshold(unit.level)*DEATH_RATE[unit.type]):0,died:fighter.hp===0});
   return next;
  });
- const result={...battle.result,id:battle.id,nodeId:node.id,coins,stones,cores,first,levelCap,changes,plies:battle.ply,finishedAt:now};
+ const result={...battle.result,id:battle.id,nodeId:node.id,coins,stones,cores,bonusCoins,bonusStones,first,levelCap,changes,plies:battle.ply,finishedAt:now};
  const cleared=first?[...profile.cleared,node.id]:profile.cleared;
  const nodes={...profile.nodes,[node.id]:{...record,wins}};
  const nextFrontier=frontier({...profile,cleared});for(const row of NODES)if(row.step===nextFrontier&&!nodes[row.id])nodes[row.id]={attempts:0,wins:0,openedAt:profile.stats.battles+1};

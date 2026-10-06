@@ -19,6 +19,8 @@ export const xpThreshold = level => Math.round(60*Math.pow(1.55,level-1));
 export const unitPower = unit => TYPE_WEIGHT[unit.type]*statScale(unit.level)*(unit.hp===undefined?1:unit.hp/maxHp(unit));
 export const armyPower = units => units.reduce((sum,unit)=>sum+unitPower(unit),0);
 export const activeArmy = profile => profile.units.filter(unit=>unit.active);
+// A piece keeps its home square even when another piece leaves the army.
+export const homeSquare = id => ['e1','a1','b1','f1','a2','c2','e2','g2','b2','f2'][Number(id.replace('pve-unit-',''))-1];
 export const initialPve = () => ({version:1,revision:0,sequence:0,levelCap:3,stones:0,cores:0,cleared:[],nodes:{},battle:null,lastResult:null,stats:{battles:0,wins:0,draws:0,stonesUsed:0,firstEvolutionAt:null,stoneInvestments:{},deaths:{},recent:[]},units:['k','r','n','b','p','p','p','p','p','p'].map((type,index)=>({id:`pve-unit-${index+1}`,type,level:1,xp:0,deaths:0,active:index<8}))});
 export const frontier = profile => {
  for(let step=1;step<=6;step++)if(!NODES.some(node=>node.step===step&&profile.cleared.includes(node.id)))return step;
@@ -104,7 +106,7 @@ const validBattle = (battle,profile) => {
  if(battle.phase==='result'){
   const result=battle.result;
   if(!battle.settled||!['win','loss','draw'].includes(result?.outcome)||!['king','resigned','limit','repetition','no-moves'].includes(result.reason)||!Array.isArray(result.changes))return false;
-  for(const key of ['coins','stones','cores','levelCap'])if(!Number.isSafeInteger(result[key])||result[key]<0||result[key]>30)return false;
+  for(const key of ['coins','stones','cores','levelCap'])if(!Number.isSafeInteger(result[key])||result[key]<0||result[key]>(key==='coins'?43:30))return false;
   for(const row of result.changes){
    if(!profile.units.some(unit=>unit.id===row?.id)||!Object.hasOwn(TYPE_WEIGHT,row.type))return false;
    for(const key of ['beforeLevel','afterLevel','earned','penalty'])if(!Number.isSafeInteger(row[key])||row[key]<0||row[key]>1e6)return false;

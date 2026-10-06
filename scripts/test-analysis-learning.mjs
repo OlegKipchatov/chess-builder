@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 export const testAnalysisLearning = async (page,url) => {
  const saved=await page.evaluate(async()=>{
   const previous=localStorage.getItem('chess-vault-v3'),state=JSON.parse(previous);
-  const {Chess}=await import('./chess.js?v=112');
-  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=112');
-  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=112');
+  const {Chess}=await import('./chess.js?v=113');
+  const {prepareMateExercise}=await import('./analysis/analysis-training.js?v=113');
+  const {ANALYSIS_VERSION,PROFILE,ENGINE}=await import('./analysis/analysis-config.js?v=113');
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
   const game=new Chess();game.loadPgn(pgn);
   const entry={...state.archive[0],id:'training-fixture',pgn,playerColor:'b'};

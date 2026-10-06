@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialPve,PVE,NODES,TYPE_WEIGHT,statScale,maxHp,damage,xpThreshold,earnXp,deathPenalty,useStone,toggleUnit,evolveUnit,frontier,isUnlocked,activeArmy,armyPower,encounter,normalizePve} from '../dist/pve-model.js';
-import {movesFor,allMoves,resolveAction,beginPveBattle,playPveAction,settlePve,resignPve,returnToMap,pveBoardAdapter} from '../dist/pve-battle.js';
+import {pveRewards,formation,movesFor,allMoves,resolveAction,beginPveBattle,playPveAction,settlePve,resignPve,returnToMap,pveBoardAdapter} from '../dist/pve-battle.js';
 import {choosePveMove} from '../dist/pve-ai.js';
 import {initialState,migrateState,loadState,KEY} from '../dist/state.js';
 const unit = (id,type,color,square,level=1,hp=maxHp({level})) => ({id,type,color,square,level,hp,moved:false});
 const position = units => ({id:'test',phase:'playing',turn:'w',ply:0,units,xp:{},positions:{},result:null,lastEvent:null});
 const win = (profile,nodeId) => {
- const started=beginPveBattle(profile,nodeId),battle=started.battle;
+ const started=beginPveBattle(profile,nodeId,()=>0),battle=started.battle;
  assert.ok(battle);battle.units.find(unit=>unit.color==='b'&&unit.type==='k').hp=0;
  battle.phase='result';battle.result={outcome:'win',reason:'king'};
  return settlePve({coins:100,pve:started},'2026-10-06T08:00:00Z');
@@ -97,9 +97,9 @@ test('Every encounter is legal to start, does not stack figures or mutate persis
  assert.deepEqual(normalizePve(next).battle,next.battle);
 });
 test('Settlement is idempotent and wallet, rewards, receipts are a single saved state',()=>{
- const result=win(initialPve(),'trail');assert.equal(result.coins,105);assert.equal(result.pve.stones,1);assert.equal(result.pve.stats.wins,1);assert.equal(settlePve(result),result);
+ const result=win(initialPve(),'trail');assert.equal(result.coins,117);assert.equal(result.pve.stones,3);assert.equal(result.pve.stats.wins,1);assert.equal(settlePve(result),result);
  const storage=new Map();storage.set(KEY,JSON.stringify({...initialState(),...result}));const loaded=loadState({getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)});
- assert.equal(loaded.coins,105);assert.equal(loaded.pve.battle.settled,true);assert.equal(settlePve(loaded),loaded);
+ assert.equal(loaded.coins,117);assert.equal(loaded.pve.battle.settled,true);assert.equal(settlePve(loaded),loaded);
 });
 test('Only first boss clear raises cap and grants a core; a single evolution keeps identity',()=>{
  let p=initialPve();for(const nodeId of ['trail','clearing','riders','bridge','gate','warden'])p=returnToMap(win(p,nodeId).pve);
@@ -117,12 +117,29 @@ test('PvE coins have no daily cap, including saves that already reached the old 
  let p={...initialPve(),coinDay:'2026-10-06',coinsToday:30},total=0;
  for(let i=0;i<50;i++){
   const wallet=win(p,'trail');const reward=wallet.pve.lastResult;
-  assert.equal(reward.coins,i===0?5:1);
-  assert.equal(reward.stones,i===0||((i+1)%3===0)?1:0);
+  assert.equal(reward.coins,i===0?17:12);
+  assert.equal(reward.stones,i===0?3:2);
   total+=reward.coins;assert.equal(settlePve(wallet),wallet);
   p=returnToMap(normalizePve(wallet.pve));
  }
- assert.equal(total,54);assert.equal(Object.hasOwn(p,'coinDay'),false);assert.equal(Object.hasOwn(p,'coinsToday'),false);
+ assert.equal(total,605);assert.equal(Object.hasOwn(p,'coinDay'),false);assert.equal(Object.hasOwn(p,'coinsToday'),false);
+});
+test('Every completed battle grants a stone exactly once, including loss, draw and resignation',()=>{
+ for(const [outcome,reason] of [['loss','king'],['draw','limit'],['loss','resigned']]){
+  let wallet=initialState();wallet.pve=beginPveBattle(wallet.pve,'trail',()=>0);
+  wallet.pve.battle.phase='result';wallet.pve.battle.result={outcome,reason};
+  const settled=settlePve(wallet);assert.equal(settled.pve.stones,1);assert.equal(settled.coins,wallet.coins+(reason==='resigned'?0:outcome==='draw'?8:5));assert.equal(settlePve(settled),settled);
+  for(const row of settled.pve.lastResult.changes){assert.ok(Number.isInteger(row.beforeXp));assert.ok(Number.isInteger(row.afterXp));}
+ }
+});
+test('Removing a2 preserves all other home squares through reload, reinsertion and evolution',()=>{
+ let p=initialPve();const before=formation(activeArmy(p),'w'),pawn=before.find(unit=>unit.square==='a2');
+ p=normalizePve(toggleUnit(p,pawn.id));const after=formation(activeArmy(p),'w');
+ assert.equal(after.some(unit=>unit.square==='a2'),false);
+ for(const unit of after)assert.equal(unit.square,before.find(row=>row.id===unit.id).square);
+ p=toggleUnit(p,pawn.id);p={...p,cleared:['warden'],cores:1,levelCap:5};p=evolveUnit(p,pawn.id);
+ const evolved=formation(activeArmy(normalizePve(p)),'w');assert.equal(evolved.find(unit=>unit.id===pawn.id).square,'a2');
+ assert.equal(new Set(evolved.map(unit=>unit.square)).size,evolved.length);
 });
 test('Migration drops obsolete daily counters without touching progress or already settled rewards',()=>{
  const wallet=win(initialPve(),'trail');wallet.pve.coinDay='2026-10-06';wallet.pve.coinsToday=30;
@@ -176,4 +193,34 @@ test('Player pawns start at level one; a new fight carries only their earned per
  assert.equal(battle.units.find(unit=>unit.id==='pve-unit-5').level,2);
  assert.ok(battle.units.filter(unit=>unit.color==='w'&&unit.id!=='pve-unit-5').every(unit=>unit.level===1));
  assert.deepEqual(battle.units.filter(unit=>unit.color==='w').map(({id,level})=>({id,level})),activeArmy(restored).map(({id,level})=>({id,level})));
+});
+
+test('Reward ranges include both endpoints, retain first-clear bonuses, and distinguish early surrender',()=>{
+ for(const boss of [false,true])for(const outcome of ['win','draw','loss'])for(const fraction of [0,.999999]){
+  const node=NODES.find(node=>boss?node.boss:node.id==='trail');
+  const battle={id:'bounds',nodeId:node.id,ply:20,result:{outcome,reason:'king'},rewardRoll:{coins:fraction,stones:fraction}};
+  const reward=pveRewards(battle,node,false),edge=fraction===0?0:1;
+  assert.equal(reward.coins,(boss?{win:[23,33],draw:[15,25],loss:[10,20]}:{win:[12,17],draw:[8,13],loss:[5,10]})[outcome][edge]);
+  assert.equal(reward.stones,({win:[2,3],draw:[1,2],loss:[1,1]})[outcome][edge]);
+  if(outcome==='win'){const first=pveRewards(battle,node,true);assert.equal(first.coins,reward.coins+(boss?10:5));assert.equal(first.stones,reward.stones+(boss?3:1));assert.equal(first.cores,boss?1:0);}
+ }
+ const node=NODES[0],battle={id:'resign',nodeId:node.id,ply:18,result:{outcome:'loss',reason:'resigned'},rewardRoll:{coins:0,stones:0}};
+ assert.equal(pveRewards(battle,node,false).coins,0);
+ battle.ply=19;assert.equal(pveRewards(battle,node,false).coins,5);
+});
+test('Persisted rolls and legacy fallback survive reload and failed settlement attempts',()=>{
+ for(const legacy of [false,true]){
+  let p=beginPveBattle(initialPve(),'trail',()=>.72);if(legacy)delete p.battle.rewardRoll;
+  p=normalizePve(JSON.parse(JSON.stringify(p)));p.battle.phase='result';p.battle.result={outcome:'win',reason:'king'};
+  p.battle.units.find(unit=>unit.color==='b'&&unit.type==='k').hp=0;
+  const first=settlePve({coins:0,pve:p});
+  const retry=settlePve({coins:0,pve:JSON.parse(JSON.stringify(p))});
+  assert.equal(first.coins,retry.coins);assert.equal(first.pve.stones,retry.pve.stones);
+  assert.equal(settlePve(first),first);assert.deepEqual(normalizePve(first.pve).battle,first.pve.battle);
+ }
+});
+test('Maximum boss reward survives saved-result validation',()=>{
+ const profile={...initialPve(),cleared:NODES.filter(node=>!node.boss).map(node=>node.id)};
+ const p=beginPveBattle(profile,'warden',()=>.999999);p.battle.phase='result';p.battle.result={outcome:'win',reason:'king'};p.battle.units.find(unit=>unit.color==='b'&&unit.type==='k').hp=0;
+ const wallet=settlePve({coins:0,pve:p});assert.equal(wallet.coins,43);assert.equal(wallet.pve.stones,6);assert.deepEqual(normalizePve(wallet.pve).battle,wallet.pve.battle);
 });

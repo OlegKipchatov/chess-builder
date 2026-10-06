@@ -1,10 +1,10 @@
-import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit} from '../../pve-model.js?v=112';
-import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves} from '../../pve-battle.js?v=112';
-import {renderBoard,snapshotBoard,animateTransition,clearBoardTransition} from '../../board.js?v=112';
-import {pieceSVG} from '../../pieces.js?v=112';
-import {PIECE_NAMES,itemById} from '../../catalog.js?v=112';
-import {disclosure,statCard,backIcon} from '../primitives.js?v=112';
-import {motionDuration,motionEasing} from '../motion.js?v=112';
+import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit} from '../../pve-model.js?v=113';
+import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves} from '../../pve-battle.js?v=113';
+import {renderBoard,snapshotBoard,animateTransition,clearBoardTransition} from '../../board.js?v=113';
+import {pieceSVG} from '../../pieces.js?v=113';
+import {PIECE_NAMES,itemById} from '../../catalog.js?v=113';
+import {disclosure,statCard,backIcon} from '../primitives.js?v=113';
+import {motionDuration,motionEasing} from '../motion.js?v=113';
 const pathIcon='<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 40c-7-13 31-9 24-22S15 17 18 6" stroke-dasharray="4 4"/><circle cx="10" cy="40" r="3"/><path d="M18 6h13l-3 5 3 5H18M18 6v17"/></svg>';
 const stoneIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m10 4 13 3 5 14-13 8L4 18Z M10 4l5 25M23 7 4 18l24 3M10 4l18 17"/></svg>';
 const coreIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 11 6.5v13L16 29 5 22.5v-13Z"/><circle cx="16" cy="16" r="5"/><path d="M16 3v5M27 9.5l-4.3 2.5M27 22.5 22.7 20M16 29v-5M5 22.5 9.3 20M5 9.5 9.3 12"/></svg>';
@@ -12,9 +12,9 @@ const name = unit => `${PIECE_NAMES[unit.type]} · ${unit.id.replace('pve-unit-'
 const stat = (value,label) => `<span><strong>${value}</strong> ${label}</span>`;
 export const pveEntry = () => `<section id="pve-entry" class="pve-entry"><div class="pve-entry-icon">${pathIcon}</div><div><span class="pve-eyebrow">PvE · Первая глава</span><h2>Поход</h2><p>Развивайте армию и дойдите до Стража крепости.</p></div><button id="pve-open" class="primary">В поход</button></section>`;
 export const pveFAQ = () => [
- disclosure('Как играть в PvE-поход?', '<p>Вы играете белыми. У каждой фигуры есть уровень, опыт, HP и урон. Атака снимает HP: если цель выжила, атакующий остаётся на месте, а ход переходит сопернику. Автоматического ответного урона нет. Фигуры равного уровня побеждают друг друга одной атакой.</p><p>Бой заканчивается при гибели короля. Шаха, мата, рокировки и взятия на проходе нет. Пешка может сделать первый двойной ход со второй горизонтали, если путь свободен. На последней горизонтали она становится ферзём только до конца боя. Троекратное повторение, отсутствие ходов или 120 полных ходов завершают бой вничью.</p><p>На развилке достаточно победить одного соперника. Пройденные участки доступны повторно. Сила соперника учитывает активную армию и диапазон участка; состав виден до боя.</p><p>После боя показываются результат, затем награды и изменения уровней, после закрытия — карта. Каждый ход сохраняется на устройстве. Бой можно приостановить и продолжить позже, в том числе без сети после полной установки приложения.</p>'),
+ disclosure('Как играть в PvE-поход?', '<p>Вы играете белыми. У каждой фигуры есть уровень, опыт, HP и урон. Атака снимает HP: если цель выжила, атакующий остаётся на месте, а ход переходит сопернику. Автоматического ответного урона нет. Фигуры равного уровня побеждают друг друга одной атакой.</p><p>Бой заканчивается при гибели короля. Шаха, мата, рокировки и взятия на проходе нет. Пешка может сделать первый двойной ход со второй горизонтали, если путь свободен. На последней горизонтали она становится ферзём только до конца боя. Троекратное повторение, отсутствие ходов или 120 полных ходов завершают бой вничью.</p><p>На развилке достаточно победить одного соперника. Пройденные участки доступны повторно. Сила соперника учитывает активную армию и диапазон участка; состав виден до боя.</p><p>После боя показываются результат, награды, затем отдельный шаг с прогрессом опыта фигур; после закрытия — карта. Каждый ход сохраняется на устройстве. Бой можно приостановить и продолжить позже, в том числе без сети после полной установки приложения.</p>'),
  disclosure('Как развивать армию в походе?', '<p>В новой армии все фигуры первого уровня. Выбирайте 8 из 10 бойцов, включая короля. Заработанные уровни и опыт сохраняются между боями. Опыт получает фигура, победившая противника; выжившие получают небольшой бонус за выигранный бой.</p><p>После боя все фигуры возвращаются с полным HP. Гибель отнимает часть порога опыта текущего уровня: пешка — 12%, конь, слон и король — 16%, ладья — 20%, ферзь — 25%. Потерять можно не больше одного уровня.</p><p>Камень опыта из рюкзака даёт выбранной фигуре 10% порога её уровня. Применяйте предметы в разделе «Армия». Сначала доступна прокачка до уровня 3. Первая победа над боссом открывает уровень 5 и даёт ядро для эволюции одной пешки в ладью. Эволюция сохраняет уровень, опыт и историю фигуры. Повторная победа над боссом не даёт ещё одно ядро.</p>'),
- disclosure('Какие награды даёт поход?', '<p>Первая победа на обычном участке приносит 5 монет и 1 камень опыта; на Каменной заставе — 6 монет и 2 камня; над боссом — 10 монет, 3 камня и ядро эволюции.</p><p>Повторная победа даёт 1 монету, над боссом — 2. Камень опыта выдаётся за каждую третью победу на этом участке. Дневного лимита монет нет.</p><p>Поражение, сдача и ничья не дают монет и камней. Полученный в бою опыт и штрафы за погибшие фигуры сохраняются. Поход не меняет рейтинг, обычную историю партий и календарь.</p>'),
+ disclosure('Какие награды даёт поход?', '<p>За обычный бой: победа — 12–17 монет и 2–3 камня опыта, ничья — 8–13 монет и 1–2 камня, поражение — 5–10 монет и 1 камень. За бой с боссом: победа — 23–33 монеты, ничья — 15–25, поражение — 10–20; диапазоны камней те же.</p><p>Количество случайное в указанных пределах и сохраняется: перезагрузка не меняет награду. Первая победа дополнительно даёт 5 монет и 1 камень; на Каменной заставе — 6 монет и 2 камня; над боссом — 10 монет, 3 камня и ядро эволюции. Дневного лимита монет нет.</p><p>Сдача до 10 ходов игрока не даёт монет, но приносит 1 камень опыта. Поздняя сдача даёт награду за поражение. Полученный в бою опыт и штрафы за погибшие фигуры сохраняются. Поход не меняет рейтинг, обычную историю партий и календарь.</p>'),
 ].join('');
 export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,toast,onExit,onTitle}) => {
  let profile=getProfile(),view='map',selected=null,armySelected=null,selectedNode=null,disposed=false,presenting=false,worker=null,workerTimer=null,requestId=0,botError=false,modalKind=null,resultShownId=null,presentationGeneration=0,scrollPositions={map:0,army:0,bag:0};
@@ -46,12 +46,12 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   <p class="pve-note">${campaignComplete(profile)?'Страж побеждён. Открыт уровень 5 и первая эволюция. Можно вернуться к любому бою.':'Выберите бой на дороге. Победы открывают путь, босс — новые уровни армии.'}</p>
   <div class="pve-road"><svg class="pve-road-line" viewBox="0 0 400 720" preserveAspectRatio="none" aria-hidden="true"><path d="M155 55C155 115 250 105 250 170S200 240 200 295 250 335 250 415 155 465 155 530 200 600 200 665"/></svg><ol class="pve-stops" aria-label="Карта первой главы">${Array.from({length:6},(_,i)=>i+1).map(step=>`<li class="pve-stop ${step===3?'pve-fork':''}" data-pve-step="${step}">${NODES.filter(node=>node.step===step).map(node=>{
    const cleared=profile.cleared.includes(node.id),open=isUnlocked(profile,node),current=step===frontier(profile)&&!campaignComplete(profile);
-   return `<button class="pve-node ${cleared?'is-cleared':''} ${current?'is-frontier':''} ${node.boss?'is-boss':''} ${selectedNode===node.id?'is-selected':''}" data-pve-node="${node.id}" ${!open||profile.battle?'disabled':''} aria-pressed="${selectedNode===node.id}" ${current?'aria-current="step"':''}><span class="pve-node-number" aria-hidden="true">${cleared?'✓':node.boss?'♜':step}</span><span class="pve-node-body"><span class="pve-eyebrow">${node.boss?'Босс I':`Монстры · уровень ${node.threat}`}</span><strong>${node.name}</strong><span class="pve-meta">${!open?'Путь закрыт':cleared?'Пройдено · повторить':step===3?'Выберите один путь':'Бой доступен'}</span><span class="pve-node-reward">${cleared?node.boss?'2 монеты':'1 монета':node.boss?'10 монет · ядро':node.bonus?'6 монет · 2 камня':'5 монет · камень'}</span></span></button>`;
+   return `<button class="pve-node ${cleared?'is-cleared':''} ${current?'is-frontier':''} ${node.boss?'is-boss':''} ${selectedNode===node.id?'is-selected':''}" data-pve-node="${node.id}" ${!open||profile.battle?'disabled':''} aria-label="${node.name}${cleared?', пройдено, доступен повторный бой':open?', бой доступен':', путь закрыт'}" aria-pressed="${selectedNode===node.id}" ${current?'aria-current="step"':''}><span class="pve-node-number" aria-hidden="true">${cleared?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 6M8 12l3 3 5-6" stroke-linecap="round" stroke-linejoin="round"/></svg>':node.boss?'♜':step}</span><span class="pve-node-body"><span class="pve-eyebrow">${node.boss?'Босс I':`Монстры · уровень ${node.threat}`}</span><strong>${node.name}</strong><span class="pve-meta">${!open?'Путь закрыт':cleared?'':step===3?'Выберите один путь':'Бой доступен'}</span><span class="pve-node-reward">${node.boss?'23–33 монеты':'12–17 монет'}${!cleared?' · бонус':''}</span></span></button>`;
   }).join('')}</li>`).join('')}</ol></div>
  </div>`;
  const unitHTML = unit => {
   const full=unit.level===profile.levelCap&&unit.xp>=xpThreshold(unit.level)-1,locked=!!profile.battle;
-  return `<article class="pve-unit ${!unit.active?'in-reserve':''}"><div class="pve-unit-top"><span class="pve-piece">${icon(unit)}</span><div><h2>${name(unit)}</h2><span class="pve-meta">Уровень ${unit.level} · ${unit.active?'В строю':'Резерв'}</span></div>${unit.type!=='k'?`<button class="quiet pve-unit-toggle" data-pve-toggle="${unit.id}" aria-label="${unit.active?'В резерв':'В строй'}: ${name(unit)}" ${locked||(!unit.active&&activeArmy(profile).length>=8)?'disabled':''}>${unit.active?'В резерв':'В строй'}</button>`:''}</div><div class="pve-unit-stats">${stat(maxHp(unit),'HP')}${stat(damage(unit),'урон')}${stat(unit.deaths,'смертей')}</div><div class="pve-xp"><progress value="${unit.xp}" max="${xpThreshold(unit.level)}" aria-label="Опыт ${name(unit)}"></progress><span>${unit.xp} / ${xpThreshold(unit.level)} XP</span></div>
+  return `<article class="pve-unit ${!unit.active?'in-reserve':''}"><div class="pve-unit-top"><span class="pve-piece">${icon(unit)}</span><div><h2>${name(unit)}</h2><span class="pve-meta">Уровень ${unit.level} · ${unit.active?'В строю':'Резерв'}</span></div>${unit.type!=='k'?`<button class="quiet pve-unit-toggle" data-pve-toggle="${unit.id}" aria-label="${unit.active?'В резерв':'В строй'}: ${name(unit)}" ${locked||(!unit.active&&activeArmy(profile).length>=8)?'disabled':''}>${unit.active?'В резерв':'В строй'}</button>`:''}</div><div class="pve-unit-stats">${stat(maxHp(unit),'HP')}${stat(damage(unit),'урон')}</div><div class="pve-xp"><progress value="${unit.xp}" max="${xpThreshold(unit.level)}" aria-label="Опыт ${name(unit)}"></progress><span>${unit.xp} / ${xpThreshold(unit.level)} XP</span></div>
   <button class="quiet pve-stone-use" data-pve-stone="${unit.id}" ${!profile.stones||locked||full?'disabled':''}>${full?'Достигнут лимит опыта':`Камень опыта · +${Math.ceil(xpThreshold(unit.level)*.1)} XP`}</button>
   ${unit.type==='p'?`<button class="quiet pve-evolve" data-pve-evolve="${unit.id}" ${!campaignComplete(profile)||!profile.cores||locked?'disabled':''}>Эволюция в ладью · 1 ядро</button>`:''}</article>`;
  };
@@ -110,18 +110,23 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   stopWorker();resultShownId=battle.id;modalKind='result';
   const result=battle.result;
   const reason={king:result.outcome==='win'?'Король соперника повержен':'Ваш король повержен',resigned:'Вы сдались',limit:'Достигнут лимит 120 ходов',repetition:'Троекратное повторение', 'no-moves':'Нет доступных ходов'}[result.reason];
-  const changes=result.changes.filter(row=>row.earned||row.died);
-  const levels=result.changes.filter(row=>row.afterLevel!==row.beforeLevel);
+  const experienceStep=()=>{
+   modalKind='experience';
+   return {html:`<div id="pve-experience"><h2>Опыт фигур</h2><div class="pve-experience-list">${result.changes.map(row=>{
+    const unit=profile.units.find(unit=>unit.id===row.id),xp=row.afterXp??unit?.xp??0,threshold=xpThreshold(row.afterLevel);
+    return `<div class="pve-experience-row"><span class="pve-piece">${icon(row)}</span><div><strong>${PIECE_NAMES[row.type]}${row.square?` · ${row.square}`:''}</strong><span class="pve-meta">Уровень ${row.beforeLevel===row.afterLevel?row.afterLevel:`${row.beforeLevel} → ${row.afterLevel}`}</span><div class="pve-xp"><progress value="${xp}" max="${threshold}" aria-label="Опыт ${name(row)}"></progress><span>${xp} / ${threshold} XP</span></div><span class="pve-meta">${row.earned?`+${row.earned} XP`:''}${row.penalty?`${row.earned?' · ':''}−${row.penalty} XP за потерю фигуры`:''}${!row.earned&&!row.penalty?'Без изменений':''}</span></div></div>`;
+   }).join('')}</div></div>`,options:{closeLabel:'К карте',closeVariant:'primary'}};
+  };
   const rewardStep=()=>{
    modalKind='reward';
-   return {html:`<div id="pve-reward"><h2>Награда за бой</h2><div class="pve-reward-stats">${statCard(result.coins,'Монеты')}${result.stones?statCard(result.stones,'Камни опыта'):''}${result.cores?statCard(result.cores,'Ядро эволюции'):''}</div>${levels.length?`<ul class="pve-level-changes">${levels.map(row=>`<li><strong>${name(row)}</strong><span>Уровень ${row.beforeLevel} → ${row.afterLevel}</span></li>`).join('')}</ul>`:''}${result.cores?'<p class="pve-unlock">Открыты уровень 5 и эволюция пешки в ладью.</p>':''}${changes.length?disclosure('Опыт фигур',`<ul class="pve-result-changes">${changes.map(row=>`<li><span>${name(row)}</span><span>${row.earned?`+${row.earned} XP`:''}${row.died?`${row.earned?' · ':''}−${row.penalty} XP за гибель`:''}</span></li>`).join('')}</ul>`):''}</div>`,options:{closeLabel:'К карте',closeVariant:'primary'}};
+   return {html:`<div id="pve-reward"><h2>Награда за бой</h2><div class="pve-reward-stats">${statCard(result.coins,'Монеты')}${result.stones?statCard(result.stones,'Камни опыта'):''}${result.cores?statCard(result.cores,'Ядро эволюции'):''}</div>${result.cores?'<p class="pve-unlock">Открыты уровень 5 и эволюция пешки в ладью.</p>':''}</div>`,options:{closeLabel:'Далее',closeVariant:'primary',next:experienceStep}};
   };
   void showModal(`<div id="pve-battle-result"><h2>${result.outcome==='win'?'Победа':result.outcome==='draw'?'Ничья':'Поражение'}</h2><p>${reason}</p></div>`,{closeLabel:'Далее',closeVariant:'primary',next:rewardStep});
  };
  const openNode = async id => {
   const node=NODES.find(node=>node.id===id);if(!isUnlocked(profile,node)||profile.battle)return;
   selectedNode=id;render();const opponent=encounter(profile,node),first=!profile.cleared.includes(id);modalKind='node';
-  await showModal(`<h2>${node.name}</h2><p>${strengthLabel(opponent.ratio)}</p><div class="pve-enemy-list">${opponent.units.map(unit=>`<div><span>${icon(unit,'b')}</span><span>${PIECE_NAMES[unit.type]}<small>ур. ${unit.level}</small></span></div>`).join('')}</div><p class="pve-note">${first?(node.boss?'Первая победа: 10 монет, 3 камня, ядро эволюции и уровень 5.':`Первая победа: ${node.bonus?'6 монет и 2 камня':'5 монет и 1 камень'}.`):`Повторная победа: ${node.boss?2:1} ${node.boss?'монеты':'монета'}. Камень за каждую третью победу на узле.`}</p>${activeArmy(profile).length!==8?'<p>Соберите 8 фигур в армии, чтобы начать бой.</p>':''}<button class="primary pve-dialog-primary" data-pve-start="${id}" ${activeArmy(profile).length!==8?'disabled':''}>Начать бой</button>`);
+  await showModal(`<h2>${node.name}</h2><p>${strengthLabel(opponent.ratio)}</p><div class="pve-enemy-list">${opponent.units.map(unit=>`<div><span>${icon(unit,'b')}</span><span>${PIECE_NAMES[unit.type]}<small>ур. ${unit.level}</small></span></div>`).join('')}</div><p class="pve-note">За победу: ${node.boss?'23–33 монеты':'12–17 монет'} и 2–3 камня.${first?` Бонус первой победы: ${node.boss?'10 монет, 3 камня, ядро и уровень 5':node.bonus?'6 монет и 2 камня':'5 монет и 1 камень'}.`:''}</p>${activeArmy(profile).length!==8?'<p>Соберите 8 фигур в армии, чтобы начать бой.</p>':''}<button class="primary pve-dialog-primary" data-pve-start="${id}" ${activeArmy(profile).length!==8?'disabled':''}>Начать бой</button>`);
  };
  const presentAction = async action => {
   if(disposed||presenting||!profile.battle)return;
@@ -147,7 +152,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   const id=++requestId;
   const failed = () => {if(disposed||id!==requestId)return;stopWorker();botError=true;drawBattle();};
   try{
-   worker=new Worker(new URL('../../pve-worker.js?v=112',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('../../pve-worker.js?v=113',import.meta.url),{type:'module'});
    worker.onerror=failed;workerTimer=setTimeout(failed,10000);
    worker.onmessage=({data})=>{
     if(disposed||data.id!==requestId)return;
@@ -186,7 +191,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   if(action==='pause'){requestExit();return;}
   if(action==='resume'){view='battle';botError=false;render();scheduleBot();return;}
   if(action==='retry'){botError=false;drawBattle();scheduleBot();return;}
-  if(action==='resign'){stopWorker();modalKind='resign';await showModal('<h2>Завершить бой поражением?</h2><p>Монет и камней не будет. Опыт за побеждённые фигуры и штрафы погибшим сохранятся. Для продолжения позже можно приостановить бой.</p><button class="danger pve-dialog-primary" data-pve-confirm-resign>Сдаться</button>',{closeLabel:'Продолжить бой'});}
+  if(action==='resign'){stopWorker();modalKind='resign';await showModal(`<h2>Завершить бой поражением?</h2><p>${Math.ceil(profile.battle.ply/2)<10?'Монет не будет.':'Вы получите награду за поражение.'} Вы получите 1 камень опыта. Опыт за побеждённые фигуры и штрафы погибшим сохранятся. Для продолжения позже можно приостановить бой.</p><button class="danger pve-dialog-primary" data-pve-confirm-resign>Сдаться</button>`,{closeLabel:'Продолжить бой'});}
  };
  const modalClick = async event => {
   if(disposed)return;
@@ -205,7 +210,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
  };
  const dismissed = () => {
   const kind=modalKind;modalKind=null;
-  if(kind==='result'||kind==='reward'){
+  if(kind==='result'||kind==='reward'||kind==='experience'){
    if(save(returnToMap)){resultShownId=null;selectedNode=null;root.replaceChildren();go('map',{front:true});}
    else {resultShownId=null;queueMicrotask(complete);}
    return;

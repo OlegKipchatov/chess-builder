@@ -122,7 +122,7 @@ test('terminate while fallback is retiring never allocates the next heap',async 
 });
 test('threaded wrapper terminates nested workers before acknowledging retirement',async()=>{
  const {readFile}=await import('node:fs/promises'),{runInNewContext}=await import('node:vm');
- const code=(await readFile(new URL('../dist/stockfish19-worker.js',import.meta.url),'utf8')).replace(/^import .*;\n/,'').replaceAll('import.meta.url',"'https://example.test/stockfish19-worker.js?v=112'");
+ const code=(await readFile(new URL('../dist/stockfish19-worker.js',import.meta.url),'utf8')).replace(/^import .*;\n/,'').replaceAll('import.meta.url',"'https://example.test/stockfish19-worker.js?v=113'");
  let finishInitialization,stopped=0,closed=false;const messages=[];
  const self={crossOriginIsolated:true,Worker:class {terminate(){stopped++;}},postMessage:data=>messages.push(data),close:()=>{closed=true;}};
  runInNewContext(code,{self,SharedArrayBuffer,WebAssembly:{Memory:class {}},createStockfish:()=>new Promise(resolve=>{finishInitialization=resolve;}),URL,Uint8Array,fetch:()=>assert.fail('Initialization continued after shutdown')});
