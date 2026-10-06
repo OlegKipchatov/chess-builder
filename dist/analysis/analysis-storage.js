@@ -1,5 +1,5 @@
-import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=115';
-import {Chess} from '../chess.js?v=115';
+import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=116';
+import {Chess} from '../chess.js?v=116';
 export const eligibleEntry = entry => {
  if(!entry||typeof entry.id!=='string'||!entry.id||typeof entry.pgn!=='string'||!entry.pgn.trim()||entry.imported||entry.counted===false||entry.engineFailure||entry.mode!=='bot'||!entry.finishedAt||!['w','b'].includes(entry.playerColor))return false;
  try {const game=new Chess();game.loadPgn(entry.pgn);return game.history({verbose:true}).some(move=>move.color===entry.playerColor);} catch {return false;}

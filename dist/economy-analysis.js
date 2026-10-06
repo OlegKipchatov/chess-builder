@@ -1,8 +1,8 @@
-import {recordStockfishRestart} from './stockfish-lifecycle.js?v=115';
-import {STOCKFISH as C} from './stockfish-config.js?v=115';
-import {Chess} from './chess.js?v=115';
-import {createStockfishClient} from './stockfish-client.js?v=115';
-import {expectedScore,summarizeQuality} from './reward-quality.js?v=115';
+import {recordStockfishRestart} from './stockfish-lifecycle.js?v=116';
+import {STOCKFISH as C} from './stockfish-config.js?v=116';
+import {Chess} from './chess.js?v=116';
+import {createStockfishClient} from './stockfish-client.js?v=116';
+import {expectedScore,summarizeQuality} from './reward-quality.js?v=116';
 // A separate full-strength fixed-node profile, never the adaptive opponent.
 export const analyzeReward = async (entry,{onProgress=()=>{},onRetry=()=>{},createClient=createStockfishClient,requestTimeoutMs=C.economyRequestMs}={}) => {
  const final=new Chess();final.loadPgn(entry.pgn);

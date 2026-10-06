@@ -1,5 +1,5 @@
 // Presentation-only state machine: no imports from engine/service/config.
-import {isImportantInsight} from './analysis-events.js?v=115';
+import {isImportantInsight} from './analysis-events.js?v=116';
 export const createAnalysisPlayback = ({analysis,showPly,onChange=()=>{},schedule=setTimeout,unschedule=clearTimeout}) => {
  let ply=0,state='idle',timer=null,generation=0;
  const emit=()=>onChange({ply,state});

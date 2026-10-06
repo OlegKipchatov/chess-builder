@@ -1,5 +1,5 @@
-import {AUTO,positionCompositionError,battleGame,battleResult,completeBattle} from './autochess.js?v=115';
-import {createAutoplayEngine} from './autochess-engine.js?v=115';
+import {AUTO,positionCompositionError,battleGame,battleResult,completeBattle} from './autochess.js?v=116';
+import {createAutoplayEngine} from './autochess-engine.js?v=116';
 export const createBattleController = ({getRun,save,onChange,onError,engineFactory=createAutoplayEngine,clock=()=>performance.now(),schedule=setTimeout,cancel=clearTimeout}) => {
  let position=null,engine=null,generation=0,active=false,base=0,started=0,next=null,preparing=false,attempt=1;
  const elapsed=()=>base+(active?Math.max(0,clock()-started):0);

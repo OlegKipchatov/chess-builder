@@ -1,7 +1,7 @@
-import {escapeHTML as esc} from '../primitives.js?v=115';
-import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=115';
-import {humanMove} from './move-list.js?v=115';
-import {isImportantInsight} from '../../analysis/analysis-events.js?v=115';
+import {escapeHTML as esc} from '../primitives.js?v=116';
+import {explanationFor,qualityLabel} from '../../analysis/analysis-explanations.js?v=116';
+import {humanMove} from './move-list.js?v=116';
+import {isImportantInsight} from '../../analysis/analysis-events.js?v=116';
 export {isImportantInsight};
 export const visibleVariation = (move,expanded=false) => {
  const line=move?.bestLine;if(!line)return {pv:[],san:[]};

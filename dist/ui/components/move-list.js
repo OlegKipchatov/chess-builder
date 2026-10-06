@@ -1,4 +1,4 @@
-import {escapeHTML} from '../primitives.js?v=115';
+import {escapeHTML} from '../primitives.js?v=116';
 export const humanMove = san => {
  if(!san)return '';
  if(san.startsWith('O-O'))return 'Рокировка';

@@ -1,12 +1,12 @@
-import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=115';
+import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=116';
 const files='abcdefgh';
 const coords = square => [files.indexOf(square[0]),Number(square[1])-1];
 const squareAt = (x,y) => x>=0&&x<8&&y>=0&&y<8?files[x]+(y+1):null;
 const orthogonal=[[1,0],[-1,0],[0,1],[0,-1]],diagonal=[[1,1],[1,-1],[-1,1],[-1,-1]];
 export const livingUnits = battle => battle.units.filter(unit=>unit.hp>0);
 export const unitAt = (battle,square) => battle.units.find(unit=>unit.hp>0&&unit.square===square);
-// Geometry is separate from legality: pawn attacks differ from pawn movement,
-// and pinned enemies still control squares a king cannot enter.
+// Threat geometry is advisory: HP chess permits every geometric move,
+// including moving a king into an attack or capturing the opposing king.
 export const attacksSquare = (battle,unit,square) => {
  if(!unit||unit.hp<=0||unit.square===square)return false;
  const [x,y]=coords(unit.square),[tx,ty]=coords(square),dx=tx-x,dy=ty-y;
@@ -19,7 +19,7 @@ export const attacksSquare = (battle,unit,square) => {
  return true;
 };
 export const isSquareAttacked = (battle,square,color) => livingUnits(battle).some(unit=>unit.color===color&&attacksSquare(battle,unit,square));
-export const isInCheck = (battle,color=battle.turn) => {
+export const isKingThreatened = (battle,color=battle.turn) => {
  const king=livingUnits(battle).find(unit=>unit.color===color&&unit.type==='k');
  return !!king&&isSquareAttacked(battle,king.square,color==='w'?'b':'w');
 };
@@ -46,10 +46,7 @@ const pseudoMoves = (battle,unit) => {
  else for(const [dx,dy] of unit.type==='b'?diagonal:unit.type==='r'?orthogonal:[...orthogonal,...diagonal])add(dx,dy,unit.type!=='k');
  return moves;
 };
-export const movesFor = (battle,unit) => pseudoMoves(battle,unit).filter(move=>{
- if(unitAt(battle,move.to)?.type==='k')return false;
- return !isInCheck(applyAction(battle,move),unit.color);
-});
+export const movesFor = (battle,unit) => pseudoMoves(battle,unit);
 export const allMoves = (battle,color=battle.turn) => livingUnits(battle).filter(unit=>unit.color===color).flatMap(unit=>movesFor(battle,unit));
 export const positionKey = battle => `${battle.turn}|${livingUnits(battle).map(unit=>`${unit.id}:${unit.type}:${unit.square}:${unit.hp}:${unit.moved?1:0}`).sort().join('|')}`;
 export const formation = (units,color) => {
@@ -69,8 +66,7 @@ export const beginPveBattle = (profile,nodeId,rng=Math.random) => {
  return {...profile,revision:profile.revision+1,sequence,battle,nodes:{...profile.nodes,[nodeId]:{...record,attempts:record.attempts+1}}};
 };
 export const killXp = (attacker,target) => Math.max(4,Math.round(16*(1+.2*(target.level-1))*Math.max(.4,Math.min(1.6,1+.2*(target.level-attacker.level)))));
-// Apply HP and movement before checking king safety: a surviving target blocks
-// the attacker, so a nonlethal hit cannot falsely count as a check evasion.
+// A surviving target blocks the attacker; every hit still spends one turn.
 const applyAction = (battle,action) => {
  const attacker=unitAt(battle,action.from);
  const next={...battle,units:battle.units.map(unit=>({...unit})),xp:{...battle.xp}};
@@ -86,9 +82,11 @@ const applyAction = (battle,action) => {
  return next;
 };
 export const adjudicateBattle = battle => {
- if(battle.phase!=='playing'||livingUnits(battle).some(unit=>unit.color===battle.turn&&movesFor(battle,unit).length))return battle;
- const checked=isInCheck(battle);
- return {...battle,phase:'result',result:{outcome:checked?(battle.turn==='b'?'win':'loss'):'draw',reason:checked?'checkmate':'no-moves'}};
+ if(battle.phase!=='playing')return battle;
+ const fallen=battle.units.find(unit=>unit.type==='k'&&unit.hp===0);
+ if(fallen)return {...battle,phase:'result',result:{outcome:fallen.color==='b'?'win':'loss',reason:'king'}};
+ if(livingUnits(battle).some(unit=>unit.color===battle.turn&&movesFor(battle,unit).length))return battle;
+ return {...battle,phase:'result',result:{outcome:'draw',reason:'no-moves'}};
 };
 export const resumePveBattle = profile => {
  if(!profile.battle)return profile;
@@ -158,5 +156,5 @@ export const returnToMap = profile => profile.battle?.settled?{...profile,revisi
 export const pveBoardAdapter = battle => ({
  board:()=>Array.from({length:8},(_,row)=>Array.from({length:8},(_,col)=>unitAt(battle,files[col]+(8-row))||null)),
  moves:({square})=>battle.turn==='w'&&unitAt(battle,square)?.color==='w'?movesFor(battle,unitAt(battle,square)):[],
- history:()=>battle.lastEvent?[battle.lastEvent]:[],turn:()=>battle.turn,isCheck:()=>isInCheck(battle),
+ history:()=>battle.lastEvent?[battle.lastEvent]:[],turn:()=>battle.turn,isCheck:()=>isKingThreatened(battle),
 });
