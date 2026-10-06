@@ -110,11 +110,36 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   stopWorker();resultShownId=battle.id;modalKind='result';
   const result=battle.result;
   const reason={king:result.outcome==='win'?'Король соперника повержен':'Ваш король повержен',resigned:'Вы сдались',limit:'Достигнут лимит 120 ходов',repetition:'Троекратное повторение', 'no-moves':'Нет доступных ходов'}[result.reason];
+  const animateExperience = () => {
+   const host=modal.querySelector('#pve-experience');if(!host)return;
+   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   host.querySelectorAll('.pve-experience-row').forEach(row=>{
+    const beforeLevel=Number(row.dataset.beforeLevel),afterLevel=Number(row.dataset.afterLevel),beforeXp=Number(row.dataset.beforeXp),afterXp=Number(row.dataset.afterXp);
+    const beforeThreshold=xpThreshold(beforeLevel),afterThreshold=xpThreshold(afterLevel),bar=row.querySelector('.pve-experience-fill'),counter=row.querySelector('.pve-experience-count'),level=row.querySelector('.pve-experience-level');
+    const set=(xp,threshold)=>{bar.style.width=`${Math.max(0,Math.min(100,100*xp/threshold))}%`;counter.textContent=`${xp} / ${threshold} XP`;};
+    if(reduced){set(afterXp,afterThreshold);level.textContent=`Ур. ${beforeLevel===afterLevel?afterLevel:`${beforeLevel} → ${afterLevel}`}`;return;}
+    set(beforeXp,beforeThreshold);
+    const tween=(from,to,threshold,duration)=>new Promise(resolve=>{
+     const started=performance.now(),tick=now=>{const t=Math.min(1,(now-started)/duration),eased=1-Math.pow(1-t,3),xp=Math.round(from+(to-from)*eased);set(xp,threshold);if(t<1)requestAnimationFrame(tick);else resolve();};requestAnimationFrame(tick);
+    });
+    void (async()=>{
+     if(beforeLevel===afterLevel){await tween(beforeXp,afterXp,afterThreshold,500);return;}
+     if(afterLevel>beforeLevel){
+      await tween(beforeXp,beforeThreshold,beforeThreshold,500);await new Promise(resolve=>setTimeout(resolve,160));
+      level.textContent=`Ур. ${beforeLevel} → ${afterLevel}`;level.animate?.([{opacity:.45,transform:'translateY(2px)'},{opacity:1,transform:'none'}],{duration:200,easing:motionEasing.local});
+      set(0,afterThreshold);await tween(0,afterXp,afterThreshold,500);return;
+     }
+     await tween(beforeXp,0,beforeThreshold,500);await new Promise(resolve=>setTimeout(resolve,160));
+     level.textContent=`Ур. ${beforeLevel} → ${afterLevel}`;set(afterThreshold,afterThreshold);await tween(afterThreshold,afterXp,afterThreshold,500);
+    })();
+   });
+  };
   const experienceStep=()=>{
    modalKind='experience';
+   queueMicrotask(()=>requestAnimationFrame(animateExperience));
    return {html:`<div id="pve-experience"><h2>Опыт фигур</h2><div class="pve-experience-list">${result.changes.map(row=>{
-    const unit=profile.units.find(unit=>unit.id===row.id),xp=row.afterXp??unit?.xp??0,threshold=xpThreshold(row.afterLevel);
-    return `<div class="pve-experience-row"><span class="pve-piece">${icon(row)}</span><div><strong>${PIECE_NAMES[row.type]}${row.square?` · ${row.square}`:''}</strong><span class="pve-meta">Уровень ${row.beforeLevel===row.afterLevel?row.afterLevel:`${row.beforeLevel} → ${row.afterLevel}`}</span><div class="pve-xp"><progress value="${xp}" max="${threshold}" aria-label="Опыт ${name(row)}"></progress><span>${xp} / ${threshold} XP</span></div><span class="pve-meta">${row.earned?`+${row.earned} XP`:''}${row.penalty?`${row.earned?' · ':''}−${row.penalty} XP за потерю фигуры`:''}${!row.earned&&!row.penalty?'Без изменений':''}</span></div></div>`;
+    const unit=profile.units.find(unit=>unit.id===row.id),afterXp=row.afterXp??unit?.xp??0,beforeXp=row.beforeXp??afterXp,threshold=xpThreshold(row.beforeLevel),delta=(row.earned||0)-(row.penalty||0),deltaLabel=delta>0?`+${delta} XP`:delta<0?`−${Math.abs(delta)} XP`:'Без изменений';
+    return `<div class="pve-experience-row" data-before-level="${row.beforeLevel}" data-after-level="${row.afterLevel}" data-before-xp="${beforeXp}" data-after-xp="${afterXp}"><span class="pve-piece">${icon(row)}</span><div class="pve-experience-main"><div class="pve-experience-head"><strong>${PIECE_NAMES[row.type]}${row.square?` · ${row.square}`:''}</strong><span class="pve-experience-delta">${deltaLabel}</span></div><div class="pve-experience-meta"><span class="pve-experience-level">Ур. ${row.beforeLevel}</span><span class="pve-experience-count">${beforeXp} / ${threshold} XP</span></div><div class="pve-experience-track" role="progressbar" aria-label="Опыт ${name(row)}" aria-valuemin="0" aria-valuemax="${xpThreshold(row.afterLevel)}" aria-valuenow="${afterXp}"><i class="pve-experience-fill"></i></div></div></div>`;
    }).join('')}</div></div>`,options:{closeLabel:'К карте',closeVariant:'primary'}};
   };
   const rewardStep=()=>{
