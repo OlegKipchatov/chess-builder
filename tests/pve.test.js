@@ -4,8 +4,8 @@ import {initialPve,PVE,NODES,TYPE_WEIGHT,statScale,maxHp,damage,xpThreshold,earn
 import {pveRewards,formation,movesFor,allMoves,resolveAction,beginPveBattle,playPveAction,settlePve,resignPve,returnToMap,pveBoardAdapter} from '../dist/pve-battle.js';
 import {choosePveMove} from '../dist/pve-ai.js';
 import {initialState,migrateState,loadState,KEY} from '../dist/state.js';
-const unit = (id,type,color,square,level=1,hp=maxHp({level})) => ({id,type,color,square,level,hp,moved:false});
-const position = units => ({id:'test',phase:'playing',turn:'w',ply:0,units,xp:{},positions:{},result:null,lastEvent:null});
+const unit = (id,type,color,square,level=1,hp=maxHp({type,level})) => ({id,type,color,square,level,hp,moved:false});
+const position = units => ({id:'test',rulesVersion:2,phase:'playing',turn:'w',ply:0,units,xp:{},positions:{},result:null,lastEvent:null});
 const win = (profile,nodeId) => {
  const started=beginPveBattle(profile,nodeId,()=>0),battle=started.battle;
  assert.ok(battle);battle.units.find(unit=>unit.color==='b'&&unit.type==='k').hp=0;
@@ -19,25 +19,29 @@ test('PvE migration preserves existing wallet, rating, archive, game and identit
  const restored=migrateState({...migrated,pve});assert.deepEqual(restored.pve.units,pve.units);assert.equal(restored.pve.stones,0);
  assert.deepEqual(restored.archive,migrated.archive);assert.deepEqual(restored.rating,migrated.rating);
 });
-test('Equal levels are lethal for every attacker/defender type, including king',()=>{
- for(const level of [1,3,5])for(const type of Object.keys(TYPE_WEIGHT))assert.equal(damage({type,level}),maxHp({type:'k',level}));
- assert.equal(statScale(5),2);
+test('Piece roles differ and levels change concrete hit and survival thresholds',()=>{
+ assert.equal(statScale(5),2.6);
+ for(const type of Object.keys(TYPE_WEIGHT)){
+  assert.equal(maxHp({type,level:2}),Math.round(maxHp({type,level:1})*1.4));
+  assert.equal(damage({type,level:5}),Math.round(damage({type,level:1})*2.6));
+ }
+ assert.ok(damage({type:'n',level:1})>=maxHp({type:'p',level:1}));
+ assert.ok(damage({type:'k',level:1})>=maxHp({type:'p',level:1}));
+ assert.ok(damage({type:'p',level:1})<maxHp({type:'p',level:1}));
+ assert.ok(damage({type:'p',level:2})>=maxHp({type:'p',level:1}));
+ assert.ok(maxHp({type:'p',level:2})>damage({type:'n',level:1}));
+ assert.ok(maxHp({type:'r',level:1})>maxHp({type:'b',level:1}));
+ assert.ok(damage({type:'b',level:1})>damage({type:'n',level:1}));
 });
 test('Nonlethal attack spends a turn, leaves attacker in place and never counters',()=>{
  const battle=position([unit('p','p','w','c4'),unit('n','n','b','d5',2)]);
  const next=resolveAction(battle,{from:'c4',to:'d5'});
- assert.equal(next.units[0].square,'c4');assert.equal(next.units[0].hp,100);assert.equal(next.units[1].hp,25);assert.equal(next.turn,'b');assert.equal(next.ply,1);assert.deepEqual(next.xp,{});
- assert.equal(battle.units[1].hp,125,'input immutable');
+ assert.equal(next.units[0].square,'c4');assert.equal(next.units[0].hp,100);assert.equal(next.units[1].hp,88);assert.equal(next.turn,'b');assert.equal(next.ply,1);assert.deepEqual(next.xp,{});
+ assert.equal(battle.units[1].hp,168,'input immutable');
 });
 test('Lethal attack enters the target square and awards only the attacking figure',()=>{
- const next=resolveAction(position([unit('p','p','w','c4'),unit('n','n','b','d5')]),{from:'c4',to:'d5'});
- assert.equal(next.units[0].square,'d5');assert.equal(next.units[1].hp,0);assert.equal(next.xp.p,16);assert.ok(next.lastEvent.killed);
-});
-test('King death wins; threatened kings can move, no orthodox check restriction',()=>{
- const battle=position([unit('wk','k','w','e4'),unit('bk','k','b','e5')]);
- assert.ok(movesFor(battle,battle.units[0]).some(move=>move.to==='e5'));
- const next=resolveAction(battle,{from:'e4',to:'e5'});assert.equal(next.phase,'result');assert.equal(next.result.outcome,'win');
- const damaged=resolveAction(position([unit('wk','k','w','e4'),unit('bk','k','b','e5',2)]),{from:'e4',to:'e5'});assert.equal(damaged.phase,'playing');assert.equal(damaged.units[1].hp,25);
+ const next=resolveAction(position([unit('p','p','w','c4',2),unit('n','p','b','d5')]),{from:'c4',to:'d5'});
+ assert.equal(next.units[0].square,'d5');assert.equal(next.units[1].hp,0);assert.equal(next.xp.p,13);assert.ok(next.lastEvent.killed);
 });
 test('Geometry enforces blockers, board edges, own pieces and side to move',()=>{
  const battle=position([unit('r','r','w','a1'),unit('p','p','w','a3'),unit('b','b','b','c1')]);
@@ -101,11 +105,11 @@ test('Settlement is idempotent and wallet, rewards, receipts are a single saved 
  const storage=new Map();storage.set(KEY,JSON.stringify({...initialState(),...result}));const loaded=loadState({getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)});
  assert.equal(loaded.coins,117);assert.equal(loaded.pve.battle.settled,true);assert.equal(settlePve(loaded),loaded);
 });
-test('Only first boss clear raises cap and grants a core; a single evolution keeps identity',()=>{
+test('First boss raises cap; every boss victory gives one core; evolution keeps identity',()=>{
  let p=initialPve();for(const nodeId of ['trail','clearing','riders','bridge','gate','warden'])p=returnToMap(win(p,nodeId).pve);
  assert.equal(p.levelCap,5);assert.equal(p.cores,1);
- const original=p.units[4];const evolved=evolveUnit(p,original.id);assert.equal(evolved.cores,0);assert.deepEqual(evolved.units[4],{...original,type:'r'});assert.equal(evolveUnit(evolved,original.id),evolved);
- const again=returnToMap(win(evolved,'warden').pve);assert.equal(again.cores,0);assert.equal(again.levelCap,5);assert.equal(again.lastResult.first,false);
+ const original=p.units[4];const evolved=evolveUnit(p,original.id,'n');assert.equal(evolved.cores,0);assert.deepEqual(evolved.units[4],{...original,type:'n'});assert.equal(evolveUnit(evolved,original.id),evolved);
+ const again=returnToMap(win(evolved,'warden').pve);assert.equal(again.cores,1);assert.equal(again.levelCap,5);assert.equal(again.lastResult.first,false);
 });
 test('Loss preserves kills/death penalties, restores HP next battle and never rewards unused reserves',()=>{
  const wallet=initialState();wallet.pve=beginPveBattle(wallet.pve,'trail');const p=wallet.pve;
@@ -137,7 +141,7 @@ test('Removing a2 preserves all other home squares through reload, reinsertion a
  p=normalizePve(toggleUnit(p,pawn.id));const after=formation(activeArmy(p),'w');
  assert.equal(after.some(unit=>unit.square==='a2'),false);
  for(const unit of after)assert.equal(unit.square,before.find(row=>row.id===unit.id).square);
- p=toggleUnit(p,pawn.id);p={...p,cleared:['warden'],cores:1,levelCap:5};p=evolveUnit(p,pawn.id);
+ p=toggleUnit(p,pawn.id);p={...p,cleared:['warden'],cores:1,levelCap:5};p=evolveUnit(p,pawn.id,'b');
  const evolved=formation(activeArmy(normalizePve(p)),'w');assert.equal(evolved.find(unit=>unit.id===pawn.id).square,'a2');
  assert.equal(new Set(evolved.map(unit=>unit.square)).size,evolved.length);
 });
@@ -152,10 +156,6 @@ test('Battle save resumes exact HP, turn, XP and position; malformed saves never
  const p=beginPveBattle(initialPve(),'trail');const next=playPveAction(p,{from:'c2',to:'c4'});assert.notEqual(p,next);assert.deepEqual(normalizePve(JSON.parse(JSON.stringify(next))).battle,next.battle);
  for(const field of ['units','positions','xp'])assert.equal(normalizePve({...p,battle:{...p.battle,[field]:null}}).battle,null);
  const invalid=structuredClone(p);invalid.battle.units[1].square=invalid.battle.units[0].square;assert.equal(normalizePve(invalid).battle,null);
-});
-test('AI finishes a king and avoids immediate king death while respecting damaged targets',()=>{
- const mate=position([unit('wk','k','w','h1'),unit('r','r','w','a1'),unit('bk','k','b','a8')]);assert.deepEqual(choosePveMove(mate),{from:'a1',to:'a8'});
- const risky=position([unit('wk','k','w','e1'),unit('r','r','w','a1'),unit('bk','k','b','h8'),unit('br','r','b','e8')]);const move=choosePveMove(risky);const next=resolveAction(risky,move);assert.ok(!allMoves(next).some(row=>resolveAction(next,row).result?.outcome==='loss'));
 });
 test('Core loop survives multiple AI battles, reloads and deterministic rewards',()=>{
  let p=initialPve();for(let game=0;game<3;game++){

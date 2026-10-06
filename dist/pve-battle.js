@@ -1,13 +1,29 @@
-import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=114';
+import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=115';
 const files='abcdefgh';
 const coords = square => [files.indexOf(square[0]),Number(square[1])-1];
 const squareAt = (x,y) => x>=0&&x<8&&y>=0&&y<8?files[x]+(y+1):null;
 const orthogonal=[[1,0],[-1,0],[0,1],[0,-1]],diagonal=[[1,1],[1,-1],[-1,1],[-1,-1]];
 export const livingUnits = battle => battle.units.filter(unit=>unit.hp>0);
 export const unitAt = (battle,square) => battle.units.find(unit=>unit.hp>0&&unit.square===square);
-// HP chess uses movement geometry, not orthodox check legality. Kings may enter
-// attacked squares; only their actual death ends the battle. No castling/en passant.
-export const movesFor = (battle,unit) => {
+// Geometry is separate from legality: pawn attacks differ from pawn movement,
+// and pinned enemies still control squares a king cannot enter.
+export const attacksSquare = (battle,unit,square) => {
+ if(!unit||unit.hp<=0||unit.square===square)return false;
+ const [x,y]=coords(unit.square),[tx,ty]=coords(square),dx=tx-x,dy=ty-y;
+ if(unit.type==='p')return Math.abs(dx)===1&&dy===(unit.color==='w'?1:-1);
+ if(unit.type==='n')return Math.abs(dx)*Math.abs(dy)===2;
+ if(unit.type==='k')return Math.max(Math.abs(dx),Math.abs(dy))===1;
+ const diagonalLine=Math.abs(dx)===Math.abs(dy),straight=dx===0||dy===0;
+ if(!(unit.type==='q'&&(diagonalLine||straight)||unit.type==='b'&&diagonalLine||unit.type==='r'&&straight))return false;
+ for(let step=1;step<Math.max(Math.abs(dx),Math.abs(dy));step++)if(unitAt(battle,squareAt(x+Math.sign(dx)*step,y+Math.sign(dy)*step)))return false;
+ return true;
+};
+export const isSquareAttacked = (battle,square,color) => livingUnits(battle).some(unit=>unit.color===color&&attacksSquare(battle,unit,square));
+export const isInCheck = (battle,color=battle.turn) => {
+ const king=livingUnits(battle).find(unit=>unit.color===color&&unit.type==='k');
+ return !!king&&isSquareAttacked(battle,king.square,color==='w'?'b':'w');
+};
+const pseudoMoves = (battle,unit) => {
  if(!unit||unit.hp<=0)return [];
  const [x,y]=coords(unit.square),moves=[];
  const add = (dx,dy,slide=false) => {
@@ -30,6 +46,10 @@ export const movesFor = (battle,unit) => {
  else for(const [dx,dy] of unit.type==='b'?diagonal:unit.type==='r'?orthogonal:[...orthogonal,...diagonal])add(dx,dy,unit.type!=='k');
  return moves;
 };
+export const movesFor = (battle,unit) => pseudoMoves(battle,unit).filter(move=>{
+ if(unitAt(battle,move.to)?.type==='k')return false;
+ return !isInCheck(applyAction(battle,move),unit.color);
+});
 export const allMoves = (battle,color=battle.turn) => livingUnits(battle).filter(unit=>unit.color===color).flatMap(unit=>movesFor(battle,unit));
 export const positionKey = battle => `${battle.turn}|${livingUnits(battle).map(unit=>`${unit.id}:${unit.type}:${unit.square}:${unit.hp}:${unit.moved?1:0}`).sort().join('|')}`;
 export const formation = (units,color) => {
@@ -43,31 +63,49 @@ export const beginPveBattle = (profile,nodeId,rng=Math.random) => {
  const node=NODES.find(node=>node.id===nodeId);
  if(profile.battle||!isUnlocked(profile,node)||activeArmy(profile).length!==PVE.armySize)return profile;
  const enemy=encounter(profile,node),sequence=profile.sequence+1;
- const battle={id:`pve-${sequence}`,nodeId,rewardRoll:{coins:rng(),stones:rng()},phase:'playing',turn:'w',ply:0,units:[...formation(activeArmy(profile),'w'),...formation(enemy.units,'b')],xp:{},positions:{},lastEvent:null,result:null,settled:false};
+ const battle={id:`pve-${sequence}`,rulesVersion:2,nodeId,rewardRoll:{coins:rng(),stones:rng()},phase:'playing',turn:'w',ply:0,units:[...formation(activeArmy(profile),'w'),...formation(enemy.units,'b')],xp:{},positions:{},lastEvent:null,result:null,settled:false};
  battle.positions[positionKey(battle)]=1;
  const record=profile.nodes[nodeId]||{attempts:0,wins:0,openedAt:profile.stats.battles};
  return {...profile,revision:profile.revision+1,sequence,battle,nodes:{...profile.nodes,[nodeId]:{...record,attempts:record.attempts+1}}};
 };
 export const killXp = (attacker,target) => Math.max(4,Math.round(16*(1+.2*(target.level-1))*Math.max(.4,Math.min(1.6,1+.2*(target.level-attacker.level)))));
-// No storage or animation here: one action, one turn, no automatic counterattack.
-export const resolveAction = (battle,action,{track=true}={}) => {
- if(battle.phase!=='playing')return battle;
- const attacker=unitAt(battle,action?.from);
- if(!attacker||attacker.color!==battle.turn||!movesFor(battle,attacker).some(move=>move.to===action.to))return battle;
- const next={...battle,units:battle.units.map(unit=>({...unit})),xp:{...battle.xp},positions:track?{...battle.positions}:battle.positions};
+// Apply HP and movement before checking king safety: a surviving target blocks
+// the attacker, so a nonlethal hit cannot falsely count as a check evasion.
+const applyAction = (battle,action) => {
+ const attacker=unitAt(battle,action.from);
+ const next={...battle,units:battle.units.map(unit=>({...unit})),xp:{...battle.xp}};
  const own=next.units.find(unit=>unit.id===attacker.id),target=unitAt(next,action.to),hit=target?Math.min(target.hp,damage(own)):0;
  let killed=false;
  if(target){target.hp-=hit;killed=target.hp===0;if(killed&&own.color==='w')next.xp[own.id]=(next.xp[own.id]||0)+killXp(own,target);}
  if(!target||killed)own.square=action.to;
  own.moved=true;
- const promoted=own.type==='p'&&own.square[1]===(own.color==='w'?'8':'1');if(promoted)own.type='q';
+ const promoted=own.type==='p'&&own.square[1]===(own.color==='w'?'8':'1');
+ if(promoted){const health=own.hp/maxHp(own);own.type='q';own.hp=Math.max(1,Math.round(health*maxHp(own)));}
  next.lastEvent={from:action.from,to:action.to,attackerId:own.id,targetId:target?.id||null,damage:hit,killed,moved:!target||killed,promoted};
  next.turn=battle.turn==='w'?'b':'w';next.ply++;
- if(killed&&target.type==='k'){next.phase='result';next.result={outcome:target.color==='b'?'win':'loss',reason:'king'};}
- else if(track){
+ return next;
+};
+export const adjudicateBattle = battle => {
+ if(battle.phase!=='playing'||livingUnits(battle).some(unit=>unit.color===battle.turn&&movesFor(battle,unit).length))return battle;
+ const checked=isInCheck(battle);
+ return {...battle,phase:'result',result:{outcome:checked?(battle.turn==='b'?'win':'loss'):'draw',reason:checked?'checkmate':'no-moves'}};
+};
+export const resumePveBattle = profile => {
+ if(!profile.battle)return profile;
+ const battle=adjudicateBattle(profile.battle);
+ return battle===profile.battle?profile:{...profile,revision:profile.revision+1,battle};
+};
+// No storage or animation here: one action, one turn, no automatic counterattack.
+export const resolveAction = (battle,action,{track=true}={}) => {
+ if(battle.phase!=='playing')return battle;
+ const attacker=unitAt(battle,action?.from);
+ if(!attacker||attacker.color!==battle.turn||!movesFor(battle,attacker).some(move=>move.to===action.to))return battle;
+ const next=adjudicateBattle(applyAction(battle,action));
+ if(track){
+  next.positions={...battle.positions};
   const key=positionKey(next);next.positions[key]=(next.positions[key]||0)+1;
-  const reason=next.ply>=PVE.maxPlies?'limit':next.positions[key]>=3?'repetition':allMoves(next).length===0?'no-moves':null;
-  if(reason){next.phase='result';next.result={outcome:'draw',reason};}
+  const reason=next.ply>=PVE.maxPlies?'limit':next.positions[key]>=3?'repetition':null;
+  if(reason&&next.phase==='playing'){next.phase='result';next.result={outcome:'draw',reason};}
  }
  return next;
 };
@@ -89,7 +127,7 @@ export const pveRewards = (battle,node,first) => {
  const pick = (range,key) => range[0]+Math.floor(roll(key)*(range[1]-range[0]+1));
  const earlyResign=battle.result.reason==='resigned'&&Math.ceil(battle.ply/2)<10;
  const bonusCoins=first?(node.boss?10:node.bonus?6:5):0,bonusStones=first?(node.boss?3:node.bonus?2:1):0;
- return {coins:(earlyResign?0:pick(ranges[outcome],'coins'))+bonusCoins,stones:pick(outcome==='win'?[2,3]:outcome==='draw'?[1,2]:[1,1],'stones')+bonusStones,cores:first&&node.boss?1:0,bonusCoins,bonusStones};
+ return {coins:(earlyResign?0:pick(ranges[outcome],'coins'))+bonusCoins,stones:pick(outcome==='win'?[2,3]:outcome==='draw'?[1,2]:[1,1],'stones')+bonusStones,cores:outcome==='win'&&node.boss?1:0,bonusCoins,bonusStones};
 };
 export const settlePve = (wallet,now=new Date().toISOString()) => {
  const profile=wallet.pve,battle=profile?.battle;
@@ -120,5 +158,5 @@ export const returnToMap = profile => profile.battle?.settled?{...profile,revisi
 export const pveBoardAdapter = battle => ({
  board:()=>Array.from({length:8},(_,row)=>Array.from({length:8},(_,col)=>unitAt(battle,files[col]+(8-row))||null)),
  moves:({square})=>battle.turn==='w'&&unitAt(battle,square)?.color==='w'?movesFor(battle,unitAt(battle,square)):[],
- history:()=>battle.lastEvent?[battle.lastEvent]:[],turn:()=>battle.turn,isCheck:()=>false,
+ history:()=>battle.lastEvent?[battle.lastEvent]:[],turn:()=>battle.turn,isCheck:()=>isInCheck(battle),
 });

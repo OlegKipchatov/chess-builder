@@ -31,12 +31,12 @@ try{
     constructor(url,options){super(url,options);this.dead=false;live++;peak=Math.max(peak,live);variants.push(String(url).includes('single-worker')?'single':'threaded');}
     terminate(){if(!this.dead){this.dead=true;live--;}super.terminate();}
    };
-   const {createStockfishClient}=await import('./stockfish-client.js?v=114');
-   const {createAutoplayEngine}=await import('./autochess-engine.js?v=114');
-   const {createSession}=await import('./cognitive-model.js?v=114');
-   const {Chess}=await import('./chess.js?v=114');
-   const {analyzeReward}=await import('./economy-analysis.js?v=114');
-   const {analyzeGame}=await import('./analysis/analysis-service.js?v=114');
+   const {createStockfishClient}=await import('./stockfish-client.js?v=115');
+   const {createAutoplayEngine}=await import('./autochess-engine.js?v=115');
+   const {createSession}=await import('./cognitive-model.js?v=115');
+   const {Chess}=await import('./chess.js?v=115');
+   const {analyzeReward}=await import('./economy-analysis.js?v=115');
+   const {analyzeGame}=await import('./analysis/analysis-service.js?v=115');
    const wait=async()=>{for(let i=0;i<100&&live;i++)await new Promise(r=>setTimeout(r,20));if(live)throw Error('Orphan workers');};
    for(let i=0;i<3;i++){
     const client=createStockfishClient();

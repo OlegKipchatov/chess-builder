@@ -12,9 +12,10 @@ export const NODES = Object.freeze([
  {id:'warden',step:6,threat:3,name:'Страж крепости',minPower:25,maxPower:35,ratio:1.08,composition:'rooks',boss:true},
 ]);
 const number = (value,fallback=0,max=1e8) => Number.isSafeInteger(value)&&value>=0?Math.min(max,value):fallback;
-export const statScale = level => 1+.25*(level-1);
-export const maxHp = unit => Math.round(100*statScale(unit.level));
-export const damage = maxHp;
+export const PIECE_STATS = Object.freeze({p:{hp:100,damage:80},n:{hp:120,damage:125},b:{hp:100,damage:140},r:{hp:170,damage:160},q:{hp:150,damage:190},k:{hp:140,damage:110}});
+export const statScale = level => 1+.4*(level-1);
+export const maxHp = unit => Math.round(PIECE_STATS[unit.type].hp*statScale(unit.level));
+export const damage = unit => Math.round(PIECE_STATS[unit.type].damage*statScale(unit.level));
 export const xpThreshold = level => Math.round(60*Math.pow(1.55,level-1));
 export const unitPower = unit => TYPE_WEIGHT[unit.type]*statScale(unit.level)*(unit.hp===undefined?1:unit.hp/maxHp(unit));
 export const armyPower = units => units.reduce((sum,unit)=>sum+unitPower(unit),0);
@@ -51,10 +52,11 @@ export const toggleUnit = (profile,id) => {
  const unit=profile.units.find(row=>row.id===id);if(!unit||unit.type==='k'||(!unit.active&&activeArmy(profile).length>=PVE.armySize))return profile;
  return {...profile,revision:profile.revision+1,units:profile.units.map(row=>row.id===id?{...row,active:!row.active}:row)};
 };
-export const evolveUnit = (profile,id) => {
+export const evolutionOptions = type => ({p:['n','b'],n:['r'],b:['r'],r:['q']}[type]||[]);
+export const evolveUnit = (profile,id,targetType) => {
  if(profile.battle||!campaignComplete(profile)||profile.cores<PVE.evolutionCost)return profile;
- const unit=profile.units.find(row=>row.id===id);if(unit?.type!=='p')return profile;
- return {...profile,revision:profile.revision+1,cores:profile.cores-PVE.evolutionCost,units:profile.units.map(row=>row.id===id?{...row,type:'r'}:row),stats:{...profile.stats,firstEvolutionAt:profile.stats.firstEvolutionAt??profile.stats.battles}};
+ const unit=profile.units.find(row=>row.id===id);if(!unit||!evolutionOptions(unit.type).includes(targetType))return profile;
+ return {...profile,revision:profile.revision+1,cores:profile.cores-PVE.evolutionCost,units:profile.units.map(row=>row.id===id?{...row,type:targetType}:row),stats:{...profile.stats,firstEvolutionAt:profile.stats.firstEvolutionAt??profile.stats.battles}};
 };
 // Deterministic encounters survive reloads and node selection without rerolls.
 const randomFor = seed => {let value=2166136261;for(const char of String(seed))value=Math.imul(value^char.charCodeAt(0),16777619);return ()=>{value+=0x6D2B79F5;let x=value;x=Math.imul(x^x>>>15,x|1);x^=x+Math.imul(x^x>>>7,x|61);return ((x^x>>>14)>>>0)/4294967296;};};
@@ -79,17 +81,26 @@ export const normalizePve = input => {
  const levelCap=cleared.includes('warden')?5:3;
  const units=fresh.units.map(base=>{
   const row=input.units.find(row=>row?.id===base.id)||base;
-  const type=base.type==='p'&&row.type==='r'&&cleared.includes('warden')?'r':base.type;
+  const allowed={p:['p','n','b','r','q'],n:['n','r','q'],b:['b','r','q'],r:['r','q'],k:['k']}[base.type];
+  const type=cleared.includes('warden')&&allowed.includes(row.type)?row.type:base.type;
   const level=Math.max(1,number(row.level,1,levelCap));
   return {id:base.id,type,level,xp:number(row.xp,0,xpThreshold(level)-1),deaths:number(row.deaths),active:base.type==='k'||row.active===true};
  });
  let active=0;for(const unit of units)if(unit.active){active++;if(active>8)unit.active=false;}
  const nodes=Object.fromEntries(NODES.filter(node=>input.nodes?.[node.id]).map(node=>[node.id,{attempts:number(input.nodes?.[node.id]?.attempts),wins:number(input.nodes?.[node.id]?.wins),openedAt:number(input.nodes?.[node.id]?.openedAt)}]));
  const stats={battles:number(input.stats?.battles),wins:number(input.stats?.wins),draws:number(input.stats?.draws),stonesUsed:number(input.stats?.stonesUsed),firstEvolutionAt:input.stats?.firstEvolutionAt===null?null:number(input.stats?.firstEvolutionAt),stoneInvestments:Object.fromEntries(units.map(unit=>[unit.id,number(input.stats?.stoneInvestments?.[unit.id])])),deaths:Object.fromEntries(Object.keys(TYPE_WEIGHT).map(type=>[type,number(input.stats?.deaths?.[type])])),recent:Array.isArray(input.stats?.recent)?input.stats.recent.slice(-30):[]};
- const next={...fresh,revision:number(input.revision),sequence:number(input.sequence),levelCap,stones:number(input.stones),cores:number(input.cores,0,1),cleared,units,nodes,stats,lastResult:input.lastResult?.id?input.lastResult:null};
+ const next={...fresh,revision:number(input.revision),sequence:number(input.sequence),levelCap,stones:number(input.stones),cores:number(input.cores),cleared,units,nodes,stats,lastResult:input.lastResult?.id?input.lastResult:null};
  // A malformed save cannot be interpreted as a victory or mint a reward.
  const battle=input.battle;
- if(validBattle(battle,next))next.battle=structuredClone(battle);
+ if(validBattle(battle,next)){
+  next.battle=structuredClone(battle);
+  if(battle.rulesVersion!==2){
+   next.battle.rulesVersion=2;
+   next.battle.units=next.battle.units.map(unit=>({...unit,hp:unit.hp===0?0:Math.max(1,Math.round(unit.hp/(100*(1+.25*(unit.level-1)))*maxHp(unit)))}));
+   // The position key includes HP; old repetition counts no longer describe this board.
+   next.battle.positions={};
+  }
+ }
  return next;
 };
 const validBattle = (battle,profile) => {
@@ -97,7 +108,7 @@ const validBattle = (battle,profile) => {
  if(!Array.isArray(battle.units)||battle.units.length!==16||!battle.xp||typeof battle.xp!=='object'||!battle.positions||typeof battle.positions!=='object')return false;
  const ids=new Set(),squares=new Set();
  for(const unit of battle.units){
-  if(!unit||!['w','b'].includes(unit.color)||!Object.hasOwn(TYPE_WEIGHT,unit.type)||!Number.isInteger(unit.level)||unit.level<1||unit.level>5||!Number.isInteger(unit.hp)||unit.hp<0||unit.hp>maxHp(unit)||ids.has(unit.id)||!/^[a-h][1-8]$/.test(unit.square))return false;
+  if(!unit||!['w','b'].includes(unit.color)||!Object.hasOwn(TYPE_WEIGHT,unit.type)||!Number.isInteger(unit.level)||unit.level<1||unit.level>5||!Number.isInteger(unit.hp)||unit.hp<0||unit.hp>(battle.rulesVersion===2?maxHp(unit):100*(1+.25*(unit.level-1)))||ids.has(unit.id)||!/^[a-h][1-8]$/.test(unit.square))return false;
   if(unit.color==='w'&&!profile.units.some(row=>row.id===unit.id&&row.active))return false;
   if(unit.hp>0&&squares.has(unit.square))return false;
   ids.add(unit.id);if(unit.hp>0)squares.add(unit.square);
@@ -105,7 +116,7 @@ const validBattle = (battle,profile) => {
  for(const color of ['w','b'])if(battle.units.filter(unit=>unit.color===color&&unit.type==='k').length!==1)return false;
  if(battle.phase==='result'){
   const result=battle.result;
-  if(!battle.settled||!['win','loss','draw'].includes(result?.outcome)||!['king','resigned','limit','repetition','no-moves'].includes(result.reason)||!Array.isArray(result.changes))return false;
+  if(!battle.settled||!['win','loss','draw'].includes(result?.outcome)||!['king','checkmate','resigned','limit','repetition','no-moves'].includes(result.reason)||!Array.isArray(result.changes))return false;
   for(const key of ['coins','stones','cores','levelCap'])if(!Number.isSafeInteger(result[key])||result[key]<0||result[key]>(key==='coins'?43:30))return false;
   for(const row of result.changes){
    if(!profile.units.some(unit=>unit.id===row?.id)||!Object.hasOwn(TYPE_WEIGHT,row.type))return false;
