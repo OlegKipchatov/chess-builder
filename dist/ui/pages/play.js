@@ -1,8 +1,8 @@
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=113';
-import {matchHeader} from '../components/match-header.js?v=113';
-import {moveNavigation} from '../components/move-navigation.js?v=113';
-import {matchStatusPanel} from '../components/match-status-panel.js?v=113';
-import {analysisBoardTools,analysisInsights} from './analysis.js?v=113';
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=114';
+import {matchHeader} from '../components/match-header.js?v=114';
+import {moveNavigation} from '../components/move-navigation.js?v=114';
+import {matchStatusPanel} from '../components/match-status-panel.js?v=114';
+import {analysisBoardTools,analysisInsights} from './analysis.js?v=114';
 const archiveActions=()=>`<div id="archive-heading-actions" hidden><div id="archive-export-slot"></div><span id="match-settings" hidden></span></div>`;
 const analysisActions=()=>`<div id="archive-review-actions" hidden><div id="archive-analysis-actions"><button id="archive-analysis" class="primary" hidden>Разобрать партию</button><button id="analysis-retry" class="primary" hidden>Повторить анализ</button><div id="analysis-progress" hidden><span class="analysis-spinner" aria-hidden="true"></span><span role="status">Разбираем партию…</span><button id="analysis-cancel" class="quiet">Отменить</button></div></div></div>`;
 export const playPage = () => `<section id="play" class="tab" data-page-kind="root">${pageHeader({title:"Игра",titleId:'match-title',className:'game-heading',startContent:iconButton({id:'archive-return',label:'К истории партий',icon:backIcon,hidden:true}),endContent:archiveActions()})}<div class="page-content"><div id="game-ready" class="game-ready"><h2>Сыграем?</h2><div class="actions"><button id="start-game" class="primary">Партия с ИИ</button></div></div><div id="play-stats" class="play-stats" hidden></div><div class="game-grid" id="match-surface" hidden><div class="board-area">${matchHeader()}<p id="status" class="turn-status" aria-live="polite">Ход белых</p><div id="board" class="board" role="group" aria-label="Шахматная доска"></div>${analysisBoardTools()}<div id="analysis-game-controls">${moveNavigation()}</div>${analysisActions()}${analysisInsights()}<p id="history-notice" class="history-notice" hidden>Вы смотрите прошлую позицию. Вернитесь к текущему ходу, чтобы продолжить.</p></div>${matchStatusPanel()}</div></div></section>`;

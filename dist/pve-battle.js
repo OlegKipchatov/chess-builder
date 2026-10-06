@@ -1,4 +1,4 @@
-import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=113';
+import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=114';
 const files='abcdefgh';
 const coords = square => [files.indexOf(square[0]),Number(square[1])-1];
 const squareAt = (x,y) => x>=0&&x<8&&y>=0&&y<8?files[x]+(y+1):null;

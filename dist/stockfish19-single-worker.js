@@ -2,8 +2,8 @@
 // Its NNUE is embedded in WASM. Do not use URL fragments: a cached Worker
 // response can discard them when setting WorkerLocation. The pinned build
 // substitutes only its default WASM locator with this explicit release URL.
-self.STOCKFISH_WASM_URL=new URL('./vendor/sf19-single/stockfish-19-lite-single.wasm?v=113',self.location.href).href;
-importScripts('./vendor/sf19-single/stockfish-19-lite-single.js?v=113');
+self.STOCKFISH_WASM_URL=new URL('./vendor/sf19-single/stockfish-19-lite-single.wasm?v=114',self.location.href).href;
+importScripts('./vendor/sf19-single/stockfish-19-lite-single.js?v=114');
 const uciHandler=self.onmessage;
 self.onmessage=event=>{
  if(event.data?.type==='STOP_ENGINE'){

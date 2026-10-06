@@ -17,7 +17,7 @@ try{
  page.on('pageerror',error=>errors.push(error.message));await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);
  const seed=async(count=0,overflow=false)=>{
   await page.evaluate(async({count,overflow})=>{
-   const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=113');const run=createAutoRun('compact-fixture');
+   const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=114');const run=createAutoRun('compact-fixture');
    run.color='w';run.level=3;run.round=21;run.purchases=7;run.nextId=8;run.reserve=27;
    run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
    run.opponent=arrangeOpponent(run.opponent,'b');
@@ -63,7 +63,7 @@ try{
  // Legacy invalid composition stays visible; explanation and repair do not move the board.
  await seed(0);
  await page.evaluate(async()=>{
-  const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=113');
+  const {createAutoRun,arrangeOpponent}=await import('./autochess.js?v=114');
   const run=createAutoRun('composition-browser');run.color='w';run.level=10;run.round=51;run.purchases=15;run.nextId=16;run.reserve=384;
   run.results=Array.from({length:50},(_,i)=>({outcome:'draw',incomeRule:2,shopLevel:10,battleId:run.id+':'+(i+1)}));
   run.opponent=arrangeOpponent(run.opponent,'b');
@@ -81,7 +81,7 @@ try{
  await page.locator('#auto-board [data-square="c3"]').click();assert.equal((await stored()).army.find(p=>p.id==='piece-11').square,null);assert.equal((await stored()).army.find(p=>p.id==='piece-1').square,'c3');
  // An old paused unsupported battle requires an explicit return to preparation.
  await page.evaluate(async run=>{
-  const {setupFen}=await import('./autochess.js?v=113');
+  const {setupFen}=await import('./autochess.js?v=114');
   run.phase='paused';run.battle={id:run.id+':'+run.round,initialFen:setupFen(run),moves:[],elapsed:0};
   localStorage.setItem('gachachess-autochess-v1',JSON.stringify(run));
  },incompatibleSaved);

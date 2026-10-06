@@ -1,4 +1,4 @@
-import {REWARD_CONFIG as C} from './reward-quality.js?v=113';
+import {REWARD_CONFIG as C} from './reward-quality.js?v=114';
 // Canonical final history only: replay/undo never creates another reward.
 export const rewardBreakdownFor = (game, resigned=false, mode='bot', playerColor='w') => {
  const cleanMoves=game.history({verbose:true}).filter(move=>move.color===playerColor).length;

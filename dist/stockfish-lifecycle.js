@@ -1,5 +1,5 @@
-import {detectStockfishCapabilities} from './stockfish-capabilities.js?v=113';
-import {STOCKFISH as C} from './stockfish-config.js?v=113';
+import {detectStockfishCapabilities} from './stockfish-capabilities.js?v=114';
+import {STOCKFISH as C} from './stockfish-config.js?v=114';
 // Shared across all clients, including Autochess. Never allocate a replacement
 // heap before the previous tree acknowledges shutdown (or is forcibly stopped).
 let retirement=Promise.resolve(),threadedFailure=null,restartReason=null;
@@ -46,7 +46,7 @@ export const createEngineWorker = () => {
   if(closed)return;
   if(!capability.wasm){fail(Error('WebAssembly unavailable'));return;}
   try{
-   const url=variant==='threaded'?'./stockfish19-worker.js?v=113':'./stockfish19-single-worker.js?v=113';
+   const url=variant==='threaded'?'./stockfish19-worker.js?v=114':'./stockfish19-single-worker.js?v=114';
    const owned=new Worker(url,variant==='threaded'?{type:'module'}:undefined);worker=owned;
    timer=setTimeout(()=>initializationFailed(Error('Stockfish initialization timeout'),true),C.variantInitializationMs);
    owned.onmessage=event=>{
