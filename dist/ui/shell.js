@@ -1,13 +1,13 @@
-import {appHeader} from './components/app-header.js?v=104';
-import {bottomNavigation} from './components/bottom-navigation.js?v=104';
-import {playPage} from './pages/play.js?v=104';
-import {profilePage} from './pages/profile.js?v=104';
-import {collectionPage} from './pages/collection.js?v=104';
-import {chestsPage} from './pages/chests.js?v=104';
-import {archivePage} from './pages/archive.js?v=104';
-import {statisticsPage} from './pages/statistics.js?v=104';
-import {calendarPage} from './pages/calendar.js?v=104';
-import {faqPage} from './pages/faq.js?v=104';
+import {appHeader} from './components/app-header.js?v=111';
+import {bottomNavigation} from './components/bottom-navigation.js?v=111';
+import {playPage} from './pages/play.js?v=111';
+import {profilePage} from './pages/profile.js?v=111';
+import {collectionPage} from './pages/collection.js?v=111';
+import {chestsPage} from './pages/chests.js?v=111';
+import {archivePage} from './pages/archive.js?v=111';
+import {statisticsPage} from './pages/statistics.js?v=111';
+import {calendarPage} from './pages/calendar.js?v=111';
+import {faqPage} from './pages/faq.js?v=111';
 export const mountAppShell = root => {
  root.innerHTML=appHeader()+'<main>'+bottomNavigation()+playPage()+profilePage()+collectionPage()+chestsPage()+archivePage()+statisticsPage()+calendarPage()+faqPage()+'</main>'+"<dialog id=\"modal\"><div id=\"modal-content\"></div><div class=\"dialog-footer\"><button id=\"close-modal\" class=\"quiet\">Закрыть</button></div></dialog><div class=\"notification-stack\"><button id=\"update-app\" class=\"primary update-app\" hidden>Обновить приложение</button><div id=\"toast\" role=\"status\" aria-live=\"polite\" hidden></div></div>";
 };

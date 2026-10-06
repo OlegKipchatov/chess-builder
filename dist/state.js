@@ -1,11 +1,12 @@
-import {normalizeAutoAwards} from './autochess-rewards.js?v=104';
-import {initialHuntProgress,normalizeHuntProgress} from './hunt.js?v=104';
-import {restoreAnalysis} from './analysis/analysis-storage.js?v=104';
-import {initialActivity, normalizeActivity} from './activity.js?v=104';
-import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=104';
-import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=104';
-import {Chess} from './chess.js?v=104';
-import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=104';
+import {initialPve,normalizePve} from './pve-model.js?v=111';
+import {normalizeAutoAwards} from './autochess-rewards.js?v=111';
+import {initialHuntProgress,normalizeHuntProgress} from './hunt.js?v=111';
+import {restoreAnalysis} from './analysis/analysis-storage.js?v=111';
+import {initialActivity, normalizeActivity} from './activity.js?v=111';
+import {validArchivedProfile,migrateEngineProfile} from './strength.js?v=111';
+import {initialRating, normalizeRating, validRatingSnapshot, ratingSnapshot} from './rating.js?v=111';
+import {Chess} from './chess.js?v=111';
+import {TYPES, STYLES, ITEMS, baseInventory, defaultEquipment, pieceId, boardId, itemById} from './catalog.js?v=111';
 export const KEY = 'chess-vault-v3';
 export const createRecordId = () => {
   if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
@@ -17,7 +18,7 @@ export const createRecordId = () => {
 export const PREVIOUS_KEY = 'chess-vault-v2';
 export const LEGACY_KEY = 'chess-vault-v1';
 export const newGame = (mode='bot', difficulty='adaptive') => ({pgn:'', mode, difficulty, playerColor:'w', started:false, settled:false, resigned:false});
-export const initialState = () => ({version:3, autochessAwards:{}, hunt:initialHuntProgress(), activity:initialActivity(), archive:[], rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
+export const initialState = () => ({version:3, pve:initialPve(), autochessAwards:{}, hunt:initialHuntProgress(), activity:initialActivity(), archive:[], rating:initialRating(), settings:{mode:'bot',difficulty:'adaptive'}, coins:100, shards:0, owned:baseInventory(), equipped:defaultEquipment(), sets:[], pity:0, played:0, opened:0, game:newGame()});
 const integer = (value, fallback=0) => Number.isSafeInteger(value) && value >= 0 ? value : fallback;
 export const validEquipment = (candidate, owned) => {
   const equipped = defaultEquipment();
@@ -46,6 +47,7 @@ export const migrateState = input => {
   next.settings = {mode:input.settings?.mode === 'local' ? 'local' : input.settings?.mode === 'bot' ? 'bot' : next.game.mode, difficulty:['easy','normal','hard','adaptive'].includes(input.settings?.difficulty) ? input.settings.difficulty : next.game.difficulty};
   next.activity = normalizeActivity(input.activity);
   next.hunt = normalizeHuntProgress(input.hunt);
+  next.pve = normalizePve(input.pve);
   next.autochessAwards = normalizeAutoAwards(input.autochessAwards);
   next.rating = normalizeRating(input.rating);
   next.game.rating = validRatingSnapshot(input.game?.rating) ? {...input.game.rating} : null;
