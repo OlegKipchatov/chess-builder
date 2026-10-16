@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {rollChest, openChest, craftItem} from '../dist/economy.js';
-import {initialState, migrateState, loadState, KEY, LEGACY_KEY} from '../dist/state.js';
-import {ITEMS, itemById, craftCost, duplicateRefund, TYPES} from '../dist/catalog.js';
+import {rollChest, openChest, craftItem} from '../src/domain/economy/economy.ts';
+import {initialState, migrateState, loadState, KEY, LEGACY_KEY} from '../src/services/persistence/state.ts';
+import {ITEMS, itemById, craftCost, duplicateRefund, TYPES} from '../src/domain/catalog/catalog.ts';
 import {canEquipPreset} from '../dist/collection.js';
 const sequence = (...values) => () => values.shift() ?? 0;
 test('Границы исходов: 85% фигурка, 10% доска, 5% осколки',()=>{for(const [value,kind] of [[0,'piece'],[.8499,'piece'],[.85,'board'],[.9499,'board'],[.95,'shards'],[.999,'shards']])assert.equal(rollChest([],0,sequence(value,0,0)).kind,kind);});

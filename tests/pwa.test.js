@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync,readdirSync} from 'node:fs';
 import {pieceSVG} from '../dist/pieces.js';
-import {TYPES,STYLES} from '../dist/catalog.js';
+import {TYPES,STYLES} from '../src/domain/catalog/catalog.ts';
 import vm from 'node:vm';
 const read = file => readFileSync(new URL('../dist/'+file,import.meta.url),'utf8');
 test('Весь граф runtime-модулей согласован с v70 и доступен офлайн',()=>{

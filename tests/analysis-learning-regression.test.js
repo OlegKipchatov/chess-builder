@@ -1,14 +1,14 @@
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {recommendationEvidence} from '../dist/analysis/analysis-reasons.js';
-import {prepareMateExercise,createMateExercise} from '../dist/analysis/analysis-training.js';
-import {selectEvents,isImportantInsight} from '../dist/analysis/analysis-events.js';
+import {Chess} from 'chess.js';
+import {recommendationEvidence} from '../src/domain/analysis/analysis-reasons.ts';
+import {prepareMateExercise,createMateExercise} from '../src/domain/analysis/analysis-training.ts';
+import {selectEvents,isImportantInsight} from '../src/domain/analysis/analysis-events.ts';
 import {analysisInsight,visibleVariation} from '../dist/ui/components/analysis-insight.js';
-import {explanationFor} from '../dist/analysis/analysis-explanations.js';
-import {analyzeGame} from '../dist/analysis/analysis-service.js';
-import {createStockfishClient} from '../dist/stockfish-client.js';
+import {explanationFor} from '../src/domain/analysis/analysis-explanations.ts';
+import {analyzeGame} from '../src/domain/analysis/analysis-service.ts';
+import {createStockfishClient} from '../src/services/engines/stockfish-client.ts';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
 
 const pgn=readFileSync(new URL('./fixtures/reina-oct2.pgn',import.meta.url),'utf8').trim();

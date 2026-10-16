@@ -1,0 +1,155 @@
+import type { PieceSymbol,Square } from "chess.js";
+import { useEffect,useRef,useState } from "react";
+import { useOverlays } from "../../app/providers/OverlayProvider.js";
+import { createMateExercise } from "../../domain/analysis/analysis-training.js";
+import type {
+ExerciseController,
+MateExercise,
+} from "../../domain/analysis/types.js";
+import type { Equipment } from "../../domain/catalog/types.js";
+import { Piece } from "../../shared/ui/Piece.js";
+import { Chessboard } from "../chessboard/Chessboard.js";
+import { chessPieces } from "../chessboard/model.js";
+export const MatePractice = ({
+  exercise,
+  equipped,
+  onClose,
+}: {
+  exercise: MateExercise;
+  equipped: Equipment;
+  onClose: () => void;
+}) => {
+  const controller = useRef<ExerciseController | null>(null),
+    [snapshot, setSnapshot] = useState(() =>
+      createMateExercise(exercise).getSnapshot(),
+    ),
+    [selected, setSelected] = useState<Square | null>(null),
+    [hint, setHint] = useState<string | null>(null),
+    [busy, setBusy] = useState(false),
+    { show } = useOverlays();
+  useEffect(() => {
+    const owned = createMateExercise(exercise);
+    controller.current = owned;
+    setSnapshot(owned.getSnapshot());
+    return () => {
+      controller.current = null;
+      owned.dispose?.();
+    };
+  }, [exercise]);
+  const game = controller.current?.game,
+    legal =
+      selected && game ? game.moves({ square: selected, verbose: true }) : [];
+  const submit = async (token: string) => {
+    const owned = controller.current;
+    if (!owned || busy) return;
+    setBusy(true);
+    setSelected(null);
+    setHint(null);
+    const promise = owned.submit(token);
+    setSnapshot(owned.getSnapshot());
+    const next = await promise;
+    if (controller.current !== owned) return;
+    setSnapshot(next);
+    setBusy(false);
+  };
+  const choose = (square: Square) => {
+    if (!game || snapshot.state !== "awaitMove" || busy) return;
+    const moves = legal.filter((move) => move.to === square);
+    if (selected && moves.length) {
+      const from = selected;
+      if (moves.some((move) => move.promotion))
+        show({
+          title: "Превращение пешки",
+          dismissible: false,
+          body: (
+            <div className="promotion-options">
+              {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (
+                <button
+                  key={type}
+                  aria-label={type}
+                  onClick={() => {
+                    show(null);
+                    void submit(from + square + type);
+                  }}
+                >
+                  <Piece type={type} color={game.turn()} />
+                </button>
+              ))}
+            </div>
+          ),
+        });
+      else void submit(from + square);
+    } else setSelected(game.get(square)?.color === game.turn() ? square : null);
+  };
+  return (
+    <div className="analysis-practice">
+      <h2>Мат в {exercise.mateIn}</h2>
+      {game && (
+        <Chessboard
+          pieces={chessPieces(game)}
+          equipped={equipped}
+          orientation={exercise.fen.split(" ")[1] === "b" ? "b" : "w"}
+          selected={selected}
+          legal={legal.map((m) => m.to)}
+          last={
+            hint ? { from: hint.slice(0, 2), to: hint.slice(2, 4) } : undefined
+          }
+          disabled={busy || snapshot.state !== "awaitMove"}
+          onSquare={choose}
+        />
+      )}
+      <p role="status">
+        {
+          {
+            awaitMove: "Найдите продолжение",
+            wrong: "Попробуйте другое продолжение",
+            success: "Мат! Задача решена",
+            correct: "Верно",
+            opponent: "Ход соперника",
+            checking: "Проверяем продолжение…",
+            unverified:
+              "Движок не смог подтвердить вариант. Попробуйте ещё раз.",
+          }[snapshot.state]
+        }
+      </p>
+      {["wrong", "correct", "opponent", "unverified"].includes(
+        snapshot.state,
+      ) && (
+        <button
+          className="primary"
+          onClick={() => {
+            const owned = controller.current;
+            if (owned) setSnapshot(owned.continue());
+          }}
+        >
+          Продолжить
+        </button>
+      )}
+      {snapshot.canHint && snapshot.state === "awaitMove" && (
+        <button
+          disabled={busy}
+          onClick={async () => {
+            const owned = controller.current;
+            if (!owned) return;
+            setBusy(true);
+            const move = await owned.getHint();
+            if (controller.current !== owned) return;
+            setHint(move || null);
+            setSnapshot(owned.getSnapshot());
+            setBusy(false);
+          }}
+        >
+          Подсказка
+        </button>
+      )}
+      <button
+        className={snapshot.state === "success" ? "primary" : "quiet"}
+        onClick={onClose}
+      >
+        {snapshot.state === "success"
+          ? "Продолжить просмотр"
+          : "Вернуться к партии"}
+      </button>
+    </div>
+  );
+};

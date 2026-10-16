@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngineWorker} from '../dist/stockfish-lifecycle.js';
+import {createEngineWorker} from '../src/services/engines/stockfish-lifecycle.ts';
 test('successive engine starts wait for shutdown acknowledgement and release handlers',async()=>{
  const original=globalThis.Worker,instances=[];let alive=0,peak=0;
  globalThis.Worker=class {

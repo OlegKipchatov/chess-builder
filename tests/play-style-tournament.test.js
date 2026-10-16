@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {Chess} from '../dist/chess.js';
+import {Chess} from 'chess.js';
 const root='docs/ai/results/play-styles';
 test('Tournament evidence: 96 legal PGNs, correct headers/results, all paired matchups and capped games',()=>{
  const tournament=JSON.parse(readFileSync(root+'/tournament.json')),groups=new Map();assert.equal(tournament.games.length,96);

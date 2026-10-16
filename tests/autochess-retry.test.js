@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createBattleController} from '../dist/autochess-battle.js';
-import {createAutoplayEngine,createAutoplaySession} from '../dist/autochess-engine.js';
+import {createBattleController} from '../src/domain/autochess/autochess-battle.ts';
+import {createAutoplayEngine,createAutoplaySession} from '../src/services/engines/autochess-engine.ts';
 const flush=async()=>{for(let i=0;i<12;i++)await new Promise(resolve=>setImmediate(resolve));};
 const harness=factory=>{
  let run={color:'w',phase:'paused',results:[],battle:{id:'retry:1',initialFen:'4k3/7p/8/8/8/8/P7/4K3 w - - 0 1',moves:[],elapsed:0}},saves=0;

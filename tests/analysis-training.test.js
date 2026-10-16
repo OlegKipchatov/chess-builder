@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {prepareMateExercise,createMateExercise} from '../dist/analysis/analysis-training.js';
-import {createAnalysisPlayback} from '../dist/analysis/analysis-playback.js';
+import {Chess} from 'chess.js';
+import {prepareMateExercise,createMateExercise} from '../src/domain/analysis/analysis-training.ts';
+import {createAnalysisPlayback} from '../src/domain/analysis/analysis-playback.ts';
 const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
 const game=new Chess();game.loadPgn(pgn);
 const fen=game.history({verbose:true})[25].before;

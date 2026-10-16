@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialPve,maxHp,damage,evolveUnit,normalizePve} from '../dist/pve-model.js';
-import {isKingThreatened,isSquareAttacked,movesFor,allMoves,resolveAction,adjudicateBattle,resumePveBattle,beginPveBattle,pveBoardAdapter} from '../dist/pve-battle.js';
-import {choosePveMove} from '../dist/pve-ai.js';
+import {initialPve,maxHp,damage,evolveUnit,normalizePve} from '../src/domain/pve/pve-model.ts';
+import {isKingThreatened,isSquareAttacked,movesFor,allMoves,resolveAction,adjudicateBattle,resumePveBattle,beginPveBattle,pveBoardAdapter} from '../src/domain/pve/pve-battle.ts';
+import {choosePveMove} from '../src/domain/pve/pve-ai.ts';
 const unit = (id,type,color,square,hp=maxHp({type,level:1})) => ({id,type,color,square,level:1,hp,moved:false});
 const position = (units,turn='w') => ({id:'test',rulesVersion:2,phase:'playing',turn,ply:0,units,xp:{},positions:{},result:null});
 test('A king can survive a knight hit and is captured only when HP reaches zero',()=>{

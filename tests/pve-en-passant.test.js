@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {resolveAction,movesFor,unitAt,positionKey,beginPveBattle} from '../dist/pve-battle.js';
-import {initialPve,normalizePve,maxHp} from '../dist/pve-model.js';
+import {resolveAction,movesFor,unitAt,positionKey,beginPveBattle} from '../src/domain/pve/pve-battle.ts';
+import {initialPve,normalizePve,maxHp} from '../src/domain/pve/pve-model.ts';
 const unit=(id,type,color,square,hp=100)=>({id,type,color,square,hp,level:1,moved:false});
 const setup=(color,hp=100)=>{
  const other=color==='w'?'b':'w',from=color==='w'?'d7':'d2',adjacent=color==='w'?'e5':'e4',to=color==='w'?'d5':'d4';
@@ -49,7 +49,7 @@ test('normalized saved campaign retains the immediate en passant right',()=>{
  assert.ok(movesFor(restored.battle,unitAt(restored.battle,white.square)).some(move=>move.to===file+'6'));
 });
 test('AI considers en passant as a damaging capture',async()=>{
- const {choosePveMove}=await import('../dist/pve-ai.js');
+ const {choosePveMove}=await import('../src/domain/pve/pve-ai.ts');
  const battle=setup('b',70);
  assert.deepEqual(choosePveMove(battle),{from:'e4',to:'d3'});
 });

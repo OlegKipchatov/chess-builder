@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {completedMatch,matchEndReason} from '../dist/archive.js';
-import {initialState} from '../dist/state.js';
-import {createStartedGame} from '../dist/session.js';
+import {Chess} from 'chess.js';
+import {completedMatch,matchEndReason} from '../src/domain/chess/archive.ts';
+import {initialState} from '../src/services/persistence/state.ts';
+import {createStartedGame} from '../src/domain/chess/session.ts';
 import {matchResultDialog} from '../dist/ui/dialog-content.js';
 const finish = (game,color,resigned=false) => {
  const state=initialState();state.game={...createStartedGame(state,()=>.9),playerColor:color,resigned};

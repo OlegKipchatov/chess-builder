@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {initialState,migrateState} from '../dist/state.js';
-import {createStartedGame,navigationTarget,updatePreferences} from '../dist/session.js';
+import {Chess} from 'chess.js';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
+import {createStartedGame,navigationTarget,updatePreferences} from '../src/domain/chess/session.ts';
 import {historyMoves,renderBoard,animateTransition} from '../dist/board.js';
-import {settleRating} from '../dist/rating.js';
-import {rewardFor} from '../dist/engine.js';
+import {settleRating} from '../src/domain/rating/rating.ts';
+import {rewardFor} from '../src/domain/economy/engine.ts';
 import {renderCollection} from '../dist/collection.js';
 const setupBoard = (states=[]) => {
  const parse = html => [...html.matchAll(/<button ([^>]+)>([\s\S]*?)<\/button>/g)].map(([,attributes,innerHTML])=>{

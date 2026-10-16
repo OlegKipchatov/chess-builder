@@ -4,3 +4,9 @@ node_modules
 .DS_Store
 
 dist/vendor/
+
+public/vendor/
+build/
+coverage/
+playwright-report/
+test-results/

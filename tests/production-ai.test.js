@@ -1,17 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Worker} from 'node:worker_threads';
-import {Chess} from '../dist/chess.js';
-import {createBotClient,COGNITIVE_TIMEOUT_MS} from '../dist/bot-client.js';
-import {createSession} from '../dist/cognitive-model.js';
-import {initialState,migrateState,loadState,KEY} from '../dist/state.js';
-import {createStartedGame} from '../dist/session.js';
-import {validEngineProfile} from '../dist/strength.js';
-import {exportPgn} from '../dist/pgn-export.js';
-import {uciPosition,createStockfishClient} from '../dist/stockfish-client.js';
+import {Chess} from 'chess.js';
+import {createBotClient,COGNITIVE_TIMEOUT_MS} from '../src/services/engines/bot-client.ts';
+import {createSession} from '../src/domain/cognitive/cognitive-model.ts';
+import {initialState,migrateState,loadState,KEY} from '../src/services/persistence/state.ts';
+import {createStartedGame} from '../src/domain/chess/session.ts';
+import {validEngineProfile} from '../src/domain/cognitive/strength.ts';
+import {exportPgn} from '../src/shared/lib/pgn-export.ts';
+import {uciPosition,createStockfishClient} from '../src/services/engines/stockfish-client.ts';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
-import {normalizeScore} from '../dist/candidate-analysis.js';
-import {CONFIG} from '../dist/cognitive-config.js';
+import {normalizeScore} from '../src/services/engines/candidate-analysis.ts';
+import {CONFIG} from '../src/domain/cognitive/cognitive-config.ts';
 const spawnCognitive = () => {
  const thread=new Worker(new URL('./helpers/cognitive-worker.mjs',import.meta.url));
  const worker={onmessage:null,onerror:null,postMessage:data=>thread.postMessage(data),terminate:()=>thread.terminate()};
@@ -52,20 +52,21 @@ test('Production: every running cognitive session switches directly to 2.1',()=>
  assert.equal(migrated.game.engineProfile.calibrationVersion,CONFIG.version);
  assert.equal(migrated.game.engineProfile.seed,state.game.engineProfile.seed);
 });
-test('Production: mode is fixed by target, not session variance; low Elo never spawns WASM',()=>{
+test('Production: mode is fixed by target, cognitive initialization is lazy and low Elo never spawns WASM',()=>{
  let cognitive=0,native=0;
- const options={spawn:()=>{cognitive++;return {terminate:()=>{}};},native:()=>{native++;return {terminate:()=>{}};}};
- createBotClient({...createSession(1499,42),effectiveElo:1400},options).terminate();
+ const options={spawn:()=>{cognitive++;return {postMessage:()=>{},terminate:()=>{}};},native:()=>{native++;return {terminate:()=>{}};}};
+ const profile={...createSession(1499,42),effectiveElo:1400},client=createBotClient(profile,options);
+ assert.equal(cognitive,0);client.postMessage({id:1,fen:new Chess().fen(),engineProfile:profile});assert.equal(cognitive,1);client.terminate();
  createBotClient({...createSession(1500,42),effectiveElo:1340},options).terminate();
- assert.equal(cognitive,1);assert.equal(native,1);
+ assert.equal(native,1);
 });
 test('Production: hung cognitive worker is terminated; stale replies never apply',t=>{
  t.mock.timers.enable({apis:['setTimeout']});let terminated=0,called=0,error;
  const worker={postMessage:()=>{},terminate:()=>terminated++},profile=createSession(546,42),client=createBotClient(profile,{spawn:()=>worker});
  client.onmessage=()=>called++;client.onerror=e=>{error=e;};client.postMessage({id:4,fen:new Chess().fen(),engineProfile:profile});
  worker.onmessage({data:{id:3,move:{from:'e2',to:'e4'}}});assert.equal(called,0);
- t.mock.timers.tick(COGNITIVE_TIMEOUT_MS);assert.match(error.message,/timeout/);assert.equal(terminated,1);
- worker.onmessage({data:{id:4,move:{from:'e2',to:'e4'}}});assert.equal(called,0);
+ const late=worker.onmessage;t.mock.timers.tick(COGNITIVE_TIMEOUT_MS);assert.equal(worker.onmessage,null);assert.match(error.message,/timeout/);assert.equal(terminated,1);
+ late({data:{id:4,move:{from:'e2',to:'e4'}}});assert.equal(called,0);
 });
 test('Production: illegal replies and mismatched PGN are surfaced as recoverable engine errors',()=>{
  for(const broken of ['illegal','mismatch']){
@@ -80,8 +81,8 @@ test('Production: illegal replies and mismatched PGN are surfaced as recoverable
 test('Production: explicit cancellation ignores callbacks and clears the watchdog',t=>{
  t.mock.timers.enable({apis:['setTimeout']});let called=0;
  const profile=createSession(546,42),worker={postMessage:()=>{},terminate:()=>{}},client=createBotClient(profile,{spawn:()=>worker});
- client.onerror=()=>called++;client.onmessage=()=>called++;client.postMessage({id:1,fen:new Chess().fen(),engineProfile:profile});client.terminate();
- worker.onmessage({data:{id:1,move:{from:'e2',to:'e4'}}});worker.onerror(Error('late'));t.mock.timers.tick(COGNITIVE_TIMEOUT_MS);assert.equal(called,0);
+ client.onerror=()=>called++;client.onmessage=()=>called++;client.postMessage({id:1,fen:new Chess().fen(),engineProfile:profile});const lateMessage=worker.onmessage,lateError=worker.onerror;client.terminate();assert.equal(worker.onmessage,null);assert.equal(worker.onerror,null);
+ lateMessage({data:{id:1,move:{from:'e2',to:'e4'}}});lateError(Error('late'));t.mock.timers.tick(COGNITIVE_TIMEOUT_MS);assert.equal(called,0);
 });
 test('Production: real v2 Worker calculates reported PGN and sequential moves without WASM',{timeout:60000},async()=>{
  const profile=createSession(546,219237029,'tricky'),client=createBotClient(profile,{spawn:spawnCognitive}),game=new Chess();

@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {resolve,dirname,relative} from 'node:path';
 import {mountAppShell} from '../dist/ui/shell.js';
 import {renderCollection} from '../dist/collection.js';
-import {initialState} from '../dist/state.js';
+import {initialState} from '../src/services/persistence/state.ts';
 import {pageHeader,button} from '../dist/ui/primitives.js';
 import {savedSetRow} from '../dist/ui/components/equipment.js';
 const rootPath=fileURLToPath(new URL('../dist/',import.meta.url));

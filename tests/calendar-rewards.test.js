@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,migrateState} from '../dist/state.js';
-import {currentStreak,normalizeActivity} from '../dist/activity-model.js';
-import {recordCalendarGame,calendarRewards,claimCalendarReward,buyFreeze,freezeCandidate,dailyTasks,visibleCalendarRewards} from '../dist/calendar-rewards.js';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
+import {currentStreak,normalizeActivity} from '../src/domain/activity/activity-model.ts';
+import {recordCalendarGame,calendarRewards,claimCalendarReward,buyFreeze,freezeCandidate,dailyTasks,visibleCalendarRewards} from '../src/domain/activity/calendar-rewards.ts';
 const at=day=>`${day}T12:00:00Z`;
 const wallet=()=>({...initialState(),activity:normalizeActivity({timeZone:'UTC'}),shards:30});
 test('Tasks record progress without issuing currency; claiming is atomic and idempotent',()=>{

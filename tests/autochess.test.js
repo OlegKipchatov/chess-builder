@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {AUTO,compositionIssue,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../dist/autochess.js';
-import {createBattleController} from '../dist/autochess-battle.js';
-import {createAutoplayEngine} from '../dist/autochess-engine.js';
-import {benchPiece} from '../dist/autochess.js';
+import {Chess} from 'chess.js';
+import {AUTO,compositionIssue,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../src/domain/autochess/autochess.ts';
+import {createBattleController} from '../src/domain/autochess/autochess-battle.ts';
+import {createAutoplayEngine} from '../src/services/engines/autochess-engine.ts';
+import {benchPiece} from '../src/domain/autochess/autochess.ts';
 test('army capacity grows from eight to sixteen with the shop level',()=>{
  assert.deepEqual(Array.from({length:10},(_,i)=>armyCapacity({version:4,level:i+1})),[8,9,10,11,12,13,14,15,16,16]);
  assert.equal(armyCapacity({version:3,level:10}),8);

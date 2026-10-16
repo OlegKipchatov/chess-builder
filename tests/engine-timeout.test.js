@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createStockfishClient} from '../dist/stockfish-client.js';
+import {createStockfishClient} from '../src/services/engines/stockfish-client.ts';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
-import {Chess} from '../dist/chess.js';
-import {STOCKFISH as C} from '../dist/stockfish-config.js';
+import {Chess} from 'chess.js';
+import {STOCKFISH as C} from '../src/services/engines/stockfish-config.ts';
 const profile={id:'cognitive-v2',targetElo:1400,effectiveElo:1400,seed:219237029};
 const setup=t=>{
  t.mock.timers.enable({apis:['setTimeout']});const commands=[],errors=[],replies=[];let terminated=false;

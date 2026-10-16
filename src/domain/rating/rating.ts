@@ -1,0 +1,78 @@
+import type { Chess } from "chess.js";
+import type { Rating,RatingSnapshot,VaultState } from "../chess/types.js";
+import { targetFor } from "../cognitive/cognitive-model.js";
+// Internal progression scale, not a calibrated human Elo rating.
+export const initialRating = (): Rating => ({
+  value: 700,
+  games: 0,
+  lastDelta: 0,
+});
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+export const normalizeRating = (rating?: Partial<Rating> | null): Rating => ({
+  value: Number.isSafeInteger(rating?.value)
+    ? clamp(rating!.value!, 100, 2400)
+    : 700,
+  games:
+    Number.isSafeInteger(rating?.games) && rating!.games! >= 0
+      ? rating!.games!
+      : 0,
+  lastDelta: Number.isSafeInteger(rating?.lastDelta)
+    ? clamp(rating!.lastDelta!, -64, 64)
+    : 0,
+});
+export const opponentFor = targetFor;
+export const ratingSnapshot = (rating: Rating): RatingSnapshot => {
+  const current = normalizeRating(rating);
+  return {
+    before: current.value,
+    opponent: opponentFor(current.value),
+    k: current.games < 10 ? 64 : 32,
+  };
+};
+export const validRatingSnapshot = (
+  snapshot?: Partial<RatingSnapshot> | null,
+): snapshot is RatingSnapshot =>
+  !!snapshot &&
+  Number.isSafeInteger(snapshot.before) &&
+  snapshot.before! >= 100 &&
+  snapshot.before! <= 2400 &&
+  Number.isSafeInteger(snapshot.opponent) &&
+  snapshot.opponent! >= 100 &&
+  snapshot.opponent! <= 1600 &&
+  [32, 64].includes(snapshot.k!);
+export const settleRating = (state: VaultState, game: Chess): Rating | null => {
+  const match = state.game;
+  if (
+    !match.started ||
+    match.settled ||
+    match.mode !== "bot" ||
+    match.difficulty !== "adaptive" ||
+    !validRatingSnapshot(match.rating) ||
+    (!match.resigned && !game.isGameOver())
+  )
+    return null;
+  if (
+    match.resigned &&
+    !game
+      .history({ verbose: true })
+      .some((move) => move.color === (match.playerColor || "w"))
+  )
+    return null;
+  const { before, opponent, k } = match.rating;
+  const score = match.resigned
+    ? 0
+    : game.isDraw()
+      ? 0.5
+      : game.turn() !== (match.playerColor || "w")
+        ? 1
+        : 0;
+  const expected = 1 / (1 + 10 ** ((opponent - before) / 400));
+  const value = clamp(Math.round(before + k * (score - expected)), 100, 2400);
+  return {
+    value,
+    games: normalizeRating(state.rating).games + 1,
+    lastDelta: value - before,
+  };
+};
+export const signedDelta = (delta: number) => `${delta > 0 ? "+" : ""}${delta}`;

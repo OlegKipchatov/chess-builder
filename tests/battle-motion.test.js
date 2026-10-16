@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {animatePveAction,clearBoardTransition} from '../dist/board.js';
-import {createBattleController} from '../dist/autochess-battle.js';
+import {createBattleController} from '../src/domain/autochess/autochess-battle.ts';
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 const scene=()=>{
  const animations=[],created=[];

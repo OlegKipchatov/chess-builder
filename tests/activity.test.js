@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {activityDate,closeActivityDay,currentStreak,normalizeActivity,calendarHTML} from '../dist/activity.js';
-import {initialState,migrateState,loadState,KEY} from '../dist/state.js';
+import {initialState,migrateState,loadState,KEY} from '../src/services/persistence/state.ts';
 import {activityDialog} from '../dist/ui/dialog-content.js';
 test('Ячейка после партии показывает длину серии, а не дату',()=>{
   for(const [streak,label] of [[1,'1 день'],[2,'2 дня подряд'],[12,'12 дней подряд'],[21,'21 день подряд']]){

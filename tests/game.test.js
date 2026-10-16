@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {rewardFor} from '../dist/engine.js';
+import {Chess} from 'chess.js';
+import {rewardFor} from '../src/domain/economy/engine.ts';
 import {animationMoves} from '../dist/board.js';
 test('Незавершённая партия и быстрая сдача не дают награды',()=>{const game=new Chess();game.move('e4');assert.equal(rewardFor(game),0);assert.equal(rewardFor(game,true),0);});
 test('Мат раньше десяти полуходов даёт награду проигравшему',()=>{const game=new Chess();['f3','e5','g4','Qh4#'].forEach(move=>game.move(move));assert.equal(rewardFor(game),10);});

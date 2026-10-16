@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {rewardBreakdownFor} from '../dist/engine.js';
+import {Chess} from 'chess.js';
+import {rewardBreakdownFor} from '../src/domain/economy/engine.ts';
 import {matchResultDialog} from '../dist/ui/dialog-content.js';
 const position = (count,{draw=false,winner='w',over=true}={}) => ({
  history:()=>Array.from({length:count*2},(_,i)=>({color:i%2?'b':'w'})),

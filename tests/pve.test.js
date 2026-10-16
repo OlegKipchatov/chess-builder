@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialPve,PVE,NODES,TYPE_WEIGHT,statScale,maxHp,damage,xpThreshold,earnXp,deathPenalty,useStone,toggleUnit,evolveUnit,frontier,isUnlocked,activeArmy,armyPower,encounter,normalizePve} from '../dist/pve-model.js';
-import {pveRewards,formation,movesFor,allMoves,resolveAction,beginPveBattle,playPveAction,settlePve,resignPve,returnToMap,pveBoardAdapter} from '../dist/pve-battle.js';
-import {choosePveMove} from '../dist/pve-ai.js';
-import {initialState,migrateState,loadState,KEY} from '../dist/state.js';
+import {initialPve,PVE,NODES,TYPE_WEIGHT,statScale,maxHp,damage,xpThreshold,earnXp,deathPenalty,useStone,toggleUnit,evolveUnit,frontier,isUnlocked,activeArmy,armyPower,encounter,normalizePve} from '../src/domain/pve/pve-model.ts';
+import {pveRewards,formation,movesFor,allMoves,resolveAction,beginPveBattle,playPveAction,settlePve,resignPve,returnToMap,pveBoardAdapter} from '../src/domain/pve/pve-battle.ts';
+import {choosePveMove} from '../src/domain/pve/pve-ai.ts';
+import {initialState,migrateState,loadState,KEY} from '../src/services/persistence/state.ts';
 const unit = (id,type,color,square,level=1,hp=maxHp({type,level})) => ({id,type,color,square,level,hp,moved:false});
 const position = units => ({id:'test',rulesVersion:2,phase:'playing',turn:'w',ply:0,units,xp:{},positions:{},result:null,lastEvent:null});
 const win = (profile,nodeId) => {

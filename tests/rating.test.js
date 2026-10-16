@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {initialState,migrateState} from '../dist/state.js';
-import {createStartedGame} from '../dist/session.js';
-import {opponentFor,settleRating,normalizeRating} from '../dist/rating.js';
+import {Chess} from 'chess.js';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
+import {createStartedGame} from '../src/domain/chess/session.ts';
+import {opponentFor,settleRating,normalizeRating} from '../src/domain/rating/rating.ts';
 const match = (value=1000,games=0) => {const state=initialState();state.settings.difficulty='adaptive';state.rating={value,games,lastDelta:0};state.game=createStartedGame(state,()=>0);return state;};
 const finish = (state,score) => {const game=new Chess();if(score===0.5)return new Chess('8/8/8/8/8/4k3/8/4K3 w - - 0 1');if(score===0)['f3','e5','g4','Qh4#'].forEach(m=>game.move(m));else ['e4','e5','Bc4','Nc6','Qh5','Nf6','Qxf7#'].forEach(m=>game.move(m));return game;};
 test('Победа, мат и ничья меняют рейтинг согласно результату',()=>{for(const [score,value] of [[1,1023],[0,959],[0.5,991]]){const state=match();const result=settleRating(state,finish(state,score));assert.equal(result.value,value);assert.equal(result.games,1);}});

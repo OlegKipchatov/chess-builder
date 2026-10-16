@@ -1,0 +1,119 @@
+@import "./tokens.css";
+@import "./motion.css";
+@import "./base.css";
+@import "./shell.css";
+@import "./board.css";
+@import "./game.css";
+@import "./collection.css";
+@import "./content.css";
+@import "./dialog.css";
+@import "./analysis.css";
+@import "./hunt.css";
+@import "./autochess.css";
+@import "./pve.css";
+/* React shell keeps the established CSS roles and geometry. */
+#toast {
+  position: fixed;
+  bottom: calc(110px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: calc(100% - 32px);
+}
+.equipment-strip {
+  top: calc(var(--header-height, 68px) + 12px);
+}
+.autochess-active #autochess > .page-content {
+  padding-block-start: 8px;
+}
+.hunt-layout,
+.pve-battle,
+.pve-army {
+  width: min(100%, 600px);
+  margin-inline: auto;
+}
+.hunt-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.pve-enemies {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pve-enemies svg {
+  max-width: 64px;
+}
+.pve-enemies > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pve-reserve {
+  display: flex;
+  gap: 12px;
+}
+.pve-reserve button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pve-reserve svg {
+  width: 48px;
+}
+.pve-progress-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 8px;
+  padding-block: 8px;
+}
+.pve-progress-row > svg {
+  width: 32px;
+  grid-row: span 3;
+}
+.pve-xp {
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.analysis-insight {
+  min-height: 150px;
+}
+.analysis-actions {
+  display: flex;
+  gap: 8px;
+}
+.analysis-actions > button {
+  min-width: 112px;
+}
+.moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0;
+  list-style: none;
+}
+.moves button[aria-current],
+.moves button.important {
+  background: var(--accent-soft);
+}
+#pgn-import textarea {
+  display: block;
+}
+.promotion-options {
+  display: flex;
+  gap: 12px;
+}
+.promotion-options button {
+  flex: 1;
+  padding: 8px;
+}
+.promotion-options svg {
+  width: 100%;
+  max-width: 64px;
+}
+#modal-title:focus {
+  outline: none;
+}

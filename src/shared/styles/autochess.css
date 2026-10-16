@@ -1,0 +1,311 @@
+.autochess-entry {
+  width: 100%;
+  max-width: 600px;
+  margin: 28px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.autochess-entry h2 {
+  font-size: var(--type-section);
+  margin: 0 0 12px;
+}
+.autochess-entry > button {
+  width: 100%;
+  min-height: 52px;
+}
+.autochess-active #minigames > .page-content > :not(#autochess-root) {
+  display: none !important;
+}
+body.autochess-active main {
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+  max-width: 860px;
+}
+.autochess-active #minigames > .page-content {
+  padding: 0;
+}
+.autochess-active #minigames > .page-header {
+  column-gap: 8px;
+  align-items: center;
+  margin: 0 0 4px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+.autochess-active #minigames-title {
+  font-size: var(--type-section);
+  letter-spacing: -0.3px;
+}
+.auto-round {
+  grid-column: 3;
+  grid-row: 1;
+  font-size: var(--type-secondary);
+  white-space: nowrap;
+  color: var(--muted);
+}
+.autochess-surface {
+  max-width: 600px;
+  margin: auto;
+}
+#auto-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+#auto-side {
+  font-size: var(--type-secondary);
+  color: var(--muted);
+  margin: 0;
+  min-height: 1.5em;
+}
+#auto-board {
+  align-self: center;
+  flex: none;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: none;
+}
+#auto-shop {
+  display: grid;
+  gap: 6px;
+  flex: none;
+}
+.auto-reserve-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  gap: 8px;
+  min-height: 44px;
+}
+.auto-reserve {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.auto-reserve button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+.auto-reserve .auto-empty-slot {
+  opacity: 1;
+  background: transparent;
+}
+.auto-reserve svg {
+  width: 28px;
+  height: 34px;
+}
+.auto-reserve button[aria-pressed="true"] {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.auto-sale {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  width: 76px;
+  height: 44px;
+  padding: 6px;
+}
+.auto-sale span {
+  min-width: 3ch;
+  text-align: center;
+}
+.auto-sale svg {
+  height: 20px;
+  width: 20px;
+  flex: none;
+}
+.auto-shop-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--type-secondary);
+  min-height: 24px;
+  color: var(--muted);
+}
+.auto-shop-meta button {
+  padding: 0;
+  min-height: 24px;
+  font-size: inherit;
+}
+.auto-shop-meta strong {
+  color: var(--accent);
+  white-space: nowrap;
+}
+.auto-shop-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.auto-shop-actions > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  height: 44px;
+  padding: 2px 4px;
+  font-size: var(--type-secondary);
+  line-height: 1.35;
+}
+.auto-shop-actions svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.auto-shop-actions > button > span {
+  min-width: 0;
+}
+.auto-level-outlined {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.auto-level-outlined:disabled {
+  border-color: var(--border);
+  color: var(--muted);
+}
+.auto-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 2.8em;
+  margin: 0;
+  font-size: var(--type-secondary);
+  line-height: 1.4;
+  color: var(--muted);
+}
+#auto-status {
+  min-width: 0;
+}
+#auto-resource {
+  white-space: nowrap;
+  font-size: var(--type-micro);
+}
+#auto-action {
+  min-height: 44px;
+}
+#auto-action > button,
+#auto-reward > .primary {
+  width: 100%;
+  min-height: 44px;
+}
+#auto-action p {
+  margin: 0;
+}
+.auto-place::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  pointer-events: none;
+}
+.auto-results {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.auto-results .stat-card {
+  padding: 12px 4px;
+}
+.auto-catalog {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.auto-catalog button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 44px;
+  min-width: 0;
+  padding: 4px;
+}
+.auto-catalog svg {
+  width: 24px;
+  height: 30px;
+}
+.auto-odds-table {
+  overflow: auto;
+}
+.auto-odds-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-micro);
+}
+.auto-odds-table th,
+.auto-odds-table td {
+  padding: 8px 4px;
+  text-align: center;
+}
+.auto-odds-table caption {
+  text-align: left;
+  margin: 12px 0;
+}
+.auto-overflow-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.auto-overflow-list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+}
+.auto-overflow-list svg {
+  width: 28px;
+  height: 32px;
+}
+@media (min-width: 900px) {
+  .autochess-surface {
+    max-width: 480px;
+  }
+  .autochess-active #minigames > .page-header {
+    max-width: 480px;
+    margin-inline: auto;
+  }
+}
+@media (max-width: 400px) {
+  .autochess-active .app-version {
+    display: inline;
+  }
+  .autochess-active .brand {
+    font-size: 0.75rem;
+  }
+}
+@media (min-resolution: 1dppx) {
+  .auto-shop-actions > button {
+    overflow-wrap: normal;
+  }
+}
+
+.auto-large-text .auto-shop-actions > button {
+  height: auto;
+  min-height: 44px;
+  padding: 6px 4px;
+}
+.auto-large-text .auto-shop-meta {
+  flex-wrap: wrap;
+}
+.auto-large-text .auto-reserve-row {
+  grid-template-columns: minmax(0, 1fr) 76px;
+}
+
+/* Outlined sale keeps the same surface in both states; price communicates availability. */
+.auto-sale,
+.auto-sale:disabled {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  opacity: 1;
+}

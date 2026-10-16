@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {huntConfig,materialValues,createHunt,startHunt,canMove,playerMoves,opponentCaptures,placePiece,resolvePlayerMove,releaseHuntInput,skipExpiredSpawn,tickHunt,remainingTime,recoverLife,finishHunt,calculateMiniGameCoins,awardHunt,huntBoardAdapter} from '../dist/hunt.js';
-import {initialState,migrateState} from '../dist/state.js';
+import {huntConfig,materialValues,createHunt,startHunt,canMove,playerMoves,opponentCaptures,placePiece,resolvePlayerMove,releaseHuntInput,skipExpiredSpawn,tickHunt,remainingTime,recoverLife,finishHunt,calculateMiniGameCoins,awardHunt,huntBoardAdapter} from '../src/domain/hunt/hunt.ts';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
 const piece=(type,color='w')=>({type,color});
 const run=(pieces,extra={})=>({...startHunt(createHunt({mode:'endless',runId:'test',runSeed:42}),100),pieces,...extra});
 const resolve=(state,from,to,options={})=>resolvePlayerMove(state,{from,to},{now:101,...options});

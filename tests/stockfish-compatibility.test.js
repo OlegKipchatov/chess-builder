@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {detectStockfishCapabilities} from '../dist/stockfish-capabilities.js';
-import {createStockfishClient} from '../dist/stockfish-client.js';
-import {createAutoplayEngine} from '../dist/autochess-engine.js';
-import {analyzeReward} from '../dist/economy-analysis.js';
-import {createSession} from '../dist/cognitive-model.js';
-import {Chess} from '../dist/chess.js';
-import {STOCKFISH as C} from '../dist/stockfish-config.js';
+import {detectStockfishCapabilities} from '../src/services/engines/stockfish-capabilities.ts';
+import {createStockfishClient} from '../src/services/engines/stockfish-client.ts';
+import {createAutoplayEngine} from '../src/services/engines/autochess-engine.ts';
+import {analyzeReward} from '../src/services/engines/economy-analysis.ts';
+import {createSession} from '../src/domain/cognitive/cognitive-model.ts';
+import {Chess} from 'chess.js';
+import {STOCKFISH as C} from '../src/services/engines/stockfish-config.ts';
 const flush=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
 const supported={crossOriginIsolated:true,SharedArrayBuffer,WebAssembly};
 for(const [name,scope,expected] of [
@@ -24,7 +24,7 @@ const harness=async(t,{isolated=true,failThread=false,failSingle=false,hold=fals
  const instances=[];let live=0,peak=0;
  t.mock.method(console,'debug',()=>{});
  t.mock.property(globalThis,'Worker',class {
-  constructor(url){this.variant=url.includes('single-worker')?'single':'threaded';this.commands=[];this.alive=true;instances.push(this);live++;peak=Math.max(peak,live);}
+  constructor(url){this.variant=String(url).includes('/single.ts')?'single':'threaded';this.commands=[];this.alive=true;instances.push(this);live++;peak=Math.max(peak,live);}
   emit(data){this.onmessage?.({data});}
   postMessage(data){
    this.commands.push(data);
@@ -43,7 +43,7 @@ const harness=async(t,{isolated=true,failThread=false,failSingle=false,hold=fals
   }
   terminate(){assert.ok(this.alive);this.alive=false;live--;}
  });
- const module=await import(`../dist/stockfish-lifecycle.js?test=${serial++}`);
+ const module=await import(`../src/services/engines/stockfish-lifecycle.ts?test=${serial++}`);
  return {...module,instances,live:()=>live,peak:()=>peak};
 };
 // Node's mock.property is not available in all supported Node releases.

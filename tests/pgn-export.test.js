@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {exportPgn,sharePgn} from '../dist/pgn-export.js';
+import {Chess} from 'chess.js';
+import {exportPgn,sharePgn} from '../src/shared/lib/pgn-export.ts';
 test('Системная передача содержит полный PGN и в файле, и в тексте',async()=>{
  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');let payload;
  Object.defineProperty(globalThis,'navigator',{configurable:true,value:{canShare:()=>true,share:async data=>{payload=data;}}});

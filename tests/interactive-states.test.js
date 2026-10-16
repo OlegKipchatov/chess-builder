@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {initialState} from '../dist/state.js';
-import {createStartedGame,boardAvailability} from '../dist/session.js';
+import {Chess} from 'chess.js';
+import {initialState} from '../src/services/persistence/state.ts';
+import {createStartedGame,boardAvailability} from '../src/domain/chess/session.ts';
 import {createToast} from '../dist/ui/dialog.js';
 
 test('Доступность доски следует очереди хода, анимации и режиму просмотра для обеих сторон',()=>{

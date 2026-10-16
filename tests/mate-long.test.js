@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareMateExercise,createMateExercise} from '../dist/analysis/analysis-training.js';
-import {explanationFor} from '../dist/analysis/analysis-explanations.js';
+import {prepareMateExercise,createMateExercise} from '../src/domain/analysis/analysis-training.ts';
+import {explanationFor} from '../src/domain/analysis/analysis-explanations.ts';
 const fen='7k/8/5K2/8/8/8/8/3Q4 w - - 0 1';
 const fakeClient = rows => () => {
  const client={terminate:()=>{},postMessage:data=>queueMicrotask(()=>client.onmessage({data:{...data,lines:[rows.shift()]}}))};return client;

@@ -1,0 +1,17 @@
+/* Generated from ui/motion.js. Run npm run motion:generate. */
+:root {
+  --motion-instant: 0ms;
+  --motion-fast: 160ms;
+  --motion-standard: 200ms;
+  --motion-enter: 260ms;
+  --motion-exit: 180ms;
+  --motion-board: 420ms;
+  --motion-autoBoard: 160ms;
+  --motion-reveal: 500ms;
+  --motion-ease-local: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-enter: ease-out;
+  --motion-ease-exit: ease-in;
+  --motion-ease-sheet: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-board: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-ease-reveal: ease-out;
+}

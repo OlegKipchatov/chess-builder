@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {importPgn,MAX_PGN_BYTES} from '../dist/pgn-import.js';
-import {exportPgn} from '../dist/pgn-export.js';
-import {initialState,migrateState} from '../dist/state.js';
-import {createStartedGame} from '../dist/session.js';
-import {completedMatch} from '../dist/archive.js';
+import {Chess} from 'chess.js';
+import {importPgn,MAX_PGN_BYTES} from '../src/shared/lib/pgn-import.ts';
+import {exportPgn} from '../src/shared/lib/pgn-export.ts';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
+import {createStartedGame} from '../src/domain/chess/session.ts';
+import {completedMatch} from '../src/domain/chess/archive.ts';
 
 test('Export/import roundtrip retains moves, position, headers, result and date',()=>{
  const game=new Chess();['f3','e5','g4','Qh4#'].forEach(move=>game.move(move));

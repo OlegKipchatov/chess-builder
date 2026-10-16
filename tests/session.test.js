@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {initialState,migrateState,loadState,KEY,PREVIOUS_KEY} from '../dist/state.js';
-import {isMatchActive,navigationTarget,createStartedGame,updatePreferences,positionAt,historyCursor,canPlayPosition} from '../dist/session.js';
+import {Chess} from 'chess.js';
+import {initialState,migrateState,loadState,KEY,PREVIOUS_KEY} from '../src/services/persistence/state.ts';
+import {isMatchActive,navigationTarget,createStartedGame,updatePreferences,positionAt,historyCursor,canPlayPosition} from '../src/domain/chess/session.ts';
 const startedState = () => {const state=initialState();return {...state,game:createStartedGame(state)};};
 test('До старта доступны профиль и коллекция, но нельзя ходить',()=>{const state=initialState(), game=new Chess();assert.equal(isMatchActive(state,game),false);assert.equal(navigationTarget(state,game,'collection'),'collection');assert.equal(canPlayPosition(state,game,null),false);});
 test('Старт блокирует другие экраны ещё до первого хода',()=>{const state=startedState(),game=new Chess();assert.equal(isMatchActive(state,game),true);for(const screen of ['profile','collection','chests'])assert.equal(navigationTarget(state,game,screen),'play');assert.equal(canPlayPosition(state,game,null),true);});

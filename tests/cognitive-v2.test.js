@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {Chess} from '../dist/chess.js';
-import {CONFIG} from '../dist/cognitive-config.js';
-import {capabilitiesFor,createSession,decisionModeFor,detectionProbability,factsFor,threatsFor,perceive,random,errorQuality,classifyError} from '../dist/cognitive-model.js';
-import {decide,leafValue} from '../dist/cognitive-search.js';
+import {Chess} from 'chess.js';
+import {CONFIG} from '../src/domain/cognitive/cognitive-config.ts';
+import {capabilitiesFor,createSession,decisionModeFor,detectionProbability,factsFor,threatsFor,perceive,random,errorQuality,classifyError} from '../src/domain/cognitive/cognitive-model.ts';
+import {decide,leafValue} from '../src/domain/cognitive/cognitive-search.ts';
 test('Cognitive v2: leaf check evaluation depends on the board, not replayed history',()=>{
  const game=new Chess();for(const san of ['e4','f6','Qh5+'])game.move(san);
  const restored=new Chess(game.fen()),caps=capabilitiesFor(1400),view={noticed:[],tactics:true,position:false};

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {awardAutochess,autoSeriesCoins} from '../dist/autochess-rewards.js';
-import {initialState,migrateState} from '../dist/state.js';
+import {awardAutochess,autoSeriesCoins} from '../src/domain/autochess/autochess-rewards.ts';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
 const runFor=(outcome,id='battle-1')=>({phase:'result',battle:{id,result:{winner:outcome==='draw'?null:outcome==='win'?'w':'b'}},results:[{battleId:id,outcome,reason:'test'}]});
 test('series caps draws at five and total at thirty including partial last credit',()=>{
  let wallet=initialState();const results=[];

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {buildRecommendation,traceContinuation,compareContinuations,MAX_EVIDENCE_PLIES} from '../dist/analysis/analysis-recommendations.js';
+import {Chess} from 'chess.js';
+import {buildRecommendation,traceContinuation,compareContinuations,MAX_EVIDENCE_PLIES} from '../src/domain/analysis/analysis-recommendations.ts';
 
 const decision=(fen,best,played)=>({fenBefore:fen,playedMove:played[0],bestLine:{move:best[0],pv:best},playedLine:{move:played[0],pv:played},expectedScoreLoss:.2});
 const mirrorSquare=square=>'hgfedcba'['abcdefgh'.indexOf(square[0])]+(9-Number(square[1]));

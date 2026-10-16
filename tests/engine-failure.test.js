@@ -1,11 +1,11 @@
 import {mountAppShell} from '../dist/ui/shell.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Chess} from '../dist/chess.js';
-import {initialState,migrateState} from '../dist/state.js';
-import {createStartedGame} from '../dist/session.js';
-import {abortFailedMatch,canAbortFailedMatch} from '../dist/archive.js';
-import {exportPgn} from '../dist/pgn-export.js';
+import {Chess} from 'chess.js';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
+import {createStartedGame} from '../src/domain/chess/session.ts';
+import {abortFailedMatch,canAbortFailedMatch} from '../src/domain/chess/archive.ts';
+import {exportPgn} from '../src/shared/lib/pgn-export.ts';
 import {readFileSync} from 'node:fs';
 const setup=()=>{
  const state=initialState(),game=new Chess();state.game=createStartedGame(state,()=>.7);

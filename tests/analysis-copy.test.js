@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {analysisInsight,insightLines,visibleVariation,isImportantInsight} from '../dist/ui/components/analysis-insight.js';
-import {selectEvents} from '../dist/analysis/analysis-events.js';
+import {selectEvents} from '../src/domain/analysis/analysis-events.ts';
 import {syncHistorySlider,moveNavigation} from '../dist/ui/components/move-navigation.js';
 import {playPage as analysisPage} from '../dist/ui/pages/play.js';
 import {variationArrowPoints} from '../dist/ui/pages/analysis.js';

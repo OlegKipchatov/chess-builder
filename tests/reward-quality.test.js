@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {expectedScore,summarizeQuality,applyQualityReward,classifyDecision} from '../dist/reward-quality.js';
-import {parseInfo} from '../dist/candidate-analysis.js';
-import {initialState,migrateState} from '../dist/state.js';
-import {analyzeReward} from '../dist/economy-analysis.js';
+import {expectedScore,summarizeQuality,applyQualityReward,classifyDecision} from '../src/domain/economy/reward-quality.ts';
+import {parseInfo} from '../src/services/engines/candidate-analysis.ts';
+import {initialState,migrateState} from '../src/services/persistence/state.ts';
+import {analyzeReward} from '../src/services/engines/economy-analysis.ts';
 test('WDL expected score and mate share root-side perspective',()=>{
  assert.equal(expectedScore({wdl:[200,600,200]}),.5);
  assert.equal(expectedScore({wdl:[600,200,200]}),.7);
@@ -50,7 +50,7 @@ test('Analysis uses actual player moves and restricted search from the same root
  }
 });
 test('Stockfish 19 computes actual WDL rewards for a short mate, both sides',{timeout:30000},async()=>{
- const {createStockfishClient}=await import('../dist/stockfish-client.js');
+ const {createStockfishClient}=await import('../src/services/engines/stockfish-client.ts');
  const {spawnStockfish}=await import('../scripts/stockfish-process.mjs');
  for(const playerColor of ['w','b']){
   const quality=await analyzeReward({pgn:'1. f3 e5 2. g4 Qh4#',playerColor},{createClient:()=>createStockfishClient(()=>spawnStockfish(19))});
