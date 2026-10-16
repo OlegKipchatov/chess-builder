@@ -48,7 +48,7 @@ try{
    await page.locator('#start-game').waitFor();
    await page.evaluate(()=>{location.hash='/history';});
    await page.locator('[data-archive]').first().click();
-   assert.equal(await page.locator('#replay-start').isVisible(),true);
+   await page.locator('#replay-start').waitFor();assert.equal(await page.locator('#replay-start').isVisible(),true);
    await page.locator('#replay-start').click();
    await page.waitForFunction(()=>document.querySelector('#history-position').textContent==='2 / 2');
    console.log('PASS archive: playback remains available after completing the live game');

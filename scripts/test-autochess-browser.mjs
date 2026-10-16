@@ -59,6 +59,9 @@ try{
  await seed(7,true);await page.getByText('Резерв старого забега',{exact:true}).waitFor();assert.equal(await page.locator('[data-auto-overflow-piece]').count(),7);
  await page.locator('[data-auto-overflow-piece="piece-7"]').click();await page.locator('#auto-board [data-square="d2"]').click();assert.equal((await stored()).army.length,8);assert.equal((await stored()).army.filter(p=>!p.square).length,6);
  await seed(1);await page.locator('#auto-board [data-square="b2"]').tap();await page.locator('#auto-board [data-square="b2"]').tap();assert.equal((await stored()).army.filter(p=>!p.square).length,2);
+ // Pointer capture starts after a drag threshold; the committed placement remains legal.
+ await seed(0);const dragFrom=await page.locator('#auto-board [data-square="h1"]').boundingBox(),dragTo=await page.locator('#auto-board [data-square="g3"]').boundingBox();
+ await page.mouse.move(dragFrom.x+dragFrom.width/2,dragFrom.y+dragFrom.height/2);await page.mouse.down();await page.mouse.move(dragTo.x+dragTo.width/2,dragTo.y+dragTo.height/2,{steps:10});await page.mouse.up();assert.equal((await stored()).army.find(piece=>piece.id==='piece-1').square,'g3');
  // Legacy invalid composition stays visible; explanation and repair do not move the board.
  await seed(0);
  {

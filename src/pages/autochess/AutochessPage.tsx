@@ -530,7 +530,9 @@ export const AutochessPage = () => {
                 : run.phase === "result"
                   ? result?.reason
                   : preparation
-                    ? setupError(run) || "Армия готова"
+                    ? incompatible
+                      ? ""
+                      : setupError(run)
                     : "Бой сохранён"}
           </span>
           {!preparation && (

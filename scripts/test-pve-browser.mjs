@@ -38,7 +38,7 @@ try{
     await page.locator('#pve-board [data-square="c4"]').click();const start=await page.evaluate(()=>performance.now());await page.locator('#pve-board [data-square="d5"]').click();await page.locator('.pve-damage-number').waitFor();
     assert.ok(await page.evaluate(start=>performance.now()-start>=400,start));assert.equal((await saved()).pve.battle.ply,1);assert.equal(await page.evaluate(()=>window.pveWorkers.requests),0,'AI waits for presentation');
     const hp=page.locator(`[data-piece-id="${victim.id}"] .pve-hp i`);assert.equal(await hp.count(),1,'Victim remains until visible contact');await page.waitForFunction(({id,killed})=>Math.abs(parseFloat(document.querySelector(`[data-piece-id="${id}"] .pve-hp i`).style.width)-(killed?0:100/3))<.001,{id:victim.id,killed});
-    await page.waitForFunction(()=>window.pveWorkers.requests===1);assert.ok(await page.evaluate(start=>performance.now()-start>=(killed?800:1200),start));const motions=await page.evaluate(()=>window.pveMoves);assert.ok(motions.filter(row=>row.id===pawn.id).every(row=>row.duration===420));
+    await page.waitForFunction(()=>window.pveWorkers.requests===1);assert.ok(await page.evaluate(({start,killed})=>performance.now()-start>=(killed?800:1200),{start,killed}));const motions=await page.evaluate(()=>window.pveMoves);assert.ok(motions.filter(row=>row.id===pawn.id).every(row=>row.duration===420));
     assert.equal((await saved()).pve.battle.units.find(u=>u.id===pawn.id).square,killed?'d5':'c4');await page.screenshot({path:`/tmp/gachachess-pve-impact-${killed}.png`,fullPage:true});await page.getByRole('button',{name:'К карте',exact:true}).click();await page.waitForFunction(()=>window.pveWorkers.live===0);
    }
   }

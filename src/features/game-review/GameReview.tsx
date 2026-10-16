@@ -227,50 +227,55 @@ export const GameReview = ({
             />
           )}
         </div>
-        {eligibleEntry(entry) && (
-          <div>
-            {job.status === "running" ? (
-              <>
-                <p
-                  role="status"
-                  style={{ visibility: progressVisible ? "visible" : "hidden" }}
-                >
-                  {job.progress.stage === "quick"
-                    ? "Первый проход"
-                    : "Глубокий разбор"}{" "}
-                  · {job.progress.done}/{job.progress.total}
-                </p>
-                <progress
-                  id="analysis-progress"
-                  style={{ visibility: progressVisible ? "visible" : "hidden" }}
-                  value={job.progress.done}
-                  max={job.progress.total || 1}
-                />
-                <button id="analysis-cancel" onClick={cancel}>
-                  Отменить
-                </button>
-              </>
-            ) : !analysisMode || analysis?.status !== "complete" ? (
-              <button
-                id={
-                  analysisMode && job.status === "failed"
-                    ? "analysis-retry"
-                    : "archive-analysis"
-                }
-                className="primary"
-                onClick={() => {
-                  setAnalysisMode(true);
-                  if (!analysis || analysis.status !== "complete") void start();
-                }}
-              >
-                {analysisMode && analysis
-                  ? "Повторить анализ"
-                  : "Разобрать партию"}
-              </button>
-            ) : null}
-            {job.status === "failed" && <p role="alert">{job.message}</p>}
-          </div>
-        )}
+        {eligibleEntry(entry) &&
+          (!analysisMode || analysis?.status !== "complete") && (
+            <div id="archive-review-actions">
+              <div id="archive-analysis-actions">
+                {job.status === "running" ? (
+                  <div
+                    id="analysis-progress"
+                    style={{
+                      visibility: progressVisible ? "visible" : "hidden",
+                    }}
+                  >
+                    <span className="analysis-spinner" aria-hidden="true" />
+                    <span role="status">
+                      {job.progress.stage === "quick"
+                        ? "Первый проход"
+                        : "Глубокий разбор"}{" "}
+                      · {job.progress.done}/{job.progress.total}
+                    </span>
+                    <button
+                      id="analysis-cancel"
+                      className="quiet"
+                      onClick={cancel}
+                    >
+                      Отменить
+                    </button>
+                  </div>
+                ) : !analysisMode || analysis?.status !== "complete" ? (
+                  <button
+                    id={
+                      analysisMode && job.status === "failed"
+                        ? "analysis-retry"
+                        : "archive-analysis"
+                    }
+                    className="primary"
+                    onClick={() => {
+                      setAnalysisMode(true);
+                      if (!analysis || analysis.status !== "complete")
+                        void start();
+                    }}
+                  >
+                    {analysisMode && (analysis || job.status === "failed")
+                      ? "Повторить анализ"
+                      : "Разобрать партию"}
+                  </button>
+                ) : null}
+              </div>
+              {job.status === "failed" && <p role="alert">{job.message}</p>}
+            </div>
+          )}
         <div className="analysis-insight-slot">
           {analysis?.status === "partial" && (
             <p role="status">
