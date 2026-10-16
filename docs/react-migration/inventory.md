@@ -27,23 +27,23 @@ Use Vite SPA + TanStack Router hash history. GitHub Pages provides static hostin
 
 Prefer narrow external-store subscriptions with useSyncExternalStore for saved state; providers own services, not a giant per-move context. Feature-local reducers own async/view transitions. Transaction writes must complete before publication to React subscribers. Game/review generations invalidate stale async work; all external resources have explicit disposal.
 
-## Validation status
+## Validation results
 
-Audit and implementation in progress. No acceptance check is considered complete until its replacement test passes. No internal preview published.
+All listed features have React owners and typed first-party domain/service replacements. The production runtime contains no legacy DOM bootstrap, HTML-template renderer, parallel navigation controller or old JavaScript application entry point. `dist/` is generated; v132 remains preserved in Git and in the upgrade harness.
 
-### Checkpoint: typed React runtime
+375 Node domain/service regressions and 59 React tests pass, alongside strict TypeScript, lint, motion token verification and the production build. Five real v132-generated fixtures cover legacy v1/v2/v3 storage, active games, analysis, equipment/activity, PvE and Autochess.
 
-Generated `dist/` replaces the old source directory. Strict TypeScript and ESLint pass. The latest verified runs contain 375 Node domain/service regression tests and 59 React tests. Five v132-generated storage fixtures cover old formats, rich active games, analysis, activity, PvE and Autochess. All pass.
+Browser acceptance has passed on the migrated application code:
 
-The preserved behavior from old DOM tests is asserted through React render/hook/router tests (board identities, keyboard/animation cleanup, modals, archives, analysis, activity, theme, persistence, Worker lifetime). Browser harnesses now exercise React controls and seed saved fixtures through the typed domain. Original behavioral and geometry assertions remain in place.
+- Live chess and archive playback at 320–1280 px; compact, standalone and simulated safe-area geometry; keyboard and animation identity.
+- Analysis, hints, principal variations, mate practice, failed/partial retries, cached review without new Workers, and no incidental board/scroll movement.
+- PGN text/file import, preserved headers, export/clipboard feedback, mobile sizing and unchanged rewards/history.
+- Collection filters, equipment, named sets, crafting/reward domain transactions and aligned actions; chest double-click protection and reward deep links.
+- Calendar/daily claims, frozen streaks, theme persistence/system changes, modal focus/return, profile, statistics and FAQ.
+- Timed/endless Hunt, Autochess shop/reserve/drag/repair/retry/offline battles, and PvE map/army/bag/evolution/combat/pause/settlement.
+- Stockfish 19 threaded, single-threaded and initialization fallback; real mate-in-3/4 checks; bounded timeouts; peak one parent Worker and none left alive.
+- Complete cold-offline application and installed v132 upgrade, including rejected-asset recovery, old Worker URL retention, preserved progress and unrelated caches, with and without isolation.
 
-Real Chromium runs on the migration branch in GitHub Actions. Stockfish threaded, single-threaded and failed-initialization fallback checks pass, including verified mate-in-3/mate-in-4 practice and zero surviving parent Workers (peak one). Browser integration checks have exposed and driven fixes to Autochess click capture, compact board geometry, hash search canonicalization and review copy. The complete PWA, mode and layout gates are still being rerun; these are not yet accepted as passed. Browser timing comparison with v132 is also running.
+The validation matrix, CI references and measured performance tradeoffs are in [validation.md](validation.md). The local managed environment has no permitted `control-browser`; Chromium runs in GitHub Actions. Physical Safari/Firefox/mobile device testing remains outside this evidence.
 
-The managed local environment lacks the Sites-required `control-browser`; no alternate local server/browser is started. CI supplies browser validation. No installed-upgrade or published-preview success is claimed until the complete corresponding gate passes.
-
-### Remaining acceptance gates
-
-- Complete the browser checks for PWA updates, layout, PGN/training, Hunt, Autochess and PvE without dropping their behavioral assertions.
-- Verify geometry, safe-area layouts, touch dragging, post-game return and all mode transitions in a real browser.
-- Measure browser interaction performance and compare with v132. Unit/DOM timing is not browser performance evidence.
-- Complete documentation/test coverage reconciliation, then publish and directly verify a new private preview. Production stays unchanged.
+A new private preview has been published and its live runtime files verified against the CI artifact; see the [delivery report](validation.md#internal-delivery). Production/main stays at the original baseline until explicitly approved.

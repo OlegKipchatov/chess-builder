@@ -1,0 +1,305 @@
+{
+  "baseline": "ee7df974635bf7dd514c24e4d4a6b04bce3af8c6",
+  "method": "Five alternating cold contexts per release and viewport on the same Chromium/runner, local static hosting, Service Workers blocked for equal network conditions, isolation enabled. Durations in milliseconds. Input-to-painted persisted move measured with requestAnimationFrame. PWA behavior is validated separately. These measurements are not mobile device or real-network benchmarks.",
+  "browser": "151.0.7922.34",
+  "summary": {
+    "390": {
+      "v132": {
+        "ready": 186.5500000000029,
+        "startPaint": 26.029999999998836,
+        "movePaint": 21.43499999999767
+      },
+      "react": {
+        "ready": 144.7149999999965,
+        "startPaint": 30.625,
+        "movePaint": 38.2100000000064
+      }
+    },
+    "1280": {
+      "v132": {
+        "ready": 181.0500000000029,
+        "startPaint": 25.745000000009895,
+        "movePaint": 21.654999999998836
+      },
+      "react": {
+        "ready": 142.19499999999243,
+        "startPaint": 32.02500000000873,
+        "movePaint": 38.19000000000233
+      }
+    }
+  },
+  "samples": {
+    "v132": [
+      {
+        "width": 390,
+        "index": 0,
+        "ready": 254.37000000000262,
+        "longTasks": [
+          57
+        ],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 30.839999999996508,
+        "movePaint": 19.19999999999709
+      },
+      {
+        "width": 390,
+        "index": 1,
+        "ready": 404.2350000000006,
+        "longTasks": [
+          50
+        ],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 19.17500000000291,
+        "movePaint": 21.360000000000582
+      },
+      {
+        "width": 390,
+        "index": 2,
+        "ready": 181.57500000001164,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 25.535000000003492,
+        "movePaint": 21.43499999999767
+      },
+      {
+        "width": 390,
+        "index": 3,
+        "ready": 186.5500000000029,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 26.029999999998836,
+        "movePaint": 21.59000000001106
+      },
+      {
+        "width": 390,
+        "index": 4,
+        "ready": 180.8850000000093,
+        "longTasks": [
+          51
+        ],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 32.76499999999942,
+        "movePaint": 21.70999999999185
+      },
+      {
+        "width": 1280,
+        "index": 0,
+        "ready": 177.52499999999418,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 33.395000000004075,
+        "movePaint": 22.45000000001164
+      },
+      {
+        "width": 1280,
+        "index": 1,
+        "ready": 181.0500000000029,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 20.455000000001746,
+        "movePaint": 21.654999999998836
+      },
+      {
+        "width": 1280,
+        "index": 2,
+        "ready": 174.13499999999476,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 25.745000000009895,
+        "movePaint": 22.860000000000582
+      },
+      {
+        "width": 1280,
+        "index": 3,
+        "ready": 201.00500000000466,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 35.020000000004075,
+        "movePaint": 19.854999999995925
+      },
+      {
+        "width": 1280,
+        "index": 4,
+        "ready": 183.05999999999767,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 106,
+        "startPaint": 20.745000000009895,
+        "movePaint": 20.64999999999418
+      }
+    ],
+    "react": [
+      {
+        "width": 390,
+        "index": 0,
+        "ready": 140.15499999999884,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 36.11500000000524,
+        "movePaint": 37.224999999998545
+      },
+      {
+        "width": 390,
+        "index": 1,
+        "ready": 154.40000000000873,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 34.64999999999418,
+        "movePaint": 38.2100000000064
+      },
+      {
+        "width": 390,
+        "index": 2,
+        "ready": 148.74499999999534,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 30.625,
+        "movePaint": 38.91000000000349
+      },
+      {
+        "width": 390,
+        "index": 3,
+        "ready": 144.7149999999965,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 29.279999999998836,
+        "movePaint": 39.08499999999185
+      },
+      {
+        "width": 390,
+        "index": 4,
+        "ready": 142.8700000000099,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 28.605000000010477,
+        "movePaint": 38.095000000001164
+      },
+      {
+        "width": 1280,
+        "index": 0,
+        "ready": 141.60500000001048,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 31.05999999999767,
+        "movePaint": 38.19000000000233
+      },
+      {
+        "width": 1280,
+        "index": 1,
+        "ready": 138.0500000000029,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 32.845000000001164,
+        "movePaint": 38.580000000001746
+      },
+      {
+        "width": 1280,
+        "index": 2,
+        "ready": 142.19499999999243,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 32.02500000000873,
+        "movePaint": 38.66500000000815
+      },
+      {
+        "width": 1280,
+        "index": 3,
+        "ready": 148.84500000000116,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 34.84499999998661,
+        "movePaint": 36.36000000000058
+      },
+      {
+        "width": 1280,
+        "index": 4,
+        "ready": 146.52499999999418,
+        "longTasks": [],
+        "animations": [
+          420,
+          420
+        ],
+        "resources": 16,
+        "startPaint": 29.30999999999767,
+        "movePaint": 37.93499999999767
+      }
+    ]
+  },
+  "reactCommit": "603c61ac01cb31490493f71abbadbf24597ac2db",
+  "workflowRun": "https://github.com/OlegKipchatov/chess-builder/actions/runs/38982755595"
+}
