@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {initialState} from '../src/services/persistence/state.ts';
+import {ITEMS} from '../src/domain/catalog/catalog.ts';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
@@ -12,15 +14,14 @@ const browser=await chromium.launch({headless:true,executablePath:process.env.PW
 try{
  const context=await browser.newContext({serviceWorkers:'block'}),page=await context.newPage(),url=`http://127.0.0.1:${server.address().port}/`;
  await page.goto(url);await page.locator('#start-game').waitFor();
- await page.evaluate(async()=>{
-  const {initialState}=await import('./state.js?v=132');const state=initialState();
-  const {ITEMS}=await import('./catalog.js?v=132');state.owned.push(ITEMS.find(item=>item.kind==='board'&&!state.owned.includes(item.id)).id);
+ {
+  const state=initialState();state.owned.push(ITEMS.find(item=>item.kind==='board'&&!state.owned.includes(item.id)).id);
   state.sets=[{id:'saved',name:'Мой набор',...state.equipped}];
   const entry={id:'old',pgn:'1. e4 e5 2. Nf3',mode:'bot',playerColor:'w',finishedAt:'2025-01-01T12:00:00Z',result:'Поражение',equipped:state.equipped};
-  state.archive=[entry,{...entry,id:'unavailable',finishedAt:''}];localStorage.setItem('chess-vault-v3',JSON.stringify(state));
- });
+  state.archive=[entry,{...entry,id:'unavailable',finishedAt:''}];await page.evaluate(state=>localStorage.setItem('chess-vault-v3',JSON.stringify(state)),state);
+ }
  for(const width of [320,390,1280]){
-  await page.setViewportSize({width,height:844});await page.goto(url+'#collection');await page.reload();
+  await page.setViewportSize({width,height:844});await page.goto(url+'?fixture='+Date.now()+'#/collection');
   await page.locator('.equipment-slot').first().click();await page.locator('[data-owned-only]').click();
   await page.locator('.equipment-slot').nth(1).click();assert.equal(await page.locator('[data-owned-only]').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator('.compact-item').count(),1);
@@ -42,14 +43,14 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрано');assert.equal(await page.locator('[data-load-set]').isDisabled(),true);
   assert.equal(await page.locator('[data-delete-set]').isEnabled(),true);
-  assert.equal(await page.locator('[data-delete-set]').evaluate(node=>getComputedStyle(node).backgroundColor),'rgb(57, 67, 75)');
+  assert.equal(await page.locator('[data-delete-set]').evaluate(node=>getComputedStyle(node).backgroundColor),await page.evaluate(()=>{const node=document.createElement('span');node.style.backgroundColor='var(--control)';document.body.append(node);const value=getComputedStyle(node).backgroundColor;node.remove();return value;}));
   await page.locator('.equipment-slot').last().click();await page.locator('[data-equip]:not(:disabled)').click();
   await page.locator('[data-collection-view="saved"]').click();assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрать');
   await page.locator('[data-load-set]').click();assert.equal(await page.locator('[data-load-set]').isDisabled(),true);
   await page.reload();await page.locator('[data-collection-view="saved"]').click();assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрано');
   await page.screenshot({path:`/tmp/gacha-collection-review-${width}.png`,fullPage:true});
-  await page.goto(url+'#archive');await page.locator('[data-archive="unavailable"]').click();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
-  await page.locator('#archive-return').click();await page.locator('[data-archive="old"]').click();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
+  await page.goto(url+'#/history');await page.locator('[data-archive="unavailable"]').click();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
+  await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
   await page.locator('#archive-analysis').scrollIntoViewIfNeeded();
   const original=await page.locator('#archive-analysis').boundingBox();
   await page.evaluate(()=>{window.Worker=class{postMessage(){queueMicrotask(()=>this.onerror?.(Error('Test worker failure')));}terminate(){}};});
@@ -57,4 +58,4 @@ try{
   const retry=await page.locator('#analysis-retry').boundingBox();assert.deepEqual(retry,original,'Retry preserves original button rectangle');
  }
  await context.close();console.log('PASS collection and analysis layout at 320, 390, 1280: filter, sticky gap, set title, legacy availability, retry geometry');
-}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+}catch(error){for(const context of browser.contexts())for(const page of context.pages())await page.screenshot({path:'/tmp/gacha-collection-failure.png',fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

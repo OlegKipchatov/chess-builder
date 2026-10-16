@@ -13,7 +13,7 @@ import {createStartedGame} from '../src/domain/chess/session.ts';
 import {createSession} from '../src/domain/cognitive/cognitive-model.ts';
 import {completedMatch} from '../src/domain/chess/archive.ts';
 import {normalizeActivity} from '../src/domain/activity/activity-model.ts';
-import {createAutoRun} from '../src/domain/autochess/autochess.ts';
+import {savedMateRun} from './fixtures/autochess.mjs';
 
 const root=resolve('dist'),previousRoot=await mkdtemp(join(tmpdir(),'gachachess-v132-'));
 // Real production predecessor, not a synthetic replacement service worker.
@@ -52,7 +52,7 @@ const offlineEngines=async(page,url)=>{
   const board=new Chess();board.loadPgn(saved);assert.equal(board.history().length,2);
   await page.reload();await page.locator('#board').waitFor();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),saved);
  }
- const state=initialState(),run=createAutoRun('offline-mate');run.color='w';run.phase='paused';run.battle={id:'offline-mate:1',initialFen:'7k/5Q2/6K1/8/8/8/8/8 w - - 0 1',moves:[],elapsed:0,profile:'stockfish19',result:null};
+ const state=initialState(),run=savedMateRun('offline-mate');
  await setState(page,state);await page.evaluate(value=>localStorage.setItem('gachachess-autochess-v1',JSON.stringify(value)),run);await page.goto(url+'?fixture='+Date.now()+'#/autochess');
  await page.getByRole('button',{name:'Продолжить бой'}).click();await page.getByRole('button',{name:'Следующий раунд'}).waitFor({timeout:45000});
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')).results.at(-1).outcome),'win');

@@ -65,9 +65,37 @@ jobs:
           path: dist
           retention-days: 7
 
+  browser-parity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [autochess, hunt, layout]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Verify gameplay and responsive geometry
+        run: npm run test:ui:${{ matrix.suite }}
+      - name: Retain browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-${{ matrix.suite }}-${{ github.sha }}
+          path: |
+            /tmp/gachachess-*.png
+            /tmp/gacha-*.png
+            /tmp/autochess*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: test
+    needs: [test, browser-parity]
     runs-on: ubuntu-latest
     permissions:
       contents: read

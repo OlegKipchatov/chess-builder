@@ -132,13 +132,17 @@ describe("React routing, collection and history", () => {
       view.container.querySelector(".collection-row.equipped"),
     ).toBeTruthy();
     expect(screen.getByText("Выбрано", { selector: "button" })).toBeDisabled();
-    fireEvent.click(screen.getByText("Предметы"));
-    fireEvent.click(screen.getByLabelText("Только мои"));
-    expect(screen.getByLabelText("Только мои")).toBeChecked();
-    fireEvent.click(screen.getByText("Доски", { selector: "button" }));
-    expect(screen.getByLabelText("Только мои")).toBeChecked();
+    fireEvent.click(screen.getByText("Фигуры и доски"));
+    fireEvent.click(screen.getByRole("button", { name: "Только полученные" }));
     expect(
-      view.container.querySelectorAll(".collection-items-list .collection-row"),
+      screen.getByRole("button", { name: "Только полученные" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Настроить: Доска" }));
+    expect(
+      screen.getByRole("button", { name: "Только полученные" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      view.container.querySelectorAll(".collection-items-list .compact-item"),
     ).toHaveLength(1);
     view.unmount();
   });
@@ -153,13 +157,13 @@ describe("React routing, collection and history", () => {
     ];
     const view = await setup("/collection", state);
     await screen.findByRole("heading", { name: "Коллекция" });
-    fireEvent.click(screen.getByText("Сохранённые"));
+    fireEvent.click(screen.getByText("Мои наборы", { selector: "button" }));
     expect(screen.getByText(state.sets[0].name)).toBeVisible();
     expect(view.container.querySelectorAll(".collection-row img")).toHaveLength(
       0,
     );
     expect(
-      view.container.querySelectorAll(".collection-row .compact-item"),
+      view.container.querySelectorAll(".collection-row .preset-part"),
     ).toHaveLength(7);
     expect(screen.getByText("Выбрано", { selector: "button" })).toBeDisabled();
     view.unmount();

@@ -18,6 +18,7 @@ import type { Equipment, Item, ItemId } from "../../domain/catalog/types.js";
 import { useInventory } from "../../features/inventory/useInventory.js";
 import { ItemPreview } from "../../shared/ui/ItemPreview.js";
 import { Page } from "../../shared/ui/Page.js";
+import { Piece } from "../../shared/ui/Piece.js";
 const sameEquipment = (a: Equipment, b: Equipment) =>
   a.board === b.board &&
   TYPES.every((type) => a.pieces[type] === b.pieces[type]);
@@ -56,7 +57,7 @@ export const CollectionPage = () => {
     [type, setType] = useState<PieceSymbol | "board">("k"),
     [onlyOwned, setOnlyOwned] = useState(false),
     [target, setTarget] = useState<ItemId | null>(null);
-  const rows = useRef(new Map<ItemId, HTMLDivElement>());
+  const rows = useRef(new Map<ItemId, HTMLElement>());
   useEffect(() => {
     if (!target || view !== "items") return;
     const frame = requestAnimationFrame(() => {
@@ -70,44 +71,6 @@ export const CollectionPage = () => {
     item.kind === "board"
       ? equipped.board === item.id
       : equipped.pieces[item.type] === item.id;
-  const open = (item: Item) =>
-    show({
-      title: item.name,
-      body: (
-        <>
-          <ItemPreview item={item} />
-          <p>{rarityNames[item.rarity]}</p>
-          {owned.includes(item.id) ? (
-            <button
-              className="primary wide"
-              disabled={isEquipped(item)}
-              onClick={() =>
-                void inventory.equip(item).then((ok) => {
-                  if (ok) show(null);
-                })
-              }
-            >
-              {isEquipped(item) ? "Выбрано" : "Использовать"}
-            </button>
-          ) : (
-            <>
-              <p>Создать за {craftCost(item)} осколков</p>
-              <button
-                className="primary wide"
-                disabled={shards < craftCost(item)}
-                onClick={() =>
-                  void inventory.craft(item).then((ok) => {
-                    if (ok) show(null);
-                  })
-                }
-              >
-                Создать · {craftCost(item)} ✧
-              </button>
-            </>
-          )}
-        </>
-      ),
-    });
   const jump = (id: ItemId) => {
     const item = itemById(id);
     if (!item) return;
@@ -116,12 +79,31 @@ export const CollectionPage = () => {
     if (!owned.includes(id)) setOnlyOwned(false);
     setTarget(id);
   };
+  const preview = (ids: ItemId[]) =>
+    ids.map((id) => {
+      const item = itemById(id)!;
+      return (
+        <button
+          key={id}
+          className={`preset-part ${owned.includes(id) ? "" : "missing"}`}
+          aria-label={`Открыть: ${item.name}`}
+          onClick={() => jump(id)}
+        >
+          {item.kind === "piece" ? (
+            <Piece type={item.type} color="w" style={item.style} />
+          ) : (
+            <ItemPreview item={item} />
+          )}
+        </button>
+      );
+    });
   return (
     <Page id="collection" title="Коллекция">
-      <div className="equipment-strip">
+      <article className="equipment-strip">
         <div className="strip-label">
-          <span>Выбрано</span>
+          <p className="eyebrow">Выбранный набор</p>
           <button
+            className="text-button"
             disabled={sets.length >= 12}
             onClick={() =>
               show({
@@ -138,193 +120,235 @@ export const CollectionPage = () => {
               })
             }
           >
-            Сохранить
+            Сохранить набор
           </button>
         </div>
-        <div className="equipment-slots">
-          {[...TYPES.map((t) => equipped.pieces[t]), equipped.board].map(
-            (id) => (
-              <button
-                className="equipment-slot"
-                key={id}
-                onClick={() => jump(id)}
-                aria-label={itemById(id)?.name}
-              >
-                <ItemPreview item={itemById(id)!} />
-              </button>
-            ),
-          )}
-        </div>
-      </div>
-      <div className="collection-toolbar segmented">
-        {(["sets", "items", "saved"] as const).map((key, i) => (
-          <button
-            key={key}
-            aria-pressed={key === view}
-            onClick={() => setView(key)}
-          >
-            {["Наборы", "Предметы", "Сохранённые"][i]}
-          </button>
-        ))}
-      </div>
-      {view === "sets" && (
-        <div className="collection-items-list">
-          {STYLES.map((style) => {
-            const ids = [
-                ...TYPES.map((t) => pieceId(style.id, t)),
-                boardId(style.id),
-              ],
-              complete = ids.every((id) => owned.includes(id)),
-              active = sameEquipment(equipped, presetEquipment(style.id));
+        <nav className="equipment-slots" aria-label="Тип предмета">
+          {[...TYPES, "board" as const].map((slot) => {
+            const item = itemById(
+                slot === "board" ? equipped.board : equipped.pieces[slot],
+              )!,
+              label = slot === "board" ? "Доска" : PIECE_NAMES[slot];
             return (
-              <div
-                key={style.id}
-                className={`collection-row rarity-row rarity-${style.rarity} ${active ? "equipped" : ""}`}
+              <button
+                key={slot}
+                className={`equipment-slot ${view === "items" && type === slot ? "active" : ""}`}
+                aria-label={`Настроить: ${label}`}
+                aria-pressed={view === "items" && type === slot}
+                onClick={() => jump(item.id)}
               >
-                <div className="collection-name">
-                  <strong>{style.name}</strong>
-                  <small>
-                    {rarityNames[style.rarity]} ·{" "}
-                    {ids.filter((id) => owned.includes(id)).length}/7
-                  </small>
-                </div>
-                <div className="collection-pieces">
-                  {ids.map((id) => (
-                    <button
-                      key={id}
-                      className={`compact-item ${owned.includes(id) ? "" : "missing"}`}
-                      aria-label={itemById(id)?.name}
-                      onClick={() => jump(id)}
-                    >
-                      <ItemPreview item={itemById(id)!} />
-                    </button>
-                  ))}
-                </div>
-                <button
-                  className="collection-action"
-                  disabled={!complete || active}
-                  onClick={() =>
-                    void inventory.equipSet(presetEquipment(style.id))
-                  }
-                >
-                  {active ? "Выбрано" : "Выбрать"}
-                </button>
-              </div>
+                {item.kind === "piece" ? (
+                  <Piece type={item.type} color="w" style={item.style} />
+                ) : (
+                  <ItemPreview item={item} />
+                )}
+                <span>{label}</span>
+              </button>
             );
           })}
+        </nav>
+      </article>
+      <div className="collection-toolbar">
+        <div className="segmented" role="group" aria-label="Раздел коллекции">
+          {(["sets", "items", "saved"] as const).map((key, i) => (
+            <button
+              key={key}
+              data-collection-view={key}
+              className={key === view ? "active" : ""}
+              aria-pressed={key === view}
+              onClick={() => setView(key)}
+            >
+              {["Коллекции", "Фигуры и доски", "Мои наборы"][i]}
+            </button>
+          ))}
         </div>
-      )}
-      {view === "items" && (
-        <>
-          <div className="catalog-heading">
-            <div className="segmented">
-              {[...TYPES, "board" as const].map((t) => (
-                <button
-                  key={t}
-                  aria-pressed={t === type}
-                  onClick={() => setType(t)}
+        <span className="muted">
+          {owned.length}/{ITEMS.length} предметов
+        </span>
+      </div>
+      <div className="collection-content-group">
+        {view === "sets" && (
+          <div className="collection-list">
+            {STYLES.map((style) => {
+              const ids = [
+                  ...TYPES.map((t) => pieceId(style.id, t)),
+                  boardId(style.id),
+                ],
+                total = ids.filter((id) => owned.includes(id)).length,
+                active = sameEquipment(equipped, presetEquipment(style.id));
+              return (
+                <article
+                  key={style.id}
+                  className={`collection-row rarity-row rarity-${style.rarity} ${active ? "equipped" : ""}`}
                 >
-                  {t === "board" ? "Доски" : PIECE_NAMES[t]}
-                </button>
+                  <div className="collection-name">
+                    <h3>{style.name}</h3>
+                    <span className="sr-only">{rarityNames[style.rarity]}</span>
+                  </div>
+                  <div className="collection-pieces">{preview(ids)}</div>
+                  <div className="collection-action">
+                    <span>{total} из 7</span>
+                    {total === 7 && (
+                      <button
+                        data-preset={style.id}
+                        className={active ? "equipped-button" : ""}
+                        disabled={active}
+                        onClick={() =>
+                          void inventory.equipSet(presetEquipment(style.id))
+                        }
+                      >
+                        {active ? "Выбрано" : "Выбрать"}
+                      </button>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+        {view === "items" && (
+          <>
+            <div className="catalog-heading">
+              <h3>{type === "board" ? "Доски" : PIECE_NAMES[type]}</h3>
+              <button
+                className="filter-toggle"
+                data-owned-only
+                aria-pressed={onlyOwned}
+                onClick={() => setOnlyOwned(!onlyOwned)}
+              >
+                Только полученные
+              </button>
+            </div>
+            <div className="collection-items-list">
+              {ITEMS.filter(
+                (item) =>
+                  (type === "board"
+                    ? item.kind === "board"
+                    : item.kind === "piece" && item.type === type) &&
+                  (!onlyOwned || owned.includes(item.id)),
+              ).map((item) => (
+                <article
+                  key={item.id}
+                  ref={(node) => {
+                    if (node) rows.current.set(item.id, node);
+                    else rows.current.delete(item.id);
+                  }}
+                  tabIndex={-1}
+                  className={`compact-item rarity-row rarity-${item.rarity} ${isEquipped(item) ? "equipped" : ""} ${target === item.id ? "navigation-target" : ""}`}
+                >
+                  <div className="compact-item-art">
+                    <ItemPreview item={item} />
+                  </div>
+                  <div className="compact-item-copy">
+                    <span className="sr-only">{rarityNames[item.rarity]}</span>
+                    <h3>
+                      {STYLES.find((style) => style.id === item.style)?.name}
+                    </h3>
+                    <span className="sr-only">
+                      {owned.includes(item.id) ? "В коллекции" : "Не получен"}
+                    </span>
+                  </div>
+                  <button
+                    data-equip={owned.includes(item.id) ? item.id : undefined}
+                    data-craft={!owned.includes(item.id) ? item.id : undefined}
+                    className={isEquipped(item) ? "equipped-button" : ""}
+                    disabled={
+                      isEquipped(item) ||
+                      (!owned.includes(item.id) && shards < craftCost(item))
+                    }
+                    onClick={() =>
+                      void (owned.includes(item.id)
+                        ? inventory.equip(item)
+                        : inventory.craft(item))
+                    }
+                  >
+                    {isEquipped(item)
+                      ? "Выбрано"
+                      : owned.includes(item.id)
+                        ? "Выбрать"
+                        : `Создать · ${craftCost(item)} ✧`}
+                  </button>
+                </article>
               ))}
             </div>
-            <label className="filter-toggle">
-              <input
-                type="checkbox"
-                checked={onlyOwned}
-                onChange={(e) => setOnlyOwned(e.target.checked)}
-              />{" "}
-              Только мои
-            </label>
-          </div>
-          <div className="collection-items-list">
-            {ITEMS.filter(
-              (item) =>
-                (type === "board"
-                  ? item.kind === "board"
-                  : item.kind === "piece" && item.type === type) &&
-                (!onlyOwned || owned.includes(item.id)),
-            ).map((item) => (
-              <div
-                key={item.id}
-                ref={(node) => {
-                  if (node) rows.current.set(item.id, node);
-                  else rows.current.delete(item.id);
-                }}
-                tabIndex={-1}
-                className={`collection-row rarity-row rarity-${item.rarity} ${isEquipped(item) ? "equipped" : ""} ${target === item.id ? "collection-target" : ""}`}
-              >
-                <ItemPreview item={item} />
-                <div className="collection-name">
-                  <strong>{item.name}</strong>
-                  <small>{rarityNames[item.rarity]}</small>
-                </div>
-                <button disabled={isEquipped(item)} onClick={() => open(item)}>
-                  {isEquipped(item)
-                    ? "Выбрано"
-                    : owned.includes(item.id)
-                      ? "Выбрать"
-                      : `Создать · ${craftCost(item)} ✧`}
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      {view === "saved" && (
-        <div>
-          {sets.length === 0 && (
-            <p className="empty-state">
-              Сохраните выбранные предметы в свой набор.
-            </p>
-          )}
-          {sets.map((set) => (
-            <div
-              className={`collection-row ${sameEquipment(equipped, set) ? "equipped" : ""}`}
-              key={set.id}
-            >
-              <strong>{set.name}</strong>
-              <div className="collection-pieces">
-                {[...TYPES.map((type) => set.pieces[type]), set.board].map(
-                  (id) => (
-                    <span key={id} className="compact-item">
-                      <ItemPreview item={itemById(id)!} />
-                    </span>
-                  ),
-                )}
-              </div>
-              <button
-                disabled={sameEquipment(equipped, set)}
-                onClick={() => void inventory.equipSet(set)}
-              >
-                {sameEquipment(equipped, set) ? "Выбрано" : "Выбрать"}
-              </button>
-              <button
-                aria-label={`Удалить ${set.name}`}
-                onClick={() =>
-                  show({
-                    title: "Удалить набор?",
-                    body: (
+          </>
+        )}
+        {view === "saved" && (
+          <>
+            <h2>Мои наборы {sets.length}/12</h2>
+            <div className="collection-list">
+              {!sets.length && (
+                <p className="empty-state">
+                  Сохраните текущие фигуры и доску как отдельный набор.
+                </p>
+              )}
+              {sets.map((set) => {
+                const active = sameEquipment(equipped, set);
+                return (
+                  <article
+                    className={`collection-row ${active ? "equipped" : ""}`}
+                    key={set.id}
+                  >
+                    <div className="collection-name">
+                      <h3>{set.name}</h3>
+                    </div>
+                    <div className="collection-pieces">
+                      {preview([
+                        ...TYPES.map((type) => set.pieces[type]),
+                        set.board,
+                      ])}
+                    </div>
+                    <div className="collection-action">
                       <button
-                        className="danger wide"
+                        data-load-set={set.id}
+                        className={active ? "equipped-button" : ""}
+                        disabled={active}
+                        onClick={() => void inventory.equipSet(set)}
+                      >
+                        {active ? "Выбрано" : "Выбрать"}
+                      </button>
+                      <button
+                        className="delete-set icon-button"
+                        data-delete-set={set.id}
+                        aria-label={`Удалить набор ${set.name}`}
                         onClick={() =>
-                          void inventory.remove(set.id).then((ok) => {
-                            if (ok) show(null);
+                          show({
+                            title: "Удалить набор?",
+                            body: (
+                              <button
+                                className="danger wide"
+                                onClick={() =>
+                                  void inventory.remove(set.id).then((ok) => {
+                                    if (ok) show(null);
+                                  })
+                                }
+                              >
+                                Удалить
+                              </button>
+                            ),
                           })
                         }
                       >
-                        Удалить
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6m4-6v6" />
+                        </svg>
                       </button>
-                    ),
-                  })
-                }
-              >
-                ×
-              </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </Page>
   );
 };

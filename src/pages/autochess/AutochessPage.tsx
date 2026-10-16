@@ -20,7 +20,6 @@ import {
   purchaseError,
   purchasePrice,
   reservePieces,
-  roundIncome,
   salePrice,
   sellPiece,
   seriesFinished,
@@ -541,10 +540,6 @@ export const AutochessPage = () => {
                   <button onClick={auto.retryReward}>Сохранить награду</button>
                 ) : (
                   <>
-                    <p>
-                      +{roundIncome(result)} монет магазина · В серии заработано{" "}
-                      {autoSeriesCoins({ autochessAwards: awards }, run)} ◈
-                    </p>
                     <button
                       className="primary"
                       onClick={() => {

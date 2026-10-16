@@ -18,7 +18,7 @@ try{
   assert.equal(await page.locator('#match-points').isVisible(),true);
   assert.equal(await page.locator('#status').evaluate(node=>getComputedStyle(node).clipPath),'inset(50%)');
   assert.equal(await page.locator('#replay-start').isVisible(),false);
-  assert.deepEqual(await page.locator('.history-buttons button').evaluateAll(nodes=>nodes.map(node=>node.id)),['history-back','replay-start','replay-pause','history-forward','history-live']);
+  assert.deepEqual(await page.locator('.history-buttons button').evaluateAll(nodes=>nodes.map(node=>node.id)),['history-back','history-forward','history-live']);
   await page.locator('#match-points').evaluate(node=>{node.textContent='−39 очков';});
   assert.deepEqual(await page.locator('#board').boundingBox(),before);
   assert.equal(await page.locator('#hint').count(),0);
@@ -41,8 +41,8 @@ try{
   assert.deepEqual(await page.locator('#board').boundingBox(),before);
   await page.screenshot({path:`/tmp/gacha-live-${width}.png`,fullPage:true});
   if(width===390){
-   await page.locator('#resign').click();
-   await page.locator('[data-confirm-resign]').click();
+   await page.getByRole('button',{name:'Сдаться',exact:true}).click();
+   await page.locator('dialog').getByRole('button',{name:'Сдаться',exact:true}).click();
    for(let step=0;step<3&&await page.locator('#modal').evaluate(node=>node.open);step++)await page.locator('#close-modal').click();
    await page.evaluate(()=>{location.hash='archive';});
    await page.locator('[data-archive]').first().click();
@@ -87,4 +87,4 @@ try{
  }
  assert.equal(layouts[0].boardWidth,layouts[1].boardWidth,'Browser chrome must not shrink the board when height is sufficient');
  assert.ok(Math.abs((layouts[0].summaryTop-layouts[0].headerBottom)-(layouts[1].summaryTop-layouts[1].headerBottom))<=2,'Embedded and standalone tall screens keep the standard top spacing');
-}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+}catch(error){for(const context of browser.contexts())for(const page of context.pages())await page.screenshot({path:'/tmp/gacha-live-failure.png',fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
