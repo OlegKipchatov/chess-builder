@@ -1,5 +1,5 @@
-import {allMoves,resolveAction,unitAt,livingUnits,attacksSquare,isKingThreatened,isSquareAttacked} from './pve-battle.js?v=118';
-import {unitPower,damage,maxHp} from './pve-model.js?v=118';
+import {allMoves,resolveAction,unitAt,enPassantTarget,livingUnits,attacksSquare,isKingThreatened,isSquareAttacked} from './pve-battle.js?v=123';
+import {unitPower,damage,maxHp} from './pve-model.js?v=123';
 const value = unit => unit.type==='k'?240*(.35+.65*unit.hp/maxHp(unit))+unitPower(unit):unitPower(unit);
 const evaluate = (battle,color) => {
  if(battle.result)return battle.result.outcome==='draw'?0:(battle.result.outcome===(color==='w'?'win':'loss')?1:-1)*100000;
@@ -20,7 +20,7 @@ const evaluate = (battle,color) => {
  },0);
 };
 const priority = (battle,move,color) => {
- const target=unitAt(battle,move.to),attacker=unitAt(battle,move.from),next=resolveAction(battle,move,{track:false});
+ const attacker=unitAt(battle,move.from),target=unitAt(battle,move.to)||enPassantTarget(battle,attacker,move.to),next=resolveAction(battle,move,{track:false});
  const attack=target?(target.hp<=damage(attacker)?value(target)*12:value(target)*damage(attacker)/target.hp):0;
  return attack+evaluate(next,color);
 };

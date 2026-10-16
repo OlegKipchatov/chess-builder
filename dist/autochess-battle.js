@@ -1,10 +1,10 @@
-import {AUTO,positionCompositionError,battleGame,battleResult,completeBattle} from './autochess.js?v=118';
-import {createAutoplayEngine} from './autochess-engine.js?v=118';
+import {AUTO,positionCompositionError,battleGame,battleResult,completeBattle} from './autochess.js?v=123';
+import {createAutoplayEngine} from './autochess-engine.js?v=123';
 export const createBattleController = ({getRun,save,onChange,onError,engineFactory=createAutoplayEngine,clock=()=>performance.now(),schedule=setTimeout,cancel=clearTimeout}) => {
- let position=null,engine=null,generation=0,active=false,base=0,started=0,next=null,preparing=false,attempt=1;
+ let position=null,engine=null,generation=0,active=false,base=0,started=0,next=null,preparing=false,attempt=1,releasePace=null;
  const elapsed=()=>base+(active?Math.max(0,clock()-started):0);
- const halt=()=>{active=false;preparing=false;generation++;cancel(next);next=null;engine?.terminate();engine=null;position=null;};
- const commit=run=>{if(!save(run))throw Error('Не удалось сохранить бой. Освободите место и повторите.');onChange();};
+ const halt=()=>{active=false;preparing=false;generation++;cancel(next);next=null;releasePace?.();releasePace=null;engine?.terminate();engine=null;position=null;};
+ const commit=run=>{if(!save(run))throw Error('Не удалось сохранить бой. Освободите место и повторите.');return onChange();};
  const fail=error=>{const spent=active?elapsed():getRun().battle.elapsed;halt();const run=getRun();if(run?.battle&&run.phase!=='result')save({...run,phase:'paused',battle:{...run.battle,elapsed:spent}});onChange();onError(/out of memory|memory access|allocation/i.test(error.message)?'Не хватает памяти для движка после 3 попыток. Бой сохранён. Закройте другие вкладки и продолжите.':error.message);};
  const finish=result=>{
   const run=getRun(),spent=elapsed();halt();
@@ -37,11 +37,11 @@ export const createBattleController = ({getRun,save,onChange,onError,engineFacto
   }
   throw Object.assign(Error('Бой приостановлен'),{name:'AbortError'});
  };
- const step=async token=>{
+ const step=async (token,gate=Promise.resolve())=>{
   if(!active||token!==generation)return;
-  const requestStarted=clock(),run=getRun();
+  const run=getRun();
   try{
-   const move=await search(run,token);
+   const [move]=await Promise.all([search(run,token),gate]);
    if(!active||token!==generation)return;
    attempt=1;
    const spent=elapsed();
@@ -49,7 +49,9 @@ export const createBattleController = ({getRun,save,onChange,onError,engineFacto
    const updated={...run,battle:{...run.battle,moves:[...run.battle.moves,move],elapsed:spent}};
    const result=battleResult(game,updated.battle.moves.length,spent);
    if(result){halt();commit(completeBattle(updated,result));return;}
-   commit(updated);next=schedule(()=>void step(token),Math.max(0,AUTO.pace-(clock()-requestStarted)));
+   const presentation=commit(updated);
+   const pace=new Promise(resolve=>{releasePace=resolve;next=schedule(()=>{next=null;releasePace=null;resolve();},AUTO.pace);});
+   void step(token,Promise.all([pace,presentation]));
   }catch(error){if(token===generation)fail(error);}
  };
  return {

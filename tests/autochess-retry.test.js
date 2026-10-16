@@ -17,7 +17,7 @@ test('two failed calculations restart fresh engines on the exact saved position,
  });
  await h.controller.start();await flush();
  assert.equal(created,3);assert.equal(maxLive,1);assert.deepEqual(stopped,[1,2]);assert.equal(h.saves(),1);assert.deepEqual(h.get().battle.moves,['a2a3']);assert.deepEqual(h.errors,[]);
- assert.deepEqual(queries,[queries[0],queries[0],queries[0]]);assert.equal(h.controller.retryAttempt(),1);h.controller.dispose();assert.equal(live,0);
+ assert.deepEqual(queries,[queries[0],queries[0],queries[0],[queries[0][0],['a2a3']]]);assert.equal(h.controller.retryAttempt(),1);h.controller.dispose();assert.equal(live,0);
 });
 test('readiness failures and search failures share three attempts for the same move',async()=>{
  let created=0,stopped=0;
@@ -29,7 +29,7 @@ test('a successful move resets retry allowance for the next position',async()=>{
  let created=0,calls=0;const queried=[];
  const h=harness(()=>{const id=++created;return {ready:Promise.resolve(),search:async(fen,moves)=>{calls++;queried.push(moves);if(id===1||id===3||(id===2&&moves.length))throw Error('timeout');return moves.length?'h7h6':'a2a3';},terminate:()=>{}};});
  await h.controller.start();await flush();h.timers.shift()();await flush();
- assert.equal(created,4);assert.deepEqual(h.get().battle.moves,['a2a3','h7h6']);assert.deepEqual(queried.slice(2),[['a2a3'],['a2a3'],['a2a3']]);assert.deepEqual(h.errors,[]);h.controller.dispose();
+ assert.equal(created,4);assert.deepEqual(h.get().battle.moves,['a2a3','h7h6']);assert.deepEqual(queried.slice(2),[['a2a3'],['a2a3'],['a2a3'],['a2a3','h7h6']]);assert.deepEqual(h.errors,[]);h.controller.dispose();
 });
 test('pause while restarting suppresses late readiness, retries and error UI',async()=>{
  let created=0,resolveReady,stopped=0;

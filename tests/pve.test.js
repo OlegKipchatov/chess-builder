@@ -49,7 +49,7 @@ test('Geometry enforces blockers, board edges, own pieces and side to move',()=>
  assert.equal(resolveAction(battle,{from:'a1',to:'a4'}),battle);assert.equal(resolveAction(battle,{from:'c1',to:'d2'}),battle);
  assert.equal(movesFor(position([unit('n','n','w','a1')]),unit('n','n','w','a1')).length,2);
 });
-test('Pawns have forward/double moves, diagonal attacks, temporary promotion, no en passant',()=>{
+test('Pawns have forward/double moves, diagonal attacks, temporary promotion',()=>{
  const battle=position([unit('p','p','w','a2'),unit('n','n','b','b3')]);
  assert.deepEqual(movesFor(battle,battle.units[0]).map(row=>row.to).sort(),['a3','a4','b3']);
  const blocked=position([unit('p','p','w','a2'),unit('n','n','b','a3')]);assert.equal(movesFor(blocked,blocked.units[0]).length,0);

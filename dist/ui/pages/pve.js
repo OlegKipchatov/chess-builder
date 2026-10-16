@@ -1,10 +1,10 @@
-import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit,evolutionOptions} from '../../pve-model.js?v=118';
-import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves,isKingThreatened,resumePveBattle} from '../../pve-battle.js?v=118';
-import {renderBoard,snapshotBoard,animateTransition,clearBoardTransition} from '../../board.js?v=118';
-import {pieceSVG} from '../../pieces.js?v=118';
-import {PIECE_NAMES,itemById} from '../../catalog.js?v=118';
-import {disclosure,statCard,backIcon} from '../primitives.js?v=118';
-import {motionDuration,motionEasing} from '../motion.js?v=118';
+import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit,evolutionOptions} from '../../pve-model.js?v=123';
+import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves,isKingThreatened,resumePveBattle} from '../../pve-battle.js?v=123';
+import {renderBoard,animatePveAction,clearBoardTransition} from '../../board.js?v=123';
+import {pieceSVG} from '../../pieces.js?v=123';
+import {PIECE_NAMES,itemById} from '../../catalog.js?v=123';
+import {disclosure,statCard,backIcon} from '../primitives.js?v=123';
+import {motionDuration,motionEasing} from '../motion.js?v=123';
 const pathIcon='<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 40c-7-13 31-9 24-22S15 17 18 6" stroke-dasharray="4 4"/><circle cx="10" cy="40" r="3"/><path d="M18 6h13l-3 5 3 5H18M18 6v17"/></svg>';
 const stoneIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m10 4 13 3 5 14-13 8L4 18Z M10 4l5 25M23 7 4 18l24 3M10 4l18 17"/></svg>';
 const coreIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 11 6.5v13L16 29 5 22.5v-13Z"/><circle cx="16" cy="16" r="5"/><path d="M16 3v5M27 9.5l-4.3 2.5M27 22.5 22.7 20M16 29v-5M5 22.5 9.3 20M5 9.5 9.3 12"/></svg>';
@@ -12,11 +12,12 @@ const name = unit => `${PIECE_NAMES[unit.type]} · ${unit.id.replace('pve-unit-'
 const stat = (value,label) => `<span><strong>${value}</strong> ${label}</span>`;
 export const pveEntry = () => `<section id="pve-entry" class="pve-entry"><div class="pve-entry-icon">${pathIcon}</div><div><span class="pve-eyebrow">PvE · Первая глава</span><h2>Поход</h2><p>Развивайте армию и дойдите до Стража крепости.</p></div><button id="pve-open" class="primary">В поход</button></section>`;
 export const pveFAQ = () => [
- disclosure('Как играть в PvE-поход?', '<p>Вы играете белыми. У каждой фигуры есть уровень, опыт, HP и урон. Атака снимает HP: если цель выжила, атакующий остаётся на месте, а ход переходит сопернику. Автоматического ответного урона нет. HP и урон зависят от типа фигуры. Каждый уровень добавляет 40% от базовых HP и урона: уровень 2 — ×1,4, уровень 3 — ×1,8, уровень 5 — ×2,6. Пешка: 100 HP / 80 урона; конь: 120 / 125; слон: 100 / 140; ладья: 170 / 160; ферзь: 150 / 190; король: 140 / 110 на первом уровне.</p><p>Бой заканчивается только при уничтожении короля — когда его HP падают до нуля. Шах и мат не ограничивают ходы: король может остаться под атакой, пережить удар и атаковать в ответ своим ходом. Подсветка короля предупреждает об угрозе, но не запрещает ход. ИИ учитывает HP, урон и ответные атаки. Рокировки и взятия на проходе нет. Пешка может сделать первый двойной ход со второй горизонтали, если путь свободен. На последней горизонтали она становится ферзём только до конца боя. Троекратное повторение, отсутствие ходов или 120 полных ходов завершают бой вничью.</p><p>На развилке достаточно победить одного соперника. Пройденные участки доступны повторно. Сила соперника учитывает активную армию и диапазон участка; состав виден до боя.</p><p>После боя показываются результат, награды, затем отдельный шаг с прогрессом опыта фигур; после закрытия — карта. Каждый ход сохраняется на устройстве. Бой можно приостановить и продолжить позже, в том числе без сети после полной установки приложения.</p>'),
+ disclosure('Как играть в PvE-поход?', '<p>Вы играете белыми. У каждой фигуры есть уровень, опыт, HP и урон. Атака снимает HP: если цель выжила, атакующий остаётся на месте, а ход переходит сопернику. Автоматического ответного урона нет. HP и урон зависят от типа фигуры. Каждый уровень добавляет 40% от базовых HP и урона: уровень 2 — ×1,4, уровень 3 — ×1,8, уровень 5 — ×2,6. Пешка: 100 HP / 80 урона; конь: 120 / 125; слон: 100 / 140; ладья: 170 / 160; ферзь: 150 / 190; король: 140 / 110 на первом уровне.</p><p>Бой заканчивается только при уничтожении короля — когда его HP падают до нуля. Шах и мат не ограничивают ходы: король может остаться под атакой, пережить удар и атаковать в ответ своим ходом. Подсветка короля предупреждает об угрозе, но не запрещает ход. ИИ учитывает HP, урон и ответные атаки. Рокировки нет. Взятие на проходе доступно только сразу после двойного хода вражеской пешки: урон получает прошедшая пешка. Если она выжила, атакующая возвращается; если уничтожена — занимает клетку взятия. Пешка может сделать первый двойной ход со второй горизонтали, если путь свободен. На последней горизонтали она становится ферзём только до конца боя. Троекратное повторение, отсутствие ходов или 120 полных ходов завершают бой вничью.</p><p>На развилке достаточно победить одного соперника. Пройденные участки доступны повторно. Сила соперника учитывает активную армию и диапазон участка; состав виден до боя.</p><p>После боя показываются результат, награды, затем отдельный шаг с прогрессом опыта фигур; после закрытия — карта. Каждый ход сохраняется на устройстве. Бой можно приостановить и продолжить позже, в том числе без сети после полной установки приложения.</p>'),
  disclosure('Как развивать армию в походе?', '<p>В новой армии все фигуры первого уровня. Выбирайте 8 из 10 бойцов, включая короля. Заработанные уровни и опыт сохраняются между боями. Опыт получает фигура, победившая противника; выжившие получают небольшой бонус за выигранный бой.</p><p>После боя все фигуры возвращаются с полным HP. Гибель отнимает часть порога опыта текущего уровня: пешка — 12%, конь, слон и король — 16%, ладья — 20%, ферзь — 25%. Потерять можно не больше одного уровня.</p><p>Камень опыта из рюкзака даёт выбранной фигуре 10% порога её уровня. Применяйте предметы в разделе «Армия». Сначала доступна прокачка до уровня 3. Первая победа над боссом открывает уровень 5 и эволюцию. Каждая победа над боссом даёт одно ядро. За одно ядро фигура проходит один шаг: пешка → конь или слон на выбор → ладья → ферзь. Король не эволюционирует. Уровень, опыт и место в армии сохраняются; уже полученные ладьи не понижаются.</p>'),
  disclosure('Какие награды даёт поход?', '<p>За обычный бой: победа — 12–17 монет и 2–3 камня опыта, ничья — 8–13 монет и 1–2 камня, поражение — 5–10 монет и 1 камень. За бой с боссом: победа — 23–33 монеты, ничья — 15–25, поражение — 10–20; диапазоны камней те же.</p><p>Количество случайное в указанных пределах и сохраняется: перезагрузка не меняет награду. Первая победа дополнительно даёт 5 монет и 1 камень; на Каменной заставе — 6 монет и 2 камня; над боссом — 10 монет и 3 камня. Ядро эволюции выдаётся за каждую победу над боссом. Дневного лимита монет нет.</p><p>Сдача до 10 ходов игрока не даёт монет, но приносит 1 камень опыта. Поздняя сдача даёт награду за поражение. Полученный в бою опыт и штрафы за погибшие фигуры сохраняются. Поход не меняет рейтинг, обычную историю партий и календарь.</p>'),
 ].join('');
 export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,toast,onExit,onTitle}) => {
+ let visualBattle=null;
  let profile=getProfile(),view='map',selected=null,armySelected=null,selectedNode=null,disposed=false,presenting=false,worker=null,workerTimer=null,requestId=0,botError=false,modalKind=null,resultShownId=null,presentationGeneration=0,scrollPositions={map:0,army:0,bag:0};
  const modal=document.querySelector('#modal');
  const icon = (unit,color='w') => pieceSVG(unit.type,color,itemById(equipped.pieces[unit.type])?.style);
@@ -86,7 +87,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   else {root.innerHTML=(view==='army'?armyHTML():view==='bag'?bagHTML():mapHTML())+navigationHTML();if(view==='army')drawArmy();}
  };
  const drawBattle = () => {
-  const battle=profile.battle,board=root.querySelector('#pve-board');if(!battle||!board)return;
+  const battle=visualBattle||profile.battle,board=root.querySelector('#pve-board');if(!battle||!board)return;
   renderBoard(board,pveBoardAdapter(battle),equipped,selected);
   const locked=presenting||battle.phase!=='playing'||battle.turn!=='w';board.setAttribute('aria-disabled',String(locked));
   for(const cell of board.querySelectorAll('[data-square]')){
@@ -99,7 +100,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   const inspectContent=own?`<strong>${PIECE_NAMES[own.type]} · уровень ${own.level}</strong><span>HP ${own.hp} / ${maxHp(own)} · Урон ${damage(own)}</span><span class="pve-meta">${own.color==='w'?`Опыт: ${profile.units.find(unit=>unit.id===own.id)?.xp??0} / ${xpThreshold(own.level)} · В бою +${battle.xp[own.id]||0} XP`:'Вражеская фигура'}</span>`:'';
   const inspect=root.querySelector('#pve-inspect');inspect.classList.toggle('has-unit',!!own);
   inspect.innerHTML=`<div class="pve-inspect-size" aria-hidden="true"><strong>Ферзь · уровень 5</strong><span>HP 200 / 200 · Урон 200</span><span class="pve-meta">Опыт: 999 / 999 · В бою +999 XP</span></div><div class="pve-inspect-content">${inspectContent}</div>`;
-  const event=battle.lastEvent;root.querySelector('#pve-log').textContent=event?`${event.from} → ${event.to}${event.damage?` · −${event.damage} HP${event.killed?' · фигура повержена':''}`:''}${event.promoted?' · временное превращение в ферзя':''}`:'';
+  const event=battle.lastEvent;root.querySelector('#pve-log').textContent=event?`${event.from} → ${event.to}${event.enPassant?' · на проходе':''}${event.damage?` · −${event.damage} HP${event.killed?' · фигура повержена':''}`:''}${event.promoted?' · временное превращение в ферзя':''}`:'';
   root.querySelectorAll('.pve-battle-actions button').forEach(button=>button.disabled=battle.phase==='result');
   let retry=root.querySelector('[data-pve-action="retry"]');if(botError&&!retry){root.querySelector('.pve-battle-actions').insertAdjacentHTML('beforeend','<button class="primary" data-pve-action="retry">Повторить ход ИИ</button>');}else if(!botError)retry?.remove();
   if(!presenting)complete();
@@ -155,29 +156,22 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
  };
  const presentAction = async action => {
   if(disposed||presenting||!profile.battle)return;
-  const old=profile.battle,board=root.querySelector('#pve-board'),before=board?snapshotBoard(board):null,generation=++presentationGeneration;
+  const old=profile.battle,board=root.querySelector('#pve-board'),generation=++presentationGeneration;
   if(!save(current=>playPveAction(current,action))){if(view==='battle'&&profile.battle?.turn==='b'&&profile.battle.phase==='playing'){botError=true;drawBattle();}return;}
   if(old===profile.battle)return;
-  presenting=true;selected=null;drawBattle();
-  const event=profile.battle.lastEvent;
-  // Save immediately; presentation uses the old board only while damage is shown.
-  if(event.damage&&board&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-   renderBoard(board,pveBoardAdapter(old),equipped,null);
-   board.querySelectorAll('[data-square]').forEach(cell=>cell.setAttribute('aria-disabled','true'));
-   const target=board.querySelector(`[data-square="${event.to}"]`),flash=document.createElement('span');flash.className='pve-hit';flash.textContent=`−${event.damage}`;target?.append(flash);
-   if(flash.animate){const animation=flash.animate([{opacity:1},{opacity:0}],{duration:motionDuration.fast,easing:motionEasing.local});await animation.finished.catch(()=>{});}flash.remove();
-  }
-  if(disposed||generation!==presentationGeneration)return;
-  drawBattle();
-  if(event.moved&&board&&before)await animateTransition(board,[{from:event.from,to:event.to}],before);
-  if(disposed||generation!==presentationGeneration)return;presenting=false;drawBattle();scheduleBot();
+  const updated=profile.battle,event=updated.lastEvent;
+  presenting=true;selected=null;visualBattle=old;drawBattle();
+  const current=()=>!disposed&&generation===presentationGeneration&&view==='battle';
+  const impact=()=>{if(current()){visualBattle={...updated,turn:old.turn};drawBattle();}};
+  try{if(board)await animatePveAction(board,event,impact);else impact();}
+  finally{if(current()){visualBattle=null;presenting=false;drawBattle();scheduleBot();}}
  };
  const scheduleBot = () => {
-  if(disposed||presenting||view!=='battle'||profile.battle?.phase!=='playing'||profile.battle.turn!=='b'||worker||botError)return;
+  if(disposed||presenting||modalKind==='resign'||view!=='battle'||profile.battle?.phase!=='playing'||profile.battle.turn!=='b'||worker||botError)return;
   const id=++requestId;
   const failed = () => {if(disposed||id!==requestId)return;stopWorker();botError=true;drawBattle();};
   try{
-   worker=new Worker(new URL('../../pve-worker.js?v=118',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('../../pve-worker.js?v=123',import.meta.url),{type:'module'});
    worker.onerror=failed;workerTimer=setTimeout(failed,10000);
    worker.onmessage=({data})=>{
     if(disposed||data.id!==requestId)return;
@@ -196,7 +190,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   selected=selected===square?null:square;drawBattle();
  };
  const requestExit = () => {
-  presentationGeneration++;presenting=false;const board=root.querySelector('#pve-board');if(board){clearBoardTransition(board);board.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());}
+  presentationGeneration++;visualBattle=null;presenting=false;const board=root.querySelector('#pve-board');if(board){clearBoardTransition(board);board.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());}
   if(view==='battle'&&profile.battle?.phase==='result'){drawBattle();return;}
   if(view==='battle'){stopWorker();view='map';render();scrollFrontier();}
   else if(view==='map'){stopWorker();onExit();}
@@ -230,7 +224,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   const evolve=event.target.closest('[data-pve-confirm-evolve]');
   if(evolve){if(save(current=>evolveUnit(current,evolve.dataset.pveConfirmEvolve,evolve.dataset.pveEvolveType))){modalKind=null;await showModal.close();render();toast('Фигура эволюционировала. Уровень и опыт сохранены.');}return;}
   if(event.target.closest('[data-pve-confirm-resign]')){
-   stopWorker();presentationGeneration++;if(save(resignPve)){modalKind=null;await showModal.close();presenting=false;render();}else scheduleBot();
+   stopWorker();presentationGeneration++;visualBattle=null;clearBoardTransition(root.querySelector('#pve-board'));if(save(resignPve)){modalKind=null;await showModal.close();presenting=false;render();}else scheduleBot();
   }
  };
  const dismissed = () => {
@@ -251,5 +245,5 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
  };
  root.addEventListener('click',click);root.addEventListener('keydown',keyboard);modal.addEventListener('click',modalClick);modal.addEventListener('dialogdismiss',dismissed);exitButton.onclick=requestExit;
  render();if(view==='map')scrollFrontier();else scheduleBot();
- return {get title(){return title();},get inBattle(){return view==='battle';},requestExit,dispose:()=>{disposed=true;stopWorker();root.querySelector('#pve-board')?.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());root.removeEventListener('click',click);root.removeEventListener('keydown',keyboard);modal.removeEventListener('click',modalClick);modal.removeEventListener('dialogdismiss',dismissed);exitButton.onclick=null;exitButton.hidden=false;exitButton.classList.remove('pve-back');exitButton.innerHTML=backIcon;root.replaceChildren();}};
+ return {get title(){return title();},get inBattle(){return view==='battle';},requestExit,dispose:()=>{disposed=true;stopWorker();clearBoardTransition(root.querySelector('#pve-board'));root.querySelector('#pve-board')?.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());root.removeEventListener('click',click);root.removeEventListener('keydown',keyboard);modal.removeEventListener('click',modalClick);modal.removeEventListener('dialogdismiss',dismissed);exitButton.onclick=null;exitButton.hidden=false;exitButton.classList.remove('pve-back');exitButton.innerHTML=backIcon;root.replaceChildren();}};
 };

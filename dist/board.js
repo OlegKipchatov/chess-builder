@@ -1,7 +1,7 @@
-import {motionDuration, motionEasing} from './ui/motion.js?v=118';
-import {Chess} from './chess.js?v=118';
-import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=118';
-import {pieceSVG} from './pieces.js?v=118';
+import {motionDuration, motionEasing} from './ui/motion.js?v=123';
+import {Chess} from './chess.js?v=123';
+import {PIECE_NAMES, itemById, styleById} from './catalog.js?v=123';
+import {pieceSVG} from './pieces.js?v=123';
 export const renderBoard = (root, game, equipped, selected, orientation='w') => {
   const style = styleById(itemById(equipped.board)?.style);
   if(root.style.getPropertyValue('--square-light')!==style.light)root.style.setProperty('--square-light',style.light);
@@ -135,4 +135,50 @@ export const showCaptureMaterial = (root,move,playerColor) => {
     {opacity:0,transform:'translate(-100%, -4px)'}
   ],{duration,easing:motionEasing.local});
   void animation.finished.catch(()=>{}).finally(()=>node.remove());
+};
+
+// RPG movement is presentation only: the action is already persisted.
+export const animatePveAction = async (root,event,onImpact) => {
+  clearBoardTransition(root);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||!root.animate||!root.getBoundingClientRect().width){onImpact();return;}
+  const source=root.querySelector(`[data-square="${event.from}"]`),target=root.querySelector(`[data-square="${event.targetSquare||event.to}"]`),landing=root.querySelector(`[data-square="${event.to}"]`);
+  if(!source||!target||!landing){onImpact();return;}
+  const rect=root.getBoundingClientRect(),from=source.getBoundingClientRect(),to=landing.getBoundingClientRect(),hitRect=target.getBoundingClientRect();
+  const node=document.createElement('span');node.className='moving-piece';
+  node.innerHTML=[...source.querySelectorAll('svg,.pve-vitals')].map(part=>part.outerHTML).join('');
+  Object.assign(node.style,{left:`${from.left-rect.left-root.clientLeft}px`,top:`${from.top-rect.top-root.clientTop}px`,width:`${from.width}px`,height:`${from.height}px`});
+  const hidden=[],animations=[];let cleaned=false,flash=null;
+  const hide=cell=>cell?.querySelectorAll('svg,.pve-vitals').forEach(part=>{hidden.push(part);part.style.visibility='hidden';});
+  const cleanup=()=>{if(cleaned)return;cleaned=true;animations.forEach(animation=>animation.cancel());node.remove();flash?.remove();hidden.forEach(part=>part.style.visibility='');if(boardTransitions.get(root)===cleanup)boardTransitions.delete(root);};
+  boardTransitions.set(root,cleanup);hide(source);root.append(node);
+  const play=async(element,frames,duration)=>{const animation=element.animate(frames,{duration,easing:motionEasing.board,fill:'forwards'});animations.push(animation);await animation.finished.catch(()=>{});};
+  const destination=`translate(${to.left-from.left}px,${to.top-from.top}px)`;
+  try{
+    await play(node,[{transform:'translate(0,0)'},{transform:destination}],motionDuration.board);
+    if(cleaned)return;
+    const previousLevel=target.querySelector?.('.pve-level')?.textContent||'';
+    const previousHp=target.querySelector?.('.pve-hp i')?.style.width||'0%';
+    onImpact();
+    hide(root.querySelector(`[data-square="${event.moved?event.to:event.from}"]`));
+    if(event.damage){
+      const remainingHp=event.killed?'0%':target.querySelector?.('.pve-hp i')?.style.width||'0%';
+      // Preserve the original overlaid HP/level geometry; damage floats beside it.
+      flash=document.createElement('span');flash.className='pve-hit';
+      flash.setAttribute('aria-hidden','true');
+      Object.assign(flash.style,{left:`${hitRect.left-rect.left-root.clientLeft+hitRect.width*.08}px`,top:`${hitRect.top-rect.top-root.clientTop+hitRect.height-15}px`,width:`${hitRect.width*.72}px`});
+      flash.innerHTML=`<span class="pve-level">${previousLevel}</span><span class="pve-hp"><i style="width:${remainingHp}"></i></span><span class="pve-damage-number">−${event.damage}</span>`;
+      const vitals=target.querySelector?.('.pve-vitals');
+      if(vitals){hidden.push(vitals);vitals.style.visibility='hidden';}
+      const movingVitals=node.querySelector?.('.pve-vitals');
+      if(event.moved&&movingVitals)movingVitals.style.visibility='hidden';
+      root.append(flash);
+      const feedback=play(flash,[{opacity:1,offset:0},{opacity:1,offset:.7},{opacity:0}],motionDuration.board);
+      const bar=flash.querySelector('.pve-hp i');
+      await Promise.all([feedback,play(bar,[{width:previousHp},{width:remainingHp}],motionDuration.standard)]);
+      if(cleaned)return;
+      flash.remove();
+      if(!event.moved&&vitals)vitals.style.visibility='';
+      if(!event.moved)await play(node,[{transform:destination},{transform:'translate(0,0)'}],motionDuration.board);
+    }
+  }finally{cleanup();}
 };

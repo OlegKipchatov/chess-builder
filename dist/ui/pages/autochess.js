@@ -1,12 +1,12 @@
-import {AUTO,compositionError,placementError,positionCompositionError,reservePieces,purchaseError,upgradeError,armyCapacity,AUTO_KEY,PRICES,createAutoRun,buyPiece,sellPiece,placePiece,placementSquares,setupFen,setupError,seriesGoal,beginBattle,nextRound,restoreAutoRun,seriesFinished,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,benchPiece} from '../../autochess.js?v=118';
-import {createBattleController} from '../../autochess-battle.js?v=118';
-import {createAutoplaySession} from '../../autochess-engine.js?v=118';
-import {Chess} from '../../chess.js?v=118';
-import {renderBoard,snapshotBoard,animateTransition,animationMoves,clearBoardTransition} from '../../board.js?v=118';
-import {motionDuration} from '../motion.js?v=118';
-import {pieceSVG} from '../../pieces.js?v=118';
-import {PIECE_NAMES,itemById} from '../../catalog.js?v=118';
-import {disclosure,statCard,plural} from '../primitives.js?v=118';
+import {AUTO,compositionError,placementError,positionCompositionError,reservePieces,purchaseError,upgradeError,armyCapacity,AUTO_KEY,PRICES,createAutoRun,buyPiece,sellPiece,placePiece,placementSquares,setupFen,setupError,seriesGoal,beginBattle,nextRound,restoreAutoRun,seriesFinished,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,benchPiece} from '../../autochess.js?v=123';
+import {createBattleController} from '../../autochess-battle.js?v=123';
+import {createAutoplaySession} from '../../autochess-engine.js?v=123';
+import {Chess} from '../../chess.js?v=123';
+import {renderBoard,snapshotBoard,animateTransition,animationMoves,clearBoardTransition} from '../../board.js?v=123';
+import {motionDuration} from '../motion.js?v=123';
+import {pieceSVG} from '../../pieces.js?v=123';
+import {PIECE_NAMES,itemById} from '../../catalog.js?v=123';
+import {disclosure,statCard,plural} from '../primitives.js?v=123';
 const shopIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 const saleIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13 11 22 2 13V4h9l9 9Z"/><circle cx="7" cy="9" r="1.5"/></svg>';
 const levelIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m5 13 7-7 7 7M12 6v14"/></svg>';
@@ -15,6 +15,7 @@ export const autochessEntry=()=>`<section id="autochess-entry" class="autochess-
 export const autochessFAQ=()=>disclosure('Как играть в автошахматы?','<p>Серия идёт до пятнадцати побед или пяти поражений. Ничья не приближает ни к победе в серии, ни к её завершению. Вы покупаете армию и расставляете её, а Stockfish играет за обе стороны с одинаковыми настройками, без адаптации к рейтингу. Король, шах, мат и обычные шахматные правила сохраняются. Ваш цвет известен заранее. Фигуры соперника открываются только после начала боя; белые всегда ходят первыми. Перед началом бот при необходимости меняет только свою расстановку, чтобы чёрный король не начинал под шахом. Шах белому королю допустим: белые должны защититься первым ходом.</p><p>В начале доступны король и 3 монеты серии. Кнопка покупки даёт случайную фигуру: первая стоит 1 монету, каждая следующая дороже на 1 до конца забега. На первом уровне выпадают только пешки, конь и слон доступны со второго, ладья — с четвёртого, ферзь — с шестого. У магазина 10 уровней: первое повышение стоит 3 монеты, каждое следующее дороже на 2. Уровень повышает шансы ладьи и ферзя; точные вероятности приведены в таблице ниже. На первом уровне в армии помещаются 8 фигур вместе с королём. Каждое повышение уровня добавляет одно место, максимум — 16 на уровнях 9 и 10. В резерве всегда четыре слота, они входят в общий лимит. Покупка требует монет, места в армии и свободного слота резерва. Купленная фигура остаётся в резерве до вашей расстановки. Бой можно начать с фигурами в резерве, если король на поле. На поле допускаются не больше 8 пешек. Каждая фигура сверх 2 коней, 2 слонов, 2 ладей и 1 ферзя занимает одно из восьми мест, общих с пешками. Например, 8 пешек и 3 коня несовместимы, а 7 пешек и 3 коня допустимы. Резерв в этой проверке не учитывается: покупки остаются доступными. Недопустимая постановка отменяется с пояснением, обмен проверяется по итоговому составу. Старый неподходящий состав сохраняется целиком; кнопка «Исправить состав» объясняет, что изменить. Бот соблюдает то же правило и продаёт фигуры, которые не может использовать. Вместимость соперника зависит от его собственного уровня по тому же правилу. Продажа возвращает 50% цены покупки с округлением вниз, но не меньше 1 монеты, короля продать нельзя. Монеты серии используются только в автошахматах. Основные монеты и осколки не расходуются.</p><p>Выберите фигуру и нажмите на клетку или перетащите её. Доступны четыре ближних ряда: 1–4 для белых и 5–8 для чёрных. Пешки не ставятся на крайнюю линию 1 или 8. Рокировка доступна только с обычных исходных клеток. Двойной клик или двойное касание по фигуре снимает её с поля в запас; её можно вернуть позже; она остаётся вашей и занимает место в армии. Если все четыре слота заняты, фигура остаётся на поле. Выберите фигуру резерва и нажмите на свою фигуру на допустимой клетке, чтобы обменять их местами: обмен работает и при полном резерве. Король перед боем должен быть на поле. Повторное нажатие на выбранную фигуру или Escape снимает выбор. При смене цвета расположение относительно вас сохраняется. Взятие первым ходом разрешено. Если материала недостаточно для мата, в том числе при королях и слонах только на клетках одного цвета, бой сразу заканчивается ничьей.</p><p>При сбое расчёта игра автоматически делает до трёх попыток с новым движком, сохраняя подтверждённые ходы. Если все попытки не удались, бой остаётся на паузе. После каждого боя движок освобождается. Бой не ограничен по времени. После 60 полных ходов (120 полуходов) — ничья, независимо от перевеса. Победу даёт только мат. При скрытии приложения или выходе бой сохраняется на паузе; подготовка не ограничена по времени.</p><p>На следующий бой выдаются монеты серии: 4 за победу, 3 за ничью, 3 за поражение. Они не переводятся в основной кошелёк. Каждый уровень выше первого добавляет 1 монету к доходу: например, на уровне 3 победа даёт 6, ничья — 5, поражение — 5. Учитывается уровень на момент завершения боя. Соперник сохраняет армию и ведёт собственный бюджет по тем же правилам: покупает случайные фигуры, повышает уровень магазина, копит монеты и продаёт фигуры за 50% цены покупки, минимум за 1 монету. Он самостоятельно расставляет армию, не видя вашу расстановку. Количество покупок ограничено монетами и местом в армии. Ранее начисленные монеты сохраняются. Итоги старых боёв учитываются по прежним ставкам; новые бои случайного магазина используют доход 4/3/3. Забеги старого магазина с выбором типа фигуры сохраняют прежнюю экономику. Все купленные фигуры восстанавливаются, превращённые пешки снова становятся пешками. Результаты не влияют на рейтинг, календарь и статистику обычных партий. Награда за серию в основном кошельке: 3 монеты за победу и 1 за каждую из первых пяти ничьих, максимум 30 монет за всю серию. Монеты сохраняются по мере завершения боёв; итоговое окно показывает общую сумму. Награда сохраняется при выходе и не начисляется повторно. За незавершённый бой и техническое прерывание награды нет.</p>'+oddsFAQ());
 export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,createId,award,storage=localStorage})=>{
  let run=null,selected=null,disposed=false,hasLock=false,releaseLock=null,message='',shownResult=null,lastFen=null,lastPreparation=null,lastMoves=0,replay=null,replayId=null,replayPly=0,lastReplayMove=null;
+ let boardPresentation=null;
  const icon=type=>pieceSVG(type,run.color,itemById(equipped.pieces[type])?.style);
  root.innerHTML='<div class="autochess-surface"><p id="auto-loading" role="status">Загружаем серию…</p><div id="auto-content" hidden><p id="auto-side" class="auto-secondary"></p><div id="auto-board" class="board" role="group" aria-label="Автошахматы — расстановка и бой"></div><div id="auto-shop"></div><div class="auto-status" role="status"><span id="auto-status"></span></div><div id="auto-action"></div></div></div>';
  const board=root.querySelector('#auto-board'),shop=root.querySelector('#auto-shop'),actions=root.querySelector('#auto-action'),modal=document.querySelector('#modal');
@@ -50,7 +51,7 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   return {html:`<div id="auto-reward"><h2>Награда за серию</h2>${reward.saved?statCard(reward.total,'Монеты'):rewardError}<button class="primary" data-auto-next ${reward.saved?'':'disabled'}>Завершить серию</button></div>`,options:{closeLabel:'Посмотреть доску'}};
  };
  const presentResult=()=>{
-  if(disposed||run.phase!=='result'||shownResult===run.battle.id)return;
+  if(disposed||boardPresentation||run.phase!=='result'||shownResult===run.battle.id)return;
   shownResult=run.battle.id;
   const final=seriesFinished(run),reward=award(run);
   if(final){
@@ -81,7 +82,11 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
    const before=snapshotBoard(board);
    renderBoard(board,{board:()=>game.board().map(row=>row.map(piece=>preparation&&piece?.color!==run.color?null:piece)),history:()=>[],turn:()=>game.turn(),isCheck:()=>!preparation&&game.isCheck()},equipped,null,run.color);
    const moved=!preparation&&run.battle.moves.length===lastMoves+1;
-   if(moved)void animateTransition(board,animationMoves(lastReplayMove),before,motionDuration.autoBoard);
+   if(moved){
+    const pending=animateTransition(board,animationMoves(lastReplayMove),before,motionDuration.autoBoard);
+    boardPresentation=pending;
+    void pending.finally(()=>{if(boardPresentation===pending){boardPresentation=null;presentResult();}});
+   }
    lastFen=fen;lastPreparation=preparation;lastMoves=run.battle?.moves.length||0;
   }
   if(board.getAttribute('aria-disabled')!==String(!preparation))board.setAttribute('aria-disabled',String(!preparation));
@@ -115,6 +120,7 @@ export const mountAutochess=({root,exitButton,equipped,showModal,onExit,toast,cr
   if(run.phase!=='result'||seriesFinished(run))actions.innerHTML=`<button id="auto-start" class="primary" ${(reason&&!incompatible&&reason!=='Сопернику нужно исправить состав')||playing||warming?'disabled':''}>${label}</button>`;
   presentResult();
   if(!board.style.width)requestAnimationFrame(resizeBoard);
+  return boardPresentation;
  };
  const place=(id,square)=>{
   const reason=placementError(run,id,square);

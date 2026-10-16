@@ -37,10 +37,23 @@ transitions; JavaScript checks the preference before animating or awaiting motio
 programmatic scroll uses instant. Preserve feedback and functionality, with no extra
 wait, spinner or removed information. Reward rarity retains its static accent.
 
-Autochess uses `autoBoard` (160 ms) for piece movement while its logical pace
-is 200 ms per ply including search. Animations never gate the next engine query,
-accepted position, 30-second deadline or saved result. Reduced motion removes
-only the presentation; it does not change the logical pace.
+Autochess uses `autoBoard` (160 ms). Apply successive plies at least 200 ms
+apart and only after the previous presentation settles. The next engine search
+may run concurrently; pause/disposal invalidates its uncommitted result.
+Persist terminal results immediately but show result controls after motion.
+Reduced motion removes presentation without changing the 200 ms logical pace.
+
+RPG persists each action immediately, then presents the previous position until
+impact. Quiet moves use Board (420 ms). Attacks approach in full Board (420 ms),
+apply visible HP/capture at contact, animate the original overlaid HP strip
+for Standard (200 ms), then return in full Board (420 ms) if the target survives. A small
+damage number sits just above the right edge of that strip and fades over Board (420 ms), concurrently
+with the HP change. Finish damage feedback before starting the return.
+Approach, damage and return are three sequential phases, never subdivisions of
+one Board duration (1260 ms total for a surviving target). The strip shrinks to zero on a lethal hit; it never
+shows the attacker’s HP as damage. Lethal attackers remain on the target square.
+Input, next AI turn and result dialogs wait for the entire presentation. Exit,
+resignation and disposal cancel it; reduced motion applies the final view at once.
 
 ## Autochess geometry (v98)
 
@@ -52,3 +65,7 @@ Use viewport/header geometry to size the board on short screens; no clipping,
 scroll locking or height animations. Enlarged text takes priority over fit.
 Notifications use the existing overlay toast. Check 360×740, 390×844, 430×932,
 a short portrait screen, desktop and 200% text before changing this layout.
+
+RPG pieces retain their centered 78% width/height. Never shrink or offset artwork
+to make room for HP. Keep the original overlaid level/HP geometry during damage
+feedback as well; position the damage number absolutely without resizing the bar.
