@@ -103,4 +103,4 @@
 
 /* Grouped playback uses one surface; the compact resign control owns its outline. */
 #resign{box-shadow:none}
-#resign::before{box-shadow:inset 0 0 0 1px var(--control-border)}
+#resign::before{box-shadow:none}

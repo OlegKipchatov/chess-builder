@@ -18,3 +18,11 @@
 .chest-symbol>.piece-icon{filter:drop-shadow(0 8px 16px var(--shadow))}
 .calendar-day.closed{background:var(--accent-soft)}
 .day-closed-mark{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 10%,transparent)}
+
+/* Center the glow on the complete card, independently of its contents. */
+.chest-card{position:relative;isolation:isolate;overflow:hidden}
+.chest-card::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--coins) 30%,transparent),color-mix(in srgb,var(--coins) 12%,transparent) 38%,transparent 72%)}
+
+.chest-card::before{animation:chest-flash var(--motion-reveal) var(--motion-ease-reveal)}
+@keyframes chest-flash{0%{opacity:0;transform:scale(.85)}40%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.chest-card::before{animation:none}}

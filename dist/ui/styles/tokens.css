@@ -7,8 +7,8 @@
  --text:#f4f4f5; --muted:#a1a1aa;
  --accent:#d5f478; --action:#d5f478; --action-hover:#e0fa96; --on-action:#18181b;
  --accent-soft:#353e26; --border:#303036; --border-strong:#71717a;
- --positive:#9cd5a5; --negative:#efa29a; --warning:#d1bc8f;
- --warning-soft:#373329; --shards:#c6aceb;
+ --positive:#9cd5a5; --negative:#ff8f96; --warning:#f4cf68;
+ --warning-soft:#3c331c; --coins:#f8ea45; --shards:#c6aceb;
  --rare:#94c5e6; --epic:#cfa5ed; --legendary:#e5c078;
  --header:color-mix(in srgb,var(--bg) 96%,transparent);
  --nav:var(--raised); --overlay:#09090bcc; --shadow:#00000040;
@@ -27,8 +27,8 @@
  --text:#18181b; --muted:#52525b;
  --accent:#566825; --action:#d5f478; --action-hover:#c8e768; --on-action:#18181b;
  --accent-soft:#edf3d9; --border:#e4e4e7; --border-strong:#71717a;
- --positive:#3f6848; --negative:#a2423e; --warning:#78602e;
- --warning-soft:#f0e9d9; --shards:#79529b;
+ --positive:#3f6848; --negative:#b4233c; --warning:#806000;
+ --warning-soft:#fff2c9; --coins:#f8ea45; --shards:#79529b;
  --rare:#2b6489; --epic:#804aa2; --legendary:#80571e;
  --overlay:#09090b66; --shadow:#18181b18; --art-surface:#d4d4d8;
 }

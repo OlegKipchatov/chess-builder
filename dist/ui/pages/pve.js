@@ -1,10 +1,10 @@
-import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit,evolutionOptions} from '../../pve-model.js?v=123';
-import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves,isKingThreatened,resumePveBattle} from '../../pve-battle.js?v=123';
-import {renderBoard,animatePveAction,clearBoardTransition} from '../../board.js?v=123';
-import {pieceSVG} from '../../pieces.js?v=123';
-import {PIECE_NAMES,itemById} from '../../catalog.js?v=123';
-import {disclosure,statCard,backIcon} from '../primitives.js?v=123';
-import {motionDuration,motionEasing} from '../motion.js?v=123';
+import {PVE,NODES,activeArmy,frontier,isUnlocked,campaignComplete,strengthLabel,encounter,maxHp,damage,xpThreshold,useStone,toggleUnit,evolveUnit,evolutionOptions} from '../../pve-model.js?v=126';
+import {formation,beginPveBattle,playPveAction,resignPve,returnToMap,pveBoardAdapter,unitAt,movesFor,allMoves,isKingThreatened,resumePveBattle} from '../../pve-battle.js?v=126';
+import {renderBoard,animatePveAction,clearBoardTransition} from '../../board.js?v=126';
+import {pieceSVG} from '../../pieces.js?v=126';
+import {PIECE_NAMES,itemById} from '../../catalog.js?v=126';
+import {disclosure,statCard,backIcon} from '../primitives.js?v=126';
+import {motionDuration,motionEasing} from '../motion.js?v=126';
 const pathIcon='<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 40c-7-13 31-9 24-22S15 17 18 6" stroke-dasharray="4 4"/><circle cx="10" cy="40" r="3"/><path d="M18 6h13l-3 5 3 5H18M18 6v17"/></svg>';
 const stoneIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m10 4 13 3 5 14-13 8L4 18Z M10 4l5 25M23 7 4 18l24 3M10 4l18 17"/></svg>';
 const coreIcon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 11 6.5v13L16 29 5 22.5v-13Z"/><circle cx="16" cy="16" r="5"/><path d="M16 3v5M27 9.5l-4.3 2.5M27 22.5 22.7 20M16 29v-5M5 22.5 9.3 20M5 9.5 9.3 12"/></svg>';
@@ -171,7 +171,7 @@ export const mountPve = ({root,exitButton,equipped,getProfile,commit,showModal,t
   const id=++requestId;
   const failed = () => {if(disposed||id!==requestId)return;stopWorker();botError=true;drawBattle();};
   try{
-   worker=new Worker(new URL('../../pve-worker.js?v=123',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('../../pve-worker.js?v=126',import.meta.url),{type:'module'});
    worker.onerror=failed;workerTimer=setTimeout(failed,10000);
    worker.onmessage=({data})=>{
     if(disposed||data.id!==requestId)return;

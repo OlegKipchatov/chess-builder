@@ -34,13 +34,15 @@
 @media(max-width:359px){.compact-item{grid-template-columns:36px minmax(0,1fr) auto;gap:6px;padding-inline:8px}.compact-item>button{grid-column:auto;width:auto;max-width:106px;padding:8px}.compact-item-copy h3{font-size:.875rem}}
 
 /* Purchase/equip actions only; navigation and header controls keep their own styles. */
-.collection-content-group button:is([data-equip],[data-craft],[data-preset],[data-load-set]):not(.equipped-button){color:var(--text);background:var(--control);box-shadow:inset 0 0 0 1px var(--control-border)}
+.collection-content-group button:is([data-equip],[data-craft],[data-preset],[data-load-set]):not(.equipped-button){color:var(--text);background:var(--control);box-shadow:none}
 
 /* Collection actions size to their visible content. */
 .collection-action{align-items:flex-end}
 .collection-row:not(.rarity-row){grid-template-columns:150px minmax(0,1fr) auto;align-items:center}
 .collection-row:not(.rarity-row)>.collection-action{flex-direction:row;align-items:center;justify-content:flex-end;gap:8px;white-space:nowrap}
-.collection-action>.delete-set{background:var(--control);box-shadow:inset 0 0 0 1px var(--control-border);color:var(--negative);width:44px;min-width:44px;height:44px;padding:10px}
+.collection-action>.delete-set{background:var(--control);box-shadow:none;color:var(--negative);width:44px;min-width:44px;height:44px;padding:10px}
 @media(max-width:760px){.collection-row:not(.rarity-row){grid-template-columns:minmax(0,1fr) auto}}
 
 @media(hover:hover){.collection-content-group button:is([data-equip],[data-craft],[data-preset],[data-load-set]):not(.equipped-button):hover:not(:disabled){background:var(--control-hover);filter:none}}
+
+.delete-set{--focus-color:var(--negative)}
