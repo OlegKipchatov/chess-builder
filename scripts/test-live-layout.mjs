@@ -13,7 +13,7 @@ try{
   const context=await browser.newContext({viewport:{width,height},serviceWorkers:'block',reducedMotion:'reduce'}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://127.0.0.1:${server.address().port}`);
-  await page.evaluate(()=>{Math.random=()=>.25;});await page.locator('#start-game').click();
+  await page.evaluate(()=>{Math.random=()=>.25;});await page.locator('#start-game').click();await page.locator('#board').waitFor();
   const before=await page.locator('#board').boundingBox();
   assert.equal(await page.locator('#match-points').isVisible(),true);
   assert.equal(await page.locator('#status').evaluate(node=>getComputedStyle(node).clipPath),'inset(50%)');
@@ -72,7 +72,7 @@ try{
    await route.fulfill({response,body:css});
   });
   const page=await context.newPage();await page.goto(`http://127.0.0.1:${server.address().port}`);
-  await page.evaluate(()=>{Math.random=()=>.25;});await page.locator('#start-game').click();
+  await page.evaluate(()=>{Math.random=()=>.25;});await page.locator('#start-game').click();await page.locator('#board').waitFor();
   await page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--app-header-height').trim()===`${document.querySelector('header').getBoundingClientRect().height}px`);
   const geometry=await page.evaluate(()=>{
    const box=selector=>document.querySelector(selector).getBoundingClientRect();
