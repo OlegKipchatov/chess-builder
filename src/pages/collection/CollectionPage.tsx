@@ -201,7 +201,7 @@ export const CollectionPage = () => {
                     {total === 7 && (
                       <button
                         data-preset={style.id}
-                        className={active ? "equipped-button" : ""}
+                        className={`ui-button ${active ? "equipped-button" : ""}`}
                         disabled={active}
                         onClick={() =>
                           void inventory.equipSet(presetEquipment(style.id))
@@ -261,7 +261,7 @@ export const CollectionPage = () => {
                   <button
                     data-equip={owned.includes(item.id) ? item.id : undefined}
                     data-craft={!owned.includes(item.id) ? item.id : undefined}
-                    className={isEquipped(item) ? "equipped-button" : ""}
+                    className={`ui-button ${isEquipped(item) ? "equipped-button" : ""}`}
                     disabled={
                       isEquipped(item) ||
                       (!owned.includes(item.id) && shards < craftCost(item))
@@ -329,7 +329,7 @@ export const CollectionPage = () => {
                     <div className="collection-action">
                       <button
                         data-load-set={set.id}
-                        className={active ? "equipped-button" : ""}
+                        className={`ui-button ${active ? "equipped-button" : ""}`}
                         disabled={active}
                         onClick={() => void inventory.equipSet(set)}
                       >

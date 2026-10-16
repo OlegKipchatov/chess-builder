@@ -234,6 +234,11 @@ export const GameReview = ({
                 {job.status === "running" ? (
                   <div
                     id="analysis-progress"
+                    role="progressbar"
+                    aria-label="Анализ партии"
+                    aria-valuemin={0}
+                    aria-valuemax={job.progress.total || 1}
+                    aria-valuenow={job.progress.done}
                     style={{
                       visibility: progressVisible ? "visible" : "hidden",
                     }}

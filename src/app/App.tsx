@@ -3,7 +3,7 @@ import { ImportedGameProvider } from "../features/game-review/ImportedGameProvid
 import { HistoryReturnProvider } from "../features/game-review/HistoryReturnProvider.js";
 import { ShellPresentation } from "./providers/ShellPresentation.js";
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { Suspense, useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useLayoutEffect, useState, useRef } from "react";
 import { RewardProcessor } from "../features/game-session/RewardProcessor.js";
 import { usePwaUpdate } from "./providers/PwaProvider.js";
 import { useVault, useVaultStore } from "./providers/VaultProvider.js";
@@ -90,7 +90,7 @@ export const App = () => {
   useEffect(() => {
     setPwaBusy(hidden);
   }, [hidden, setPwaBusy]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.classList.toggle("match-active", active || held);
     document.body.classList.toggle("autochess-active", path === "/autochess");
     document.body.classList.toggle("hunt-active", path === "/hunt");
@@ -106,7 +106,7 @@ export const App = () => {
       );
     };
   }, [active, held, path, detail]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const resize = () => {
       document.documentElement.style.setProperty(
         "--header-height",

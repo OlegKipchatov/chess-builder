@@ -296,6 +296,7 @@ export const AutochessPage = () => {
           style={{
             touchAction: preparation ? "none" : undefined,
             width: boardWidth,
+            visibility: boardWidth === undefined ? "hidden" : undefined,
             alignSelf: "center",
           }}
           onPointerDown={(event) => {

@@ -72,7 +72,7 @@ try{
   await page.reload();await ready(page);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).coins),paid.coins);
   await page.goto(url+'#/history');await page.locator('[data-archive="offline-reward"]').click();const analyze=page.getByRole('button',{name:'Разобрать партию'});await analyze.scrollIntoViewIfNeeded();
   const before=await page.evaluate(()=>{window.reviewBoard=document.querySelector('#board');return {y:scrollY,top:window.reviewBoard.getBoundingClientRect().top};});await analyze.evaluate(button=>button.click());
-  assert.equal(await page.locator('progress').isVisible(),false,'Fast actions do not flash a loader');await page.locator('progress').waitFor();assert.equal(await page.locator('#board').isVisible(),true);
+  assert.equal(await page.getByRole('progressbar', { name: 'Анализ партии', includeHidden: true }).isVisible(),false,'Fast actions do not flash a loader');await page.getByRole('progressbar', { name: 'Анализ партии', includeHidden: true }).waitFor();assert.equal(await page.locator('#board').isVisible(),true);
   assert.deepEqual(await page.evaluate(()=>({y:scrollY,top:document.querySelector('#board').getBoundingClientRect().top})),before,'Inline loading preserves scroll and board position');
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).archive[0].analysis?.status==='complete',null,{timeout:60000});assert.equal(await page.evaluate(()=>window.reviewBoard===document.querySelector('#board')),true);
   await page.getByRole('button',{name:'Следующая позиция',exact:true}).click();assert.equal(await page.getByRole('slider').getAttribute('aria-valuetext'),'1 из 4');await page.getByLabel('Назад',{exact:true}).click();

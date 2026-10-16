@@ -52,7 +52,8 @@ export const useBoardFit = (
     if (header) observer.observe(header);
     window.addEventListener("resize", queue);
     window.visualViewport?.addEventListener("resize", queue);
-    measure();
+    // Measure after the shell has applied the destination route layout.
+    queue();
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
