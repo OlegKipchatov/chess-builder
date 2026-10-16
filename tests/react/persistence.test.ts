@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createVaultStore } from "../../src/services/persistence/vault-store";
 import { createAutoStore } from "../../src/services/persistence/autochess-store";
 import {
@@ -82,6 +82,13 @@ import { restoreAutoRun } from "../../src/domain/autochess/autochess";
 describe("real legacy serialized upgrade fixtures", () => {
   for (const [name, fixture] of Object.entries({ v1, v2, active, pve }))
     it(`matches the previous runtime migration exactly: ${name}`, () => {
+      // v1 had no activity timezone. Reproduce the device where the legacy
+      // fixture was captured, rather than substituting the CI runner timezone.
+      const options = Intl.DateTimeFormat().resolvedOptions();
+      vi.spyOn(
+        Intl.DateTimeFormat.prototype,
+        "resolvedOptions",
+      ).mockReturnValue({ ...options, timeZone: "Europe/Copenhagen" });
       const key =
         name === "v1" ? LEGACY_KEY : name === "v2" ? PREVIOUS_KEY : KEY;
       localStorage.setItem(key, JSON.stringify(fixture.input));
