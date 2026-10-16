@@ -13,23 +13,20 @@
   width: 100%;
   min-height: 52px;
 }
-.autochess-active #minigames > .page-content > :not(#autochess-root) {
-  display: none !important;
-}
 body.autochess-active main {
   padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
   max-width: 860px;
 }
-.autochess-active #minigames > .page-content {
+.autochess-active #autochess > .page-content {
   padding: 0;
 }
-.autochess-active #minigames > .page-header {
+.autochess-active #autochess > .page-header {
   column-gap: 8px;
   align-items: center;
   margin: 0 0 4px;
   grid-template-columns: 44px minmax(0, 1fr) auto;
 }
-.autochess-active #minigames-title {
+.autochess-active #autochess h1 {
   font-size: var(--type-section);
   letter-spacing: -0.3px;
 }
@@ -270,7 +267,7 @@ body.autochess-active main {
   .autochess-surface {
     max-width: 480px;
   }
-  .autochess-active #minigames > .page-header {
+  .autochess-active #autochess > .page-header {
     max-width: 480px;
     margin-inline: auto;
   }

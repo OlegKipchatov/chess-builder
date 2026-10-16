@@ -89,7 +89,7 @@ export const MoveNavigation = ({
           ⇥
         </button>
       </div>
-      <span aria-live="polite">
+      <span id="history-position" aria-live="polite">
         {cursor} / {total}
       </span>
       <div className="history-timeline">

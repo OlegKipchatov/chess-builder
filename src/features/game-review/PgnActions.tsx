@@ -54,6 +54,7 @@ export const PgnActions = ({
   const { show } = useOverlays();
   return (
     <button
+      id="export-pgn"
       className="quiet"
       onClick={() =>
         show({

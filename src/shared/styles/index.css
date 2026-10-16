@@ -78,9 +78,6 @@
   border-radius: 4px;
   overflow: hidden;
 }
-.analysis-insight {
-  min-height: 150px;
-}
 .analysis-actions {
   display: flex;
   gap: 8px;
@@ -89,9 +86,6 @@
   min-width: 112px;
 }
 .moves {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
   padding: 0;
   list-style: none;
 }

@@ -74,7 +74,12 @@ export default defineConfig({
   ],
   define: { __APP_RELEASE__: JSON.stringify(release) },
   worker: { format: "es" },
-  build: { target: "es2022", sourcemap: true, emptyOutDir: true },
+  build: {
+    target: "es2022",
+    sourcemap: true,
+    emptyOutDir: true,
+    manifest: true,
+  },
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",

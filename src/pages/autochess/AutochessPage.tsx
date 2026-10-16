@@ -1,5 +1,6 @@
+import { useBoardFit } from "../../features/autochess/useBoardFit.js";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVault } from "../../app/providers/VaultProvider.js";
 import { autoSeriesCoins } from "../../domain/autochess/autochess-rewards.js";
@@ -46,6 +47,9 @@ export const AutochessPage = () => {
     { show, toast } = useOverlays(),
     navigate = useNavigate(),
     [selected, setSelected] = useState<string | null>(null),
+    surface = useRef<HTMLDivElement>(null),
+    created = useRef(false),
+    finishedShown = useRef<string | null>(null),
     lastTap = useRef({ id: "", at: 0 }),
     lastPurchase = useRef(-Infinity),
     drag = useRef<{ id: string; x: number; y: number; pointer: number } | null>(
@@ -53,6 +57,13 @@ export const AutochessPage = () => {
     ),
     suppressClick = useRef(false),
     shownOverflow = useRef<string | null>(null);
+  const boardWidth = useBoardFit(surface, !!run);
+  useEffect(() => {
+    if (auto.locked && !run && !created.current) {
+      created.current = true;
+      auto.create();
+    }
+  });
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (event.key === "Escape") setSelected(null);
@@ -124,6 +135,66 @@ export const AutochessPage = () => {
     lastPurchase.current = now;
     change();
   };
+  const presentSeries = useEffectEvent(() => {
+    if (
+      !run ||
+      run.phase !== "result" ||
+      !seriesFinished(run) ||
+      auto.presenting ||
+      !auto.award ||
+      finishedShown.current === run.battle?.id
+    )
+      return;
+    finishedShown.current = run.battle!.id;
+    const finish = () => {
+      auto.discard();
+      show(null);
+      void navigate({ to: "/play" });
+    };
+    const reward = () =>
+      show({
+        title: "Награда за серию",
+        body: (
+          <div id="auto-reward">
+            <Stat
+              label="Монеты"
+              value={autoSeriesCoins({ autochessAwards: awards }, run)}
+            />
+            <button className="primary wide" onClick={finish}>
+              Завершить серию
+            </button>
+          </div>
+        ),
+      });
+    show({
+      title: "Серия завершена",
+      onClose: reward,
+      body: (
+        <>
+          <div className="auto-results">
+            <Stat
+              label="Победы"
+              value={run.results.filter((r) => r.outcome === "win").length}
+            />
+            <Stat
+              label="Ничьи"
+              value={run.results.filter((r) => r.outcome === "draw").length}
+            />
+            <Stat
+              label="Поражения"
+              value={run.results.filter((r) => r.outcome === "loss").length}
+            />
+          </div>
+          <button className="primary wide" onClick={reward}>
+            Продолжить
+          </button>
+        </>
+      ),
+    });
+  });
+  useEffect(() => {
+    presentSeries();
+  }, [run, auto.presenting, auto.award]);
   const leave = () => {
     auto.pause();
     show({
@@ -214,13 +285,19 @@ export const AutochessPage = () => {
         </>
       }
     >
-      <div className="autochess-surface" id="auto-content">
+      <div ref={surface} className="autochess-surface" id="auto-content">
         <p id="auto-side">
-          Вы играете {run.color === "w" ? "белыми" : "чёрными"}. Соперник
-          появится в бою.
+          Победы {run.results.filter((r) => r.outcome === "win").length}/
+          {goal.wins} · Поражения{" "}
+          {run.results.filter((r) => r.outcome === "loss").length}/{goal.losses}{" "}
+          · {run.color === "w" ? "Белые" : "Чёрные"}
         </p>
         <div
-          style={{ touchAction: preparation ? "none" : undefined }}
+          style={{
+            touchAction: preparation ? "none" : undefined,
+            width: boardWidth,
+            alignSelf: "center",
+          }}
           onPointerDown={(event) => {
             const square = (
               event.target as HTMLElement
@@ -322,6 +399,7 @@ export const AutochessPage = () => {
             </div>
             <button
               className="auto-sale"
+              aria-label="Продать выбранную фигуру"
               disabled={!preparation || !piece || piece.type === "k"}
               onClick={() => {
                 if (selected)
@@ -331,7 +409,18 @@ export const AutochessPage = () => {
                 setSelected(null);
               }}
             >
-              Продать {piece && piece.type !== "k" ? salePrice(piece) : "—"}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M20 13 11 22 2 13V4h9l9 9Z" />
+                <circle cx="7" cy="9" r="1.5" />
+              </svg>
+              <span>
+                {piece && piece.type !== "k" ? salePrice(piece) : "—"}
+              </span>
             </button>
           </div>
           <div className="auto-shop-meta">
@@ -530,20 +619,6 @@ export const AutochessPage = () => {
                     : "Продолжить бой"}
             </button>
           )}
-        </div>
-        <div className="auto-results">
-          <Stat
-            label={`Победы / ${goal.wins}`}
-            value={run.results.filter((r) => r.outcome === "win").length}
-          />
-          <Stat
-            label={`Поражения / ${goal.losses}`}
-            value={run.results.filter((r) => r.outcome === "loss").length}
-          />
-          <Stat
-            label="Ничьи"
-            value={run.results.filter((r) => r.outcome === "draw").length}
-          />
         </div>
       </div>
     </Page>

@@ -44,6 +44,17 @@ jobs:
         run: npm run lint
       - name: Check generated motion tokens
         run: npm run motion:check
+      - name: Retain browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence-${{ github.sha }}
+          path: |
+            /tmp/gachachess-*.png
+            /tmp/gacha-*.png
+            /tmp/autochess*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Retain tested static build
         uses: actions/upload-artifact@v4
         with:

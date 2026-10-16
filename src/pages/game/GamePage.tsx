@@ -1,3 +1,4 @@
+import { MoveList } from "../../features/game-review/MoveList.js";
 import { useHistoryReturn } from "../../features/game-review/HistoryReturnProvider.js";
 import { ActivityCelebration } from "../../features/game-session/ActivityCelebration.js";
 import { eligibleEntry } from "../../domain/analysis/analysis-storage.js";
@@ -297,9 +298,21 @@ export const GamePage = () => {
                   </strong>
                 </span>
               </div>
-              <strong>{materialBalance(board, config.playerColor)}</strong>
+              <strong
+                id="match-points"
+                data-balance={
+                  materialBalance(board, config.playerColor) > 0
+                    ? "positive"
+                    : materialBalance(board, config.playerColor) < 0
+                      ? "negative"
+                      : "zero"
+                }
+              >
+                {materialBalance(board, config.playerColor) > 0 ? "+" : ""}
+                {materialBalance(board, config.playerColor)} очков
+              </strong>
             </div>
-            <p className="turn-status" aria-live="polite">
+            <p id="status" className="turn-status" aria-live="polite">
               {board.isCheck() ? "Шах · " : ""}Ход{" "}
               {board.turn() === "w" ? "белых" : "чёрных"}
             </p>
@@ -345,18 +358,15 @@ export const GamePage = () => {
               </div>
             )}
           </div>
-          <aside className="match-status-panel">
-            <PgnActions game={live} config={config} />
-            <ol className="moves">
-              {live.history().map((san, index) => (
-                <li key={index}>
-                  <button onClick={() => session.setCursor(index + 1)}>
-                    {Math.floor(index / 2) + 1}
-                    {index % 2 ? "…" : "."} {san}
-                  </button>
-                </li>
-              ))}
-            </ol>
+          <aside className="match-secondary">
+            <MoveList
+              moves={live.history()}
+              cursor={session.view.cursor ?? live.history().length}
+              onSeek={session.setCursor}
+            />
+            <div className="match-actions">
+              <PgnActions game={live} config={config} />
+            </div>
           </aside>
         </div>
       </div>

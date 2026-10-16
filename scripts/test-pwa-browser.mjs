@@ -45,7 +45,7 @@ const offlineEngines=async(page,url)=>{
   const state=initialState();state.game={...createStartedGame(state,()=>0),playerColor:'w',engineProfile:createSession(elo,42)};
   await setState(page,state);await page.goto(url+'#/play');await page.reload();
   await page.locator('[data-square="e2"]').click();await page.locator('[data-square="e4"]').click();
-  await page.waitForFunction(()=>/1\. e4 \S+/.test(JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),null,{timeout:45000});
+  await page.waitForFunction(()=>/1\. e4 [a-hNBRQKO]/.test(JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),null,{timeout:45000});
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn);
   const board=new Chess();board.loadPgn(saved);assert.equal(board.history().length,2);
   await page.reload();await page.locator('#board').waitFor();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),saved);
@@ -95,4 +95,4 @@ try{
  await page.waitForFunction(async()=>{const keys=await caches.keys();return keys.some(key=>key.startsWith('gachachess-react:/chess-builder/:'))&&keys.includes('chess-vault-v132')&&!keys.includes('chess-vault-v59');});assert.equal(await page.evaluate(async()=>(await caches.keys()).includes('unrelated-app')),true);
  await context.setOffline(true);assert.equal(await page.evaluate(async()=>(await fetch('./bot-worker.js?v=132')).ok),true);await page.reload();await isolated(page);await page.getByRole('heading',{name:'Профиль',exact:true}).waitFor();const offline=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')));for(const key of ['coins','shards','owned','archive','activity','rating','hunt'])assert.deepEqual(offline[key],key==='activity'?normalizeActivity(preserved[key]):preserved[key],key);
  await offlineEngines(page,origin+'/chess-builder/');await context.close();console.log('PASS installed v132 → React: failed install, active game, explicit old UI consent, progress, prior URLs, unrelated caches, cold offline reopen');
-}finally{await browser.close();await new Promise(done=>server.close(done));await rm(previousRoot,{recursive:true,force:true});}
+}catch(error){for(const [index,context] of browser.contexts().entries())for(const [tab,page]of context.pages().entries())await page.screenshot({path:`/tmp/gachachess-failure-${index}-${tab}.png`,fullPage:true,timeout:3000}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(done=>server.close(done));await rm(previousRoot,{recursive:true,force:true});}

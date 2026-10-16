@@ -1,3 +1,4 @@
+import { MoveList } from "./MoveList.js";
 import { playStyleName } from "../../domain/cognitive/play-style-config.js";
 import { AnalysisInsight } from "./AnalysisInsight.js";
 import { visibleVariation } from "../../domain/analysis/presentation.js";
@@ -238,62 +239,58 @@ export const GameReview = ({
             {job.status === "failed" && <p role="alert">{job.message}</p>}
           </div>
         )}
-        <PgnActions game={live} config={entry} />
+        <div className="analysis-insight-slot">
+          {analysis?.status === "partial" && (
+            <p role="status">
+              Часть ходов не удалось проверить. Можно повторить анализ.
+            </p>
+          )}
+          <AnalysisInsight
+            move={move}
+            hint={hint}
+            expanded={variation !== null}
+            onHint={() => {
+              playback.current?.pause();
+              setHint(!hint);
+              setVariation(null);
+            }}
+            onExpand={() => setVariation(variation === null ? 0 : null)}
+            onPractice={() => {
+              playback.current?.pause();
+              if (move?.exercise) {
+                setFootprint(
+                  surface.current?.getBoundingClientRect().height || 0,
+                );
+                setPractice(move.exercise);
+              }
+            }}
+          />
+          {cursor === 0 && (
+            <p className="analysis-position-message">
+              Начальная позиция. Начните просмотр партии.
+            </p>
+          )}
+          {cursor === live.history().length && !isImportantInsight(move) && (
+            <p className="analysis-position-message">Просмотр завершён.</p>
+          )}
+        </div>
       </div>
-      <aside className="analysis-panel">
-        {analysis?.status === "partial" && (
-          <p role="status">
-            Часть ходов не удалось проверить. Можно повторить анализ.
-          </p>
-        )}
-        <AnalysisInsight
-          move={move}
-          hint={hint}
-          expanded={variation !== null}
-          onHint={() => {
-            playback.current?.pause();
-            setHint(!hint);
-            setVariation(null);
-          }}
-          onExpand={() => setVariation(variation === null ? 0 : null)}
-          onPractice={() => {
-            playback.current?.pause();
-            if (move?.exercise) {
-              setFootprint(
-                surface.current?.getBoundingClientRect().height || 0,
-              );
-              setPractice(move.exercise);
-            }
-          }}
+      <aside className="match-secondary">
+        <MoveList
+          moves={live.history()}
+          cursor={cursor}
+          important={
+            analysisMode
+              ? analysis?.moves
+                  .filter(isImportantInsight)
+                  .map((move) => move.ply)
+              : []
+          }
+          onSeek={(ply) => void playback.current?.seek(ply)}
         />
-        {cursor === 0 && (
-          <p className="analysis-position-message">
-            Начальная позиция. Начните просмотр партии.
-          </p>
-        )}
-        {cursor === live.history().length && !isImportantInsight(move) && (
-          <p className="analysis-position-message">Просмотр завершён.</p>
-        )}
-        <ol className="moves">
-          {live.history().map((san, index) => (
-            <li key={index}>
-              <button
-                className={
-                  analysisMode &&
-                  analysis?.moves[index] &&
-                  isImportantInsight(analysis.moves[index])
-                    ? "important"
-                    : ""
-                }
-                aria-current={cursor === index + 1 ? "step" : undefined}
-                onClick={() => void playback.current?.seek(index + 1)}
-              >
-                {Math.floor(index / 2) + 1}
-                {index % 2 ? "…" : "."} {san}
-              </button>
-            </li>
-          ))}
-        </ol>
+        <div className="match-actions">
+          <PgnActions game={live} config={entry} />
+        </div>
       </aside>
     </div>
   );

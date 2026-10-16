@@ -93,12 +93,14 @@ export const App = () => {
     document.body.classList.toggle("match-active", active || held);
     document.body.classList.toggle("autochess-active", path === "/autochess");
     document.body.classList.toggle("hunt-active", path === "/hunt");
+    document.body.classList.toggle("pve-active", path === "/pve");
     document.body.classList.toggle("archive-viewing", detail);
     return () => {
       document.body.classList.remove(
         "match-active",
         "autochess-active",
         "hunt-active",
+        "pve-active",
         "archive-viewing",
       );
     };
@@ -107,6 +109,10 @@ export const App = () => {
     const resize = () => {
       document.documentElement.style.setProperty(
         "--header-height",
+        `${header.current?.getBoundingClientRect().height || 68}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--app-header-height",
         `${header.current?.getBoundingClientRect().height || 68}px`,
       );
       document.documentElement.style.setProperty(

@@ -1,4 +1,8 @@
 import {
+  createAutoRun,
+  AUTO_KEY,
+} from "../../src/domain/autochess/autochess.js";
+import {
   act,
   fireEvent,
   render,
@@ -271,5 +275,20 @@ describe("React routing, collection and history", () => {
     );
     expect((text as HTMLTextAreaElement).value).toContain('[Event "External"]');
     expect(localStorage.getItem(KEY)).toBe(before);
+  });
+  it("keeps the Autochess purchase transactional under a double click", async () => {
+    const run = createAutoRun("react-purchase");
+    localStorage.setItem(AUTO_KEY, JSON.stringify(run));
+    const view = await setup("/autochess");
+    const buy = await screen.findByRole("button", { name: /^Фигура/ });
+    await waitFor(() => expect(buy).toBeEnabled());
+    vi.spyOn(performance, "now").mockReturnValue(1000);
+    fireEvent.click(buy);
+    fireEvent.click(buy);
+    const saved = JSON.parse(localStorage.getItem(AUTO_KEY)!);
+    expect(saved.purchases).toBe(run.purchases + 1);
+    expect(saved.reserve).toBe(run.reserve - 1);
+    expect(saved.army.length).toBe(run.army.length + 1);
+    view.unmount();
   });
 });
