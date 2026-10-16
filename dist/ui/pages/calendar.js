@@ -1,2 +1,2 @@
-import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=126';
-export const calendarPage = () => `<section id="calendar" class="tab" data-page-kind="root" hidden>${pageHeader({title:"Календарь активности"})}<div class="page-content"><div id="activity-calendar"></div></div></section>`;
+import {pageHeader,backButton,iconButton,backIcon,statCard,disclosure} from '../primitives.js?v=132';
+export const calendarPage = () => `<section id="calendar" class="tab" data-page-kind="subpage" hidden>${pageHeader({title:"Календарь активности",startContent:backButton('play')})}<div class="page-content"><div id="activity-calendar"></div></div></section><section id="streak" class="tab" data-page-kind="subpage" hidden>${pageHeader({title:"Календарь серии",startContent:backButton('play')})}<div class="page-content"><div id="streak-calendar"></div></div></section>`;

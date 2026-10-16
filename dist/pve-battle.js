@@ -1,4 +1,5 @@
-import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=126';
+import {recordCalendarGame} from './calendar-rewards.js?v=132';
+import {PVE,NODES,DEATH_RATE,activeArmy,homeSquare,isUnlocked,encounter,maxHp,damage,earnXp,deathPenalty,xpThreshold,frontier} from './pve-model.js?v=132';
 const files='abcdefgh';
 const coords = square => [files.indexOf(square[0]),Number(square[1])-1];
 const squareAt = (x,y) => x>=0&&x<8&&y>=0&&y<8?files[x]+(y+1):null;
@@ -165,7 +166,7 @@ export const settlePve = (wallet,now=new Date().toISOString()) => {
  const nodes={...profile.nodes,[node.id]:{...record,wins}};
  const nextFrontier=frontier({...profile,cleared});for(const row of NODES)if(row.step===nextFrontier&&!nodes[row.id])nodes[row.id]={attempts:0,wins:0,openedAt:profile.stats.battles+1};
  const next={...profile,revision:profile.revision+1,units,levelCap,stones:profile.stones+stones,cores:profile.cores+cores,cleared,nodes,lastResult:result,battle:{...battle,settled:true,result},stats:{...profile.stats,battles:profile.stats.battles+1,wins:profile.stats.wins+(win?1:0),draws:profile.stats.draws+(battle.result.outcome==='draw'?1:0),deaths,recent:[...profile.stats.recent,{nodeId:node.id,outcome:result.outcome,levels:units.filter(row=>row.active).map(row=>row.level),deaths:changes.filter(row=>row.died).length,stones,plies:battle.ply}].slice(-30)}};
- return {...wallet,coins:wallet.coins+coins,pve:next};
+ return {...recordCalendarGame(wallet,{won:win,mode:'pve',finishedAt:now}),coins:wallet.coins+coins,pve:next};
 };
 export const returnToMap = profile => profile.battle?.settled?{...profile,revision:profile.revision+1,battle:null}:profile;
 export const pveBoardAdapter = battle => ({

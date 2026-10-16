@@ -5,18 +5,19 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {resolve,extname} from 'node:path';
 import {chromium} from 'playwright';
+import {normalizeActivity} from '../dist/activity-model.js';
 import {testLongMateEngine} from './test-mate-long-engine.mjs';
 import {testPgnViewer} from './test-pgn-viewer.mjs';
 import {testAnalysisLearning} from './test-analysis-learning.mjs';
 
 const root=fileURLToPath(new URL('../dist/',import.meta.url));
 const version=(await readFile(resolve(root,'sw.js'),'utf8')).match(/chess-vault-v(\d+)/)[1];
-assert.equal(version,'126','Update the previous-release fixture and upgrade scenario when bumping the release');
+assert.equal(version,'132','Update the previous-release fixture and upgrade scenario when bumping the release');
 const mime={'.js':'text/javascript','.css':'text/css','.html':'text/html','.wasm':'application/wasm','.webmanifest':'application/manifest+json','.png':'image/png'};
-let release='126',rejectAsset=false;
+let release='132',rejectAsset=false;
 const previousFiles=new Map();
 // Upgrade from the previous published interface release.
-const previousRef='06a3808d28c1e10914b32a1317fe5bf03663e136';
+const previousRef='f789b22961431770057000586ed24f9e8f268be6';
 assert.ok(previousRef,'Fetch repository history to test the real previous release');
 const previousWorker=execFileSync('git',['show',`${previousRef}:dist/sw.js`],{cwd:resolve(root,'..'),encoding:'utf8'});
 const previousVersion=previousWorker.match(/chess-vault-v(\d+)/)?.[1];
@@ -36,7 +37,7 @@ const server=createServer(async(req,res)=>{
   if(rejectAsset&&pathname==='/ui/styles/base.css'){res.writeHead(503);res.end();return;}
   let content=await readFile(path);
   if(release===previousVersion&&['.js','.css','.html'].includes(extname(path))&&!path.includes('/vendor/'))content=previousSource(path);
-  if(release==='127'&&pathname==='/sw.js')content=Buffer.from(content.toString().replace('chess-vault-v126','chess-vault-v127'));
+  if(release==='133'&&pathname==='/sw.js')content=Buffer.from(content.toString().replace('chess-vault-v132','chess-vault-v133'));
   if(process.env.PWA_NO_ISOLATION&&pathname==='/sw.js')content=Buffer.from(content.toString().replace('const isolated = response => {','const isolated = response => { return response;'));
   // Deliberately no COOP/COEP or HTTP cache: the worker must provide both isolation and offline files.
   res.writeHead(200,{'Content-Type':mime[extname(path)]||'application/octet-stream','Cache-Control':'no-store'});res.end(content);
@@ -49,7 +50,7 @@ const controlled=async page=>page.waitForFunction(()=>!!navigator.serviceWorker.
 const isolated=async page=>page.waitForFunction(expected=>crossOriginIsolated===expected,!process.env.PWA_NO_ISOLATION);
 const ready=async page=>page.locator('#start-game').waitFor({state:'visible'});
 const engines=async page=>page.evaluate(async()=>{
- const v='126';
+ const v='132';
  const {createBotClient}=await import(`./bot-client.js?v=${v}`);
  const {createSession}=await import(`./cognitive-model.js?v=${v}`);
  const {Chess}=await import(`./chess.js?v=${v}`);
@@ -77,7 +78,7 @@ const engines=async page=>page.evaluate(async()=>{
 });
 try{
  for(const base of process.env.PWA_UPGRADE_ONLY?[]:['/','/chess-builder/']){
-  release='126';
+  release='132';
   const context=await browser.newContext({serviceWorkers:'allow'});
   if(process.env.PWA_DEBUG){context.on('console',m=>console.log('BROWSER',m.type(),m.text()));context.on('requestfailed',r=>console.log('REQUEST FAILED',r.url(),r.failure()));}
   let page=await context.newPage();
@@ -103,10 +104,10 @@ try{
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),saved.game.pgn);
   // A completed game resumes its pending quality bonus offline exactly once.
   await page.evaluate(async()=>{
-   const {Chess}=await import('./chess.js?v=126');
-   const {completedMatch}=await import('./archive.js?v=126');
-   const {initialState}=await import('./state.js?v=126');
-   const {createStartedGame}=await import('./session.js?v=126');
+   const {Chess}=await import('./chess.js?v=132');
+   const {completedMatch}=await import('./archive.js?v=132');
+   const {initialState}=await import('./state.js?v=132');
+   const {createStartedGame}=await import('./session.js?v=132');
    const game=new Chess();['f3','e5','g4','Qh4#'].forEach(move=>game.move(move));
    const state=initialState();state.game=createStartedGame(state,()=>.9);
    const settled=completedMatch(state,game,{id:'offline-reward',finishedAt:new Date().toISOString()});
@@ -168,8 +169,8 @@ try{
    await testAnalysisLearning(page,origin+base);
    await page.setViewportSize({width:390,height:844});
    await page.evaluate(async()=>{
-    const {initialState}=await import('./state.js?v=126');
-    const {createStartedGame}=await import('./session.js?v=126');
+    const {initialState}=await import('./state.js?v=132');
+    const {createStartedGame}=await import('./session.js?v=132');
     const state=initialState();state.game={...createStartedGame(state,()=>.9),pgn:'1. f3 e5 2. g4 Qh4#'};
     localStorage.setItem('chess-vault-v3',JSON.stringify(state));
    });
@@ -228,7 +229,7 @@ try{
  await page.evaluate(async()=>{await caches.open('unrelated-app');await caches.open('chess-vault-v59');});
  await page.evaluate(()=>{Math.random=()=>.25;});await page.locator('#start-game').click();
  const before=await page.evaluate(()=>localStorage.getItem('chess-vault-v3'));
- release='126';rejectAsset=true;
+ release='132';rejectAsset=true;
  const failed=await page.evaluate(async()=>{
   const registration=await navigator.serviceWorker.getRegistration();
   const done=new Promise((resolve,reject)=>{setTimeout(()=>reject(Error('Expected failed update did not complete')),30000);registration.addEventListener('updatefound',()=>{const worker=registration.installing;worker.addEventListener('statechange',()=>{if(worker.state==='redundant')resolve(true);});},{once:true});});
@@ -249,9 +250,9 @@ try{
  const preserved=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')));
  await page.locator('#profile-avatar').click();await page.locator('#profile-update-app').waitFor({state:'visible'});
  await page.locator('#profile-update-app').click();
- await page.waitForFunction(()=>document.querySelector('meta[name="gachachess-build"]')?.content==='126');await isolated(page);
+ await page.waitForFunction(()=>document.querySelector('meta[name="gachachess-build"]')?.content==='132');await isolated(page);
  const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')));
- for(const key of ['coins','shards','owned','equipped','archive','activity','rating','hunt'])assert.deepEqual(after[key],preserved[key],key);
+ for(const key of ['coins','shards','owned','equipped','archive','activity','rating','hunt'])assert.deepEqual(after[key],key==='activity'?normalizeActivity(preserved[key]):preserved[key],key);
  await page.waitForFunction(async({current,previous})=>{const keys=await caches.keys();return keys.includes(`chess-vault-v${current}`)&&keys.includes(`chess-vault-v${previous}`)&&!keys.includes('chess-vault-v59');},{current:version,previous:previousVersion});
  assert.equal(await page.evaluate(async()=>(await caches.keys()).includes('unrelated-app')),true);
  await context.setOffline(true);
@@ -259,6 +260,6 @@ try{
  await page.reload();await isolated(page);await page.locator('#profile:not([hidden])').waitFor();
  assert.deepEqual(await engines(page),[{elo:600,moves:2},{elo:1500,moves:2}]);
  const offline=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')));
- for(const key of ['coins','shards','owned','archive','activity','rating','hunt'])assert.deepEqual(offline[key],preserved[key],key);
+ for(const key of ['coins','shards','owned','archive','activity','rating','hunt'])assert.deepEqual(offline[key],key==='activity'?normalizeActivity(preserved[key]):preserved[key],key);
  await context.close();console.log(`PASS v${previousVersion} → v${version}: failed install, active game held, real profile consent, saved progress, old URLs and cold offline reopen`);
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

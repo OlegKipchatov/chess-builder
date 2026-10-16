@@ -1,3 +1,4 @@
+import {recordCalendarGame} from './calendar-rewards.js?v=132';
 // Hunt rules are independent of the regular chess engine and presentation.
 export const huntConfig = Object.freeze({
   initialPlayerPieces:2, initialOpponentPieces:2, opponentSpawnEveryPlayerMoves:2,
@@ -142,7 +143,7 @@ export const awardHunt = (wallet,run,config=huntConfig) => {
   const progress=normalizeHuntProgress(wallet.hunt);
   if(run.phase!=='finished'||!['timer','lives','no-space'].includes(run.finishReason)||Object.hasOwn(progress.awards,run.runId))return wallet;
   const coins=calculateMiniGameCoins(run,config);
-  return {...wallet,coins:add(wallet.coins,coins),hunt:{records:{...progress.records,[run.mode]:{bestScore:Math.max(progress.records[run.mode].bestScore,run.score)}},awards:{...progress.awards,[run.runId]:coins}}};
+  return {...recordCalendarGame(wallet,{won:run.score>=20,mode:'hunt',score:run.score,moves:run.playerMoveCount||0}),coins:add(wallet.coins,coins),hunt:{records:{...progress.records,[run.mode]:{bestScore:Math.max(progress.records[run.mode].bestScore,run.score)}},awards:{...progress.awards,[run.runId]:coins}}};
 };
 // Adapter reuses the existing board and equipped visuals without king validation.
 export const huntBoardAdapter = state => ({

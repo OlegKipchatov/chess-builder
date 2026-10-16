@@ -1,6 +1,6 @@
-import {STOCKFISH as C} from './stockfish-config.js?v=126';
-import {AUTO} from './autochess.js?v=126';
-import {createEngineWorker,recordStockfishRestart} from './stockfish-lifecycle.js?v=126';
+import {STOCKFISH as C} from './stockfish-config.js?v=132';
+import {AUTO} from './autochess.js?v=132';
+import {createEngineWorker,recordStockfishRestart} from './stockfish-lifecycle.js?v=132';
 // One sequential worker per active battle; no rating or difficulty model.
 export const createAutoplayEngine = (spawn=createEngineWorker) => {
  const worker=spawn();let pending=null,dead=false,initialized=false,readyResolve,readyReject;

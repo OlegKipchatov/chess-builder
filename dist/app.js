@@ -1,38 +1,39 @@
-import {mountPve,pveFAQ} from './ui/pages/pve.js?v=126';
-import {settlePve} from './pve-battle.js?v=126';
-import {awardAutochess,autoRewardCoins,autoSeriesCoins} from './autochess-rewards.js?v=126';
-import {autochessEntry,autochessFAQ,mountAutochess} from './ui/pages/autochess.js?v=126';
-import {huntEntry,huntFAQ,mountHunt} from './ui/pages/hunt.js?v=126';
-import {awardHunt} from './hunt.js?v=126';
-import {analyzeGame} from './analysis/analysis-service.js?v=126';
-import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=126';
-import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=126';
-import {analyzeReward} from './economy-analysis.js?v=126';
-import {applyQualityReward} from './reward-quality.js?v=126';
-import {motionDuration, motionEasing} from './ui/motion.js?v=126';
-import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=126';
-import {mountAppShell} from './ui/shell.js?v=126';
-import {statCard,plural,pageHeader,iconButton,backIcon} from './ui/primitives.js?v=126';
-import {createDialog,createToast} from './ui/dialog.js?v=126';
-import {renderArchiveList} from './ui/components/archive-list.js?v=126';
-import {moveList} from './ui/components/move-list.js?v=126';
-import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=126';
-import {playStyleName,randomPlayStyle} from './play-style-config.js?v=126';
-import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=126';
-import {importPgnDialog} from './ui/dialog-content.js?v=126';
-import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=126';
-import {closeActivityDay, calendarHTML} from './activity.js?v=126';
-import {createBotClient} from './bot-client.js?v=126';
-import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=126';
-import {signedDelta} from './rating.js?v=126';
-import {Chess} from './chess.js?v=126';
-import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=126';
-import {openChest, craftItem} from './economy.js?v=126';
-import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=126';
-import {pieceSVG, itemPreview} from './pieces.js?v=126';
-import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=126';
-import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=126';
-import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=126';
+import {recordCalendarGame,claimCalendarReward,buyFreeze} from './calendar-rewards.js?v=132';
+import {mountPve,pveFAQ} from './ui/pages/pve.js?v=132';
+import {settlePve} from './pve-battle.js?v=132';
+import {awardAutochess,autoRewardCoins,autoSeriesCoins} from './autochess-rewards.js?v=132';
+import {autochessEntry,autochessFAQ,mountAutochess} from './ui/pages/autochess.js?v=132';
+import {huntEntry,huntFAQ,mountHunt} from './ui/pages/hunt.js?v=132';
+import {awardHunt} from './hunt.js?v=132';
+import {analyzeGame} from './analysis/analysis-service.js?v=132';
+import {eligibleEntry,isCompatible,attachAnalysis} from './analysis/analysis-storage.js?v=132';
+import {mountAnalysis,showAnalysisProgress} from './ui/pages/analysis.js?v=132';
+import {analyzeReward} from './economy-analysis.js?v=132';
+import {applyQualityReward} from './reward-quality.js?v=132';
+import {motionDuration, motionEasing} from './ui/motion.js?v=132';
+import {exportPgnDialog,cancelledDialog,matchResultDialog,botFailureDialog,promotionDialog,craftDialog,saveSetDialog,activityDialog,chestRewardDialog,resignDialog,installHelpDialog,deleteSetDialog} from './ui/dialog-content.js?v=132';
+import {mountAppShell} from './ui/shell.js?v=132';
+import {statCard,plural,pageHeader,iconButton,backIcon} from './ui/primitives.js?v=132';
+import {createDialog,createToast} from './ui/dialog.js?v=132';
+import {renderArchiveList} from './ui/components/archive-list.js?v=132';
+import {moveList} from './ui/components/move-list.js?v=132';
+import {syncHistorySlider,bindHistorySlider} from './ui/components/move-navigation.js?v=132';
+import {playStyleName,randomPlayStyle} from './play-style-config.js?v=132';
+import {importPgn,MAX_PGN_BYTES} from './pgn-import.js?v=132';
+import {importPgnDialog} from './ui/dialog-content.js?v=132';
+import {exportPgn,sharePgn,downloadPgn} from './pgn-export.js?v=132';
+import {closeActivityDay, calendarHTML} from './activity.js?v=132';
+import {createBotClient} from './bot-client.js?v=132';
+import {completedMatch, materialBalance, canAbortFailedMatch, abortFailedMatch,matchEndReason} from './archive.js?v=132';
+import {signedDelta} from './rating.js?v=132';
+import {Chess} from './chess.js?v=132';
+import {TYPES, ITEMS, PIECE_NAMES, rarityNames, itemById, craftCost} from './catalog.js?v=132';
+import {openChest, craftItem} from './economy.js?v=132';
+import {KEY, loadState, initialState, newGame, createRecordId} from './state.js?v=132';
+import {pieceSVG, itemPreview} from './pieces.js?v=132';
+import {renderBoard, snapshotBoard, animateMove, animateTransition, historyMoves, showCaptureMaterial, clearCaptureMaterial} from './board.js?v=132';
+import {renderCollection, escapeHTML, presetEquipment, canEquipPreset} from './collection.js?v=132';
+import {isMatchActive, navigationTarget, createStartedGame, positionAt, historyCursor, boardAvailability} from './session.js?v=132';
 mountAppShell(document.querySelector('#app'));
 const $ = selector => document.querySelector(selector);
 // Sticky catalogue navigation follows the real header height, including text scaling.
@@ -211,7 +212,8 @@ const settle = (notifyActivity=true) => {
   const result=completedMatch(state,game,{id:createRecordId(),finishedAt:new Date().toISOString()});
   if(!result)return;
   const closed=closeActivityDay(state.activity,{counted:!!result.entry&&!wasSettled,finishedAt:result.entry?.finishedAt});
-  if(!persist({...result.state,activity:closed.activity},true))return;
+  const calendarState=result.entry&&!wasSettled?recordCalendarGame(result.state,{won:!state.game.resigned&&game.isCheckmate()&&game.turn()!==state.game.playerColor,mode:'ai',moves:game.history({verbose:true}).filter(move=>move.color===state.game.playerColor).length,captures:game.history({verbose:true}).filter(move=>move.color===state.game.playerColor&&move.captured).length,resigned:state.game.resigned,finishedAt:result.entry.finishedAt}):result.state;
+  if(!persist(calendarState,true))return;
   pendingActivity=notifyActivity?closed.event:null;
   const {entry,reward,rewardBreakdown}=result;
   stopBot();game.reset();reviewCursor=null;queuedCursor=undefined;selected=null;
@@ -285,9 +287,23 @@ const renderStatistics = () => {
 };
 $('#match-archive').addEventListener('scroll',renderArchive,{passive:true});
 window.addEventListener('resize',()=>{if(currentScreen==='archive')renderArchive();});
-const renderCalendar = () => {$('#activity-calendar').innerHTML=calendarHTML(state.activity);};
-setInterval(()=>{if(currentScreen==='calendar')renderCalendar();},60000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentScreen==='calendar')renderCalendar();});
+const renderCalendar = () => {const now=new Date();$('#activity-calendar').innerHTML=calendarHTML(state.activity,now,state.shards,'activity');$('#streak-calendar').innerHTML=calendarHTML(state.activity,now,state.shards,'streak');};
+setInterval(()=>{if(['calendar','streak'].includes(currentScreen))renderCalendar();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&['calendar','streak'].includes(currentScreen))renderCalendar();});
+const onCalendarAction=async event=>{
+ const button=event.target.closest('[data-calendar-claim],[data-calendar-freeze]');if(!button||button.disabled)return;
+ const act=()=>{
+  try {
+   const latest=loadState(localStorage),next=button.hasAttribute('data-calendar-freeze')?buyFreeze(latest):claimCalendarReward(latest,button.dataset.calendarClaim);
+   if(next===latest){state=latest;render();return;}
+   localStorage.setItem(KEY,JSON.stringify(next));state=next;render();
+   toast(button.hasAttribute('data-calendar-freeze')?'День заморожен. Серия сохранена.':'Награда получена');
+  }catch{toast('Не удалось сохранить. Попробуйте ещё раз.',{error:true});}
+ };
+ if(navigator.locks)await navigator.locks.request('gachachess-calendar',act);else act();
+};
+$('#activity-calendar').addEventListener('click',onCalendarAction);
+$('#streak-calendar').addEventListener('click',onCalendarAction);
 const renderProfile = () => {
 
   renderArchive();renderStatistics();
@@ -471,7 +487,7 @@ const changeTab = tab => {
   if(target!==tab&&active())toast('Завершите партию, чтобы перейти в другой раздел.');
   currentScreen=target;
   window.history.replaceState(null,'','#'+target);
-  syncNavigation();if(target==='archive')renderArchive();if(target==='calendar')renderCalendar();
+  syncNavigation();if(target==='archive')renderArchive();if(['calendar','streak'].includes(target))renderCalendar();
   if(leavingArchive&&target==='archive')restoreArchiveContext();
 };
 const showHistory = async (cursor,automatic=false,instant=false) => {

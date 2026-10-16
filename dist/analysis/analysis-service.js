@@ -1,12 +1,12 @@
-import {Chess} from '../chess.js?v=126';
-import {createStockfishClient} from '../stockfish-client.js?v=126';
-import {engineLine} from '../stockfish-evaluation.js?v=126';
-import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=126';
-import {classifyMove,needsRefinement} from './analysis-classifier.js?v=126';
-import {uci,describeLine,detectReason,verifyShortMate,recommendationEvidence} from './analysis-reasons.js?v=126';
-import {selectEvents} from './analysis-events.js?v=126';
-import {eligibleEntry} from './analysis-storage.js?v=126';
-import {prepareMateExercise} from './analysis-training.js?v=126';
+import {Chess} from '../chess.js?v=132';
+import {createStockfishClient} from '../stockfish-client.js?v=132';
+import {engineLine} from '../stockfish-evaluation.js?v=132';
+import {ANALYSIS_VERSION,PROFILE,ENGINE} from './analysis-config.js?v=132';
+import {classifyMove,needsRefinement} from './analysis-classifier.js?v=132';
+import {uci,describeLine,detectReason,verifyShortMate,recommendationEvidence} from './analysis-reasons.js?v=132';
+import {selectEvents} from './analysis-events.js?v=132';
+import {eligibleEntry} from './analysis-storage.js?v=132';
+import {prepareMateExercise} from './analysis-training.js?v=132';
 const abortError = () => new DOMException('Analysis cancelled','AbortError');
 export const analyzeGame = async (entry,{onProgress=()=>{},signal,createClient=createStockfishClient,profile=PROFILE}={}) => {
  if(!eligibleEntry(entry))throw Error('This archive entry cannot be analyzed');

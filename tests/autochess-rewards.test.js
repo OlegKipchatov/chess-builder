@@ -17,7 +17,7 @@ test('series caps draws at five and total at thirty including partial last credi
 test('autochess pays 3/1/0 and persists each receipt through state migration',()=>{
  for(const [outcome,coins] of [['win',3],['draw',1],['loss',0]]){
   const wallet=initialState(),run=runFor(outcome),next=awardAutochess(wallet,run);
-  assert.equal(next.coins,wallet.coins+coins);assert.equal(next.played,wallet.played);assert.deepEqual(next.rating,wallet.rating);assert.deepEqual(next.activity,wallet.activity);
+  assert.equal(next.coins,wallet.coins+coins);assert.equal(next.played,wallet.played);assert.deepEqual(next.rating,wallet.rating);assert.equal(next.activity.days.length,1);assert.equal(Object.values(next.activity.daily)[0].games,1);assert.equal(Object.values(next.activity.daily)[0].wins,outcome==='win'?1:0);assert.deepEqual(migrateState(next).activity,next.activity);
   assert.equal(awardAutochess(next,run),next);
   const restored=migrateState(JSON.parse(JSON.stringify(next)));assert.equal(awardAutochess(restored,run),restored);
  }

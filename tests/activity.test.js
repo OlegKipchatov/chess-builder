@@ -32,7 +32,7 @@ test('Полночь и DST используют календарные даты
 });
 test('Миграция не переносит даты и не зависит от истории партий',()=>{
   const state=initialState();state.activity=activity(['2026-09-10']);
-  assert.deepEqual(migrateState(state).activity,state.activity);
+  assert.deepEqual(migrateState(state).activity,normalizeActivity(state.activity));
   assert.deepEqual(normalizeActivity({...state.activity,days:['2026-02-30','2026-09-10','2026-09-10']}).days,['2026-09-10']);
   const storage=new Map([[KEY,JSON.stringify({...state,activity:undefined})]]);
   loadState({getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)});
@@ -45,11 +45,18 @@ test('Календарь показывает текущий месяц без �
   assert.match(html,/aria-label="1 октября, будущий день"/);
   assert.match(html,/<i class="calendar-key today" aria-hidden="true"><\/i> Сегодня/);
   assert.ok(!html.includes('Первая завершённая партия'));
-  assert.ok(html.includes('aria-current="date"'));assert.ok(!html.includes('<button'));
+  assert.ok(html.includes('aria-current="date"'));assert.ok(!html.includes('<button class="calendar-day')); 
 });
-test('До первой активности календарь показывает подсказку и предыдущий месяц без закрытых дней',()=>{
+test('До первой активности календарь компактен и показывает предыдущий месяц без закрытых дней',()=>{
   const html=calendarHTML(activity(),'2026-03-01T12:00:00Z');
   assert.equal((html.match(/class="calendar-day /g)||[]).length,42);
   assert.match(html,/aria-label="23 февраля, без партии"/);
-  assert.match(html,/Первая завершённая партия отметит сегодняшний день в календаре/);
+  assert.ok(!html.includes('Задачи не влияют'));assert.ok(!html.includes('Первая завершённая партия'));assert.ok(html.includes('Задачи на сегодня'));
+});
+
+test('Календарь серии и задачи открываются отдельными экранами',()=>{
+ const data=activity(['2026-10-14']),now='2026-10-16T12:00:00Z';
+ const series=calendarHTML(data,now,30,'streak'),tasks=calendarHTML(data,now,30,'activity');
+ assert.ok(series.includes('calendar-grid'));assert.ok(series.includes('data-calendar-freeze'));assert.ok(!series.includes('calendar-tracks'));assert.ok(!series.includes('Задачи на сегодня'));
+ assert.ok(tasks.includes('Задачи на сегодня'));assert.ok(!tasks.includes('calendar-grid'));assert.ok(tasks.includes('calendar-tracks'));assert.ok(!tasks.includes('data-calendar-freeze'));
 });

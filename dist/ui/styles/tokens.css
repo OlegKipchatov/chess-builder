@@ -38,3 +38,6 @@
 
 /* Existing typography roles; do not add per-screen sizes. */
 :root{--type-page:1.75rem;--type-section:1.25rem;--type-dialog:1.375rem;--type-item:1rem;--type-body:1rem;--type-secondary:.875rem;--type-micro:.8125rem;--type-eyebrow:.75rem;--type-metric:1.75rem}
+
+:root{--ice:#a5dff2;--ice-soft:#203c49;--ice-line:#d2f3ff66}
+:root[data-theme="light"]{--ice:#155773;--ice-soft:#e1f3fb;--ice-line:#ffffffcc}
