@@ -1,6 +1,7 @@
 import type { Chess, Color, PieceSymbol, Square } from "chess.js";
 import { Chess as ChessRules } from "chess.js";
 export interface BoardPiece {
+  description?: string;
   id: string;
   square: string;
   type: PieceSymbol;

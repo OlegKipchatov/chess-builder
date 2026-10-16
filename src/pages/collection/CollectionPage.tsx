@@ -256,11 +256,29 @@ export const CollectionPage = () => {
                       isEquipped(item) ||
                       (!owned.includes(item.id) && shards < craftCost(item))
                     }
-                    onClick={() =>
-                      void (owned.includes(item.id)
-                        ? inventory.equip(item)
-                        : inventory.craft(item))
-                    }
+                    onClick={() => {
+                      if (owned.includes(item.id)) void inventory.equip(item);
+                      else
+                        show({
+                          title: `Создать ${item.name}?`,
+                          body: (
+                            <>
+                              <ItemPreview item={item} />
+                              <p>Стоимость: {craftCost(item)} осколков.</p>
+                              <button
+                                className="primary wide"
+                                onClick={() =>
+                                  void inventory.craft(item).then((ok) => {
+                                    if (ok) show(null);
+                                  })
+                                }
+                              >
+                                Создать · {craftCost(item)} ✧
+                              </button>
+                            </>
+                          ),
+                        });
+                    }}
                   >
                     {isEquipped(item)
                       ? "Выбрано"

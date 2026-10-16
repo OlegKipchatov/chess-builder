@@ -1,3 +1,4 @@
+import { NODES } from "../../src/domain/pve/pve-model";
 import {
   createAutoRun,
   AUTO_KEY,
@@ -144,6 +145,42 @@ describe("React routing, collection and history", () => {
     expect(
       view.container.querySelectorAll(".collection-items-list .compact-item"),
     ).toHaveLength(1);
+    view.unmount();
+  });
+  it("PvE inventory keeps evolution progress and routes restore the army view", async () => {
+    const state = initialState();
+    state.pve.stones = 2;
+    state.pve.cores = 1;
+    state.pve.cleared = NODES.map((node) => node.id);
+    state.pve.levelCap = 5;
+    const pawn = state.pve.units.find(
+      (unit) => unit.type === "p" && unit.active,
+    )!;
+    const view = await setup("/pve?view=army", state);
+    await screen.findByLabelText("Стартовая расстановка армии");
+    expect(
+      view.container.querySelectorAll("#pve-army-board [data-square]"),
+    ).toHaveLength(32);
+    fireEvent.click(
+      view.container.querySelector(`[data-pve-unit="${pawn.id}"]`)!,
+    );
+    fireEvent.click(view.container.querySelector("[data-pve-stone]")!);
+    await waitFor(() => expect(view.store.getSnapshot().pve.stones).toBe(1));
+    const trained = view.store
+      .getSnapshot()
+      .pve.units.find((unit) => unit.id === pawn.id)!;
+    fireEvent.click(view.container.querySelector("[data-pve-evolve]")!);
+    fireEvent.click(await screen.findByRole("button", { name: /^Конь · HP/ }));
+    await waitFor(() => expect(view.store.getSnapshot().pve.cores).toBe(0));
+    expect(
+      view.store.getSnapshot().pve.units.find((unit) => unit.id === pawn.id),
+    ).toMatchObject({ type: "n", level: trained.level, xp: trained.xp });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Рюкзак", exact: true }),
+    );
+    await screen.findByRole("heading", { name: "Камни опыта · 1" });
+    await act(() => view.router.history.back());
+    await screen.findByLabelText("Стартовая расстановка армии");
     view.unmount();
   });
   it("saved names are escaped by React and each set retains its composition", async () => {

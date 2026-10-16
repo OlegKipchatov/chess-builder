@@ -1,459 +1,270 @@
-import type { Square } from "chess.js";
-import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
-import { PIECE_NAMES } from "../../domain/catalog/catalog.js";
+import { PIECE_NAMES, itemById } from "../../domain/catalog/catalog.js";
+import { beginPveBattle, returnToMap } from "../../domain/pve/pve-battle.js";
 import {
-  beginPveBattle,
-  isKingThreatened,
-  movesFor,
-  returnToMap,
-  unitAt,
-} from "../../domain/pve/pve-battle.js";
-import {
-  NODES,
   activeArmy,
-  armyPower,
-  campaignComplete,
   damage,
   encounter,
   evolutionOptions,
   evolveUnit,
-  homeSquare,
-  isUnlocked,
   maxHp,
   useStone as spendStone,
   strengthLabel,
   toggleUnit,
-  xpThreshold,
 } from "../../domain/pve/pve-model.js";
 import type {
   PveNode,
   PveProfile,
   PveReceipt,
   PveUnit,
-  UnitChange,
 } from "../../domain/pve/types.js";
-import { Chessboard } from "../../features/chessboard/Chessboard.js";
+import { PveArmy } from "../../features/pve/PveArmy.js";
+import { PveBag } from "../../features/pve/PveBag.js";
+import { PveBattleView } from "../../features/pve/PveBattleView.js";
+import { PveIcon, type PveView } from "../../features/pve/PveIcons.js";
+import { PveMap } from "../../features/pve/PveMap.js";
+import { PveResults } from "../../features/pve/PveResults.js";
 import { usePveBattle } from "../../features/pve/usePveBattle.js";
 import { Page } from "../../shared/ui/Page.js";
 import { Piece } from "../../shared/ui/Piece.js";
-const ProgressRow = ({ change }: { change: UnitChange }) => {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  return (
-    <div className="pve-progress-row">
-      <Piece type={change.type} />
-      <span>
-        {PIECE_NAMES[change.type]} · Ур.{" "}
-        {shown ? change.afterLevel : change.beforeLevel}
-      </span>
-      <div className="pve-xp">
-        <span
-          style={{
-            display: "block",
-            height: 6,
-            background: "var(--accent)",
-            width: `${(100 * (shown ? change.afterXp : change.beforeXp)) / xpThreshold(shown ? change.afterLevel : change.beforeLevel)}%`,
-            transition: "width 420ms",
-          }}
-        />
-      </div>
-      <span>
-        +{change.earned} опыта{change.penalty > 0 && ` / −${change.penalty}`}
-      </span>
-    </div>
-  );
-};
 export const PvePage = () => {
-  const persisted = useVault((s) => s.pve),
-    [view, setView] = useState<"map" | "army" | "battle">(() =>
-      persisted.battle ? "battle" : "map",
-    ),
-    battle = usePveBattle(view === "battle"),
+  const search = useSearch({ from: "/pve" }),
+    view = search.view,
+    navigate = useNavigate(),
+    [selectedNode, setSelectedNode] = useState<string | null>(null),
+    [confirming, setConfirming] = useState(false),
+    battle = usePveBattle(view === "battle" && !confirming),
     profile = battle.profile,
     store = useVaultStore(),
-    equipped = useVault((s) => s.equipped),
-    { show, toast } = useOverlays(),
-    [selected, setSelected] = useState<Square | null>(null),
-    [resultStep, setResultStep] = useState<"outcome" | "reward" | "progress">(
-      "outcome",
-    );
-  const visual = battle.visual,
-    pieces = useMemo(
-      () =>
-        visual
-          ? visual.units
-              .filter(
-                (unit) => unit.hp > 0 || unit.id === battle.attack?.targetId,
-              )
-              .map((unit) => ({ ...unit, maxHp: maxHp(unit) }))
-          : [],
-      [visual, battle.attack?.targetId],
-    ),
-    legal =
-      visual && selected ? movesFor(visual, unitAt(visual, selected)) : [];
-  const change = async (transform: (profile: PveProfile) => PveProfile) => {
-    const result = await store.update((s) => ({ ...s, pve: transform(s.pve) }));
-    if (!result.ok) toast(result.error.message);
-    return result.ok;
-  };
+    equipped = useVault((state) => state.equipped),
+    { show, toast } = useOverlays();
+  const nav = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    if (!nav.current) return;
+    const node = nav.current;
+    const resize = () =>
+      document.documentElement.style.setProperty(
+        "--nav-height",
+        `${node.getBoundingClientRect().height}px`,
+      );
+    const observer = new ResizeObserver(resize);
+    observer.observe(node);
+    resize();
+    return () => observer.disconnect();
+  }, [view]);
+  const go = useCallback(
+    (next: PveView) => {
+      void navigate({ to: "/pve", search: { view: next } });
+    },
+    [navigate],
+  );
+  const change = useCallback(
+    async (transform: (profile: PveProfile) => PveProfile) => {
+      const result = await store.update((state) => ({
+        ...state,
+        pve: transform(state.pve),
+      }));
+      if (!result.ok) toast(result.error.message);
+      return result.ok;
+    },
+    [store, toast],
+  );
+  const finish = useCallback(async () => {
+    const ok = await change(returnToMap);
+    if (ok) {
+      setSelectedNode(null);
+      go("map");
+    }
+    return ok;
+  }, [change, go]);
   const begin = async (node: PveNode) => {
-    if (await change((p) => beginPveBattle(p, node.id))) {
-      setResultStep("outcome");
-      setView("battle");
+    if (await change((profile) => beginPveBattle(profile, node.id))) {
       show(null);
+      setSelectedNode(null);
+      go("battle");
     }
   };
   const preview = (node: PveNode) => {
-    const enemy = encounter(profile, node);
+    const enemy = encounter(profile, node),
+      first = !profile.cleared.includes(node.id);
+    setSelectedNode(node.id);
     show({
       title: node.name,
+      onClose: () => setSelectedNode(null),
       body: (
         <>
-          <p>
-            {strengthLabel(enemy.ratio)} · {Math.round(enemy.power)} силы
-          </p>
-          <div className="pve-enemies">
+          <p>{strengthLabel(enemy.ratio)}</p>
+          <div className="pve-enemy-list">
             {enemy.units.map((unit) => (
-              <span key={unit.id}>
-                <Piece type={unit.type} color="b" />
-                Ур. {unit.level}
-              </span>
+              <div key={unit.id}>
+                <span>
+                  <Piece
+                    type={unit.type}
+                    color="b"
+                    style={itemById(equipped.pieces[unit.type])?.style}
+                  />
+                </span>
+                <span>
+                  {PIECE_NAMES[unit.type]}
+                  <small>ур. {unit.level}</small>
+                </span>
+              </div>
             ))}
           </div>
-          <p>
-            {profile.cleared.includes(node.id)
-              ? "Узел уже пройден. Награды за бой сохраняются."
-              : `Первая победа: +${node.boss ? 10 : node.bonus ? 6 : 5} монет и +${node.boss ? 3 : node.bonus ? 2 : 1} камней опыта.`}
+          <p className="pve-note">
+            За победу: {node.boss ? "23–33 монеты" : "12–17 монет"} и 2–3 камня
+            {node.boss ? ", 1 ядро эволюции" : ""}.
+            {first &&
+              ` Бонус первой победы: ${node.boss ? "10 монет, 3 камня и уровень 5" : node.bonus ? "6 монет и 2 камня" : "5 монет и 1 камень"}.`}
           </p>
+          {activeArmy(profile).length !== 8 && (
+            <p>Соберите 8 фигур в армии, чтобы начать бой.</p>
+          )}
           <button
-            className="primary wide"
+            className="primary pve-dialog-primary"
             disabled={activeArmy(profile).length !== 8 || !!profile.battle}
             onClick={() => void begin(node)}
           >
-            В бой
+            Начать бой
           </button>
         </>
       ),
     });
   };
-  const unitDialog = (unit: PveUnit) =>
+  const evolution = (unit: PveUnit) =>
     show({
-      title: PIECE_NAMES[unit.type],
+      title: `Эволюция: ${PIECE_NAMES[unit.type]}`,
       body: (
         <>
-          <Piece type={unit.type} />
-          <p>
-            Уровень {unit.level}/{profile.levelCap} · Опыт {unit.xp}/
-            {xpThreshold(unit.level)}
-          </p>
-          <p>
-            Здоровье {maxHp(unit)} · Урон {damage(unit)}
-          </p>
-          <div className="dialog-actions">
+          <p>Уровень {unit.level} и опыт сохранятся. Один шаг стоит 1 ядро.</p>
+          {evolutionOptions(unit.type).map((type) => (
             <button
-              disabled={
-                !!profile.battle ||
-                unit.type === "k" ||
-                (!unit.active && activeArmy(profile).length >= 8)
-              }
+              key={type}
+              className="primary pve-dialog-primary"
               onClick={() =>
-                void change((p) => toggleUnit(p, unit.id)).then((ok) => {
-                  if (ok) show(null);
-                })
-              }
-            >
-              {unit.active ? "В резерв" : "В армию"}
-            </button>
-            <button
-              disabled={
-                !!profile.battle ||
-                !profile.stones ||
-                (unit.level === profile.levelCap &&
-                  unit.xp >= xpThreshold(unit.level) - 1)
-              }
-              onClick={() =>
-                void change((p) => spendStone(p, unit.id)).then((ok) => {
-                  if (ok) show(null);
-                })
-              }
-            >
-              Камень опыта · 1
-            </button>
-            {campaignComplete(profile) &&
-              evolutionOptions(unit.type).map((type) => (
-                <button
-                  key={type}
-                  disabled={!!profile.battle || !profile.cores}
-                  onClick={() =>
-                    void change((p) => evolveUnit(p, unit.id, type)).then(
-                      (ok) => {
-                        if (ok) show(null);
-                      },
-                    )
+                void change((profile) =>
+                  evolveUnit(profile, unit.id, type),
+                ).then((ok) => {
+                  if (ok) {
+                    show(null);
+                    toast("Фигура эволюционировала. Уровень и опыт сохранены.");
                   }
-                >
-                  Эволюция: {PIECE_NAMES[type]} · 1 ядро
-                </button>
-              ))}
-          </div>
+                })
+              }
+            >
+              {PIECE_NAMES[type]} · HP {maxHp(unit)} →{" "}
+              {maxHp({ ...unit, type })} · урон {damage(unit)} →{" "}
+              {damage({ ...unit, type })}
+            </button>
+          ))}
         </>
       ),
     });
-  const receipt = visual?.settled ? (visual.result as PveReceipt) : null;
+  const resign = () => {
+    setConfirming(true);
+    show({
+      title: "Завершить бой поражением?",
+      onClose: () => setConfirming(false),
+      body: (
+        <>
+          <p>
+            {Math.ceil((profile.battle?.ply || 0) / 2) < 10
+              ? "Монет не будет."
+              : "Вы получите награду за поражение."}{" "}
+            Вы получите 1 камень опыта. Опыт за побеждённые фигуры и штрафы
+            погибшим сохранятся. Для продолжения позже можно приостановить бой.
+          </p>
+          <button
+            className="danger pve-dialog-primary"
+            onClick={() => {
+              show(null);
+              void battle.resign().then(() => setConfirming(false));
+            }}
+          >
+            Сдаться
+          </button>
+        </>
+      ),
+    });
+  };
+  const receipt = battle.visual?.settled
+    ? (battle.visual.result as PveReceipt)
+    : null;
   return (
     <Page
       id="pve"
-      title={view === "battle" ? "Бой" : view === "army" ? "Армия" : "Поход"}
+      title={view === "battle" ? "Бой · PvE" : "Поход"}
       actions={
         view === "battle" ? (
           <button
-            aria-label="На карту"
-            onClick={() => {
-              setSelected(null);
-              setView("map");
-            }}
+            className="pve-back"
+            aria-label="К карте"
+            onClick={() => go("map")}
           >
-            ←
+            ← <span>К карте</span>
           </button>
         ) : undefined
       }
     >
       {view === "map" && (
-        <div className="pve-map">
-          <div className="pve-chapter">
-            <h2>Лесная крепость</h2>
-            <p>
-              Сила армии: {Math.round(armyPower(activeArmy(profile)))} ·{" "}
-              {profile.cleared.length}/{NODES.length} узлов
-            </p>
-            {profile.battle && (
-              <button className="primary" onClick={() => setView("battle")}>
-                Продолжить бой
-              </button>
-            )}
-          </div>
-          <div className="pve-road">
-            {Array.from({ length: 6 }, (_, index) => (
-              <div className="pve-stops" key={index}>
-                {NODES.filter((node) => node.step === index + 1).map((node) => (
-                  <button
-                    className={`pve-node ${profile.cleared.includes(node.id) ? "cleared" : ""} ${node.boss ? "boss" : ""}`}
-                    key={node.id}
-                    disabled={!isUnlocked(profile, node) || !!profile.battle}
-                    onClick={() => preview(node)}
-                  >
-                    <span>
-                      {profile.cleared.includes(node.id)
-                        ? "✓"
-                        : node.boss
-                          ? "♜"
-                          : node.step}
-                    </span>
-                    <strong>{node.name}</strong>
-                    {node.bonus && <small>Дополнительная награда</small>}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        <PveMap
+          profile={profile}
+          selected={selectedNode}
+          onNode={preview}
+          onResume={() => go("battle")}
+        />
       )}
       {view === "army" && (
-        <div className="pve-army">
-          <p>
-            {activeArmy(profile).length}/8 в армии · Камни опыта:{" "}
-            {profile.stones} · Ядра: {profile.cores}
-          </p>
-          <Chessboard
-            pieces={activeArmy(profile).map((unit) => ({
-              ...unit,
-              square: homeSquare(unit.id),
-              color: "w" as const,
-              hp: maxHp(unit),
-              maxHp: maxHp(unit),
-            }))}
-            equipped={equipped}
-            onSquare={(square) => {
-              const unit = profile.units.find(
-                (unit) => unit.active && homeSquare(unit.id) === square,
-              );
-              if (unit) unitDialog(unit);
-            }}
-          />
-          <h2>Резерв</h2>
-          <div className="pve-reserve">
-            {profile.units
-              .filter((unit) => !unit.active)
-              .map((unit) => (
-                <button key={unit.id} onClick={() => unitDialog(unit)}>
-                  <Piece type={unit.type} />
-                  <span>
-                    {PIECE_NAMES[unit.type]} · {unit.level}
-                  </span>
-                </button>
-              ))}
-          </div>
-          {activeArmy(profile).length !== 8 && (
-            <p>Для боя нужны ровно 8 фигур, включая короля.</p>
-          )}
-        </div>
+        <PveArmy
+          profile={profile}
+          equipped={equipped}
+          onToggle={(id) => void change((profile) => toggleUnit(profile, id))}
+          onStone={(id) => void change((profile) => spendStone(profile, id))}
+          onEvolve={evolution}
+        />
       )}
-      {view === "battle" && visual && (
-        <div className="pve-battle">
-          <div className="match-summary">
-            <button
-              aria-label="Сдаться"
-              disabled={!!receipt || battle.phase === "animating"}
-              onClick={() =>
-                show({
-                  title: "Сдаться?",
-                  body: (
-                    <>
-                      <p>
-                        До 10 ваших ходов награда составляет 0 монет и 1 камень
-                        опыта.
-                      </p>
-                      <button
-                        className="danger wide"
-                        onClick={() => {
-                          show(null);
-                          void battle.resign();
-                        }}
-                      >
-                        Сдаться
-                      </button>
-                    </>
-                  ),
-                })
-              }
-            >
-              ×
-            </button>
-            <strong>{NODES.find((n) => n.id === visual.nodeId)?.name}</strong>
-            <span>{visual.ply}/240</span>
-          </div>
-          <p role="status">
-            {visual.phase === "result"
-              ? "Бой завершён"
-              : `${visual.turn === "w" ? "Ваш ход" : "Ход соперника"}${isKingThreatened(visual) ? " · Король под угрозой" : ""}`}
-          </p>
-          <Chessboard
-            pieces={pieces}
+      {view === "bag" && <PveBag profile={profile} />}
+      {view === "battle" && (
+        <>
+          <PveBattleView
+            battle={battle}
             equipped={equipped}
-            selected={selected}
-            legal={legal.map((move) => move.to)}
-            last={visual.lastEvent}
-            attack={battle.attack}
-            disabled={
-              battle.phase !== "idle" ||
-              visual.turn !== "w" ||
-              visual.phase !== "playing"
-            }
-            onSquare={(square) => {
-              if (selected && legal.some((move) => move.to === square)) {
-                void battle.move({ from: selected, to: square });
-                setSelected(null);
-              } else
-                setSelected(
-                  unitAt(visual, square)?.color === "w" ? square : null,
-                );
-            }}
+            onResign={resign}
           />
-          {battle.error && (
-            <div role="alert">
-              <p>{battle.error}</p>
-              <button onClick={battle.retry}>Повторить</button>
-            </div>
+          <PveResults
+            receipt={receipt}
+            ready={battle.phase === "idle" && !confirming}
+            equipped={equipped}
+            onFinish={finish}
+          />
+          {!profile.battle && (
+            <button onClick={() => go("map")}>К карте</button>
           )}
-          {receipt && battle.phase === "idle" && (
-            <section className="panel pve-result">
-              {resultStep === "outcome" ? (
-                <>
-                  <h2>
-                    {
-                      { win: "Победа", loss: "Поражение", draw: "Ничья" }[
-                        receipt.outcome
-                      ]
-                    }
-                  </h2>
-                  <p>
-                    {
-                      {
-                        king: "Король повержен",
-                        checkmate: "Бой завершён",
-                        resigned: "Сдача",
-                        limit: "Лимит ходов",
-                        repetition: "Повторение позиции",
-                        "no-moves": "Нет доступных ходов",
-                      }[receipt.reason]
-                    }
-                  </p>
-                  <button
-                    className="primary wide"
-                    onClick={() => setResultStep("reward")}
-                  >
-                    Продолжить
-                  </button>
-                </>
-              ) : resultStep === "reward" ? (
-                <>
-                  <h2>Награда</h2>
-                  <p className="reward-amount">
-                    +{receipt.coins} ◈ · +{receipt.stones} камней
-                    {receipt.cores > 0 && ` · +${receipt.cores} ядро`}
-                  </p>
-                  {receipt.first && <p>Первая победа над узлом</p>}
-                  <button
-                    className="primary wide"
-                    onClick={() => setResultStep("progress")}
-                  >
-                    Продолжить
-                  </button>
-                </>
-              ) : (
-                <>
-                  <h2>Опыт армии</h2>
-                  {receipt.changes.map((change) => (
-                    <ProgressRow key={change.id} change={change} />
-                  ))}
-                  <button
-                    className="primary wide"
-                    onClick={() =>
-                      void change(returnToMap).then((ok) => {
-                        if (ok) {
-                          setView("map");
-                          setResultStep("outcome");
-                        }
-                      })
-                    }
-                  >
-                    На карту
-                  </button>
-                </>
-              )}
-            </section>
-          )}
-        </div>
+        </>
       )}
       {view !== "battle" && (
-        <nav id="pve-nav" aria-label="Поход">
+        <nav ref={nav} id="pve-nav" aria-label="Разделы похода">
           <button
-            className={view === "map" ? "active" : ""}
-            onClick={() => setView("map")}
+            className="quiet pve-nav-exit"
+            aria-label="Выйти из похода"
+            onClick={() => void navigate({ to: "/play" })}
           >
-            Карта
+            ←
           </button>
-          <button
-            className={view === "army" ? "active" : ""}
-            onClick={() => setView("army")}
-          >
-            Армия
-          </button>
+          {(["map", "army", "bag"] as const).map((target, index) => (
+            <button
+              key={target}
+              className={`secondary ${view === target ? "active" : ""}`}
+              aria-current={view === target ? "page" : undefined}
+              onClick={() => go(target)}
+            >
+              <PveIcon kind={target} />
+              <span>{["Карта", "Армия", "Рюкзак"][index]}</span>
+            </button>
+          ))}
         </nav>
       )}
     </Page>

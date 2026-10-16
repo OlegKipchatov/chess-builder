@@ -117,7 +117,7 @@ export const App = () => {
       );
       document.documentElement.style.setProperty(
         "--nav-height",
-        `${nav.current?.getBoundingClientRect().height || 0}px`,
+        `${(document.getElementById("pve-nav") || nav.current)?.getBoundingClientRect().height || 0}px`,
       );
     };
     const observer = new ResizeObserver(resize);
@@ -125,7 +125,7 @@ export const App = () => {
     if (nav.current) observer.observe(nav.current);
     resize();
     return () => observer.disconnect();
-  }, [hidden]);
+  }, [hidden, location.searchStr]);
   return (
     <ShellPresentation value={setHeld}>
       <header ref={header}>

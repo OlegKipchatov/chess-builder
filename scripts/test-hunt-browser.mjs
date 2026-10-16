@@ -29,7 +29,7 @@ try {
   for(const [width,motion] of [[320,'reduce'],[390,'reduce'],[1280,'reduce'],[390,'no-preference']]){
     const context=await browser.newContext({viewport:{width,height:900},reducedMotion:motion}),page=await context.newPage(),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
-    await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);
+    await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);await page.locator('#start-game').waitFor();
     assert.equal(await page.locator('#play #hunt-entry').count(),1);
     await page.locator('[data-hunt-mode="timed"]').waitFor();
     const title=await page.getByRole('heading',{name:'Игра',exact:true}).boundingBox(),header=await page.locator('#play .page-header').boundingBox();

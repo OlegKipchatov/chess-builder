@@ -33,7 +33,7 @@ export const testAnalysisLearning = async (page,url) => {
  assert.equal(await page.locator('#analysis-progress').isVisible(),false,'Cached analysis has no loading flash');
  assert.match(await page.locator('.moves').innerText(),/Nc3/);
  const slider=page.locator('#history-slider');
- const oneLine=async selector=>assert.equal(await page.locator(selector).evaluate(button=>{const range=document.createRange();range.selectNodeContents(button);return range.getClientRects().length===1;}),true,'Action label occupies one line');
+ const oneLine=async selector=>assert.equal(await page.locator(selector).evaluate(button=>{const range=document.createRange();range.selectNodeContents(button.querySelector(".control-label")||button);return range.getClientRects().length===1;}),true,'Action label occupies one line');
  const seek=async value=>{await slider.evaluate((node,value)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(node,String(value));node.dispatchEvent(new Event('input',{bubbles:true}));},value);await page.waitForFunction(value=>document.querySelector('#history-position').textContent===`${value} / 30`,value);};
  await slider.press('End');assert.equal(await page.locator('#history-position').innerText(),'30 / 30');
  assert.match(await page.locator('#analysis-insight').innerText(),/Отличный ход/);

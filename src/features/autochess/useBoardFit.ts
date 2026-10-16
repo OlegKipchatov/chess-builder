@@ -22,7 +22,7 @@ export const useBoardFit = (
         : 0;
       const available =
         (window.visualViewport?.height || innerHeight) -
-        node.getBoundingClientRect().top -
+        (node.getBoundingClientRect().top + window.scrollY) -
         siblings.reduce(
           (sum, child) => sum + child.getBoundingClientRect().height,
           0,

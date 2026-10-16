@@ -78,17 +78,21 @@ const MovingPiece = memo(
       >
         <Piece type={piece.type} color={piece.color} style={skin} />
         {piece.hp !== undefined && (
-          <>
-            <span className={styles.level}>{piece.level}</span>
-            <span className={styles.health} aria-hidden="true">
-              <span
+          <span className="pve-vitals" aria-hidden="true">
+            <span className="pve-level">{piece.level}</span>
+            <span className={`pve-hp ${styles.health}`}>
+              <i
                 style={{
                   width: `${(100 * piece.hp) / (piece.maxHp || piece.hp || 1)}%`,
                 }}
               />
             </span>
-            {!!damage && <span className={styles.damage}>−{damage}</span>}
-          </>
+            {!!damage && (
+              <span className={`pve-damage-number ${styles.damage}`}>
+                −{damage}
+              </span>
+            )}
+          </span>
         )}
       </span>
     );
@@ -292,7 +296,7 @@ export const Chessboard = memo(
               last={!!last && (last.from === square || last.to === square)}
               check={check === square}
               disabled={disabled}
-              label={`${square}${piece ? `, ${piece.color === "w" ? "белые" : "чёрные"}: ${PIECE_NAMES[piece.type]}${piece.hp !== undefined ? `, здоровье ${piece.hp}` : ""}` : ", пусто"}${legal.includes(square) ? ", доступный ход" : ""}`}
+              label={`${square}${piece?.description ? `, ${piece.description}` : piece ? `, ${piece.color === "w" ? "белые" : "чёрные"}: ${PIECE_NAMES[piece.type]}${piece.hp !== undefined ? `, здоровье ${piece.hp}` : ""}` : ", пусто"}${legal.includes(square) ? ", доступный ход" : ""}`}
               rank={index % 8 === 0}
               file={index >= 56}
               activate={onSquare}

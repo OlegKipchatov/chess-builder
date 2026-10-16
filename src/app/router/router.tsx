@@ -111,6 +111,16 @@ const autochess = createRoute({
 const pve = createRoute({
   getParentRoute: () => root,
   path: "/pve",
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { view: "map" | "army" | "bag" | "battle" } => ({
+    view:
+      search.view === "army" ||
+      search.view === "bag" ||
+      search.view === "battle"
+        ? search.view
+        : "map",
+  }),
   component: lazy(() => import("../../pages/pve/PvePage.js")),
 });
 const Import = lazy(() =>

@@ -324,19 +324,19 @@
     ]
   },
   "reactInitial": {
-    "rawBytes": 519866,
-    "gzipBytes": 166147,
+    "rawBytes": 519619,
+    "gzipBytes": 166013,
     "files": [
       {
-        "file": "assets/Chessboard-C4_qypnC.css",
-        "bytes": 1287
+        "file": "assets/Chessboard-BNWyzujZ.css",
+        "bytes": 827
       },
       {
-        "file": "assets/Chessboard-cuzkm7i1.js",
-        "bytes": 6523
+        "file": "assets/Chessboard-mURgOB_D.js",
+        "bytes": 6590
       },
       {
-        "file": "assets/GamePage-ByIaZo6S.js",
+        "file": "assets/GamePage-B7KAUDU1.js",
         "bytes": 16033
       },
       {
@@ -344,28 +344,28 @@
         "bytes": 3579
       },
       {
-        "file": "assets/PgnActions-CUaPmv8X.js",
+        "file": "assets/PgnActions-CKlHbHQ0.js",
         "bytes": 7244
       },
       {
-        "file": "assets/Piece-CdWx-qvR.js",
+        "file": "assets/Piece-BCJYmyfn.js",
         "bytes": 2098
       },
       {
-        "file": "assets/VaultProvider-DeBjYK0M.js",
-        "bytes": 71149
+        "file": "assets/VaultProvider-X_3vsBGE.js",
+        "bytes": 71140
       },
       {
-        "file": "assets/archive-D0GlzC5a.js",
+        "file": "assets/archive-9G9O8Mdr.js",
         "bytes": 3522
       },
       {
-        "file": "assets/index-BaI0sfId.css",
-        "bytes": 82008
+        "file": "assets/index-CsfISmAO.css",
+        "bytes": 82019
       },
       {
-        "file": "assets/index-CWKIXt14.js",
-        "bytes": 250948
+        "file": "assets/index-XPE1p6TD.js",
+        "bytes": 251092
       },
       {
         "file": "assets/react-dom-wRlgXJwQ.js",
@@ -394,59 +394,59 @@
     ]
   },
   "delta": {
-    "rawBytes": -2061,
-    "gzipBytes": -6767
+    "rawBytes": -2308,
+    "gzipBytes": -6901
   },
   "reactRuntime": {
-    "rawBytes": 4391862,
-    "gzipBytes": 2670616,
+    "rawBytes": 4403775,
+    "gzipBytes": 2674368,
     "files": [
       {
-        "file": "dist/assets/ActivityPage-D6Cqdv8j.js",
+        "file": "dist/assets/ActivityPage-DZk6CjKN.js",
         "bytes": 5703
       },
       {
-        "file": "dist/assets/AutochessPage-C-b-encJ.js",
-        "bytes": 39028
+        "file": "dist/assets/AutochessPage-BSyigs7N.js",
+        "bytes": 39045
       },
       {
-        "file": "dist/assets/Chessboard-C4_qypnC.css",
-        "bytes": 1287
+        "file": "dist/assets/Chessboard-BNWyzujZ.css",
+        "bytes": 827
       },
       {
-        "file": "dist/assets/Chessboard-cuzkm7i1.js",
-        "bytes": 6523
+        "file": "dist/assets/Chessboard-mURgOB_D.js",
+        "bytes": 6590
       },
       {
-        "file": "dist/assets/ChestsPage-Jisr7kIH.js",
-        "bytes": 2679
+        "file": "dist/assets/ChestsPage-4rJb7RQh.js",
+        "bytes": 2678
       },
       {
-        "file": "dist/assets/CollectionPage-BDZz1dWf.js",
-        "bytes": 7107
+        "file": "dist/assets/CollectionPage-D4BJiOY1.js",
+        "bytes": 7413
       },
       {
-        "file": "dist/assets/FaqPage-BzTu77bj.js",
+        "file": "dist/assets/FaqPage-rSbGwXfH.js",
         "bytes": 10095
       },
       {
-        "file": "dist/assets/GamePage-ByIaZo6S.js",
+        "file": "dist/assets/GamePage-B7KAUDU1.js",
         "bytes": 16033
       },
       {
-        "file": "dist/assets/GameReview-Cu0BSAS0.js",
+        "file": "dist/assets/GameReview-BX71XOZ0.js",
         "bytes": 35494
       },
       {
-        "file": "dist/assets/HistoryPage-BM4u-oKT.js",
+        "file": "dist/assets/HistoryPage-DFpx7Ais.js",
         "bytes": 37608
       },
       {
-        "file": "dist/assets/HuntPage-BgfUXfx9.js",
+        "file": "dist/assets/HuntPage-4wGX4PjR.js",
         "bytes": 6525
       },
       {
-        "file": "dist/assets/ItemPreview-BswpSDes.js",
+        "file": "dist/assets/ItemPreview-B_Ae-cbx.js",
         "bytes": 2461
       },
       {
@@ -454,52 +454,52 @@
         "bytes": 3579
       },
       {
-        "file": "dist/assets/PgnActions-CUaPmv8X.js",
+        "file": "dist/assets/PgnActions-CKlHbHQ0.js",
         "bytes": 7244
       },
       {
-        "file": "dist/assets/PgnImport-v5yRaCIW.js",
+        "file": "dist/assets/PgnImport-CGrxf8UW.js",
         "bytes": 458
       },
       {
-        "file": "dist/assets/PgnImportDialog-DHDfX_HN.js",
+        "file": "dist/assets/PgnImportDialog-hIeXq-j2.js",
         "bytes": 3261
       },
       {
-        "file": "dist/assets/Piece-CdWx-qvR.js",
+        "file": "dist/assets/Piece-BCJYmyfn.js",
         "bytes": 2098
       },
       {
-        "file": "dist/assets/ProfilePage-BgkrGN9k.js",
+        "file": "dist/assets/ProfilePage-BpviFJDy.js",
         "bytes": 2629
       },
       {
-        "file": "dist/assets/PvePage-CLdEdI2O.js",
-        "bytes": 18637
+        "file": "dist/assets/PvePage-BUM89sDk.js",
+        "bytes": 30475
       },
       {
-        "file": "dist/assets/ReviewPage-CzFN_0yP.js",
+        "file": "dist/assets/ReviewPage-BI6DdW3t.js",
         "bytes": 929
       },
       {
-        "file": "dist/assets/StatisticsPage-D_I5r6Q3.js",
+        "file": "dist/assets/StatisticsPage-_1d7QBlD.js",
         "bytes": 1097
       },
       {
-        "file": "dist/assets/VaultProvider-DeBjYK0M.js",
-        "bytes": 71149
+        "file": "dist/assets/VaultProvider-X_3vsBGE.js",
+        "bytes": 71140
       },
       {
-        "file": "dist/assets/archive-D0GlzC5a.js",
+        "file": "dist/assets/archive-9G9O8Mdr.js",
         "bytes": 3522
       },
       {
-        "file": "dist/assets/index-BaI0sfId.css",
-        "bytes": 82008
+        "file": "dist/assets/index-CsfISmAO.css",
+        "bytes": 82019
       },
       {
-        "file": "dist/assets/index-CWKIXt14.js",
-        "bytes": 250948
+        "file": "dist/assets/index-XPE1p6TD.js",
+        "bytes": 251092
       },
       {
         "file": "dist/assets/react-dom-wRlgXJwQ.js",

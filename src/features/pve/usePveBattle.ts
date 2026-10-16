@@ -155,11 +155,20 @@ export const usePveBattle = (active: boolean) => {
       battle.turn !== "b"
     )
       return;
-    const token = ++generation.current,
+    const token = ++generation.current;
+    let worker: Worker;
+    try {
       worker = new Worker(
         new URL("../../workers/pve/worker.ts", import.meta.url),
         { type: "module" },
       );
+    } catch {
+      setError(
+        "Не удалось запустить расчёт соперника. Бой сохранён — повторите расчёт.",
+      );
+      setPhase("failed");
+      return;
+    }
     setPhase("thinking");
     const fail = (message: string) => {
       if (!mounted.current || generation.current !== token) return;
