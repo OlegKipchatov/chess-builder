@@ -37,7 +37,7 @@ try {
     assert.equal(await page.locator('[data-hunt-mode="endless"]').textContent(),'На жизни');
     await page.screenshot({path:`/tmp/gachachess-hunt-entry-${width}.png`,fullPage:true});
     await page.clock.install();
-    await page.locator('[data-hunt-mode="timed"]').click();
+    await page.locator('[data-hunt-mode="timed"]').click();await page.locator('#board [data-square]').first().waitFor();
     assert.equal(await page.locator('#board [data-square]').count(),64);
     assert.equal(await page.locator('#board [data-square]:not([aria-label*="пусто"])').count(),4);
     assert.equal(await page.locator('#app-nav').isVisible(),false);

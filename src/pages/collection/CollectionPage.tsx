@@ -1,3 +1,4 @@
+import { useSearch } from "@tanstack/react-router";
 import type { PieceSymbol } from "chess.js";
 import { useEffect, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
@@ -57,6 +58,15 @@ export const CollectionPage = () => {
     [type, setType] = useState<PieceSymbol | "board">("k"),
     [onlyOwned, setOnlyOwned] = useState(false),
     [target, setTarget] = useState<ItemId | null>(null);
+  const search = useSearch({ from: "/collection" });
+  useEffect(() => {
+    const item = search.item ? itemById(search.item) : undefined;
+    if (!item) return;
+    setView("items");
+    setType(item.kind === "board" ? "board" : item.type);
+    setTarget(item.id);
+    if (!owned.includes(item.id)) setOnlyOwned(false);
+  }, [search.item, owned]);
   const rows = useRef(new Map<ItemId, HTMLElement>());
   useEffect(() => {
     if (!target || view !== "items") return;

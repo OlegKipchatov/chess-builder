@@ -1,3 +1,4 @@
+import { Piece } from "../shared/ui/Piece.js";
 import { ImportedGameProvider } from "../features/game-review/ImportedGameProvider.js";
 import { HistoryReturnProvider } from "../features/game-review/HistoryReturnProvider.js";
 import { ShellPresentation } from "./providers/ShellPresentation.js";
@@ -137,7 +138,10 @@ export const App = () => {
             if (!active && !mode) void navigate({ to: "/play" });
           }}
         >
-          <span>♞</span> GachaChess<small className="app-version">0.5</small>
+          <span>
+            <Piece type="n" color="w" />
+          </span>{" "}
+          GachaChess<small className="app-version">0.5</small>
         </a>
         <Wallet />
         <button

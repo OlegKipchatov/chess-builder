@@ -298,6 +298,7 @@ export const AutochessPage = () => {
             alignSelf: "center",
           }}
           onPointerDown={(event) => {
+            suppressClick.current = false;
             const square = (
               event.target as HTMLElement
             ).closest<HTMLButtonElement>("[data-square]")?.dataset.square;
@@ -309,8 +310,17 @@ export const AutochessPage = () => {
                 y: event.clientY,
                 pointer: event.pointerId,
               };
-              event.currentTarget.setPointerCapture(event.pointerId);
             }
+          }}
+          onPointerMove={(event) => {
+            const owned = drag.current;
+            if (
+              owned?.pointer === event.pointerId &&
+              Math.hypot(event.clientX - owned.x, event.clientY - owned.y) >=
+                8 &&
+              !event.currentTarget.hasPointerCapture(event.pointerId)
+            )
+              event.currentTarget.setPointerCapture(event.pointerId);
           }}
           onPointerCancel={() => {
             drag.current = null;

@@ -1,0 +1,29 @@
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {createServer} from 'node:http';
+import {readFile,mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {resolve,join,extname} from 'node:path';
+import {chromium} from 'playwright';
+const baseline='ee7df974635bf7dd514c24e4d4a6b04bce3af8c6',previous=await mkdtemp(join(tmpdir(),'gacha-performance-')),root=resolve('dist');
+execFileSync('tar',['-xf','-','-C',previous],{input:execFileSync('git',['archive',baseline,'dist'],{maxBuffer:20*1024*1024})});
+let release='react';const mime={'.js':'text/javascript','.css':'text/css','.html':'text/html','.wasm':'application/wasm','.webmanifest':'application/manifest+json','.png':'image/png'};
+const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname,directory=release==='v132'&&!pathname.startsWith('/vendor/')?join(previous,'dist'):root,path=resolve(directory,'.'+pathname.replace(/\/$/,'/index.html'));assert.ok(path.startsWith(directory+'/'));const body=await readFile(path);res.writeHead(200,{'Content-Type':mime[extname(path)]||'application/octet-stream','Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp','Cache-Control':'no-store'});res.end(body);}catch{res.writeHead(404);res.end();}});
+await new Promise(done=>server.listen(0,'127.0.0.1',done));const browser=await chromium.launch({headless:true,executablePath:process.env.PWA_BROWSER_EXECUTABLE,args:['--no-sandbox','--disable-gpu']}),url=`http://127.0.0.1:${server.address().port}/`,samples={v132:[],react:[]};
+try{
+ for(const width of [390,1280])for(let index=0;index<5;index++)for(const version of ['v132','react']){
+  release=version;const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block'});
+  await context.addInitScript(()=>{Math.random=()=>.25;window.timings={ready:null,longTasks:[],animations:[]};new PerformanceObserver(list=>window.timings.longTasks.push(...list.getEntries().map(row=>row.duration))).observe({type:'longtask',buffered:true});const poll=()=>{const button=document.querySelector('#start-game');if(button?.offsetParent&&!button.disabled)window.timings.ready=performance.now();else requestAnimationFrame(poll);};requestAnimationFrame(poll);const animate=Element.prototype.animate;Element.prototype.animate=function(frames,options){if(this.classList.contains('moving-piece'))window.timings.animations.push(options.duration);return animate.call(this,frames,options);};});
+  const page=await context.newPage();await page.goto(url);await page.waitForFunction(()=>window.timings.ready!==null);
+  if(index===0)await page.screenshot({path:`/tmp/gachachess-baseline-${version}-${width}-home.png`,fullPage:true});
+  const startPaint=await page.evaluate(()=>new Promise((resolve,reject)=>{const deadline=setTimeout(()=>reject(Error("Input did not produce a painted state within 10 seconds")),10000);const finish=value=>{clearTimeout(deadline);resolve(value);};const start=performance.now();document.querySelector('#start-game').click();const poll=()=>{if(document.querySelector('#board [data-square="e2"]')?.offsetParent)requestAnimationFrame(()=>finish(performance.now()-start));else requestAnimationFrame(poll);};requestAnimationFrame(poll);}));
+  await page.locator('#board [data-square="e2"]').click();
+  const movePaint=await page.evaluate(()=>new Promise((resolve,reject)=>{const deadline=setTimeout(()=>reject(Error("Input did not produce a painted state within 10 seconds")),10000);const finish=value=>{clearTimeout(deadline);resolve(value);};const start=performance.now();document.querySelector('#board [data-square="e4"]').click();const poll=()=>{const state=JSON.parse(localStorage.getItem('chess-vault-v3'));if(/1\. e4/.test(state.game.pgn)&&/пешка/i.test(document.querySelector('#board [data-square="e4"]').getAttribute('aria-label')||''))requestAnimationFrame(()=>finish(performance.now()-start));else requestAnimationFrame(poll);};requestAnimationFrame(poll);}));
+  await page.waitForFunction(()=>/1\. e4 [a-hNBRQKO]/.test(JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn));
+  const measured=await page.evaluate(()=>({ready:window.timings.ready,longTasks:window.timings.longTasks,animations:window.timings.animations,resources:performance.getEntriesByType('resource').filter(row=>/\.js|\.css/.test(row.name)).length}));
+  if(index===0)await page.screenshot({path:`/tmp/gachachess-baseline-${version}-${width}-game.png`,fullPage:true});
+  samples[version].push({width,index,...measured,startPaint,movePaint});await context.close();
+ }
+ const median=values=>[...values].sort((a,b)=>a-b)[Math.floor(values.length/2)];const summary={};for(const width of [390,1280])summary[width]=Object.fromEntries(['v132','react'].map(version=>[version,Object.fromEntries(['ready','startPaint','movePaint'].map(metric=>[metric,median(samples[version].filter(row=>row.width===width).map(row=>row[metric]))]))]));
+ const report={baseline,method:'Five alternating cold contexts per release and viewport on the same Chromium/runner, local static hosting, Service Workers blocked for equal network conditions, isolation enabled. Durations in milliseconds. Input-to-painted persisted move measured with requestAnimationFrame. PWA behavior is validated separately. These measurements are not mobile device or real-network benchmarks.',browser:browser.version(),summary,samples};await writeFile('/tmp/gachachess-performance.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report.summary));
+}catch(error){for(const context of browser.contexts())for(const page of context.pages())await page.screenshot({path:'/tmp/gachachess-performance-failure.png',fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(done=>server.close(done));await rm(previous,{recursive:true,force:true});}

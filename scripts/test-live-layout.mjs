@@ -44,7 +44,7 @@ try{
    await page.getByRole('button',{name:'Сдаться',exact:true}).click();
    await page.locator('dialog').getByRole('button',{name:'Сдаться',exact:true}).click();
    for(let step=0;step<3&&await page.locator('#modal').evaluate(node=>node.open);step++)await page.locator('#close-modal').click();
-   await page.evaluate(()=>{location.hash='archive';});
+   await page.evaluate(()=>{location.hash='/history';});
    await page.locator('[data-archive]').first().click();
    assert.equal(await page.locator('#replay-start').isVisible(),true);
    await page.locator('#replay-start').click();

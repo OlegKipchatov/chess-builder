@@ -47,6 +47,9 @@ const play = createRoute({
 const collection = createRoute({
   getParentRoute: () => root,
   path: "/collection",
+  validateSearch: (search: Record<string, unknown>) => ({
+    item: typeof search.item === "string" ? search.item : undefined,
+  }),
   component: lazy(() => import("../../pages/collection/CollectionPage.js")),
 });
 const chests = createRoute({

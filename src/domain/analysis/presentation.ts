@@ -35,3 +35,21 @@ export const insightLines = (move: MoveAnalysis | undefined | null) => {
     return [];
   return [move.bestLine];
 };
+/** Plain-language move description used by insight cards, without revealing coordinates. */
+export const humanMove = (san: string): string => {
+  if (!san) return "";
+  if (san.startsWith("O-O")) return "Рокировка";
+  const names: Record<string, string> = {
+    K: "Король",
+    Q: "Ферзь",
+    R: "Ладья",
+    B: "Слон",
+    N: "Конь",
+  };
+  return (
+    (names[san[0]!] || "Пешка") +
+    (san.includes("x") ? " — взятие" : "") +
+    (san.includes("=") ? " — превращение" : "") +
+    (san.endsWith("#") ? " · мат" : san.endsWith("+") ? " · шах" : "")
+  );
+};

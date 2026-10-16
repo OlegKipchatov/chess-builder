@@ -7,6 +7,7 @@ import {
 import {
   insightLines,
   visibleVariation,
+  humanMove,
 } from "../../domain/analysis/presentation.js";
 const noop = () => {};
 export const AnalysisInsight = ({
@@ -82,7 +83,7 @@ export const AnalysisInsight = ({
         </div>
       </div>
       <p>
-        Вы сыграли: <strong>{move.playedSan}</strong>
+        Вы сыграли: <strong>{humanMove(move.playedSan)}</strong>
       </p>
       {explanation && <p>{explanation}</p>}
       {(move.relatedPlies?.length || 0) > 1 && (

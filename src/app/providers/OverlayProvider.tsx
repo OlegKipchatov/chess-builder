@@ -12,6 +12,7 @@ import { createPortal } from "react-dom";
 import { motionDuration, motionEasing } from "../../shared/styles/motion.js";
 export interface ModalContent {
   title: string;
+  titleHidden?: boolean;
   body: ReactNode;
   onClose?: () => void;
   dismissible?: boolean;
@@ -176,7 +177,12 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
             }}
           >
             <div id="modal-content">
-              <h2 ref={heading} id="modal-title" tabIndex={-1}>
+              <h2
+                ref={heading}
+                id="modal-title"
+                tabIndex={-1}
+                className={content?.titleHidden ? "sr-only" : undefined}
+              >
                 {content?.title}
               </h2>
               {content?.body}

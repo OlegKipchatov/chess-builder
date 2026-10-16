@@ -8,14 +8,10 @@ import { PwaProvider } from "../providers/PwaProvider.js";
 import { ThemeProvider } from "../providers/ThemeProvider.js";
 import { VaultProvider } from "../providers/VaultProvider.js";
 import { makeRouter } from "../router/router.js";
-const aliases: Record<string, string> = {
-  archive: "history",
-  analysis: "history",
-  minigames: "play",
-};
-const oldHash = location.hash.slice(1);
-if (oldHash && !oldHash.startsWith("/"))
-  history.replaceState(null, "", `#/${aliases[oldHash] || oldHash}`);
+import { canonicalHashLocation } from "./hash-location.js";
+const canonicalLocation = canonicalHashLocation(location.href);
+if (canonicalLocation !== location.pathname + location.search + location.hash)
+  history.replaceState(history.state, "", canonicalLocation);
 const vault = createVaultStore(
     {
       getItem: (key) => window.localStorage.getItem(key),
