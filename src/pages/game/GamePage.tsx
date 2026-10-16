@@ -1,3 +1,4 @@
+import { ControlIcon } from "../../shared/ui/ControlIcon.js";
 import { MoveList } from "../../features/game-review/MoveList.js";
 import { useHistoryReturn } from "../../features/game-review/HistoryReturnProvider.js";
 import { ActivityCelebration } from "../../features/game-session/ActivityCelebration.js";
@@ -25,7 +26,7 @@ import { chessPieces } from "../../features/chessboard/model.js";
 import { MoveNavigation } from "../../features/game-review/MoveNavigation.js";
 import { PgnActions } from "../../features/game-review/PgnActions.js";
 import { useGameSession } from "../../features/game-session/useGameSession.js";
-import { Page } from "../../shared/ui/Page.js";
+import { Page, Stat } from "../../shared/ui/Page.js";
 import { Piece } from "../../shared/ui/Piece.js";
 export const GamePage = () => {
   const historyOrigin = useHistoryReturn();
@@ -33,7 +34,10 @@ export const GamePage = () => {
     { show } = useOverlays(),
     navigate = useNavigate(),
     equipped = useVault((state) => state.equipped),
-    played = useVault((state) => state.played);
+    archive = useVault((state) => state.archive);
+  const countedGames = archive.filter(
+    (entry) => entry.mode === "bot" && entry.counted !== false,
+  );
   const [selected, setSelected] = useState<Square | null>(null),
     allowNavigation = useRef(false);
   useBlocker({
@@ -182,7 +186,7 @@ export const GamePage = () => {
   };
   if (!session.saved.started && !final && !session.view.display)
     return (
-      <Page id="play" title="Игра">
+      <Page id="play" title="Игры">
         <div id="game-ready" className="game-ready">
           <div className="play-featured">
             <h2>Сыграем?</h2>
@@ -195,10 +199,15 @@ export const GamePage = () => {
             </button>
           </div>
           <button
+            id="calendar-entry"
             className="calendar-home"
             onClick={() => void navigate({ to: "/calendar" })}
           >
-            ▦ Календарь активности <span>›</span>
+            <span className="calendar-home-icon" aria-hidden="true">
+              ▦
+            </span>
+            <span>Календарь активности</span>
+            <span aria-hidden="true">›</span>
           </button>
           <section id="hunt-entry" className="hunt-entry">
             <h2>Охота</h2>
@@ -233,8 +242,16 @@ export const GamePage = () => {
             </button>
           </section>
         </div>
-        {played > 0 && (
-          <p className="page-supporting">Сыграно партий: {played}</p>
+        {countedGames.length > 0 && (
+          <div id="play-stats" className="play-stats">
+            <Stat value={countedGames.length} label="Сыграно партий" />
+            <Stat
+              value={
+                countedGames.filter((entry) => entry.result === "Победа").length
+              }
+              label="Побед"
+            />
+          </div>
         )}
       </Page>
     );
@@ -272,7 +289,7 @@ export const GamePage = () => {
                   })
                 }
               >
-                ×
+                <ControlIcon name="close" />
               </button>
               <div className="match-versus">
                 <span className="match-person">
@@ -294,7 +311,9 @@ export const GamePage = () => {
                     />
                   </span>
                   <strong>
-                    {playStyleName(config.engineProfile?.profile)}
+                    {config.mode === "bot"
+                      ? `ИИ · ${playStyleName(config.engineProfile?.profile)}`
+                      : "Игрок 2"}
                   </strong>
                 </span>
               </div>

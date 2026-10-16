@@ -32,7 +32,7 @@ try {
     await page.goto(origin);await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&crossOriginIsolated);await page.locator('#start-game').waitFor();
     assert.equal(await page.locator('#play #hunt-entry').count(),1);
     await page.locator('[data-hunt-mode="timed"]').waitFor();
-    const title=await page.getByRole('heading',{name:'Игра',exact:true}).boundingBox(),header=await page.locator('#play .page-header').boundingBox();
+    const title=await page.getByRole('heading',{name:'Игры',exact:true}).boundingBox(),header=await page.locator('#play .page-header').boundingBox();
     assert.ok(Math.abs(title.x-header.x)<1,'Root title has no reserved back-button gap');
     assert.equal(await page.locator('[data-hunt-mode="endless"]').textContent(),'На жизни');
     await page.screenshot({path:`/tmp/gachachess-hunt-entry-${width}.png`,fullPage:true});

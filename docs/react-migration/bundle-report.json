@@ -376,51 +376,51 @@
     ]
   },
   "reactInitial": {
-    "rawBytes": 520196,
-    "gzipBytes": 166155,
+    "rawBytes": 521298,
+    "gzipBytes": 166587,
     "files": [
       {
         "file": "assets/Chessboard-BNWyzujZ.css",
         "bytes": 827
       },
       {
-        "file": "assets/Chessboard-DVtdS8af.js",
+        "file": "assets/Chessboard-Da02nPOO.js",
         "bytes": 6583
       },
       {
-        "file": "assets/GamePage-Bj42MlGO.js",
-        "bytes": 15988
+        "file": "assets/GamePage-R70t_iYJ.js",
+        "bytes": 16406
       },
       {
-        "file": "assets/OverlayProvider-COoI6_tO.js",
+        "file": "assets/OverlayProvider---T-WZeg.js",
         "bytes": 3614
       },
       {
-        "file": "assets/Page-Cc63h8wk.js",
-        "bytes": 9330
+        "file": "assets/Page-DQtF-NF-.js",
+        "bytes": 9742
       },
       {
-        "file": "assets/PgnActions-D1KWyJCO.js",
-        "bytes": 7248
+        "file": "assets/PgnActions-D-ikdfRf.js",
+        "bytes": 7359
       },
       {
-        "file": "assets/VaultProvider-nrbNBBA4.js",
+        "file": "assets/VaultProvider-CFtWsGWa.js",
         "bytes": 71133
       },
       {
-        "file": "assets/archive-CM6XxE_W.js",
+        "file": "assets/archive-CzqTDUff.js",
         "bytes": 3522
-      },
-      {
-        "file": "assets/index-BnXodkxP.js",
-        "bytes": 252712
       },
       {
         "file": "assets/index-CsfISmAO.css",
         "bytes": 82019
       },
       {
-        "file": "assets/react-dom-DDzPK89d.js",
+        "file": "assets/index-DdJHqIWf.js",
+        "bytes": 252873
+      },
+      {
+        "file": "assets/react-dom-CrsWDwa9.js",
         "bytes": 3948
       },
       {
@@ -432,125 +432,125 @@
         "bytes": 2975
       },
       {
-        "file": "assets/useBlocker--LEs6MXV.js",
+        "file": "assets/useBlocker-CK1_zaF8.js",
         "bytes": 1594
       },
       {
-        "file": "assets/useSearch-BV45pXlQ.js",
+        "file": "assets/useSearch-CisTXXy7.js",
         "bytes": 58104
       }
     ]
   },
   "delta": {
-    "rawBytes": -86041,
-    "gzipBytes": -30749
+    "rawBytes": -84939,
+    "gzipBytes": -30317
   },
   "reactRuntime": {
-    "rawBytes": 4405708,
-    "gzipBytes": 2674952,
+    "rawBytes": 4407628,
+    "gzipBytes": 2675622,
     "files": [
       {
-        "file": "dist/assets/ActivityPage-DPt09S66.js",
+        "file": "dist/assets/ActivityPage-CgLQgnBX.js",
         "bytes": 5709
       },
       {
-        "file": "dist/assets/AutochessPage-DMRjKm9L.js",
-        "bytes": 39201
+        "file": "dist/assets/AutochessPage-BbcBra_K.js",
+        "bytes": 39250
       },
       {
         "file": "dist/assets/Chessboard-BNWyzujZ.css",
         "bytes": 827
       },
       {
-        "file": "dist/assets/Chessboard-DVtdS8af.js",
+        "file": "dist/assets/Chessboard-Da02nPOO.js",
         "bytes": 6583
       },
       {
-        "file": "dist/assets/ChestsPage-iGyhnYqc.js",
-        "bytes": 3460
+        "file": "dist/assets/ChestsPage-D933nQFm.js",
+        "bytes": 3465
       },
       {
-        "file": "dist/assets/CollectionPage-DbNs5gUN.js",
-        "bytes": 7594
+        "file": "dist/assets/CollectionPage-CdcbZr9K.js",
+        "bytes": 7639
       },
       {
-        "file": "dist/assets/FaqPage-DhUvOVP-.js",
+        "file": "dist/assets/FaqPage-B8VRPJps.js",
         "bytes": 10050
       },
       {
-        "file": "dist/assets/GamePage-Bj42MlGO.js",
-        "bytes": 15988
+        "file": "dist/assets/GamePage-R70t_iYJ.js",
+        "bytes": 16406
       },
       {
-        "file": "dist/assets/GameReview-DTCBkqMv.js",
-        "bytes": 35782
+        "file": "dist/assets/GameReview-By8ZE43b.js",
+        "bytes": 36050
       },
       {
-        "file": "dist/assets/HistoryPage-GQL4Ekoe.js",
-        "bytes": 37596
+        "file": "dist/assets/HistoryPage-DnazVwU4.js",
+        "bytes": 37601
       },
       {
-        "file": "dist/assets/HuntPage-jmjqulL7.js",
+        "file": "dist/assets/HuntPage-CYOmjiGg.js",
         "bytes": 6496
       },
       {
-        "file": "dist/assets/ImportPage-DW9UfuOl.js",
+        "file": "dist/assets/ImportPage-ColhbDzP.js",
         "bytes": 570
       },
       {
-        "file": "dist/assets/ItemPreview-20niyBaq.js",
+        "file": "dist/assets/ItemPreview-zenzUOcF.js",
         "bytes": 2454
       },
       {
-        "file": "dist/assets/OverlayProvider-COoI6_tO.js",
+        "file": "dist/assets/OverlayProvider---T-WZeg.js",
         "bytes": 3614
       },
       {
-        "file": "dist/assets/Page-Cc63h8wk.js",
-        "bytes": 9330
+        "file": "dist/assets/Page-DQtF-NF-.js",
+        "bytes": 9742
       },
       {
-        "file": "dist/assets/PgnActions-D1KWyJCO.js",
-        "bytes": 7248
+        "file": "dist/assets/PgnActions-D-ikdfRf.js",
+        "bytes": 7359
       },
       {
-        "file": "dist/assets/PgnImportDialog-BHod3KyN.js",
+        "file": "dist/assets/PgnImportDialog-DS272aiE.js",
         "bytes": 3254
       },
       {
-        "file": "dist/assets/ProfilePage-DolIFNcx.js",
-        "bytes": 2632
+        "file": "dist/assets/ProfilePage-CklEoQLf.js",
+        "bytes": 2627
       },
       {
-        "file": "dist/assets/PvePage-DtmIks9l.js",
+        "file": "dist/assets/PvePage-Ca2Jkw9p.js",
         "bytes": 30511
       },
       {
-        "file": "dist/assets/ReviewPage-CjxXGuxv.js",
+        "file": "dist/assets/ReviewPage-O5Td0y9y.js",
         "bytes": 932
       },
       {
-        "file": "dist/assets/StatisticsPage-IVlq88NT.js",
-        "bytes": 1057
+        "file": "dist/assets/StatisticsPage-CINbly5M.js",
+        "bytes": 1508
       },
       {
-        "file": "dist/assets/VaultProvider-nrbNBBA4.js",
+        "file": "dist/assets/VaultProvider-CFtWsGWa.js",
         "bytes": 71133
       },
       {
-        "file": "dist/assets/archive-CM6XxE_W.js",
+        "file": "dist/assets/archive-CzqTDUff.js",
         "bytes": 3522
-      },
-      {
-        "file": "dist/assets/index-BnXodkxP.js",
-        "bytes": 252712
       },
       {
         "file": "dist/assets/index-CsfISmAO.css",
         "bytes": 82019
       },
       {
-        "file": "dist/assets/react-dom-DDzPK89d.js",
+        "file": "dist/assets/index-DdJHqIWf.js",
+        "bytes": 252873
+      },
+      {
+        "file": "dist/assets/react-dom-CrsWDwa9.js",
         "bytes": 3948
       },
       {
@@ -570,15 +570,15 @@
         "bytes": 1757
       },
       {
-        "file": "dist/assets/useBlocker--LEs6MXV.js",
+        "file": "dist/assets/useBlocker-CK1_zaF8.js",
         "bytes": 1594
       },
       {
-        "file": "dist/assets/useClock-al06E-DF.js",
+        "file": "dist/assets/useClock-DQ1FghM5.js",
         "bytes": 426
       },
       {
-        "file": "dist/assets/useSearch-BV45pXlQ.js",
+        "file": "dist/assets/useSearch-CisTXXy7.js",
         "bytes": 58104
       },
       {
@@ -647,5 +647,5 @@
       }
     ]
   },
-  "browserTiming": "Pending equivalent v132/React measurements; build size is not evidence of interaction performance."
+  "browserTiming": "See performance-browser.json and validation.md for equivalent v132/React browser measurements; build size alone is not interaction performance evidence."
 }

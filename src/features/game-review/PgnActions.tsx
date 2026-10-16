@@ -67,7 +67,7 @@ export const PgnActions = ({
         })
       }
     >
-      Экспорт PGN
+      Экспортировать PGN
     </button>
   );
 };

@@ -1,3 +1,4 @@
+import { ControlIcon } from "./ControlIcon.js";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 export const Page = ({
@@ -26,7 +27,7 @@ export const Page = ({
               aria-label="Назад"
               onClick={onBack || (() => void navigate({ to: back }))}
             >
-              ←
+              <ControlIcon name="back" />
             </button>
           </div>
         )}

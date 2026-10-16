@@ -49,7 +49,7 @@ describe("React routing, collection and history", () => {
   it("renders every lazy screen once with unique ids, without the legacy app bootstrap", async () => {
     const view = await setup();
     for (const [path, title] of [
-      ["/play", "Игра"],
+      ["/play", "Игры"],
       ["/collection", "Коллекция"],
       ["/chests", "Сундуки"],
       ["/profile", "Профиль"],
@@ -223,7 +223,7 @@ describe("React routing, collection and history", () => {
     const abort = await screen.findByText("Закрыть без награды");
     expect(abort.closest("dialog")).toBeNull();
     expect(screen.getByText("Stockfish timeout")).toBeVisible();
-    fireEvent.click(screen.getByText("Экспорт PGN"));
+    fireEvent.click(screen.getByText("Экспортировать PGN"));
     expect(screen.getByText("Копировать")).toBeVisible();
     expect(screen.getByText("Скачать")).toBeVisible();
     fireEvent.click(screen.getByLabelText("Закрыть"));
@@ -308,7 +308,7 @@ describe("React routing, collection and history", () => {
     expect(screen.getByText("Alice")).toBeVisible();
     expect(screen.getByText("Bob")).toBeVisible();
     expect(screen.queryByText("Разобрать партию")).toBeNull();
-    fireEvent.click(screen.getByText("Экспорт PGN"));
+    fireEvent.click(screen.getByText("Экспортировать PGN"));
     const text = screen.getByRole("textbox", { name: "PGN партии" });
     expect(text).not.toHaveFocus();
     expect((text as HTMLTextAreaElement).value).toContain(

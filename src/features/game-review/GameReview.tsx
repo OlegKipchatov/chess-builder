@@ -234,17 +234,19 @@ export const GameReview = ({
                 {job.status === "running" ? (
                   <div
                     id="analysis-progress"
-                    role="progressbar"
-                    aria-label="Анализ партии"
-                    aria-valuemin={0}
-                    aria-valuemax={job.progress.total || 1}
-                    aria-valuenow={job.progress.done}
                     style={{
                       visibility: progressVisible ? "visible" : "hidden",
                     }}
                   >
                     <span className="analysis-spinner" aria-hidden="true" />
-                    <span role="status">
+                    <span
+                      role="progressbar"
+                      aria-label="Анализ партии"
+                      aria-valuemin={0}
+                      aria-valuemax={job.progress.total || 1}
+                      aria-valuenow={job.progress.done}
+                      aria-live="polite"
+                    >
                       {job.progress.stage === "quick"
                         ? "Первый проход"
                         : "Глубокий разбор"}{" "}

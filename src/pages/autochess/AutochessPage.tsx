@@ -269,6 +269,7 @@ export const AutochessPage = () => {
       toast(error);
       return;
     }
+    if (placePiece(run, piece.id, square) === run) return;
     auto.change((value) => placePiece(value, piece.id, square));
     setSelected(null);
   };
@@ -367,13 +368,17 @@ export const AutochessPage = () => {
             disabled={!preparation || !auto.locked}
             duration={motionDuration.autoBoard}
             onSquare={(square) => {
+              if (piece && !piece.square) {
+                drop(square);
+                return;
+              }
               if (piece && piece.square !== square && legal.includes(square)) {
                 drop(square);
                 return;
               }
               const found = run.army.find((p) => p.square === square);
               if (found) select(found.id);
-              else setSelected(null);
+              else if (piece) drop(square);
             }}
           />
         </div>

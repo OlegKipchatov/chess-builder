@@ -1,3 +1,4 @@
+import { ControlIcon } from "../../shared/ui/ControlIcon.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
@@ -62,7 +63,7 @@ export const MoveNavigation = ({
           disabled={!cursor}
           onClick={() => seek(cursor - 1)}
         >
-          ←
+          <ControlIcon name="previous" />
         </button>
         {onPlay && (
           <button
@@ -75,7 +76,7 @@ export const MoveNavigation = ({
             }
             onClick={onPlay}
           >
-            {playing ? "Ⅱ" : "▶"}
+            <ControlIcon name={playing ? "pause" : "play"} />
           </button>
         )}
         <button
@@ -86,7 +87,7 @@ export const MoveNavigation = ({
           disabled={cursor >= total}
           onClick={() => seek(cursor + 1)}
         >
-          →
+          <ControlIcon name="next" />
         </button>
         <button
           className="icon-button"
@@ -95,7 +96,7 @@ export const MoveNavigation = ({
           disabled={cursor >= total}
           onClick={() => seek(total)}
         >
-          ⇥
+          <ControlIcon name="live" />
         </button>
       </div>
       <span id={`${prefix}-position`} aria-live="polite">

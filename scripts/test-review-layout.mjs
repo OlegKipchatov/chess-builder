@@ -46,11 +46,11 @@ try{
   assert.equal(await page.locator('[data-delete-set]').evaluate(node=>getComputedStyle(node).backgroundColor),await page.evaluate(()=>{const node=document.createElement('span');node.style.backgroundColor='var(--control)';document.body.append(node);const value=getComputedStyle(node).backgroundColor;node.remove();return value;}));
   await page.locator('.equipment-slot').last().click();await page.locator('[data-equip]:not(:disabled)').click();
   await page.locator('[data-collection-view="saved"]').click();assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрать');
-  await page.locator('[data-load-set]').click();assert.equal(await page.locator('[data-load-set]').isDisabled(),true);
+  await page.locator('[data-load-set]').click();await page.locator('[data-load-set]:disabled').waitFor();assert.equal(await page.locator('[data-load-set]').isDisabled(),true);
   await page.reload();await page.locator('[data-collection-view="saved"]').click();assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрано');
   await page.screenshot({path:`/tmp/gacha-collection-review-${width}.png`,fullPage:true});
-  await page.goto(url+'#/history');await page.locator('[data-archive="unavailable"]').click();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
-  await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
+  await page.goto(url+'#/history');await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
+  await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();await page.locator('#archive-analysis').waitFor();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
   await page.locator('#archive-analysis').scrollIntoViewIfNeeded();
   const original=await page.locator('#archive-analysis').boundingBox();
   await page.evaluate(()=>{window.Worker=class{postMessage(){queueMicrotask(()=>this.onerror?.(Error('Test worker failure')));}terminate(){}};});

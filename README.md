@@ -32,6 +32,12 @@ npx playwright install --with-deps chromium
 npm run test:pwa:browser
 npm run test:stockfish:browser
 npm run test:pwa:single
+npm run test:ui:layout
+npm run test:ui:shell
+npm run test:ui:hunt
+npm run test:ui:autochess
+npm run test:ui:pve
+npm run test:ui:performance
 ```
 
 В управляемой среде ChatGPT Sites локальная браузерная проверка выполняется только предусмотренным окружением способом; отсутствие браузера не считается успешной проверкой. Ограничения текущей проверки записаны в [инвентаризации](docs/react-migration/inventory.md).

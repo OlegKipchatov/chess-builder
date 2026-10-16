@@ -39,7 +39,7 @@ export const PwaProvider = ({
   children: ReactNode;
   reload?: () => void;
 }) => {
-  const { isOpen } = useOverlays(),
+  const { isOpen, toast } = useOverlays(),
     [busy, setBusy] = useState(true),
     [pending, setPending] = useState(false),
     reloaded = useRef(false);
@@ -63,6 +63,9 @@ export const PwaProvider = ({
     registration = useRef<ServiceWorkerRegistration | null>(null),
     installEvent = useRef<InstallEvent | null>(null),
     requested = useRef(false);
+  useEffect(() => {
+    if (error) toast(error, { error: true });
+  }, [error, toast]);
   useEffect(() => {
     const before = (event: Event) => {
         event.preventDefault();
@@ -114,6 +117,7 @@ export const PwaProvider = ({
               if (reg.waiting && navigator.serviceWorker.controller)
                 setAvailable(true);
               else setReady(true);
+              setError("");
             }
             if (worker.state === "redundant")
               setError(
@@ -127,9 +131,11 @@ export const PwaProvider = ({
         cleanups.push(() => reg.removeEventListener("updatefound", watch));
         watch();
       })
-      .catch((cause) => {
+      .catch(() => {
         if (live)
-          setError(cause instanceof Error ? cause.message : String(cause));
+          setError(
+            "Офлайн-режим недоступен. Игра работает при подключении к сети.",
+          );
       });
     const check = () => {
       if (document.visibilityState === "visible")
