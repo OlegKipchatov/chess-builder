@@ -1,5 +1,7 @@
 # Typography contract
 
+Общие визуальные требования: [дизайн-система GachaChess](design-system.md).
+
 Keep the system font and existing visual hierarchy. Roles live in `dist/ui/styles/tokens.css`:
 
 | Role | Existing size | Use |
