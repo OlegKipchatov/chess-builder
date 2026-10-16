@@ -3,12 +3,16 @@ const scope = globalThis as unknown as DedicatedWorkerGlobalScope & {
   STOCKFISH_WASM_URL: string;
 };
 scope.STOCKFISH_WASM_URL = new URL(
-  "../vendor/sf19-single/stockfish-19-lite-single.wasm",
+  import.meta.env.DEV
+    ? "/vendor/sf19-single/stockfish-19-lite-single.wasm"
+    : "../vendor/sf19-single/stockfish-19-lite-single.wasm",
   scope.location.href,
 ).href;
 scope.importScripts(
   new URL(
-    "../vendor/sf19-single/stockfish-19-lite-single.js",
+    import.meta.env.DEV
+      ? "/vendor/sf19-single/stockfish-19-lite-single.js"
+      : "../vendor/sf19-single/stockfish-19-lite-single.js",
     scope.location.href,
   ).href,
 );
@@ -22,4 +26,4 @@ scope.onmessage = (event) => {
   }
   uciHandler?.call(scope, event);
 };
-export { };
+export {};

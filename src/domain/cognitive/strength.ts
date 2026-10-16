@@ -1,10 +1,7 @@
 import { CONFIG as C } from "./cognitive-config.js";
-import { clamp,createSession,hash } from "./cognitive-model.js";
+import { clamp, createSession, hash } from "./cognitive-model.js";
 import { validPlayStyle } from "./play-style-config.js";
-import type {
-ArchivedEngineProfile,
-EngineProfile
-} from "./types.js";
+import type { ArchivedEngineProfile, EngineProfile } from "./types.js";
 const validSeed = (seed: unknown): seed is number =>
   typeof seed === "number" &&
   Number.isInteger(seed) &&

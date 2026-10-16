@@ -1,18 +1,22 @@
 import { Chess } from "chess.js";
 import type { ArchiveEntry } from "../../domain/chess/types.js";
 import {
-expectedScore,
-summarizeQuality,
+  expectedScore,
+  summarizeQuality,
 } from "../../domain/economy/reward-quality.js";
 import type {
-QualityDecision,
-QualitySummary,
+  QualityDecision,
+  QualitySummary,
 } from "../../domain/economy/types.js";
-import { aborted,asError } from "../../shared/lib/errors.js";
+import { aborted, asError } from "../../shared/lib/errors.js";
 import { createStockfishClient } from "./stockfish-client.js";
 import { STOCKFISH as C } from "./stockfish-config.js";
 import { recordStockfishRestart } from "./stockfish-lifecycle.js";
-import type { EngineClient,RawEngineLine,SearchDiagnostic } from "./types.js";
+import type {
+  EngineClient,
+  RawEngineLine,
+  SearchDiagnostic,
+} from "../../shared/types/engine.js";
 // A separate full-strength fixed-node profile, never the adaptive opponent.
 export const analyzeReward = async (
   entry: ArchiveEntry,

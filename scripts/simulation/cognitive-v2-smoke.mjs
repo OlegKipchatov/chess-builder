@@ -1,5 +1,5 @@
-import {Chess} from '../../dist/chess.js';
-import {decide} from '../../dist/cognitive-search.js';
+import {Chess} from 'chess.js';
+import {decide} from '../../src/domain/cognitive/cognitive-search.ts';
 
 const positions=[
   new Chess().fen(),

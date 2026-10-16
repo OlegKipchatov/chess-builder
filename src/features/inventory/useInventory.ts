@@ -1,6 +1,6 @@
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
-import type { Equipment,Item } from "../../domain/catalog/types.js";
+import type { Equipment, Item } from "../../domain/catalog/types.js";
 import { craftItem } from "../../domain/economy/economy.js";
 export const useInventory = () => {
   const store = useVaultStore(),

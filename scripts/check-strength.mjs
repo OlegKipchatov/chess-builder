@@ -1,7 +1,7 @@
 import {writeFile} from 'node:fs/promises';
-import {Chess} from '../dist/chess.js';
-import {createStockfishClient} from '../dist/stockfish-client.js';
-import {stockfishProfile} from '../dist/strength.js';
+import {Chess} from 'chess.js';
+import {createStockfishClient} from '../src/services/engines/stockfish-client.ts';
+import {stockfishProfile} from '../src/domain/cognitive/strength.ts';
 import {spawnStockfish} from './stockfish-process.mjs';
 const clients=[createStockfishClient(()=>spawnStockfish(19)),createStockfishClient(()=>spawnStockfish(19))];
 const ask=(client,game,rating)=>new Promise((resolve,reject)=>{client.onmessage=event=>resolve(event.data.move);client.onerror=reject;client.postMessage({id:1,fen:game.fen(),pgn:game.pgn(),engineProfile:stockfishProfile(rating)});});

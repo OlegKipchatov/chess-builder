@@ -1,41 +1,38 @@
 import type { PieceSymbol } from "chess.js";
 import { Chess } from "chess.js";
 import {
-initialActivity,
-normalizeActivity,
+  initialActivity,
+  normalizeActivity,
 } from "../../domain/activity/activity-model.js";
 import { restoreAnalysis } from "../../domain/analysis/analysis-storage.js";
 import { normalizeAutoAwards } from "../../domain/autochess/autochess-rewards.js";
 import {
-ITEMS,
-STYLES,
-TYPES,
-baseInventory,
-boardId,
-defaultEquipment,
-itemById,
-pieceId,
+  ITEMS,
+  STYLES,
+  TYPES,
+  baseInventory,
+  boardId,
+  defaultEquipment,
+  itemById,
+  pieceId,
 } from "../../domain/catalog/catalog.js";
-import type { Equipment,ItemId,StyleId } from "../../domain/catalog/types.js";
+import type { Equipment, ItemId, StyleId } from "../../domain/catalog/types.js";
 import { newGame } from "../../domain/chess/new-game.js";
-import type {
-SavedGame,
-VaultState
-} from "../../domain/chess/types.js";
+import type { SavedGame, VaultState } from "../../domain/chess/types.js";
 import {
-migrateEngineProfile,
-validArchivedProfile,
+  migrateEngineProfile,
+  validArchivedProfile,
 } from "../../domain/cognitive/strength.js";
 import {
-initialHuntProgress,
-normalizeHuntProgress,
+  initialHuntProgress,
+  normalizeHuntProgress,
 } from "../../domain/hunt/hunt.js";
-import { initialPve,normalizePve } from "../../domain/pve/pve-model.js";
+import { initialPve, normalizePve } from "../../domain/pve/pve-model.js";
 import {
-initialRating,
-normalizeRating,
-ratingSnapshot,
-validRatingSnapshot,
+  initialRating,
+  normalizeRating,
+  ratingSnapshot,
+  validRatingSnapshot,
 } from "../../domain/rating/rating.js";
 export interface StoragePort {
   getItem: (key: string) => string | null;

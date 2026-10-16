@@ -1,8 +1,9 @@
+import { Piece } from "../../shared/ui/Piece.js";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
-import { useVault,useVaultStore } from "../../app/providers/VaultProvider.js";
-import { CHEST_COST,rarityNames } from "../../domain/catalog/catalog.js";
+import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
+import { CHEST_COST, rarityNames } from "../../domain/catalog/catalog.js";
 import { openChest } from "../../domain/economy/economy.js";
 import { useInventory } from "../../features/inventory/useInventory.js";
 import { ItemPreview } from "../../shared/ui/ItemPreview.js";
@@ -34,12 +35,14 @@ export const ChestsPage = () => {
       body: (
         <>
           <div
-            className={`reward-reveal rarity-${reward.item?.rarity || "shards"}`}
+            className={`reward-content reward-${reward.shards ? "shards" : reward.item?.rarity || "shards"}`}
           >
             {reward.item ? (
-              <ItemPreview item={reward.item} />
+              <div className="result-art reveal">
+                <ItemPreview item={reward.item} />
+              </div>
             ) : (
-              <span className="shard-symbol">◇</span>
+              <span className="result-art shard-symbol reveal">◇</span>
             )}
             <p>{reward.item ? rarityNames[reward.item.rarity] : ""}</p>
             <strong>
@@ -82,24 +85,30 @@ export const ChestsPage = () => {
       <div className="chest-layout">
         <article className="chest-card">
           <div className="chest-symbol" aria-hidden="true">
-            ▣
+            <Piece type="q" color="w" style="gold" />
           </div>
-          <h2>Сундук коллекционера</h2>
-          <p>Новые фигуры, доски или осколки для создания предметов.</p>
+          <h2>Сундук</h2>
           <button
             id="open-chest"
-            className="primary"
+            className="primary stable-label"
+            data-size-label="Не хватает 100 монет"
+            data-size-alt="Не хватает 21 монеты"
             disabled={busy || coins < CHEST_COST}
             onClick={() => void open()}
           >
-            {coins < CHEST_COST
-              ? `Не хватает ${CHEST_COST - coins} монет`
-              : `Открыть · ${CHEST_COST} ◈`}
+            <span className="control-label">
+              {coins < CHEST_COST
+                ? `Не хватает ${CHEST_COST - coins} монет`
+                : `Открыть за ${CHEST_COST} ◈`}
+            </span>
           </button>
           <div className="pity-meter">
-            <span>Гарантия эпического предмета</span>
-            <progress value={pity} max={9} />
-            <small>{pity} / 9</small>
+            <span>
+              Эпический или легендарный предмет — максимум через {10 - pity}{" "}
+              сундуков
+            </span>
+            <progress value={pity} max={10} />
+            <small>{pity} / 10</small>
           </div>
         </article>
       </div>

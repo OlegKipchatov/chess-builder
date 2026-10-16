@@ -1,10 +1,10 @@
 import type { VaultState } from "../chess/types.js";
 import type {
-DecisionQuality,
-QualityDecision,
-QualityFailure,
-QualitySummary,
-RewardBreakdown,
+  DecisionQuality,
+  QualityDecision,
+  QualityFailure,
+  QualitySummary,
+  RewardBreakdown,
 } from "./types.js";
 // Frozen launch parameters; calibration requires a new reward version.
 export const REWARD_CONFIG = Object.freeze({
@@ -24,7 +24,7 @@ export const ECONOMY_PROFILE = Object.freeze({
   nodes: 50000,
   hashMb: 16,
 });
-export { expectedScore } from "../../services/engines/stockfish-evaluation.js";
+export { expectedScore } from "../chess/evaluation.js";
 export const classifyDecision = (loss: number): DecisionQuality =>
   loss <= 0.005
     ? "best"

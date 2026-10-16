@@ -1,18 +1,18 @@
 import {
-activityDate,
-closeActivityDay,
-currentStreak,
-normalizeActivity,
-previousDay,
+  activityDate,
+  closeActivityDay,
+  currentStreak,
+  normalizeActivity,
+  previousDay,
 } from "./activity-model.js";
 import type {
-Activity,
-ActivityWallet,
-CalendarGame,
-CalendarReward,
-DailyMetric,
-DailyProgress,
-DailyTask,
+  Activity,
+  ActivityWallet,
+  CalendarGame,
+  CalendarReward,
+  DailyMetric,
+  DailyProgress,
+  DailyTask,
 } from "./types.js";
 export const FREEZE_COST = 10;
 export const DAILY_TASKS: DailyTask[] = [
@@ -260,7 +260,6 @@ export const calendarRewards = (
 ): CalendarReward[] => {
   const activity = normalizeActivity(input),
     today = activityDate(now, activity.timeZone),
-    month = today.slice(0, 7),
     claimed = new Set(activity.claimed),
     rewards: CalendarReward[] = [];
   const add = (row: Omit<CalendarReward, "claimed">) =>

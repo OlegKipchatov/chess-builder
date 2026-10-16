@@ -1,4 +1,4 @@
-import type { Chess,Color,Move,PieceSymbol,Square } from "chess.js";
+import type { Chess, Color, Move, PieceSymbol, Square } from "chess.js";
 export type PlayStyle =
   "default" | "aggressive" | "solid" | "positional" | "tricky";
 export interface EngineProfile {

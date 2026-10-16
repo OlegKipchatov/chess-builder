@@ -26,7 +26,7 @@ self.addEventListener("install", (event) => {
       const cache = await caches.open(cacheName);
       try {
         let cursor = 0;
-        await Promise.all(
+        const fetched = await Promise.allSettled(
           Array.from({ length: 4 }, async () => {
             while (cursor < assets.length) {
               const url = assets[cursor++];
@@ -38,6 +38,8 @@ self.addEventListener("install", (event) => {
             }
           }),
         );
+        const failed = fetched.find((result) => result.status === "rejected");
+        if (failed?.status === "rejected") throw failed.reason;
       } catch (error) {
         await caches.delete(cacheName);
         throw error;
@@ -49,13 +51,32 @@ self.addEventListener("activate", (event) =>
   event.waitUntil(
     (async () => {
       // Keep the preceding release for old open clients until their safe update.
-      const keys = (await caches.keys()).filter((key) =>
-        key.startsWith(prefix),
-      );
-      const previous = keys.filter((key) => key !== cacheName).slice(-1);
+      const all = await caches.keys(),
+        keys = all.filter((key) => key.startsWith(prefix)),
+        legacy: string[] = [];
+      for (const key of all.filter((key) => /^chess-vault-v\d+$/.test(key))) {
+        const requests = await (await caches.open(key)).keys();
+        if (
+          requests.length &&
+          requests.every((request) =>
+            request.url.startsWith(self.registration.scope),
+          )
+        )
+          legacy.push(key);
+      }
+      const precedingReact = keys.filter((key) => key !== cacheName).at(-1);
+      const previous =
+        precedingReact ||
+        legacy
+          .sort(
+            (a, b) =>
+              Number(a.replace("chess-vault-v", "")) -
+              Number(b.replace("chess-vault-v", "")),
+          )
+          .at(-1);
       await Promise.all(
-        keys
-          .filter((key) => key !== cacheName && !previous.includes(key))
+        [...keys, ...legacy]
+          .filter((key) => key !== cacheName && key !== previous)
           .map((key) => caches.delete(key)),
       );
       await self.clients.claim();
@@ -83,6 +104,13 @@ self.addEventListener("fetch", (event) => {
       if (navigation) {
         const shell = await cache.match(index);
         if (shell) return isolated(shell);
+        return new Response(
+          "Офлайн-копия приложения недоступна. Повторите загрузку после восстановления соединения.",
+          {
+            status: 503,
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+          },
+        );
       }
       // Exact URLs only: never substitute one release's chunk for another.
       for (const name of (await caches.keys()).filter(
@@ -93,8 +121,11 @@ self.addEventListener("fetch", (event) => {
         const previous = await (await caches.open(name)).match(event.request);
         if (previous) return isolated(previous);
       }
-      return isolated(await fetch(event.request));
+      const response = isolated(await fetch(event.request));
+      if (response.ok && assets.includes(event.request.url))
+        await cache.put(event.request, response.clone());
+      return response;
     })(),
   );
 });
-export { };
+export {};

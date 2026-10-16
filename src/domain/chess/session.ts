@@ -3,32 +3,9 @@ import { createSession } from "../cognitive/cognitive-model.js";
 import type { PlayStyle } from "../cognitive/types.js";
 import { ratingSnapshot } from "../rating/rating.js";
 import { newGame } from "./new-game.js";
-import type { SavedGame,VaultState } from "./types.js";
-export const SCREENS = [
-  "analysis",
-  "profile",
-  "collection",
-  "play",
-  "minigames",
-  "chests",
-  "archive",
-  "statistics",
-  "calendar",
-  "streak",
-  "faq",
-];
+import type { SavedGame, VaultState } from "./types.js";
 export const isMatchActive = (state: VaultState, game: Chess) =>
   state.game.started && !state.game.resigned && !game.isGameOver();
-export const navigationTarget = (
-  state: VaultState,
-  game: Chess,
-  requested: string,
-) =>
-  isMatchActive(state, game)
-    ? "play"
-    : SCREENS.includes(requested)
-      ? requested
-      : "play";
 export const createStartedGame = (
   state: VaultState,
   rng = Math.random,

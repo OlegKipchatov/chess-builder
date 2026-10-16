@@ -1,7 +1,7 @@
 import { asError } from "../../shared/lib/errors.js";
 import { detectStockfishCapabilities } from "./stockfish-capabilities.js";
 import { STOCKFISH } from "./stockfish-config.js";
-import type { UciWorker } from "./types.js";
+import type { UciWorker } from "../../shared/types/engine.js";
 
 // Module ownership is limited to serialized retirement and capability diagnostics.
 // A React mount never allocates a worker until its feature requests a search.

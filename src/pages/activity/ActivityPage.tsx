@@ -1,16 +1,16 @@
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
-import { useVault,useVaultStore } from "../../app/providers/VaultProvider.js";
+import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
-activityDate,
-currentStreak,
-dayLabel,
+  activityDate,
+  currentStreak,
+  dayLabel,
 } from "../../domain/activity/activity-model.js";
 import {
-buyFreeze,
-claimCalendarReward,
-FREEZE_COST,
-freezeCandidate,
-visibleCalendarRewards,
+  buyFreeze,
+  claimCalendarReward,
+  FREEZE_COST,
+  freezeCandidate,
+  visibleCalendarRewards,
 } from "../../domain/activity/calendar-rewards.js";
 import type { CalendarReward } from "../../domain/activity/types.js";
 import { useClock } from "../../shared/hooks/useClock.js";
@@ -151,7 +151,7 @@ export const ActivityPage = ({
                         key={day}
                         className={`calendar-day ${closed ? "closed" : frozen ? "frozen" : ""} ${current ? "today" : ""} ${day > today ? "future" : ""} ${day.slice(0, 7) !== month ? "adjacent" : ""}`}
                         aria-current={current ? "date" : undefined}
-                        aria-label={`${day}, ${closed ? "сыграна игра" : frozen ? "заморожен" : current ? "сегодня" : "без игры"}`}
+                        aria-label={`${new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" }).format(date)}, ${closed ? "сыграна партия" : frozen ? "заморожен, серия сохранена" : current ? "сегодня" : day > today ? "будущий день" : "без партии"}`}
                       >
                         {date.getUTCDate()}
                       </span>
@@ -161,10 +161,11 @@ export const ActivityPage = ({
               </div>
               <p className="calendar-legend">
                 <span>
-                  <i className="calendar-key" /> С игрой
+                  <i className="calendar-key" aria-hidden="true" /> С игрой
                 </span>
                 <span>
-                  <i className="calendar-key today" /> Сегодня
+                  <i className="calendar-key today" aria-hidden="true" />{" "}
+                  Сегодня
                 </span>
                 <span>
                   <i className="calendar-key frozen" /> Заморожен

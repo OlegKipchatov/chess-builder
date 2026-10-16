@@ -1,0 +1,226 @@
+{
+  "baseline": "ee7df974635bf7dd514c24e4d4a6b04bce3af8c6",
+  "input": {
+    "version": 1,
+    "coins": 314,
+    "shards": 39,
+    "skin": "gold",
+    "owned": [
+      "classic",
+      "gold"
+    ],
+    "played": 11,
+    "opened": 19,
+    "game": {
+      "pgn": "1. d4",
+      "mode": "bot",
+      "difficulty": "hard",
+      "settled": false
+    }
+  },
+  "expected": {
+    "version": 3,
+    "pve": {
+      "version": 1,
+      "revision": 0,
+      "sequence": 0,
+      "levelCap": 3,
+      "stones": 0,
+      "cores": 0,
+      "cleared": [],
+      "nodes": {},
+      "battle": null,
+      "lastResult": null,
+      "stats": {
+        "battles": 0,
+        "wins": 0,
+        "draws": 0,
+        "stonesUsed": 0,
+        "firstEvolutionAt": null,
+        "stoneInvestments": {},
+        "deaths": {},
+        "recent": []
+      },
+      "units": [
+        {
+          "id": "pve-unit-1",
+          "type": "k",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-2",
+          "type": "r",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-3",
+          "type": "n",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-4",
+          "type": "b",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-5",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-6",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-7",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-8",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-9",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": false
+        },
+        {
+          "id": "pve-unit-10",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": false
+        }
+      ]
+    },
+    "autochessAwards": {},
+    "hunt": {
+      "records": {
+        "timed": {
+          "bestScore": 0
+        },
+        "endless": {
+          "bestScore": 0
+        }
+      },
+      "awards": {}
+    },
+    "activity": {
+      "version": 1,
+      "timeZone": "Europe/Copenhagen",
+      "days": [],
+      "frozen": [],
+      "daily": {},
+      "claimed": []
+    },
+    "archive": [],
+    "rating": {
+      "value": 700,
+      "games": 0,
+      "lastDelta": 0
+    },
+    "settings": {
+      "mode": "bot",
+      "difficulty": "adaptive"
+    },
+    "coins": 314,
+    "shards": 39,
+    "owned": [
+      "piece:classic:k",
+      "piece:classic:q",
+      "piece:classic:r",
+      "piece:classic:b",
+      "piece:classic:n",
+      "piece:classic:p",
+      "board:classic",
+      "piece:gold:k",
+      "piece:gold:q",
+      "piece:gold:r",
+      "piece:gold:b",
+      "piece:gold:n",
+      "piece:gold:p",
+      "board:gold"
+    ],
+    "equipped": {
+      "pieces": {
+        "k": "piece:gold:k",
+        "q": "piece:gold:q",
+        "r": "piece:gold:r",
+        "b": "piece:gold:b",
+        "n": "piece:gold:n",
+        "p": "piece:gold:p"
+      },
+      "board": "board:gold"
+    },
+    "sets": [],
+    "pity": 0,
+    "played": 11,
+    "opened": 19,
+    "game": {
+      "pgn": "1. d4",
+      "mode": "bot",
+      "difficulty": "adaptive",
+      "playerColor": "w",
+      "started": true,
+      "settled": false,
+      "resigned": false,
+      "rating": {
+        "before": 700,
+        "opponent": 600,
+        "k": 64
+      },
+      "engineFailure": null,
+      "engineProfile": {
+        "id": "cognitive-v2",
+        "calibrationVersion": "cognitive-v2.1-conversion-1",
+        "targetElo": 600,
+        "effectiveElo": 617.0248421731985,
+        "seed": 1357173046,
+        "profile": "default"
+      },
+      "startedAt": "",
+      "equipped": {
+        "pieces": {
+          "k": "piece:gold:k",
+          "q": "piece:gold:q",
+          "r": "piece:gold:r",
+          "b": "piece:gold:b",
+          "n": "piece:gold:n",
+          "p": "piece:gold:p"
+        },
+        "board": "board:gold"
+      }
+    }
+  }
+}

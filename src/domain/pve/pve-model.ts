@@ -1,12 +1,12 @@
 import type { PieceSymbol } from "chess.js";
 import type {
-EnemyUnit,
-PveBattle,
-PveNode,
-PveProfile,
-PveReceipt,
-PveUnit,
-UnitStats,
+  EnemyUnit,
+  PveBattle,
+  PveNode,
+  PveProfile,
+  PveReceipt,
+  PveUnit,
+  UnitStats,
 } from "./types.js";
 // PvE campaign rules are independent of classic chess, its rating and archive.
 export const PVE = Object.freeze({

@@ -1,8 +1,11 @@
-import { Outlet,useLocation,useNavigate } from "@tanstack/react-router";
-import { useEffect,useRef } from "react";
+import { ImportedGameProvider } from "../features/game-review/ImportedGameProvider.js";
+import { HistoryReturnProvider } from "../features/game-review/HistoryReturnProvider.js";
+import { ShellPresentation } from "./providers/ShellPresentation.js";
+import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { RewardProcessor } from "../features/game-session/RewardProcessor.js";
 import { usePwaUpdate } from "./providers/PwaProvider.js";
-import { useVault,useVaultStore } from "./providers/VaultProvider.js";
+import { useVault, useVaultStore } from "./providers/VaultProvider.js";
 const Icon = ({
   name,
 }: {
@@ -70,6 +73,7 @@ const Wallet = () => {
   );
 };
 export const App = () => {
+  const [held, setHeld] = useState(false);
   const active = useVault((s) => s.game.started),
     location = useLocation(),
     navigate = useNavigate(),
@@ -80,9 +84,13 @@ export const App = () => {
     path = location.pathname,
     mode = ["/hunt", "/autochess"].includes(path),
     detail = path.startsWith("/history/") || path === "/import",
-    hidden = active || mode || detail || path === "/pve";
+    hidden = active || held || mode || detail || path === "/pve";
+  const setPwaBusy = pwa.setBusy;
   useEffect(() => {
-    document.body.classList.toggle("match-active", active);
+    setPwaBusy(hidden);
+  }, [hidden, setPwaBusy]);
+  useEffect(() => {
+    document.body.classList.toggle("match-active", active || held);
     document.body.classList.toggle("autochess-active", path === "/autochess");
     document.body.classList.toggle("hunt-active", path === "/hunt");
     document.body.classList.toggle("archive-viewing", detail);
@@ -94,7 +102,7 @@ export const App = () => {
         "archive-viewing",
       );
     };
-  }, [active, path, detail]);
+  }, [active, held, path, detail]);
   useEffect(() => {
     const resize = () => {
       document.documentElement.style.setProperty(
@@ -113,7 +121,7 @@ export const App = () => {
     return () => observer.disconnect();
   }, [hidden]);
   return (
-    <>
+    <ShellPresentation value={setHeld}>
       <header ref={header}>
         <a
           className="brand"
@@ -152,7 +160,13 @@ export const App = () => {
             {store.getError()?.message}
           </p>
         )}
-        <Outlet />
+        <HistoryReturnProvider>
+          <ImportedGameProvider>
+            <Suspense fallback={<p role="status">Загрузка…</p>}>
+              <Outlet />
+            </Suspense>
+          </ImportedGameProvider>
+        </HistoryReturnProvider>
         <nav id="app-nav" ref={nav} aria-label="Разделы" hidden={hidden}>
           {(
             [
@@ -188,6 +202,6 @@ export const App = () => {
         </div>
       )}
       <RewardProcessor />
-    </>
+    </ShellPresentation>
   );
 };

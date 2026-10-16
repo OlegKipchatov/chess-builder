@@ -1,5 +1,5 @@
 import type { Chess } from "chess.js";
-import type { Rating,RatingSnapshot,VaultState } from "../chess/types.js";
+import type { Rating, RatingSnapshot, VaultState } from "../chess/types.js";
 import { targetFor } from "../cognitive/cognitive-model.js";
 // Internal progression scale, not a calibrated human Elo rating.
 export const initialRating = (): Rating => ({

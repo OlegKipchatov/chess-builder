@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {compositionIssue,compositionError,placementError,placePiece,benchPiece,buyRandomPiece,beginBattle,createAutoRun,arrangeOpponent,restoreAutoRun,planOpponent,positionCompositionError,repairOpponentComposition} from '../src/domain/autochess/autochess.ts';
-import {createBattleController} from '../src/domain/autochess/autochess-battle.ts';
+import {createBattleController} from '../src/services/engines/autochess-battle.ts';
 import {createAutoplayEngine} from '../src/services/engines/autochess-engine.ts';
 const army=types=>types.map((type,i)=>({id:String(i),type,square:'abcdefgh'[i%8]+(1+Math.floor(i/8)),paid:i+1}));
 const fixture=()=>({...createAutoRun('composition'),color:'w',level:10,reserve:100,army:[{id:'king',type:'k',square:'e1'},...Array.from({length:8},(_,i)=>({id:'p'+i,type:'p',square:'abcdefgh'[i]+'2',paid:1})),{id:'n1',type:'n',square:'b1',paid:2},{id:'n2',type:'n',square:'g1',paid:2},{id:'new',type:'n',square:null,reserveSlot:0,paid:3}]});

@@ -1,6 +1,4 @@
-import type {
-MoveAnalysis
-} from "./types.js";
+import type { MoveAnalysis } from "./types.js";
 export const qualityLabel = {
   best: "Ваш ход",
   good: "Ваш ход",

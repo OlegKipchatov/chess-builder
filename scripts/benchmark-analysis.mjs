@@ -2,9 +2,9 @@
 import {spawn} from 'node:child_process';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {cpus,platform,arch} from 'node:os';
-import {Chess} from '../dist/chess.js';
-import {analyzeGame} from '../dist/analysis/analysis-service.js';
-import {createStockfishClient} from '../dist/stockfish-client.js';
+import {Chess} from 'chess.js';
+import {analyzeGame} from '../src/services/analysis/analysis-service.ts';
+import {createStockfishClient} from '../src/services/engines/stockfish-client.ts';
 const fixture = count => {
  const game=new Chess();let seed=177+count;
  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};

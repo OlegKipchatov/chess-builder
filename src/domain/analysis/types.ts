@@ -1,5 +1,5 @@
-import type { Chess,Color,Move,PieceSymbol,Square } from "chess.js";
-import type { EngineClient,EngineLine } from "../../services/engines/types.js";
+import type { Chess, Color, Move, PieceSymbol, Square } from "chess.js";
+import type { EngineClient, EngineLine } from "../../shared/types/engine.js";
 import type { DecisionQuality } from "../economy/types.js";
 export type Reason =
   | "allowed_mate"

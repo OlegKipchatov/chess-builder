@@ -1,10 +1,10 @@
 import {
-CHEST_COST,
-craftCost,
-duplicateRefund,
-EMPTY_SHARDS,
-itemById,
-ITEMS,
+  CHEST_COST,
+  craftCost,
+  duplicateRefund,
+  EMPTY_SHARDS,
+  itemById,
+  ITEMS,
 } from "../catalog/catalog.js";
 import type { VaultState } from "../chess/types.js";
 import type { ChestReward } from "./types.js";

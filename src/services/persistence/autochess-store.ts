@@ -1,4 +1,4 @@
-import { AUTO_KEY,restoreAutoRun } from "../../domain/autochess/autochess.js";
+import { AUTO_KEY, restoreAutoRun } from "../../domain/autochess/autochess.js";
 import type { AutoRun } from "../../domain/autochess/types.js";
 import type { StoragePort } from "./state.js";
 export const createAutoStore = (

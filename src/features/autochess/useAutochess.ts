@@ -1,18 +1,19 @@
 import {
-useEffect,
-useReducer,
-useRef,
-useState,
-useSyncExternalStore,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  useSyncExternalStore,
 } from "react";
+import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
-import { createBattleController } from "../../domain/autochess/autochess-battle.js";
+import { createBattleController } from "../../services/engines/autochess-battle.js";
 import { awardAutochess } from "../../domain/autochess/autochess-rewards.js";
 import {
-AUTO_KEY,
-beginBattle,
-createAutoRun,
-nextRound,
+  AUTO_KEY,
+  beginBattle,
+  createAutoRun,
+  nextRound,
 } from "../../domain/autochess/autochess.js";
 import type { AutoRun } from "../../domain/autochess/types.js";
 import { createAutoStore } from "../../services/persistence/autochess-store.js";
@@ -23,6 +24,8 @@ export const useAutochess = () => {
     [error, setError] = useState(""),
     [locked, setLocked] = useState(false),
     [award, setAward] = useState(false),
+    [presenting, setPresenting] = useState(false),
+    reduced = useReducedMotion(),
     [revision, render] = useReducer((n: number) => n + 1, 0),
     controller = useRef<ReturnType<typeof createBattleController> | null>(null);
   useEffect(() => {
@@ -39,7 +42,7 @@ export const useAutochess = () => {
       });
     if (navigator.locks)
       void navigator.locks.request(
-        "gachachess-autochess-session",
+        "gachachess-autochess-v1",
         { ifAvailable: true },
         (lock) => {
           if (!lock) {
@@ -61,6 +64,8 @@ export const useAutochess = () => {
   useEffect(() => {
     if (!locked) return;
     let live = true;
+    let lastPosition = store.getSnapshot()?.battle?.moves.length || 0;
+    const presentations = new Map<ReturnType<typeof setTimeout>, () => void>();
     const owned = createBattleController({
       getRun: () => {
         const current = store.getSnapshot();
@@ -77,7 +82,21 @@ export const useAutochess = () => {
         }
       },
       onChange: () => {
-        if (live) render();
+        if (!live) return;
+        render();
+        const length = store.getSnapshot()?.battle?.moves.length || 0;
+        if (length === lastPosition) return;
+        lastPosition = length;
+        if (reduced) return;
+        setPresenting(true);
+        return new Promise<void>((resolve) => {
+          const timer = setTimeout(() => {
+            presentations.delete(timer);
+            if (live) setPresenting(false);
+            resolve();
+          }, 160);
+          presentations.set(timer, resolve);
+        });
       },
       onError: (message) => {
         if (live) setError(message);
@@ -102,6 +121,11 @@ export const useAutochess = () => {
     window.addEventListener("storage", storage);
     return () => {
       live = false;
+      for (const [timer, resolve] of presentations) {
+        clearTimeout(timer);
+        resolve();
+      }
+      presentations.clear();
       owned.pause();
       owned.dispose();
       controller.current = null;
@@ -109,9 +133,9 @@ export const useAutochess = () => {
       window.removeEventListener("pagehide", pagehide);
       window.removeEventListener("storage", storage);
     };
-  }, [store, locked]);
+  }, [store, locked, reduced]);
   useEffect(() => {
-    if (run?.phase !== "result") return;
+    if (run?.phase !== "result" || presenting) return;
     let live = true;
     setAward(false);
     void wallet
@@ -124,7 +148,7 @@ export const useAutochess = () => {
     return () => {
       live = false;
     };
-  }, [run?.battle?.id, run?.phase, revision, wallet]);
+  }, [run, presenting, revision, wallet]);
   const save = (next: AutoRun | null) => {
     if (!locked) return false;
     try {
@@ -145,6 +169,7 @@ export const useAutochess = () => {
     error,
     locked,
     award,
+    presenting,
     active: controller.current?.isActive() || false,
     preparing: controller.current?.isPreparing() || false,
     attempt: controller.current?.retryAttempt() || 1,

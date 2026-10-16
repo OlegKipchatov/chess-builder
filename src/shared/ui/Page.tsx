@@ -6,12 +6,14 @@ export const Page = ({
   children,
   back,
   actions,
+  onBack,
 }: {
   id: string;
   title: string;
   children: ReactNode;
   back?: "/play" | "/profile" | "/history";
   actions?: ReactNode;
+  onBack?: () => void;
 }) => {
   const navigate = useNavigate();
   return (
@@ -22,7 +24,7 @@ export const Page = ({
             <button
               className="icon-button"
               aria-label="Назад"
-              onClick={() => void navigate({ to: back })}
+              onClick={onBack || (() => void navigate({ to: back }))}
             >
               ←
             </button>

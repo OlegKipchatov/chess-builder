@@ -1,15 +1,14 @@
+import { playStyleName } from "../../domain/cognitive/play-style-config.js";
+import { AnalysisInsight } from "./AnalysisInsight.js";
+import { visibleVariation } from "../../domain/analysis/presentation.js";
 import { Chess } from "chess.js";
-import { useEffect,useMemo,useRef,useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { isImportantInsight } from "../../domain/analysis/analysis-events.js";
-import {
-explanationFor,
-qualityLabel,
-} from "../../domain/analysis/analysis-explanations.js";
-import { createAnalysisPlayback } from "../../domain/analysis/analysis-playback.js";
+import { createAnalysisPlayback } from "./analysis-playback.js";
 import { eligibleEntry } from "../../domain/analysis/analysis-storage.js";
 import type {
-GameAnalysis,
-MateExercise,
+  GameAnalysis,
+  MateExercise,
 } from "../../domain/analysis/types.js";
 import { positionAt } from "../../domain/chess/session.js";
 import type { ArchiveEntry } from "../../domain/chess/types.js";
@@ -36,19 +35,36 @@ export const GameReview = ({
     [cursor, setCursor] = useState(0),
     [playing, setPlaying] = useState(false),
     [hint, setHint] = useState(false),
+    [footprint, setFootprint] = useState(0),
+    surface = useRef<HTMLDivElement>(null),
+    [analysisMode, setAnalysisMode] = useState(autoAnalyze),
+    [progressVisible, setProgressVisible] = useState(false),
     [variation, setVariation] = useState<number | null>(null),
     [practice, setPractice] = useState<MateExercise | null>(null),
     reduced = useReducedMotion(),
     playback = useRef<ReturnType<typeof createAnalysisPlayback> | null>(null),
     timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
-    release = useRef<(() => void) | null>(null);
-  const move = analysis?.moves[cursor - 1];
+    release = useRef<(() => void) | null>(null),
+    attempts = useRef(new Map<string, number>());
+  const currentCursor = useEffectEvent(() => cursor);
+  const move = analysisMode ? analysis?.moves[cursor - 1] : undefined;
   useEffect(() => {
+    if (job.status !== "running") {
+      setProgressVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setProgressVisible(true), 200);
+    return () => clearTimeout(timer);
+  }, [job.status]);
+  const startAutomatically = useEffectEvent(() => {
     if (autoAnalyze && eligibleEntry(entry) && !analysis) void start();
-  }, [entry.id]);
+  });
+  useEffect(() => {
+    startAutomatically();
+  }, [entry.id, autoAnalyze]);
   useEffect(() => {
     const source =
-      analysis ||
+      (analysisMode ? analysis : undefined) ||
       ({
         totalPlies: live.history().length,
         moves: [],
@@ -72,7 +88,7 @@ export const GameReview = ({
       onChange: (snapshot) => setPlaying(snapshot.state === "playing"),
     });
     playback.current = controller;
-    void controller.seek(cursor);
+    void controller.seek(currentCursor());
     const hidden = () => {
       if (document.hidden) controller.pause();
     };
@@ -85,12 +101,12 @@ export const GameReview = ({
       playback.current = null;
       document.removeEventListener("visibilitychange", hidden);
     };
-  }, [analysis, live, reduced]);
+  }, [analysis, analysisMode, live, reduced]);
   const board = useMemo(() => {
     if (hint && move) {
       const position = new Chess(move.fenBefore),
-        pv = move.recommendationEvidence?.pv || move.bestLine?.pv || [];
-      for (const token of pv.slice(0, variation ?? 1)) {
+        pv = visibleVariation(move, variation !== null).pv;
+      for (const token of pv.slice(0, variation ?? 0)) {
         try {
           position.move({
             from: token.slice(0, 2),
@@ -106,17 +122,42 @@ export const GameReview = ({
     return positionAt(live, cursor);
   }, [live, cursor, hint, variation, move]);
   const pieces = useMemo(() => chessPieces(board), [board]);
+  const summary = (
+    <div className="match-summary">
+      <div className="match-versus">
+        <strong>
+          {entry.imported
+            ? live.getHeaders().White || "Белые"
+            : entry.playerColor === "w"
+              ? "Вы"
+              : playStyleName(entry.engineProfile?.profile)}
+        </strong>
+        <span className="versus">VS</span>
+        <strong>
+          {entry.imported
+            ? live.getHeaders().Black || "Чёрные"
+            : entry.playerColor === "b"
+              ? "Вы"
+              : playStyleName(entry.engineProfile?.profile)}
+        </strong>
+      </div>
+    </div>
+  );
   if (practice)
     return (
       <MatePractice
         exercise={practice}
         equipped={entry.equipped}
+        attempts={attempts.current}
+        header={summary}
+        minHeight={footprint}
         onClose={() => setPractice(null)}
       />
     );
   return (
-    <div className="game-grid analysis-layout">
+    <div ref={surface} className="game-grid analysis-layout">
       <div className="board-area">
+        {summary}
         <Chessboard
           pieces={pieces}
           equipped={entry.equipped}
@@ -129,112 +170,116 @@ export const GameReview = ({
               : null
           }
           disabled
+          arrow={
+            hint && move
+              ? visibleVariation(move, variation !== null).pv[variation ?? 0]
+              : null
+          }
         />
-        <MoveNavigation
-          cursor={cursor}
-          total={live.history().length}
-          playing={playing}
-          onPlay={() => {
-            if (playing) playback.current?.pause();
-            else void playback.current?.play();
-          }}
-          onSeek={(ply) => void playback.current?.seek(ply)}
-        />
-        <PgnActions game={live} config={entry} />
-      </div>
-      <aside className="analysis-panel">
+        <div className="analysis-controls-slot">
+          {hint && variation !== null ? (
+            <MoveNavigation
+              cursor={variation}
+              total={visibleVariation(move, true).pv.length}
+              onSeek={setVariation}
+            />
+          ) : (
+            <MoveNavigation
+              markers={
+                analysisMode
+                  ? analysis?.moves
+                      .filter(isImportantInsight)
+                      .map((move) => move.ply)
+                  : []
+              }
+              cursor={cursor}
+              total={live.history().length}
+              playing={playing}
+              onPlay={() => {
+                if (playing) playback.current?.pause();
+                else void playback.current?.play();
+              }}
+              onSeek={(ply) => void playback.current?.seek(ply)}
+            />
+          )}
+        </div>
         {eligibleEntry(entry) && (
           <div>
             {job.status === "running" ? (
               <>
-                <p role="status">
+                <p
+                  role="status"
+                  style={{ visibility: progressVisible ? "visible" : "hidden" }}
+                >
                   {job.progress.stage === "quick"
                     ? "Первый проход"
                     : "Глубокий разбор"}{" "}
                   · {job.progress.done}/{job.progress.total}
                 </p>
                 <progress
+                  style={{ visibility: progressVisible ? "visible" : "hidden" }}
                   value={job.progress.done}
                   max={job.progress.total || 1}
                 />
                 <button onClick={cancel}>Отменить</button>
               </>
-            ) : (
-              <button onClick={() => void start()}>
-                {analysis ? "Повторить анализ" : "Разобрать партию"}
+            ) : !analysisMode || analysis?.status !== "complete" ? (
+              <button
+                onClick={() => {
+                  setAnalysisMode(true);
+                  if (!analysis || analysis.status !== "complete") void start();
+                }}
+              >
+                {analysisMode && analysis
+                  ? "Повторить анализ"
+                  : "Разобрать партию"}
               </button>
-            )}
+            ) : null}
             {job.status === "failed" && <p role="alert">{job.message}</p>}
           </div>
         )}
+        <PgnActions game={live} config={entry} />
+      </div>
+      <aside className="analysis-panel">
         {analysis?.status === "partial" && (
           <p role="status">
             Часть ходов не удалось проверить. Можно повторить анализ.
           </p>
         )}
-        {move && move.status === "complete" && (
-          <article
-            className={`analysis-insight ${isImportantInsight(move) ? "important" : ""}`}
-          >
-            <h2>
-              {move.highlight === "excellent"
-                ? "Отличный ход"
-                : move.quality
-                  ? qualityLabel[move.quality]
-                  : "Ваш ход"}{" "}
-              · {move.playedSan}
-            </h2>
-            <p>{explanationFor(move)}</p>
-            {move.bestLine && (
-              <div className="analysis-actions">
-                {hint && (
-                  <button
-                    aria-pressed={variation !== null}
-                    onClick={() => setVariation(variation === null ? 1 : null)}
-                  >
-                    Вариант
-                  </button>
-                )}
-                <button
-                  aria-pressed={hint}
-                  onClick={() => {
-                    playback.current?.pause();
-                    setHint(!hint);
-                    setVariation(null);
-                  }}
-                >
-                  Подсказка
-                </button>
-              </div>
-            )}
-            {hint && variation !== null && (
-              <MoveNavigation
-                cursor={variation}
-                total={
-                  (move.recommendationEvidence?.pv || move.bestLine?.pv || [])
-                    .length
-                }
-                onSeek={setVariation}
-              />
-            )}{" "}
-            {move.exercise && (
-              <button
-                className="primary"
-                onClick={() => {
-                  playback.current?.pause();
-                  setPractice(move.exercise!);
-                }}
-              >
-                Решить задачу
-              </button>
-            )}
-          </article>
+        <AnalysisInsight
+          move={move}
+          hint={hint}
+          expanded={variation !== null}
+          onHint={() => {
+            playback.current?.pause();
+            setHint(!hint);
+            setVariation(null);
+          }}
+          onExpand={() => setVariation(variation === null ? 0 : null)}
+          onPractice={() => {
+            playback.current?.pause();
+            if (move?.exercise) {
+              setFootprint(
+                surface.current?.getBoundingClientRect().height || 0,
+              );
+              setPractice(move.exercise);
+            }
+          }}
+        />
+        {cursor === 0 && (
+          <p className="analysis-position-message">
+            Начальная позиция. Начните просмотр партии.
+          </p>
+        )}
+        {cursor === live.history().length && !isImportantInsight(move) && (
+          <p className="analysis-position-message">Просмотр завершён.</p>
         )}
         <ol className="moves">
           {live.history().map((san, index) => (
             <li key={index}>
               <button
                 className={
+                  analysisMode &&
                   analysis?.moves[index] &&
                   isImportantInsight(analysis.moves[index])
                     ? "important"

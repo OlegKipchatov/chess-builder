@@ -3,11 +3,12 @@ import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
 import {recommendationEvidence} from '../src/domain/analysis/analysis-reasons.ts';
-import {prepareMateExercise,createMateExercise} from '../src/domain/analysis/analysis-training.ts';
+import {prepareMateExercise,createMateExercise} from '../src/services/analysis/analysis-training.ts';
 import {selectEvents,isImportantInsight} from '../src/domain/analysis/analysis-events.ts';
-import {analysisInsight,visibleVariation} from '../dist/ui/components/analysis-insight.js';
+import {analysisInsight} from './helpers/react-markup.js';
+import {insightLines,visibleVariation} from '../src/domain/analysis/presentation.ts';
 import {explanationFor} from '../src/domain/analysis/analysis-explanations.ts';
-import {analyzeGame} from '../src/domain/analysis/analysis-service.ts';
+import {analyzeGame} from '../src/services/analysis/analysis-service.ts';
 import {createStockfishClient} from '../src/services/engines/stockfish-client.ts';
 import {spawnStockfish} from '../scripts/stockfish-process.mjs';
 

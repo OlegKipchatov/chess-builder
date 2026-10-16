@@ -1,4 +1,4 @@
-import { memo,type CSSProperties } from "react";
+import { memo, type CSSProperties } from "react";
 import { styleById } from "../../domain/catalog/catalog.js";
 import type { Item } from "../../domain/catalog/types.js";
 import { Piece } from "./Piece.js";

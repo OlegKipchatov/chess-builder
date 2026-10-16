@@ -3,7 +3,7 @@ import { Chess } from "chess.js";
 import { rewardBreakdownFor } from "../economy/engine.js";
 import { settleRating } from "../rating/rating.js";
 import { newGame } from "./new-game.js";
-import type { ArchiveEntry,VaultState } from "./types.js";
+import type { ArchiveEntry, VaultState } from "./types.js";
 export const capturePoints = (game: Chess, color: Color) =>
   game
     .history({ verbose: true })

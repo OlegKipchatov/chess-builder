@@ -1,16 +1,16 @@
 import {
-createContext,
-useContext,
-useEffect,
-useState,
-useSyncExternalStore,
-type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
 } from "react";
 import type { VaultState } from "../../domain/chess/types.js";
 import { KEY } from "../../services/persistence/state.js";
 import {
-createVaultStore,
-type VaultStore,
+  createVaultStore,
+  type VaultStore,
 } from "../../services/persistence/vault-store.js";
 const Context = createContext<VaultStore | null>(null);
 export const VaultProvider = ({

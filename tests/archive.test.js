@@ -31,9 +31,4 @@ test('История учитывает превращение и взятие �
   assert.equal(historyMetrics({pgn:game.pgn(),playerColor:'w'}).balance,materialBalance(game,'w'));
  }
 });
-test('Строка истории показывает время, ходы и материал вместо суммы взятий',async()=>{
- const {renderArchiveList}=await import('../dist/ui/components/archive-list.js');
- const root={style:{setProperty:()=>{}},scrollTop:0,clientHeight:520};
- renderArchiveList(root,[{id:'a',result:'Победа',finishedAt:'2026-09-27T07:30:00Z',playerColor:'w',pgn:'1. e4 d5 2. exd5',points:99}]);
- assert.match(root.innerHTML,/2 хода/);assert.match(root.innerHTML,/Материал/);assert.match(root.innerHTML,/>\+1</);assert.match(root.innerHTML,/datetime="2026-09-27T07:30:00.000Z"/);assert.doesNotMatch(root.innerHTML,/очк|99/);
-});
+// Archive rows and return context: tests/react/routes.test.tsx.

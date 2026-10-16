@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createBattleController} from '../src/domain/autochess/autochess-battle.ts';
+import {createBattleController} from '../src/services/engines/autochess-battle.ts';
 import {createAutoplayEngine,createAutoplaySession} from '../src/services/engines/autochess-engine.ts';
 const flush=async()=>{for(let i=0;i<12;i++)await new Promise(resolve=>setImmediate(resolve));};
 const harness=factory=>{

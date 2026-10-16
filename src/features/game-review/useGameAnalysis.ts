@@ -1,13 +1,13 @@
-import { useEffect,useRef,useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
-import { analyzeGame } from "../../domain/analysis/analysis-service.js";
+import { analyzeGame } from "../../services/analysis/analysis-service.js";
 import {
-attachAnalysis,
-isCompatible,
+  attachAnalysis,
+  isCompatible,
 } from "../../domain/analysis/analysis-storage.js";
 import type {
-AnalysisProgress,
-GameAnalysis,
+  AnalysisProgress,
+  GameAnalysis,
 } from "../../domain/analysis/types.js";
 import type { ArchiveEntry } from "../../domain/chess/types.js";
 type Job =
@@ -31,7 +31,7 @@ export const useGameAnalysis = (entry: ArchiveEntry) => {
     },
     [entry.id],
   );
-  const start = async () => {
+  const start = useCallback(async () => {
     owned.current?.abort();
     const controller = new AbortController(),
       token = ++generation.current;
@@ -50,10 +50,13 @@ export const useGameAnalysis = (entry: ArchiveEntry) => {
       });
       if (token !== generation.current || controller.signal.aborted) return;
       const saved = await store.update((state) =>
-        attachAnalysis(state, entry.id, analysis),
+        token === generation.current && !controller.signal.aborted
+          ? attachAnalysis(state, entry.id, analysis)
+          : state,
       );
       if (!saved.ok) throw saved.error;
-      setJob({ status: "ready", analysis });
+      if (token === generation.current && !controller.signal.aborted)
+        setJob({ status: "ready", analysis });
     } catch (error) {
       if (token === generation.current && !controller.signal.aborted)
         setJob({
@@ -61,16 +64,23 @@ export const useGameAnalysis = (entry: ArchiveEntry) => {
           message: error instanceof Error ? error.message : String(error),
         });
     }
-  };
-  const cancel = () => {
+  }, [entry, store]);
+  const cancel = useCallback(() => {
     generation.current++;
     owned.current?.abort();
     setJob({ status: "idle" });
-  };
+  }, []);
   return {
     job,
     start,
     cancel,
-    analysis: job.status === "ready" ? job.analysis : entry.analysis,
+    analysis:
+      job.status === "ready" &&
+      job.analysis.gameId === entry.id &&
+      job.analysis.sourcePgn === entry.pgn
+        ? job.analysis
+        : isCompatible(entry.analysis, entry)
+          ? entry.analysis
+          : undefined,
   };
 };

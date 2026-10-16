@@ -1,4 +1,4 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 export const useClock = (interval = 30000) => {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {

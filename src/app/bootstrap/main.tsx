@@ -16,7 +16,13 @@ const aliases: Record<string, string> = {
 const oldHash = location.hash.slice(1);
 if (oldHash && !oldHash.startsWith("/"))
   history.replaceState(null, "", `#/${aliases[oldHash] || oldHash}`);
-const vault = createVaultStore(localStorage, navigator.locks),
+const vault = createVaultStore(
+    {
+      getItem: (key) => window.localStorage.getItem(key),
+      setItem: (key, value) => window.localStorage.setItem(key, value),
+    },
+    navigator.locks,
+  ),
   router = makeRouter(vault),
   element = document.getElementById("app");
 if (!element) throw Error("Application root is missing");

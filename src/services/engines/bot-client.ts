@@ -4,7 +4,11 @@ import { validEngineProfile } from "../../domain/cognitive/strength.js";
 import type { EngineProfile } from "../../domain/cognitive/types.js";
 import { asError } from "../../shared/lib/errors.js";
 import { createStockfishClient } from "./stockfish-client.js";
-import type { EngineClient,EngineRequest,EngineResponse } from "./types.js";
+import type {
+  EngineClient,
+  EngineRequest,
+  EngineResponse,
+} from "../../shared/types/engine.js";
 export const COGNITIVE_TIMEOUT_MS = 12000;
 export const createBotClient = (
   profile: EngineProfile,

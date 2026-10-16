@@ -1,6 +1,4 @@
-import type {
-MoveAnalysis
-} from "./types.js";
+import type { MoveAnalysis } from "./types.js";
 export const isImportantInsight = (move: MoveAnalysis | undefined | null) =>
   !move?.repeatedOpportunity &&
   move?.actor === "player" &&

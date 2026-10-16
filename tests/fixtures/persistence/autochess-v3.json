@@ -1,0 +1,80 @@
+{
+  "input": {
+    "version": 3,
+    "seriesGoal": {
+      "wins": 15,
+      "losses": 5
+    },
+    "reserveRule": 1,
+    "id": "legacy-fixture",
+    "seed": "legacy-fixture",
+    "round": 1,
+    "color": "w",
+    "reserve": 3,
+    "level": 1,
+    "purchases": 0,
+    "sales": 0,
+    "nextId": 1,
+    "army": [
+      {
+        "id": "king",
+        "type": "k",
+        "square": "e1"
+      }
+    ],
+    "opponent": [
+      {
+        "id": "enemy-king",
+        "type": "k",
+        "square": "e8"
+      },
+      {
+        "id": "enemy-0",
+        "type": "b",
+        "square": "h8"
+      }
+    ],
+    "phase": "preparation",
+    "battle": null,
+    "results": []
+  },
+  "expected": {
+    "version": 3,
+    "seriesGoal": {
+      "wins": 15,
+      "losses": 5
+    },
+    "reserveRule": 1,
+    "id": "legacy-fixture",
+    "seed": "legacy-fixture",
+    "round": 1,
+    "color": "w",
+    "reserve": 3,
+    "level": 1,
+    "purchases": 0,
+    "sales": 0,
+    "nextId": 1,
+    "army": [
+      {
+        "id": "king",
+        "type": "k",
+        "square": "e1"
+      }
+    ],
+    "opponent": [
+      {
+        "id": "enemy-king",
+        "type": "k",
+        "square": "e8"
+      },
+      {
+        "id": "enemy-0",
+        "type": "b",
+        "square": "h8"
+      }
+    ],
+    "phase": "preparation",
+    "battle": null,
+    "results": []
+  }
+}

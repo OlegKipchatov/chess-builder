@@ -2,7 +2,7 @@
 
 Общие визуальные требования: [дизайн-система GachaChess](design-system.md).
 
-Keep the system font and existing visual hierarchy. Roles live in `dist/ui/styles/tokens.css`:
+Keep the system font and existing visual hierarchy. Roles live in `src/shared/styles/tokens.css`:
 
 | Role | Existing size | Use |
 | --- | --- | --- |

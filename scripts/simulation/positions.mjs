@@ -1,4 +1,4 @@
-import {Chess} from '../../dist/chess.js';
+import {Chess} from 'chess.js';
 const fromMoves = moves => {const game=new Chess();moves.split(' ').forEach(move=>game.move(move));return game.fen();};
 export const POSITIONS = [
  {id:'opening-simple',fen:new Chess().fen(),purpose:'Начальная позиция: развивающие ходы и недостаток плохих вариантов в top PV.'},

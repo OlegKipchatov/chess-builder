@@ -1,4 +1,4 @@
-import type { Chess,Color,PieceSymbol,Square } from "chess.js";
+import type { Chess, Color, PieceSymbol, Square } from "chess.js";
 import { Chess as ChessRules } from "chess.js";
 export interface BoardPiece {
   id: string;
@@ -49,4 +49,14 @@ export const boardPoint = (square: string, orientation: Color) => {
   const x = square.charCodeAt(0) - 97,
     y = 8 - Number(square[1]);
   return orientation === "b" ? { x: 7 - x, y: 7 - y } : { x, y };
+};
+
+export const variationArrowPoints = (
+  token: string,
+  orientation: Color = "w",
+): [number, number, number, number] | null => {
+  if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token)) return null;
+  const from = boardPoint(token.slice(0, 2), orientation),
+    to = boardPoint(token.slice(2, 4), orientation);
+  return [from.x + 0.5, from.y + 0.5, to.x + 0.5, to.y + 0.5];
 };

@@ -1,13 +1,13 @@
-import type { Color,PieceSymbol } from "chess.js";
+import type { Color, PieceSymbol } from "chess.js";
 import { Chess } from "chess.js";
 import type {
-AutoPiece,
-AutoResult,
-AutoRun,
-AutoShop,
-BeamState,
-RoundResult,
-ShopProgress
+  AutoPiece,
+  AutoResult,
+  AutoRun,
+  AutoShop,
+  BeamState,
+  RoundResult,
+  ShopProgress,
 } from "./types.js";
 export const AUTO = Object.freeze({
   version: 4,
@@ -501,8 +501,7 @@ export const setupError = (run: AutoRun) => {
   if (new Set(squares).size !== squares.length)
     return "Фигуры не могут занимать одну клетку";
   try {
-    const fen = setupFen(run),
-      game = new Chess(fen);
+    new Chess(setupFen(run));
   } catch {
     return "Недопустимая начальная позиция";
   }
@@ -595,7 +594,7 @@ export const battleGame = (run: AutoRun): Chess => {
 export const battleResult = (
   game: Chess,
   ply: number,
-  elapsed: number,
+  _elapsed: number,
 ): AutoResult | null => {
   if (game.isCheckmate())
     return { winner: game.turn() === "w" ? "b" : "w", reason: "Мат" };
@@ -1210,7 +1209,7 @@ export const restoreAutoRun = (value: string | null): AutoRun | null => {
       startingBudget(run),
     );
     const identity = (army: AutoPiece[]) =>
-      army.map(({ square, ...piece }) => piece);
+      army.map(({ square: _square, ...piece }) => piece);
     const valid =
       run.opponentSetupVersion === 1
         ? JSON.stringify(identity(run.opponent)) ===

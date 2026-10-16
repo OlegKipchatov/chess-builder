@@ -2,7 +2,7 @@ import type { Color } from "chess.js";
 import type { Activity } from "../activity/types.js";
 import type { GameAnalysis } from "../analysis/types.js";
 import type { AutoAward } from "../autochess/types.js";
-import type { Equipment,ItemId,SavedSet } from "../catalog/types.js";
+import type { Equipment, ItemId, SavedSet } from "../catalog/types.js";
 import type { ArchivedEngineProfile } from "../cognitive/types.js";
 import type { RewardBreakdown } from "../economy/types.js";
 import type { HuntProgress } from "../hunt/types.js";

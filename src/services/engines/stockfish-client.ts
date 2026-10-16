@@ -1,10 +1,10 @@
 import { asError } from "../../shared/lib/errors.js";
 import type {
-EngineClient,
-EngineRequest,
-RawEngineLine,
-UciWorker,
-} from "./types.js";
+  EngineClient,
+  EngineRequest,
+  RawEngineLine,
+  UciWorker,
+} from "../../shared/types/engine.js";
 interface Request extends EngineRequest {
   position?: Chess;
   info?: RawEngineLine[];
@@ -16,14 +16,14 @@ import { Chess } from "chess.js";
 import { decisionModeFor } from "../../domain/cognitive/cognitive-model.js";
 import { validEngineProfile } from "../../domain/cognitive/strength.js";
 import {
-completeCandidates,
-parseInfo,
-prepareCandidates,
+  completeCandidates,
+  parseInfo,
+  prepareCandidates,
 } from "./candidate-analysis.js";
 import { STOCKFISH as C } from "./stockfish-config.js";
 import {
-createEngineWorker,
-recordStockfishRestart,
+  createEngineWorker,
+  recordStockfishRestart,
 } from "./stockfish-lifecycle.js";
 export const uciPosition = (data: EngineRequest) => {
   const game = new Chess();

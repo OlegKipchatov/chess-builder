@@ -1,4 +1,4 @@
-import type { Color,PieceSymbol } from "chess.js";
+import type { Color, PieceSymbol } from "chess.js";
 export type Outcome = "win" | "loss" | "draw";
 export interface PveUnit {
   id: string;

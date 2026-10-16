@@ -1,12 +1,8 @@
-import type { Chess,Color,Square } from "chess.js";
+import type { Chess, Color, Square } from "chess.js";
 import { CONFIG as C } from "./cognitive-config.js";
-import { boardPieces,clamp,opposite } from "./cognitive-model.js";
+import { boardPieces, clamp, opposite } from "./cognitive-model.js";
 import { CONVERSION as V } from "./conversion-config.js";
-import type {
-BoardPiece,
-Capabilities,
-ConversionFeatures
-} from "./types.js";
+import type { BoardPiece, Capabilities, ConversionFeatures } from "./types.js";
 const xy = (square: string) => [
   square.charCodeAt(0) - 97,
   Number(square[1]) - 1,

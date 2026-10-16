@@ -2,15 +2,15 @@ import type { Color } from "chess.js";
 import { recordCalendarGame } from "../activity/calendar-rewards.js";
 import type { ActivityWallet } from "../activity/types.js";
 import type {
-HuntBoard,
-HuntConfig,
-HuntEvent,
-HuntFinishReason,
-HuntMode,
-HuntMove,
-HuntPieceType,
-HuntProgress,
-HuntState
+  HuntBoard,
+  HuntConfig,
+  HuntEvent,
+  HuntFinishReason,
+  HuntMode,
+  HuntMove,
+  HuntPieceType,
+  HuntProgress,
+  HuntState,
 } from "./types.js";
 // Hunt rules are independent of the regular chess engine and presentation.
 export const huntConfig: HuntConfig = Object.freeze({

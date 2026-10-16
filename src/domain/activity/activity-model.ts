@@ -1,4 +1,4 @@
-import type { Activity,ActivityEvent,DailyMetric } from "./types.js";
+import type { Activity, ActivityEvent, DailyMetric } from "./types.js";
 // Calendar dates are assigned once in the user's fixed activity timezone.
 export const initialActivity = (): Activity => ({
   version: 1,

@@ -122,10 +122,13 @@ test('terminate while fallback is retiring never allocates the next heap',async 
 });
 test('threaded wrapper terminates nested workers before acknowledging retirement',async()=>{
  const {readFile}=await import('node:fs/promises'),{runInNewContext}=await import('node:vm');
- const code=(await readFile(new URL('../dist/stockfish19-worker.js',import.meta.url),'utf8')).replace(/^import .*;\n/,'').replaceAll('import.meta.url',"'https://example.test/stockfish19-worker.js?v=132'");
+ const {transpileModule,ScriptTarget,ModuleKind}=await import('typescript');
+ const source=await readFile(new URL('../src/workers/stockfish/threaded.ts',import.meta.url),'utf8');
+ const code=transpileModule(source,{compilerOptions:{target:ScriptTarget.ES2022,module:ModuleKind.ESNext}}).outputText.replace(/^import .*;\n/m,'').replace(/const \{ default: createStockfish \} = [\s\S]*?;/,'').replaceAll('import.meta.env.DEV','false');
  let finishInitialization,stopped=0,closed=false;const messages=[];
- const self={crossOriginIsolated:true,Worker:class {terminate(){stopped++;}},postMessage:data=>messages.push(data),close:()=>{closed=true;}};
- runInNewContext(code,{self,SharedArrayBuffer,WebAssembly:{Memory:class {}},createStockfish:()=>new Promise(resolve=>{finishInitialization=resolve;}),URL,Uint8Array,fetch:()=>assert.fail('Initialization continued after shutdown')});
- new self.Worker();new self.Worker();self.onmessage({data:'uci'});self.onmessage({data:{type:'STOP_ENGINE'}});
+ const context={crossOriginIsolated:true,Worker:class {terminate(){stopped++;}},postMessage:data=>messages.push(data),close:()=>{closed=true;},location:{href:'https://example.test/assets/threaded.js'},SharedArrayBuffer,WebAssembly:{Memory:class {}},createStockfish:()=>new Promise(resolve=>{finishInitialization=resolve;}),asError:error=>error,URL,Uint8Array,fetch:()=>assert.fail('Initialization continued after shutdown')};
+ runInNewContext(code,context);await flush();
+ new context.Worker();new context.Worker();context.onmessage({data:'uci'});context.onmessage({data:{type:'STOP_ENGINE'}});
  assert.equal(stopped,2);assert.equal(closed,true);assert.equal(messages[0].type,'ENGINE_STOPPED');finishInitialization({});await flush();assert.equal(messages.length,1);
+
 });

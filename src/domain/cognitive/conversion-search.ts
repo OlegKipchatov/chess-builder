@@ -1,29 +1,29 @@
 import { CONFIG as C } from "./cognitive-config.js";
-import { clamp,random } from "./cognitive-model.js";
+import { clamp, random } from "./cognitive-model.js";
 import { profileAdjustment } from "./cognitive-profile.js";
 import {
-conversionMoves,
-halfmoveClock,
-withConversionMove,
+  conversionMoves,
+  halfmoveClock,
+  withConversionMove,
 } from "./conversion-board.js";
 import { CONVERSION as V } from "./conversion-config.js";
 import {
-advanceProgress,
-conversionHistory,
-positionKey,
-stagnationPenalty,
+  advanceProgress,
+  conversionHistory,
+  positionKey,
+  stagnationPenalty,
 } from "./conversion-history.js";
 import {
-conversionFeatures,
-conversionSignature,
-conversionValue,
+  conversionFeatures,
+  conversionSignature,
+  conversionValue,
 } from "./conversion-model.js";
 import type {
-ConversionCandidate,
-ConversionFeatures,
-ConversionInput,
-ConversionMove,
-ConversionProgress
+  ConversionCandidate,
+  ConversionFeatures,
+  ConversionInput,
+  ConversionMove,
+  ConversionProgress,
 } from "./types.js";
 
 const compare = (

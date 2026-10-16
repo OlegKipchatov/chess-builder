@@ -1,39 +1,38 @@
 import type { Square } from "chess.js";
-import { useEffect,useMemo,useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
-import { useVault,useVaultStore } from "../../app/providers/VaultProvider.js";
+import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import { PIECE_NAMES } from "../../domain/catalog/catalog.js";
 import {
-beginPveBattle,
-isKingThreatened,
-livingUnits,
-movesFor,
-returnToMap,
-unitAt,
+  beginPveBattle,
+  isKingThreatened,
+  movesFor,
+  returnToMap,
+  unitAt,
 } from "../../domain/pve/pve-battle.js";
 import {
-NODES,
-activeArmy,
-armyPower,
-campaignComplete,
-damage,
-encounter,
-evolutionOptions,
-evolveUnit,
-homeSquare,
-isUnlocked,
-maxHp,
-useStone as spendStone,
-strengthLabel,
-toggleUnit,
-xpThreshold,
+  NODES,
+  activeArmy,
+  armyPower,
+  campaignComplete,
+  damage,
+  encounter,
+  evolutionOptions,
+  evolveUnit,
+  homeSquare,
+  isUnlocked,
+  maxHp,
+  useStone as spendStone,
+  strengthLabel,
+  toggleUnit,
+  xpThreshold,
 } from "../../domain/pve/pve-model.js";
 import type {
-PveNode,
-PveProfile,
-PveReceipt,
-PveUnit,
-UnitChange,
+  PveNode,
+  PveProfile,
+  PveReceipt,
+  PveUnit,
+  UnitChange,
 } from "../../domain/pve/types.js";
 import { Chessboard } from "../../features/chessboard/Chessboard.js";
 import { usePveBattle } from "../../features/pve/usePveBattle.js";
@@ -87,9 +86,13 @@ export const PvePage = () => {
     pieces = useMemo(
       () =>
         visual
-          ? livingUnits(visual).map((unit) => ({ ...unit, maxHp: maxHp(unit) }))
+          ? visual.units
+              .filter(
+                (unit) => unit.hp > 0 || unit.id === battle.attack?.targetId,
+              )
+              .map((unit) => ({ ...unit, maxHp: maxHp(unit) }))
           : [],
-      [visual],
+      [visual, battle.attack?.targetId],
     ),
     legal =
       visual && selected ? movesFor(visual, unitAt(visual, selected)) : [];

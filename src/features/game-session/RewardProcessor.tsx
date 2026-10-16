@@ -1,13 +1,15 @@
 import { useEffect } from "react";
-import { useVault,useVaultStore } from "../../app/providers/VaultProvider.js";
+import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import { applyQualityReward } from "../../domain/economy/reward-quality.js";
 import { analyzeReward } from "../../services/engines/economy-analysis.js";
 export const RewardProcessor = () => {
   const store = useVaultStore(),
     id = useVault(
       (state) =>
-        state.archive.find(
-          (entry) => ["pending", "unavailable"].includes(entry.rewardBreakdown?.qualityStatus || ""),
+        state.archive.find((entry) =>
+          ["pending", "unavailable"].includes(
+            entry.rewardBreakdown?.qualityStatus || "",
+          ),
         )?.id,
     );
   useEffect(() => {

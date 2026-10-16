@@ -2,10 +2,8 @@ import type { Color } from "chess.js";
 import { Chess } from "chess.js";
 import { clamp } from "./cognitive-model.js";
 import { CONVERSION as V } from "./conversion-config.js";
-import { conversionFeatures,conversionSignature } from "./conversion-model.js";
-import type {
-ConversionProgress
-} from "./types.js";
+import { conversionFeatures, conversionSignature } from "./conversion-model.js";
+import type { ConversionProgress } from "./types.js";
 export const positionKey = (game: Chess) =>
   game.fen().split(" ").slice(0, 4).join(" ");
 export const advanceProgress = (

@@ -1,24 +1,30 @@
-import type { Color,Square } from "chess.js";
+import type { Color, Square } from "chess.js";
 import {
-memo,
-useCallback,
-useLayoutEffect,
-useRef,
-useState,
-type CSSProperties,
-type KeyboardEvent,
+  memo,
+  useId,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
 } from "react";
 import {
-itemById,
-PIECE_NAMES,
-styleById,
+  itemById,
+  PIECE_NAMES,
+  styleById,
 } from "../../domain/catalog/catalog.js";
-import type { Equipment,StyleId } from "../../domain/catalog/types.js";
+import type { Equipment, StyleId } from "../../domain/catalog/types.js";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
-import { motionDuration,motionEasing } from "../../shared/styles/motion.js";
+import { motionDuration, motionEasing } from "../../shared/styles/motion.js";
 import { Piece } from "../../shared/ui/Piece.js";
 import styles from "./Chessboard.module.css";
-import { boardPoint,boardSquares,type BoardPiece } from "./model.js";
+import {
+  boardPoint,
+  boardSquares,
+  variationArrowPoints,
+  type BoardPiece,
+} from "./model.js";
 interface PieceProps {
   piece: BoardPiece;
   orientation: Color;
@@ -43,7 +49,7 @@ const MovingPiece = memo(
     const point = boardPoint(target || piece.square, orientation);
     useLayoutEffect(() => {
       const last = previous.current;
-      previous.current = point;
+      previous.current = { x: point.x, y: point.y };
       if (
         !node.current ||
         !last ||
@@ -87,12 +93,27 @@ const MovingPiece = memo(
       </span>
     );
   },
+  (a, b) =>
+    a.orientation === b.orientation &&
+    a.skin === b.skin &&
+    a.duration === b.duration &&
+    a.reduced === b.reduced &&
+    a.target === b.target &&
+    a.damage === b.damage &&
+    a.piece.id === b.piece.id &&
+    a.piece.square === b.piece.square &&
+    a.piece.type === b.piece.type &&
+    a.piece.color === b.piece.color &&
+    a.piece.hp === b.piece.hp &&
+    a.piece.maxHp === b.piece.maxHp &&
+    a.piece.level === b.piece.level,
 );
 interface CellProps {
   square: Square;
   dark: boolean;
   selected: boolean;
   legal: boolean;
+  capture: boolean;
   last: boolean;
   check: boolean;
   disabled: boolean;
@@ -108,6 +129,7 @@ const Cell = memo(
     dark,
     selected,
     legal,
+    capture,
     last,
     check,
     disabled,
@@ -123,6 +145,7 @@ const Cell = memo(
         dark ? "dark" : "",
         selected ? "selected" : "",
         legal ? "legal" : "",
+        capture ? "capture" : "",
         last ? "last" : "",
         check ? "check" : "",
       ].join(" ")}
@@ -149,6 +172,7 @@ const Cell = memo(
   ),
 );
 export interface ChessboardProps {
+  id?: string;
   pieces: BoardPiece[];
   equipped: Equipment;
   orientation?: Color;
@@ -166,10 +190,13 @@ export interface ChessboardProps {
     damage?: number;
   };
   label?: string;
+  arrow?: string | null;
+  feedback?: boolean;
 }
 const noop = () => {};
 export const Chessboard = memo(
   ({
+    id = "board",
     pieces,
     equipped,
     orientation = "w",
@@ -181,22 +208,41 @@ export const Chessboard = memo(
     onSquare = noop,
     duration = motionDuration.board,
     attack,
+    arrow,
+    feedback = false,
     label = "Шахматная доска",
   }: ChessboardProps) => {
+    const markerId = useId();
+    const arrowPoints = arrow ? variationArrowPoints(arrow, orientation) : null;
     const reduced = useReducedMotion(),
       root = useRef<HTMLDivElement>(null);
     const previous = useRef<BoardPiece[]>(pieces),
-      [captured, setCaptured] = useState<BoardPiece[]>([]);
+      [captured, setCaptured] = useState<BoardPiece[]>([]),
+      [material, setMaterial] = useState<BoardPiece[]>([]),
+      feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+        undefined,
+      );
+    useLayoutEffect(() => () => clearTimeout(feedbackTimer.current), []);
     useLayoutEffect(() => {
       const missing = previous.current.filter(
         (old) => !pieces.some((piece) => piece.id === old.id),
       );
       previous.current = pieces;
-      if (reduced || !missing.length || !duration) { setCaptured([]); return; }
+      clearTimeout(feedbackTimer.current);
+      setMaterial(feedback ? missing : []);
+      if (feedback && missing.length)
+        feedbackTimer.current = setTimeout(
+          () => setMaterial([]),
+          motionDuration.board + motionDuration.standard + motionDuration.fast,
+        );
+      if (reduced || !missing.length || !duration) {
+        setCaptured([]);
+        return;
+      }
       setCaptured(missing);
       const timer = setTimeout(() => setCaptured([]), duration);
       return () => clearTimeout(timer);
-    }, [pieces, reduced, duration]);
+    }, [pieces, reduced, duration, feedback]);
     const boardStyle = styleById(itemById(equipped.board)?.style);
     const key = useCallback((event: KeyboardEvent<HTMLButtonElement>) => {
       const directions: Record<string, number> = {
@@ -220,6 +266,7 @@ export const Chessboard = memo(
       orientation === "b" ? [...boardSquares].reverse() : boardSquares;
     return (
       <div
+        id={id}
         ref={root}
         className={`board ${styles.board} ${selected ? "has-selection" : ""}`}
         role="group"
@@ -241,6 +288,7 @@ export const Chessboard = memo(
               dark={(Math.floor(index / 8) + (index % 8)) % 2 === 1}
               selected={selected === square}
               legal={legal.includes(square)}
+              capture={legal.includes(square) && !!piece}
               last={!!last && (last.from === square || last.to === square)}
               check={check === square}
               disabled={disabled}
@@ -252,11 +300,41 @@ export const Chessboard = memo(
             />
           );
         })}
+        {arrowPoints && (
+          <svg
+            className={`${styles.arrow} analysis-arrow`}
+            viewBox="0 0 8 8"
+            aria-label="Рекомендуемый ход"
+          >
+            <defs>
+              <marker
+                id={markerId}
+                markerWidth="3"
+                markerHeight="3"
+                refX="2.3"
+                refY="1.5"
+                orient="auto"
+              >
+                <path d="M0 0 3 1.5 0 3z" fill="currentColor" />
+              </marker>
+            </defs>
+            <line
+              x1={arrowPoints[0]}
+              y1={arrowPoints[1]}
+              x2={arrowPoints[2]}
+              y2={arrowPoints[3]}
+              stroke="currentColor"
+              strokeWidth=".13"
+              markerEnd={`url(#${markerId})`}
+            />
+          </svg>
+        )}
         {captured.map((piece) => (
           <span
             className={`${styles.ghost} moving-piece`}
             key={`capture-${piece.id}`}
             style={{
+              animationDuration: `${duration}ms`,
               left: `${boardPoint(piece.square, orientation).x * 12.5}%`,
               top: `${boardPoint(piece.square, orientation).y * 12.5}%`,
             }}
@@ -268,6 +346,27 @@ export const Chessboard = memo(
             />
           </span>
         ))}
+        {material.map(
+          (piece) =>
+            piece.type !== "k" && (
+              <span
+                key={`material-${piece.id}`}
+                className="capture-material"
+                data-balance={
+                  piece.color === orientation ? "negative" : "positive"
+                }
+                aria-hidden="true"
+                style={{
+                  left: `${(boardPoint(piece.square, orientation).x + 1) * 12.5}%`,
+                  top: `${boardPoint(piece.square, orientation).y * 12.5}%`,
+                  transform: "translateX(-100%)",
+                }}
+              >
+                {piece.color === orientation ? "−" : "+"}
+                {{ p: 1, n: 3, b: 3, r: 5, q: 9 }[piece.type]}
+              </span>
+            ),
+        )}
         {pieces.map((piece) => (
           <MovingPiece
             key={piece.id}

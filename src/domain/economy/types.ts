@@ -1,4 +1,4 @@
-import type { SearchDiagnostic } from "../../services/engines/types.js";
+import type { SearchDiagnostic } from "../../shared/types/engine.js";
 import type { Item } from "../catalog/types.js";
 export type DecisionQuality =
   "best" | "good" | "inaccuracy" | "mistake" | "blunder";

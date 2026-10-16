@@ -1,16 +1,16 @@
 import type { Color } from "chess.js";
 import {
-allMoves,
-attacksSquare,
-enPassantTarget,
-isKingThreatened,
-isSquareAttacked,
-livingUnits,
-resolveAction,
-unitAt,
+  allMoves,
+  attacksSquare,
+  enPassantTarget,
+  isKingThreatened,
+  isSquareAttacked,
+  livingUnits,
+  resolveAction,
+  unitAt,
 } from "./pve-battle.js";
-import { damage,maxHp,unitPower } from "./pve-model.js";
-import type { CombatUnit,PveAction,PveBattle } from "./types.js";
+import { damage, maxHp, unitPower } from "./pve-model.js";
+import type { CombatUnit, PveAction, PveBattle } from "./types.js";
 const value = (unit: CombatUnit) =>
   unit.type === "k"
     ? 240 * (0.35 + (0.65 * unit.hp) / maxHp(unit)) + unitPower(unit)

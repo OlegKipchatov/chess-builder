@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
 import {rewardBreakdownFor} from '../src/domain/economy/engine.ts';
-import {matchResultDialog} from '../dist/ui/dialog-content.js';
+import {matchResultDialog} from './helpers/react-markup.js';
 const position = (count,{draw=false,winner='w',over=true}={}) => ({
  history:()=>Array.from({length:count*2},(_,i)=>({color:i%2?'b':'w'})),
  isGameOver:()=>over,isDraw:()=>draw,turn:()=>winner==='w'?'b':'w'

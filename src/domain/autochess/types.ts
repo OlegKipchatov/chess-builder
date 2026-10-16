@@ -1,4 +1,4 @@
-import type { Color,PieceSymbol } from "chess.js";
+import type { Color, PieceSymbol } from "chess.js";
 import type { Outcome } from "../pve/types.js";
 export interface AutoPiece {
   id: string;

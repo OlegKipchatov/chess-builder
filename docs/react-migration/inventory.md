@@ -1,7 +1,7 @@
 # React migration parity inventory
 
 Baseline: `ee7df974635bf7dd514c24e4d4a6b04bce3af8c6` (v132). Work branch: `migration/react-architecture-20261017`.
-The checked-in legacy runtime remains the reference until replacement and regression validation are complete. No production publication or main merge is authorized.
+The unmodified legacy runtime remains available in the baseline commit for reference and the installed-PWA upgrade fixture. The migration build uses only React/TypeScript sources. No production publication or main merge is authorized.
 
 | Feature | Current source / dependencies | Replacement ownership | Required parity |
 |---|---|---|---|
@@ -31,6 +31,17 @@ Prefer narrow external-store subscriptions with useSyncExternalStore for saved s
 
 Audit and implementation in progress. No acceptance check is considered complete until its replacement test passes. No internal preview published.
 
-### Checkpoint: React integration
+### Checkpoint: typed React runtime
 
-React routes and mode interfaces now exist in `src/`; Vite production packaging to a temporary `build/react` output passes. Strict TypeScript passes. Initial React regression coverage passes 8 tests, including Strict Mode engine retirement, local-game restoration, corrupt PGN recovery and atomic purchases. Adapted engine compatibility suite passes 34 tests. Existing domain tests now import TypeScript sources; UI/source-contract tests still reference the preserved vanilla baseline and must be replaced with equivalent React assertions before legacy removal. Browser installation failed (truncated Chromium archive); no browser/PWA upgrade verification or preview publication claimed.
+Generated `dist/` replaces the old source directory. Strict TypeScript and ESLint pass. The latest verified runs contain 375 Node domain/service regression tests and 54 React tests. Five v132-generated storage fixtures cover old formats, rich active games, analysis, activity, PvE and Autochess. All pass.
+
+The preserved behavior from old DOM tests is now asserted through React render/hook/router tests (board identities, keyboard/animation cleanup, modals, archives, analysis, activity, theme, persistence, Worker lifetime). Old standalone browser scripts still need complete adaptation where they rely on obsolete page IDs and pre-v132 navigation. They are not counted as passed.
+
+The production PWA and Stockfish browser suites have been adapted to generated Vite assets and the actual v132 predecessor. Their execution is pending. The managed local environment lacks the Sites-required `control-browser`; no alternate local server/browser is started. CI on the migration branch is the next available browser-validation path. No installed-PWA or published-preview success is claimed.
+
+### Remaining acceptance gates
+
+- Execute and fix browser checks; migrate remaining standalone layout, PGN/training, Hunt and Autochess cases without dropping their behavioral assertions.
+- Verify geometry, safe-area layouts, touch dragging, post-game return and all mode transitions in a real browser.
+- Measure browser interaction performance and compare with v132. Unit/DOM timing is not browser performance evidence.
+- Complete documentation/test coverage reconciliation, then publish and directly verify a new private preview. Production stays unchanged.

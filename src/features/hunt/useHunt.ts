@@ -1,20 +1,20 @@
-import { useEffect,useReducer,useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
-awardHunt,
-createHunt,
-finishHunt,
-releaseHuntInput,
-resolvePlayerMove,
-skipExpiredSpawn,
-startHunt,
-tickHunt,
+  awardHunt,
+  createHunt,
+  finishHunt,
+  releaseHuntInput,
+  resolvePlayerMove,
+  skipExpiredSpawn,
+  startHunt,
+  tickHunt,
 } from "../../domain/hunt/hunt.js";
 import type {
-HuntEvent,
-HuntMode,
-HuntMove,
-HuntState,
+  HuntEvent,
+  HuntMode,
+  HuntMove,
+  HuntState,
 } from "../../domain/hunt/types.js";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 import type { BoardPiece } from "../chessboard/model.js";
@@ -47,7 +47,12 @@ const initial = (mode: HuntMode, id: string, now: number): State => {
 };
 const frame = (state: State, now: number): State => {
   const event = state.queue[0];
-  if (!event) return { ...state, presenting: false, run: releaseHuntInput(state.run, now) };
+  if (!event)
+    return {
+      ...state,
+      presenting: false,
+      run: releaseHuntInput(state.run, now),
+    };
   const run = skipExpiredSpawn(state.run, event, now);
   const board =
     event.type === "opponentSpawned" && run.phase === "finished"
@@ -71,7 +76,13 @@ const frame = (state: State, now: number): State => {
         `${run.runId}:${run.playerMoveCount}:${state.step}:${square}`,
     };
   });
-  return { run, shown, queue: state.queue.slice(1), step: state.step + 1, presenting: true };
+  return {
+    run,
+    shown,
+    queue: state.queue.slice(1),
+    step: state.step + 1,
+    presenting: true,
+  };
 };
 const reducer = (state: State, event: Event): State => {
   switch (event.type) {
@@ -80,7 +91,7 @@ const reducer = (state: State, event: Event): State => {
     case "abort":
       return {
         ...state,
-        run: finishHunt(state.run, "aborted", event.now),
+        run: finishHunt(state.run, "abandoned", event.now),
         queue: [],
         presenting: false,
       };
@@ -128,8 +139,9 @@ export const useHunt = (mode: HuntMode) => {
   useEffect(() => {
     if (
       state.run.phase !== "finished" ||
-      state.run.finishReason === "aborted" ||
-      state.queue.length || state.presenting
+      state.run.finishReason === "abandoned" ||
+      state.queue.length ||
+      state.presenting
     )
       return;
     let live = true;
@@ -144,7 +156,7 @@ export const useHunt = (mode: HuntMode) => {
     return () => {
       live = false;
     };
-  }, [state.run.runId, state.run.phase, state.queue.length, state.presenting, retry, store]);
+  }, [state.run, state.queue.length, state.presenting, retry, store]);
   return {
     state,
     award,

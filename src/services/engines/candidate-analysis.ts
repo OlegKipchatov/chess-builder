@@ -1,5 +1,5 @@
-import type { Chess,Color } from "chess.js";
-import type { RawEngineLine } from "./types.js";
+import type { Chess, Color } from "chess.js";
+import type { RawEngineLine } from "../../shared/types/engine.js";
 // Reference analysis only; these objective scores never enter Cognitive v2.
 export const normalizeScore = (
   type: "cp" | "mate",

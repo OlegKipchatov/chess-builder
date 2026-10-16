@@ -49,7 +49,10 @@ const initialize = async () => {
       new Error("Stockfish shared memory requires isolation"),
       { recoverable: true },
     );
-  const base = new URL("../vendor/sf19/", scope.location.href);
+  const base = new URL(
+    import.meta.env.DEV ? "/vendor/sf19/" : "../vendor/sf19/",
+    scope.location.href,
+  );
   let instance: StockfishEngine;
   try {
     const { default: createStockfish } = (await import(

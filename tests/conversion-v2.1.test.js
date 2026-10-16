@@ -103,7 +103,7 @@ test('2.1 disabling conversion uses the ordinary cognitive path',()=>{
  assert.equal(decide({...args,conversionEnabled:false}).trace.conversionMode,undefined);
 });
 test('2.1 production conversion has no Stockfish or tablebase imports',()=>{
- for(const name of ['config','board','model','history','search'])assert.doesNotMatch(readFileSync(new URL(`../dist/conversion-${name}.js`,import.meta.url),'utf8'),/from .*?(stockfish|syzygy|tablebase|candidate-analysis)/i);
+ for(const name of ['config','board','model','history','search'])assert.doesNotMatch(readFileSync(new URL(`../src/domain/cognitive/conversion-${name}.ts`,import.meta.url),'utf8'),/from .*?(stockfish|syzygy|tablebase|candidate-analysis)/i);
 });
 test('2.1 every style remains legal and deterministic in conversion',()=>{
  for(const profile of ['default','solid','aggressive','positional','tricky']){

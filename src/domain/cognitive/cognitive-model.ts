@@ -1,18 +1,18 @@
-import type { Chess,Color } from "chess.js";
+import type { Chess, Color } from "chess.js";
 import {
-CONFIG as C,
-CONTROL_POINTS,
-EXTRA_POINTS,
+  CONFIG as C,
+  CONTROL_POINTS,
+  EXTRA_POINTS,
 } from "./cognitive-config.js";
 import { validPlayStyle } from "./play-style-config.js";
 import type {
-BoardPiece,
-Capabilities,
-EngineProfile,
-Facts,
-Perception,
-PlayStyle,
-Threat
+  BoardPiece,
+  Capabilities,
+  EngineProfile,
+  Facts,
+  Perception,
+  PlayStyle,
+  Threat,
 } from "./types.js";
 export const clamp = (n: number, a: number, b: number) =>
   Math.max(a, Math.min(b, n));

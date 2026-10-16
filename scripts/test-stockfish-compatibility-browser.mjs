@@ -4,7 +4,9 @@ import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
-const root=fileURLToPath(new URL('../dist/',import.meta.url));
+import './build-browser-probe.mjs';
+import {testLongMateEngine} from './test-mate-long-engine.mjs';
+const root=fileURLToPath(new URL('../build/browser-probe/',import.meta.url));
 const mime={'.js':'text/javascript','.wasm':'application/wasm','.html':'text/html'};
 let isolation=false,broken=false;
 const server=createServer(async(req,res)=>{
@@ -28,15 +30,15 @@ try{
   const result=await page.evaluate(async()=>{
    const NativeWorker=Worker;let live=0,peak=0;const variants=[];
    window.Worker=class extends NativeWorker{
-    constructor(url,options){super(url,options);this.dead=false;live++;peak=Math.max(peak,live);variants.push(String(url).includes('single-worker')?'single':'threaded');}
+    constructor(url,options){super(url,options);this.dead=false;live++;peak=Math.max(peak,live);variants.push(String(url).includes('/single-')?'single':'threaded');}
     terminate(){if(!this.dead){this.dead=true;live--;}super.terminate();}
    };
-   const {createStockfishClient}=await import('./stockfish-client.js?v=132');
-   const {createAutoplayEngine}=await import('./autochess-engine.js?v=132');
-   const {createSession}=await import('./cognitive-model.js?v=132');
-   const {Chess}=await import('./chess.js?v=132');
-   const {analyzeReward}=await import('./economy-analysis.js?v=132');
-   const {analyzeGame}=await import('./analysis/analysis-service.js?v=132');
+   const {createStockfishClient}=await import('./probe.js');
+   const {createAutoplayEngine}=await import('./probe.js');
+   const {createSession}=await import('./probe.js');
+   const {Chess}=await import('./probe.js');
+   const {analyzeReward}=await import('./probe.js');
+   const {analyzeGame}=await import('./probe.js');
    const wait=async()=>{for(let i=0;i<100&&live;i++)await new Promise(r=>setTimeout(r,20));if(live)throw Error('Orphan workers');};
    for(let i=0;i<3;i++){
     const client=createStockfishClient();
@@ -59,6 +61,7 @@ try{
   if(mode==='threaded')assert.ok(result.variants.every(v=>v==='threaded'));
   if(mode==='single'){assert.equal(result.sab,'undefined');assert.ok(result.variants.every(v=>v==='single'));}
   if(mode==='init-fallback'){assert.equal(result.variants[0],'threaded');assert.ok(result.variants.slice(1).every(v=>v==='single'));}
+  if(mode==='threaded')await testLongMateEngine(page);
   console.log('PASS',mode,JSON.stringify(result));await context.close();
  }
 }finally{await browser.close();await new Promise(done=>server.close(done));}

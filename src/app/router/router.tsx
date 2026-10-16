@@ -1,10 +1,10 @@
+import { lazy } from "react";
 import {
-createHashHistory,
-createRootRouteWithContext,
-createRoute,
-createRouter,
-lazyRouteComponent,
-redirect,
+  createHashHistory,
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+  redirect,
 } from "@tanstack/react-router";
 import type { VaultStore } from "../../services/persistence/vault-store.js";
 import { Page } from "../../shared/ui/Page.js";
@@ -42,28 +42,22 @@ const index = createRoute({
 const play = createRoute({
   getParentRoute: () => root,
   path: "/play",
-  component: lazyRouteComponent(() => import("../../pages/game/GamePage.js")),
+  component: lazy(() => import("../../pages/game/GamePage.js")),
 });
 const collection = createRoute({
   getParentRoute: () => root,
   path: "/collection",
-  component: lazyRouteComponent(
-    () => import("../../pages/collection/CollectionPage.js"),
-  ),
+  component: lazy(() => import("../../pages/collection/CollectionPage.js")),
 });
 const chests = createRoute({
   getParentRoute: () => root,
   path: "/chests",
-  component: lazyRouteComponent(
-    () => import("../../pages/chests/ChestsPage.js"),
-  ),
+  component: lazy(() => import("../../pages/chests/ChestsPage.js")),
 });
 const history = createRoute({
   getParentRoute: () => root,
   path: "/history",
-  component: lazyRouteComponent(
-    () => import("../../pages/history/HistoryPage.js"),
-  ),
+  component: lazy(() => import("../../pages/history/HistoryPage.js")),
 });
 const review = createRoute({
   getParentRoute: () => root,
@@ -71,20 +65,14 @@ const review = createRoute({
   validateSearch: (search: Record<string, unknown>) => ({
     analyze: search.analyze === true,
   }),
-  component: lazyRouteComponent(
-    () => import("../../pages/history/ReviewPage.js"),
-  ),
+  component: lazy(() => import("../../pages/history/ReviewPage.js")),
 });
 const calendar = createRoute({
   getParentRoute: () => root,
   path: "/calendar",
-  component: lazyRouteComponent(
-    () => import("../../pages/activity/ActivityPage.js"),
-  ),
+  component: lazy(() => import("../../pages/activity/ActivityPage.js")),
 });
-const Streak = lazyRouteComponent(
-  () => import("../../pages/activity/ActivityPage.js"),
-);
+const Streak = lazy(() => import("../../pages/activity/ActivityPage.js"));
 const streak = createRoute({
   getParentRoute: () => root,
   path: "/streak",
@@ -93,21 +81,17 @@ const streak = createRoute({
 const profile = createRoute({
   getParentRoute: () => root,
   path: "/profile",
-  component: lazyRouteComponent(
-    () => import("../../pages/profile/ProfilePage.js"),
-  ),
+  component: lazy(() => import("../../pages/profile/ProfilePage.js")),
 });
 const statistics = createRoute({
   getParentRoute: () => root,
   path: "/statistics",
-  component: lazyRouteComponent(
-    () => import("../../pages/statistics/StatisticsPage.js"),
-  ),
+  component: lazy(() => import("../../pages/statistics/StatisticsPage.js")),
 });
 const faq = createRoute({
   getParentRoute: () => root,
   path: "/faq",
-  component: lazyRouteComponent(() => import("../../pages/faq/FaqPage.js")),
+  component: lazy(() => import("../../pages/faq/FaqPage.js")),
 });
 const hunt = createRoute({
   getParentRoute: () => root,
@@ -117,23 +101,22 @@ const hunt = createRoute({
   ): { mode: "timed" | "endless" } => ({
     mode: search.mode === "timed" ? "timed" : "endless",
   }),
-  component: lazyRouteComponent(() => import("../../pages/hunt/HuntPage.js")),
+  component: lazy(() => import("../../pages/hunt/HuntPage.js")),
 });
 const autochess = createRoute({
   getParentRoute: () => root,
   path: "/autochess",
-  component: lazyRouteComponent(
-    () => import("../../pages/autochess/AutochessPage.js"),
-  ),
+  component: lazy(() => import("../../pages/autochess/AutochessPage.js")),
 });
 const pve = createRoute({
   getParentRoute: () => root,
   path: "/pve",
-  component: lazyRouteComponent(() => import("../../pages/pve/PvePage.js")),
+  component: lazy(() => import("../../pages/pve/PvePage.js")),
 });
-const Import = lazyRouteComponent(
-  () => import("../../features/game-review/PgnImport.js"),
-  "PgnImport",
+const Import = lazy(() =>
+  import("../../features/game-review/PgnImport.js").then((module) => ({
+    default: module.PgnImport,
+  })),
 );
 const pgn = createRoute({
   getParentRoute: () => root,
@@ -161,10 +144,10 @@ const routes = root.addChildren([
   pve,
   pgn,
 ]);
-export const makeRouter = (vault: VaultStore) =>
+export const makeRouter = (vault: VaultStore, history = createHashHistory()) =>
   createRouter({
     routeTree: routes,
-    history: createHashHistory(),
+    history,
     context: { vault },
     scrollRestoration: true,
     defaultPreload: "intent",

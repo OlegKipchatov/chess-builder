@@ -1,14 +1,14 @@
-import type { Color,Move,Square } from "chess.js";
+import type { Color, Move, Square } from "chess.js";
 import { Chess } from "chess.js";
 import { CONFIG as C } from "./cognitive-config.js";
 import {
-boardPieces,
-capabilitiesFor,
-factsFor,
-perceive,
-random,
-threatsFor,
-uci,
+  boardPieces,
+  capabilitiesFor,
+  factsFor,
+  perceive,
+  random,
+  threatsFor,
+  uci,
 } from "./cognitive-model.js";
 import { profileAdjustment } from "./cognitive-profile.js";
 import { CONVERSION } from "./conversion-config.js";
@@ -16,12 +16,12 @@ import { conversionSignature } from "./conversion-model.js";
 import { decideConversion } from "./conversion-search.js";
 import { validPlayStyle } from "./play-style-config.js";
 import type {
-BoardPiece,
-Candidate,
-Capabilities,
-DecisionInput,
-Facts,
-Perception
+  BoardPiece,
+  Candidate,
+  Capabilities,
+  DecisionInput,
+  Facts,
+  Perception,
 } from "./types.js";
 const center = (square: string) =>
   7 -

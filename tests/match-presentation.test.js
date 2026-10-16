@@ -4,7 +4,7 @@ import {Chess} from 'chess.js';
 import {completedMatch,matchEndReason} from '../src/domain/chess/archive.ts';
 import {initialState} from '../src/services/persistence/state.ts';
 import {createStartedGame} from '../src/domain/chess/session.ts';
-import {matchResultDialog} from '../dist/ui/dialog-content.js';
+import {matchResultDialog} from './helpers/react-markup.js';
 const finish = (game,color,resigned=false) => {
  const state=initialState();state.game={...createStartedGame(state,()=>.9),playerColor:color,resigned};
  return completedMatch(state,game,{id:'test',finishedAt:'2026-09-28T04:00:00Z'});

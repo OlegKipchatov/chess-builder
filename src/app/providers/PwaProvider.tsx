@@ -1,16 +1,18 @@
+import { useOverlays } from "./OverlayProvider.js";
 import {
-createContext,
-useContext,
-useEffect,
-useRef,
-useState,
-type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
 } from "react";
 interface InstallEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 interface PwaContext {
+  setBusy: (busy: boolean) => void;
   available: boolean;
   ready: boolean;
   error: string;
@@ -20,6 +22,7 @@ interface PwaContext {
   install: () => Promise<boolean>;
 }
 const Context = createContext<PwaContext>({
+  setBusy: () => {},
   available: false,
   ready: false,
   error: "",
@@ -28,7 +31,30 @@ const Context = createContext<PwaContext>({
   update: () => {},
   install: async () => false,
 });
-export const PwaProvider = ({ children }: { children: ReactNode }) => {
+const reloadPage = () => location.reload();
+export const PwaProvider = ({
+  children,
+  reload = reloadPage,
+}: {
+  children: ReactNode;
+  reload?: () => void;
+}) => {
+  const { isOpen } = useOverlays(),
+    [busy, setBusy] = useState(true),
+    [pending, setPending] = useState(false),
+    reloaded = useRef(false);
+  useEffect(() => {
+    if (!pending || busy || isOpen || reloaded.current) return;
+    const apply = () => {
+      if (!document.hidden && !reloaded.current) {
+        reloaded.current = true;
+        reload();
+      }
+    };
+    apply();
+    document.addEventListener("visibilitychange", apply);
+    return () => document.removeEventListener("visibilitychange", apply);
+  }, [pending, busy, isOpen, reload]);
   const [available, setAvailable] = useState(false),
     [ready, setReady] = useState(false),
     [error, setError] = useState(""),
@@ -62,11 +88,11 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
     const changed = () => {
       if (!live) return;
       if (requested.current) {
-        location.reload();
+        setPending(true);
         return;
       }
       setReady(true);
-      if (!hadController && !crossOriginIsolated) setAvailable(true);
+      if (!hadController && !crossOriginIsolated) setPending(true);
     };
     navigator.serviceWorker.addEventListener("controllerchange", changed);
     void navigator.serviceWorker
@@ -118,11 +144,12 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
   const update = () => {
+    if (busy || isOpen) return;
     requested.current = true;
     setUpdating(true);
     if (registration.current?.waiting)
       registration.current.waiting.postMessage({ type: "SKIP_WAITING" });
-    else location.reload();
+    else setPending(true);
   };
   const install = async () => {
     const event = installEvent.current;
@@ -135,7 +162,16 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
   };
   return (
     <Context
-      value={{ available, ready, error, canInstall, updating, update, install }}
+      value={{
+        setBusy,
+        available,
+        ready,
+        error,
+        canInstall,
+        updating,
+        update,
+        install,
+      }}
     >
       {children}
     </Context>

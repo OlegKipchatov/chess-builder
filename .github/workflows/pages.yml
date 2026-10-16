@@ -2,7 +2,7 @@ name: Test and publish Chess Vault
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'migration/**']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -38,24 +38,18 @@ jobs:
         run: npm run test:stockfish:browser
       - name: Test offline single-threaded PWA
         run: npm run test:pwa:single
-      - name: Check JavaScript syntax
-        run: |
-          for source in dist/*.js; do
-            node --check "$source"
-          done
-      - name: Validate installable PWA assets
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          root = Path('dist')
-          manifest = json.loads((root / 'manifest.webmanifest').read_text())
-          assert manifest['display'] == 'standalone'
-          for icon in manifest['icons']:
-              assert (root / icon['src']).is_file(), icon['src']
-          for name in ['index.html', 'app.js', 'engine.js', 'chess.js', 'bot-worker.js', 'sw.js', 'style.css']:
-              assert (root / name).is_file(), name
-          PY
+      - name: Typecheck strict application contracts
+        run: npm run typecheck
+      - name: Lint React and TypeScript
+        run: npm run lint
+      - name: Check generated motion tokens
+        run: npm run motion:check
+      - name: Retain tested static build
+        uses: actions/upload-artifact@v4
+        with:
+          name: gachachess-react-${{ github.sha }}
+          path: dist
+          retention-days: 7
 
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
@@ -75,6 +69,10 @@ jobs:
           node-version: '22'
       - name: Fetch and verify pinned Stockfish release
         run: npm run prepare:engine
+      - name: Install build dependencies
+        run: npm ci
+      - name: Build static release
+        run: npm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static app

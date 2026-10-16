@@ -1,23 +1,26 @@
 import type { PieceSymbol } from "chess.js";
-import { useRef,useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVault } from "../../app/providers/VaultProvider.js";
 import {
-ITEMS,
-PIECE_NAMES,
-STYLES,
-TYPES,
-boardId,
-craftCost,
-itemById,
-pieceId,
-rarityNames,
+  ITEMS,
+  PIECE_NAMES,
+  STYLES,
+  TYPES,
+  boardId,
+  craftCost,
+  itemById,
+  pieceId,
+  rarityNames,
 } from "../../domain/catalog/catalog.js";
 import { presetEquipment } from "../../domain/catalog/collection-model.js";
-import type { Item,ItemId } from "../../domain/catalog/types.js";
+import type { Equipment, Item, ItemId } from "../../domain/catalog/types.js";
 import { useInventory } from "../../features/inventory/useInventory.js";
 import { ItemPreview } from "../../shared/ui/ItemPreview.js";
 import { Page } from "../../shared/ui/Page.js";
+const sameEquipment = (a: Equipment, b: Equipment) =>
+  a.board === b.board &&
+  TYPES.every((type) => a.pieces[type] === b.pieces[type]);
 const SaveForm = ({ save }: { save: (name: string) => void }) => {
   const [name, setName] = useState("");
   return (
@@ -51,8 +54,22 @@ export const CollectionPage = () => {
     inventory = useInventory();
   const [view, setView] = useState<"sets" | "items" | "saved">("sets"),
     [type, setType] = useState<PieceSymbol | "board">("k"),
-    [onlyOwned, setOnlyOwned] = useState(false);
+    [onlyOwned, setOnlyOwned] = useState(false),
+    [target, setTarget] = useState<ItemId | null>(null);
   const rows = useRef(new Map<ItemId, HTMLDivElement>());
+  useEffect(() => {
+    if (!target || view !== "items") return;
+    const frame = requestAnimationFrame(() => {
+      const node = rows.current.get(target);
+      node?.scrollIntoView({ block: "center", behavior: "instant" });
+      node?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [target, view, type]);
+  const isEquipped = (item: Item) =>
+    item.kind === "board"
+      ? equipped.board === item.id
+      : equipped.pieces[item.type] === item.id;
   const open = (item: Item) =>
     show({
       title: item.name,
@@ -63,13 +80,14 @@ export const CollectionPage = () => {
           {owned.includes(item.id) ? (
             <button
               className="primary wide"
+              disabled={isEquipped(item)}
               onClick={() =>
                 void inventory.equip(item).then((ok) => {
                   if (ok) show(null);
                 })
               }
             >
-              Использовать
+              {isEquipped(item) ? "Выбрано" : "Использовать"}
             </button>
           ) : (
             <>
@@ -83,7 +101,7 @@ export const CollectionPage = () => {
                   })
                 }
               >
-                Создать
+                Создать · {craftCost(item)} ✧
               </button>
             </>
           )}
@@ -96,11 +114,7 @@ export const CollectionPage = () => {
     setView("items");
     setType(item.kind === "board" ? "board" : item.type);
     if (!owned.includes(id)) setOnlyOwned(false);
-    requestAnimationFrame(() =>
-      rows.current
-        .get(id)
-        ?.scrollIntoView({ block: "center", behavior: "instant" }),
-    );
+    setTarget(id);
   };
   return (
     <Page id="collection" title="Коллекция">
@@ -160,11 +174,12 @@ export const CollectionPage = () => {
                 ...TYPES.map((t) => pieceId(style.id, t)),
                 boardId(style.id),
               ],
-              complete = ids.every((id) => owned.includes(id));
+              complete = ids.every((id) => owned.includes(id)),
+              active = sameEquipment(equipped, presetEquipment(style.id));
             return (
               <div
                 key={style.id}
-                className={`collection-row rarity-row rarity-${style.rarity}`}
+                className={`collection-row rarity-row rarity-${style.rarity} ${active ? "equipped" : ""}`}
               >
                 <div className="collection-name">
                   <strong>{style.name}</strong>
@@ -187,12 +202,12 @@ export const CollectionPage = () => {
                 </div>
                 <button
                   className="collection-action"
-                  disabled={!complete}
+                  disabled={!complete || active}
                   onClick={() =>
                     void inventory.equipSet(presetEquipment(style.id))
                   }
                 >
-                  Выбрать
+                  {active ? "Выбрано" : "Выбрать"}
                 </button>
               </div>
             );
@@ -236,15 +251,20 @@ export const CollectionPage = () => {
                   if (node) rows.current.set(item.id, node);
                   else rows.current.delete(item.id);
                 }}
-                className={`collection-row rarity-row rarity-${item.rarity}`}
+                tabIndex={-1}
+                className={`collection-row rarity-row rarity-${item.rarity} ${isEquipped(item) ? "equipped" : ""} ${target === item.id ? "collection-target" : ""}`}
               >
                 <ItemPreview item={item} />
                 <div className="collection-name">
                   <strong>{item.name}</strong>
                   <small>{rarityNames[item.rarity]}</small>
                 </div>
-                <button onClick={() => open(item)}>
-                  {owned.includes(item.id) ? "Выбрать" : `${craftCost(item)} ◇`}
+                <button disabled={isEquipped(item)} onClick={() => open(item)}>
+                  {isEquipped(item)
+                    ? "Выбрано"
+                    : owned.includes(item.id)
+                      ? "Выбрать"
+                      : `Создать · ${craftCost(item)} ✧`}
                 </button>
               </div>
             ))}
@@ -259,10 +279,25 @@ export const CollectionPage = () => {
             </p>
           )}
           {sets.map((set) => (
-            <div className="collection-row" key={set.id}>
+            <div
+              className={`collection-row ${sameEquipment(equipped, set) ? "equipped" : ""}`}
+              key={set.id}
+            >
               <strong>{set.name}</strong>
-              <button onClick={() => void inventory.equipSet(set)}>
-                Выбрать
+              <div className="collection-pieces">
+                {[...TYPES.map((type) => set.pieces[type]), set.board].map(
+                  (id) => (
+                    <span key={id} className="compact-item">
+                      <ItemPreview item={itemById(id)!} />
+                    </span>
+                  ),
+                )}
+              </div>
+              <button
+                disabled={sameEquipment(equipped, set)}
+                onClick={() => void inventory.equipSet(set)}
+              >
+                {sameEquipment(equipped, set) ? "Выбрано" : "Выбрать"}
               </button>
               <button
                 aria-label={`Удалить ${set.name}`}

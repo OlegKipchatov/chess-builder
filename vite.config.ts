@@ -1,10 +1,28 @@
 import react from "@vitejs/plugin-react";
-import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+const hash = createHash("sha256");
+const hashFiles = (dir: string) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) hashFiles(path);
+    else {
+      hash.update(path);
+      hash.update(readFileSync(path));
+    }
+  }
+};
+hashFiles("src");
+hashFiles("public");
+for (const path of ["index.html", "package-lock.json", "vite.config.ts"])
+  hash.update(readFileSync(path));
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 const release =
-  process.env.GACHACHESS_RELEASE ||
-  `${execFileSync("git", ["rev-parse", "--short", "HEAD"]).toString().trim()}-${Date.now()}`;
+  process.env.GACHACHESS_RELEASE || hash.digest("hex").slice(0, 16);
 export default defineConfig({
   base: "./",
   plugins: [

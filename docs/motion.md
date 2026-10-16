@@ -2,7 +2,7 @@
 
 Общие визуальные требования: [дизайн-система GachaChess](design-system.md).
 
-`dist/ui/motion.js` is the source of truth for Web Animations and generated CSS tokens.
+`src/shared/styles/motion.ts` is the source of truth for Web Animations and generated CSS tokens.
 After changing it, run `npm run motion:generate`; `npm run motion:check` verifies CSS synchronization.
 
 | Layer | Duration | Usage |

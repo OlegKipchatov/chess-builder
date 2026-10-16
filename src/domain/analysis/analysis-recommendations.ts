@@ -1,14 +1,12 @@
-import type { Color,Move,Square } from "chess.js";
+import type { Color, Move, Square } from "chess.js";
 import { Chess } from "chess.js";
+import type { EngineLine } from "../../shared/types/engine.js";
 import type {
-EngineLine
-} from "../../services/engines/types.js";
-import type {
-ComparisonFact,
-Continuation,
-MoveAnalysis,
-Recommendation,
-TraceStep
+  ComparisonFact,
+  Continuation,
+  MoveAnalysis,
+  Recommendation,
+  TraceStep,
 } from "./types.js";
 
 export const RECOMMENDATION_VERSION = "consequences-v1";
@@ -135,7 +133,7 @@ export const traceContinuation = (
 const protectionEvidence = (
   fen: string,
   line: EngineLine,
-  color: Color,
+  _color: Color,
 ): Omit<
   Extract<ComparisonFact, { kind: "protection" }>,
   "priority" | "end"
@@ -304,7 +302,7 @@ export const compareContinuations = (
 const renderComparison = (
   fact: Exclude<ComparisonFact, { kind: "protection" }>,
   best: Continuation,
-  actual: Continuation,
+  _actual: Continuation,
 ): string => {
   if (fact.kind === "material") {
     const first = best.steps[0],

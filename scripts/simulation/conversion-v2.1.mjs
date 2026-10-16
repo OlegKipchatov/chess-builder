@@ -1,13 +1,13 @@
 /** Offline only: Stockfish is the defender, never an input to cognitive decisions. */
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {Chess} from '../../dist/chess.js';
-import {decide} from '../../dist/cognitive-search.js';
-import {createStockfishClient} from '../../dist/stockfish-client.js';
+import {Chess} from 'chess.js';
+import {decide} from '../../src/domain/cognitive/cognitive-search.ts';
+import {createStockfishClient} from '../../src/services/engines/stockfish-client.ts';
 import {spawnStockfish} from '../stockfish-process.mjs';
-import {CONVERSION} from '../../dist/conversion-config.js';
+import {CONVERSION} from '../../src/domain/cognitive/conversion-config.ts';
 const sourceFiles=['conversion-config','conversion-board','conversion-model','conversion-history','conversion-search','cognitive-search'];
-const sourceHashes=Object.fromEntries(await Promise.all(sourceFiles.map(async name=>[name,createHash('sha256').update(await readFile(new URL(`../../dist/${name}.js`,import.meta.url))).digest('hex')])));
+const sourceHashes=Object.fromEntries(await Promise.all(sourceFiles.map(async name=>[name,createHash('sha256').update(await readFile(new URL(`../../src/domain/cognitive/${name}.ts`,import.meta.url))).digest('hex')])));
 const client=createStockfishClient(()=>spawnStockfish(19));
 let id=0;
 const defend = game => new Promise((resolve,reject)=>{

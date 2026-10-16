@@ -1,4 +1,4 @@
-import type { MatchMode,SavedGame } from "./types.js";
+import type { MatchMode, SavedGame } from "./types.js";
 export const newGame = (
   mode: MatchMode = "bot",
   difficulty: SavedGame["difficulty"] = "adaptive",

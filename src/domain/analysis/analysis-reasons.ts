@@ -1,13 +1,7 @@
 import type { Color } from "chess.js";
 import { Chess } from "chess.js";
-import type {
-EngineLine
-} from "../../services/engines/types.js";
-import type {
-LineEvidence,
-MoveAnalysis,
-Reason
-} from "./types.js";
+import type { EngineLine } from "../../shared/types/engine.js";
+import type { LineEvidence, MoveAnalysis, Reason } from "./types.js";
 export const uci = (move: { from: string; to: string; promotion?: string }) =>
   move.from + move.to + (move.promotion || "");
 // Verify a short mate against every legal defence, not only the principal variation.

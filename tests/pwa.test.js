@@ -1,116 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,existsSync,readdirSync} from 'node:fs';
-import {pieceSVG} from '../dist/pieces.js';
+import {readFileSync,readdirSync,existsSync} from 'node:fs';
+import {resolve,relative} from 'node:path';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+import {createElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {Piece} from '../src/shared/ui/Piece.tsx';
 import {TYPES,STYLES} from '../src/domain/catalog/catalog.ts';
-import vm from 'node:vm';
-const read = file => readFileSync(new URL('../dist/'+file,import.meta.url),'utf8');
-test('Весь граф runtime-модулей согласован с v70 и доступен офлайн',()=>{
- const sw=read('sw.js');
- for(const file of readdirSync(new URL('../dist/',import.meta.url)).filter(name=>name.endsWith('.js')&&name!=='sw.js')){
-  assert.ok(sw.includes(`'./${file}'`),file);
-  for(const match of read(file).matchAll(/from\s*['"]\.\/([^'"]+)['"]/g)){
-   const [name,query]=match[1].split('?');assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)),`${file}: ${name}`);
-   assert.ok(sw.includes(`'./${name}'`),name);if(!name.startsWith('vendor/'))assert.equal(query,'v=132',`${file}: ${name}`);
-  }
- }
- for(const name of ['difficulty-model.js','difficulty-config.js','play-style.js'])assert.equal(existsSync(new URL('../dist/'+name,import.meta.url)),false,name);
-});
-test('Stockfish 19 получает изоляцию для сетевых и офлайн-ответов',async()=>{
- const handlers={};
- const cached=new Response('<html>offline</html>');
- vm.runInNewContext(read('sw.js'),{self:{location:{origin:'https://example.test'},registration:{scope:'https://example.test/chess-builder/'},addEventListener:(name,handler)=>{handlers[name]=handler;}},URL,Headers,Response,Request:class {constructor(request){Object.assign(this,request);}},caches:{keys:async()=>[],open:async()=>({put:async()=>{},match:async request=>request==='./index.html'?cached.clone():undefined})},fetch:async request=>{if(request.mode==='navigate')throw Error('offline');return new Response('worker');}});
- for(const mode of ['navigate','same-origin']){
-  let result;
-  handlers.fetch({request:{method:'GET',url:'https://example.test/chess-builder/stockfish19-worker.js',mode},respondWith:promise=>{result=promise;}});
-  const response=await result;
-  assert.equal(response.headers.get('Cross-Origin-Opener-Policy'),'same-origin');
-  assert.equal(response.headers.get('Cross-Origin-Embedder-Policy'),'require-corp');
-  assert.equal(await response.text(),mode==='navigate'?'<html>offline</html>':'worker');
- }
- for(const name of ['stockfish19-single-worker.js','vendor/sf19-single/stockfish-19-lite-single.js','vendor/sf19-single/stockfish-19-lite-single.wasm','vendor/sf19-single/COPYING.txt','stockfish19-worker.js','stockfish19-license.txt','vendor/sf19/sf_19_smallnet.js','vendor/sf19/sf_19_smallnet.wasm','vendor/sf19/nn-61e7af4bb97d.nnue']){
-  assert.ok(read('sw.js').includes(`'./${name}'`),name);
-  assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)),name);
- }
-});
-test('Белые и чёрные SVG используют разные явные заливки, а не шрифтовые символы',()=>{for(const type of TYPES)for(const style of STYLES){assert.match(pieceSVG(type,'w',style.id),/fill="#faf8ef"/);assert.match(pieceSVG(type,'b',style.id),/fill="#202933"/);assert.doesNotMatch(pieceSVG(type,'w',style.id),/[♔-♟]/);}});
-test('Все локальные зависимости HTML и модулей существуют и покрыты офлайн-кэшем',()=>{const sw=read('sw.js');const modules=['app.js','session.js','catalog.js','economy.js','state.js','pieces.js','board.js','collection.js','engine.js','bot-worker.js'];for(const file of modules){assert.ok(sw.includes(`'./${file}'`),file);for(const match of read(file).matchAll(/from\s*['"]\.\/([^'"]+)['"]/g)){const name=match[1].split('?')[0];assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)),name);assert.ok(sw.includes(`'./${name}'`),name);}}const html=read('index.html');assert.ok(html.includes('./app.js?v=132'));assert.ok(html.includes('./style.css?v=132'));assert.ok(sw.includes("path+'?v=132'"));});
-test('Сервис-воркер обновляет оболочку целиком и сохраняет область установки',()=>{const sw=read('sw.js');assert.ok(sw.includes('ACTIVATE_UPDATE'));assert.ok(sw.includes("event.request.mode==='navigate'?'./index.html'"));const manifest=JSON.parse(read('manifest.webmanifest'));assert.equal(manifest.scope,'./');assert.equal(manifest.start_url,'./');});
-test('Поставка v49 содержит v2, но не содержит удалённый алгоритм и SF18',()=>{const sw=read('sw.js');for(const name of ['cognitive-config.js','cognitive-model.js','cognitive-search.js','cognitive-profile.js','bot-client.js','stockfish-config.js','stockfish-client.js','strength.js','engine-info.html']){assert.ok(sw.includes(`'./${name}'`));assert.ok(existsSync(new URL('../dist/'+name,import.meta.url)));}for(const name of ['difficulty-model.js','difficulty-config.js','play-style.js','stockfish-18-lite-single'])assert.ok(!sw.includes(name));assert.match(read('engine-info.html'),/Cognitive v2/);});
-
-test('Таблица стилей содержит оформление приложения, а не JavaScript',()=>{
- const css=read('style.css')+readdirSync(new URL('../dist/ui/styles/',import.meta.url)).filter(name=>name.endsWith('.css')).map(name=>read('ui/styles/'+name)).join('\n');
- assert.doesNotMatch(css,/^\s*(?:import\s|export\s|const\s|let\s)/m);
- for(const selector of [':root','body','.board','.piece-icon','.collection-row'])assert.ok(css.includes(selector+'{'),selector);
- assert.match(css,/grid-template-columns:repeat\(8,1fr\)/);
- assert.match(css,/@media\s*\(max-width:/);
-});
-
-test('Переход v65 → v70 загружает ресурсы без HTTP-кэша и удаляет только старые кэши приложения',async()=>{
- const handlers={},removed=[],stored=[];let claimed=false;
- vm.runInNewContext(read('sw.js'),{
-  self:{addEventListener:(name,handler)=>{handlers[name]=handler;},skipWaiting:async()=>{},clients:{claim:async()=>{claimed=true;}}},
-  Request:class {constructor(url,options){this.url=url;this.cache=options.cache;}},
-  caches:{open:async name=>{assert.equal(name,'chess-vault-v132');return {addAll:async requests=>stored.push(...requests)};},keys:async()=>['chess-vault-v64','chess-vault-v65','chess-vault-v132','another-app'],delete:async name=>removed.push(name)}
- });
- let pending;handlers.install({waitUntil:promise=>{pending=promise;}});await pending;
- assert.ok(stored.every(request=>request.cache==='reload'));
- for(const url of ['./app.js?v=132','./ui/dialog.js?v=132','./ui/styles/dialog.css?v=132','./engine.js?v=132'])assert.ok(stored.some(request=>request.url===url),url);
- handlers.activate({waitUntil:promise=>{pending=promise;}});await pending;
- assert.deepEqual(removed,['chess-vault-v64']);assert.equal(claimed,true);
-});
-
-const workerHarness = ({online=true,networkStatus=200}={}) => {
- const handlers={},requests=[],removed=[],entries=new Map([['./index.html','<html>cached-37</html>'],['./app.js?v=132','app-37']]);
- let activated=false;
- const cache={match:async key=>entries.has(typeof key==='string'?key:key.url)?new Response(entries.get(typeof key==='string'?key:key.url)):undefined,addAll:async requests=>{for(const request of requests)assert.equal(request.cache,'reload');}};
- vm.runInNewContext(read('sw.js'),{
-  self:{location:{origin:'https://example.test'},registration:{scope:'https://example.test/chess-builder/'},addEventListener:(name,handler)=>{handlers[name]=handler;},skipWaiting:async()=>{activated=true;},clients:{claim:async()=>{}}},URL,Headers,Response,
-  Request:class {constructor(request,options){if(typeof request==='string')this.url=request;else Object.assign(this,request);Object.assign(this,options);}},
-  caches:{open:async name=>{assert.equal(name,'chess-vault-v132');return cache;},keys:async()=>['chess-vault-v34','chess-vault-v35','chess-vault-v132','other-app'],delete:async key=>removed.push(key)},
-  fetch:async request=>{requests.push(request);if(!online)throw Error('offline');return new Response('<html>network-latest</html>',{status:networkStatus});}
- });
- const run = async name=>{let promise;handlers[name]({waitUntil:value=>{promise=value;}});await promise;};
- const navigate = async()=>{let response;handlers.fetch({request:{method:'GET',mode:'navigate',url:'https://example.test/',cache:'default'},respondWith:value=>{response=value;}});return (await response).text();};
- return {run,navigate,requests,removed,isActivated:()=>activated};
+const scope='https://example.test/chess-builder/',prefix='gachachess-react:/chess-builder/:',current=prefix+'new';
+const manifest=['index.html','assets/app-123.js','assets/lazy-456.js','assets/worker-789.js','vendor/engine.wasm','vendor/net.nnue'];
+const source=ts.transpileModule(readFileSync(new URL('../src/services/pwa/sw.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace(/^export.*$/gm,'');
+const harness=({online=true,failAsset='',status=200}={})=>{
+ const handlers={},data=new Map(),removed=[],requests=[];let skipped=0,claimed=0;
+ const key=request=>typeof request==='string'?request:request.url;
+ const cache=name=>{if(!data.has(name))data.set(name,new Map());const entries=data.get(name);return {match:async request=>entries.get(key(request))?.clone(),put:async(request,response)=>{entries.set(key(request),response.clone());},keys:async()=>[...entries.keys()].map(url=>new Request(url))};};
+ runInNewContext(source,{self:{registration:{scope},location:{origin:new URL(scope).origin},__WB_MANIFEST:manifest.map(url=>({url,revision:'verified'})),addEventListener:(name,fn)=>{handlers[name]=fn;},skipWaiting:()=>{skipped++;},clients:{claim:async()=>{claimed++;}}},__APP_RELEASE__:'new',URL,Headers,Response,Request,caches:{open:async name=>cache(name),keys:async()=>[...data.keys()],delete:async name=>{removed.push(name);return data.delete(name);}},fetch:async request=>{requests.push(request);if(!online)throw Error('offline');return new Response(request.url.endsWith('index.html')?'<html>installed new</html>':'asset',{status:request.url.includes(failAsset)&&failAsset?503:status});}});
+ const run=async name=>{let pending;handlers[name]({waitUntil:promise=>{pending=promise;}});await pending;};
+ const get=async(path,mode='same-origin')=>{let pending;handlers.fetch({request:{url:new URL(path,scope).href,method:'GET',mode},respondWith:promise=>{pending=promise;}});return pending;};
+ return {data,removed,requests,run,get,cache,handlers,skipped:()=>skipped,claimed:()=>claimed};
 };
-test('Онлайн-переход использует установленную оболочку без смешивания выпусков и ожидания сети',async()=>{
- const worker=workerHarness();assert.equal(await worker.navigate(),'<html>cached-37</html>');assert.equal(worker.requests.length,0);
-});
-test('Офлайн и ошибка сервера используют сохранённую оболочку текущей версии',async()=>{
- for(const options of [{online:false},{networkStatus:503}])assert.equal(await workerHarness(options).navigate(),'<html>cached-37</html>');
-});
-test('Новый worker сохраняет предыдущий установленный выпуск и чужой кэш',async()=>{
- const worker=workerHarness();await worker.run('install');assert.equal(worker.isActivated(),false);await worker.run('activate');assert.deepEqual(worker.removed,['chess-vault-v34']);
-});
+test('release install is atomic, bypasses HTTP cache, includes lazy routes/workers/engine assets and never auto-activates',async()=>{const worker=harness();await worker.run('install');assert.equal(worker.skipped(),0);assert.deepEqual(worker.requests.map(r=>r.url),manifest.map(p=>new URL(p,scope).href));assert.ok(worker.requests.every(r=>r.cache==='reload'));assert.equal(worker.data.get(current).size,manifest.length);});
+test('failed precache retains the installed release and removes the incomplete release',async()=>{const worker=harness({failAsset:'lazy-456'});await worker.cache(prefix+'previous').put(new URL('index.html',scope).href,new Response('previous'));await assert.rejects(worker.run('install'),/Precache failed/);assert.equal(worker.data.has(current),false);assert.equal(worker.data.has(prefix+'previous'),true);assert.equal(worker.skipped(),0);});
+test('online navigation immediately uses the installed shell, never network HTML from a different release',async()=>{const worker=harness();await worker.run('install');worker.requests.length=0;assert.equal(await(await worker.get('./?deep=1','navigate')).text(),'<html>installed new</html>');assert.equal(worker.requests.length,0);});
+test('cold offline navigation, reload and exact worker responses retain isolation headers',async()=>{const worker=harness({online:false});for(const path of ['index.html','assets/worker-789.js'])await worker.cache(current).put(new URL(path,scope).href,new Response(path));for(const [path,mode]of [['./','navigate'],['assets/worker-789.js','same-origin']]){const response=await worker.get(path,mode);assert.equal(response.headers.get('Cross-Origin-Opener-Policy'),'same-origin');assert.equal(response.headers.get('Cross-Origin-Embedder-Policy'),'require-corp');assert.equal(response.headers.get('Cross-Origin-Resource-Policy'),'same-origin');assert.equal(await response.text(),mode==='navigate'?'index.html':path);}});
+test('keeps previous exact release URLs for live clients, preserves unrelated caches, and explicitly accepts old/new update commands',async()=>{const worker=harness();for(const name of [prefix+'obsolete',prefix+'previous',current,'other-app'])await worker.cache(name).put(new URL(name.endsWith('previous')?'assets/old.js':'index.html',scope).href,new Response(name));await worker.run('activate');await worker.cache('chess-vault-v132').put(new URL('app.js?v=132',scope).href,new Response('legacy'));assert.deepEqual(worker.removed,[prefix+'obsolete']);assert.equal(worker.claimed(),1);assert.equal(await(await worker.get('assets/old.js')).text(),prefix+'previous');assert.equal(await(await worker.get('app.js?v=132')).text(),'legacy');assert.equal(await(await worker.get('app.js?v=133')).text(),'asset');assert.equal(worker.data.has('other-app'),true);worker.handlers.message({data:{type:'UNRELATED'}});assert.equal(worker.skipped(),0);for(const type of ['SKIP_WAITING','ACTIVATE_UPDATE'])worker.handlers.message({data:{type}});assert.equal(worker.skipped(),2);});
+test('does not intercept another application or origin',async()=>{const worker=harness();assert.equal(await worker.get('https://example.test/another/','navigate'),undefined);assert.equal(await worker.get('https://other.test/chess-builder/','navigate'),undefined);assert.equal(worker.requests.length,0);});
+test('repairs an evicted current asset and never caches network errors or unknown release URLs',async()=>{for(const status of [200,503]){const worker=harness({status});await worker.get('assets/app-123.js');await worker.get('assets/app-123.js');assert.equal(worker.requests.length,status===200?1:2);assert.equal(worker.data.get(current).size,status===200?1:0);}const worker=harness();await worker.get('unknown.js');await worker.get('unknown.js');assert.equal(worker.requests.length,2);});
+test('a missing installed shell fails visibly instead of mixing fresh HTML with old chunks',async()=>{const worker=harness();assert.equal((await worker.get('./','navigate')).status,503);assert.equal(worker.requests.length,0);});
+test('white and black pieces retain explicit SVG fills for all 96 visual variants',()=>{for(const type of TYPES)for(const style of STYLES){const white=renderToStaticMarkup(createElement(Piece,{type,color:'w',style:style.id})),black=renderToStaticMarkup(createElement(Piece,{type,color:'b',style:style.id}));assert.match(white,/fill="#faf8ef"/);assert.match(black,/fill="#202933"/);assert.doesNotMatch(white,/[♔-♟]/);}});
+// Build graph contract is verified against Vite output, never the preserved vanilla source.
+test('production build precaches every runtime file and keeps static subpath installation',()=>{const root=resolve(process.env.GACHACHESS_BUILD_DIR||'dist');assert.ok(existsSync(resolve(root,'sw.js')),'Build the React application before this check');const sw=readFileSync(resolve(root,'sw.js'),'utf8'),walk=dir=>readdirSync(dir,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(resolve(dir,entry.name)):[resolve(dir,entry.name)]);for(const path of walk(root).filter(path=>/\.(js|css|html|wasm|nnue|png|webmanifest|txt)$/.test(path)&&!path.endsWith('/sw.js')))assert.ok(sw.includes(relative(root,path)),relative(root,path));const manifest=JSON.parse(readFileSync(resolve(root,'manifest.webmanifest'),'utf8'));assert.equal(manifest.scope,'./');assert.equal(manifest.start_url,'./');assert.equal(manifest.display,'standalone');const html=readFileSync(resolve(root,'index.html'),'utf8');assert.match(html,/assets\/.*\.js/);assert.doesNotMatch(html,/app\.js\?v=/);assert.ok(walk(resolve(root,'assets')).filter(path=>/\.js$/.test(path)).length>10);});
 
-test('Обновление требует явного согласия и ждёт завершения партии и post-game',async()=>{
- const app=read('app.js');
- const block=app.slice(app.indexOf('let refreshPending='),app.indexOf("$('.brand>span:first-child')"));
- const listeners={},modal=new EventTarget();modal.open=false;let reloads=0;
- const context=vm.createContext({navigator:{serviceWorker:{controller:{},addEventListener:(name,handler)=>{listeners[name]=handler;},register:async()=>({waiting:null,addEventListener:()=>{},update:async()=>{}})}},
-  huntController:null,autoController:null,pveController:null,document:{hidden:false,addEventListener:()=>{}},window:{addEventListener:()=>{}},location:{reload:()=>reloads++},active:()=>context.matchActive,pendingResult:false,animating:false,matchActive:true,$:()=>modal,queueMicrotask,toast:()=>{}});
- vm.runInContext(block,context);listeners.controllerchange();assert.equal(reloads,0);
- context.matchActive=false;vm.runInContext('applyPendingUpdate()',context);assert.equal(reloads,0);vm.runInContext('updateAccepted=true',context);context.pendingResult=true;vm.runInContext('applyPendingUpdate()',context);assert.equal(reloads,0);
- context.pendingResult=false;modal.open=true;vm.runInContext('applyPendingUpdate()',context);assert.equal(reloads,0);
- modal.open=false;vm.runInContext('applyPendingUpdate();applyPendingUpdate()',context);assert.equal(reloads,1);
-});
-
-test('Первая установка применяет изоляцию безопасной перезагрузкой',()=>{
- const app=read('app.js'),block=app.slice(app.indexOf('let refreshPending='),app.indexOf("$('.brand>span:first-child')"));
- const listeners={},modal={open:false,addEventListener:()=>{}};let reloads=0;
- vm.runInNewContext(block,{huntController:null,autoController:null,pveController:null,navigator:{serviceWorker:{controller:null,addEventListener:(name,handler)=>{listeners[name]=handler;},register:async()=>({waiting:null,addEventListener:()=>{},update:async()=>{}})}},document:{hidden:false,addEventListener:()=>{}},window:{addEventListener:()=>{}},location:{reload:()=>reloads++},active:()=>false,pendingResult:false,animating:false,$:()=>modal,queueMicrotask,toast:()=>{},crossOriginIsolated:false});
- listeners.controllerchange();assert.equal(reloads,1);listeners.controllerchange();assert.equal(reloads,1);
-});
-
-test('Отсутствующий ресурс текущего выпуска восстанавливается в кэше, ошибки не сохраняются',async()=>{
- for(const status of [200,503]){
-  const handlers={},stored=new Map();let network=0;
-  vm.runInNewContext(read('sw.js'),{self:{location:{origin:'https://example.test'},registration:{scope:'https://example.test/chess-builder/'},addEventListener:(name,handler)=>{handlers[name]=handler;}},URL,Headers,Response,Request,
-   caches:{keys:async()=>[],open:async name=>({match:async request=>stored.get(name+request.url)?.clone(),put:async(request,response)=>stored.set(name+request.url,response)})},fetch:async()=>{network++;return new Response('module',{status});}});
-  const request=new Request('https://example.test/chess-builder/app.js?v=132');
-  const get=async()=>{let response;handlers.fetch({request,respondWith:value=>{response=value;}});return response;};
-  assert.equal((await get()).status,status);assert.equal((await get()).status,status);
-  assert.equal(network,status===200?1:2);assert.equal(stored.size,status===200?1:0);
- }
-});
+test('first React upgrade preserves exactly the newest scoped vanilla cache and never touches a different path',async()=>{const worker=harness();for(const [version,path]of [[131,scope],[132,scope],[88,'https://example.test/other/']])await worker.cache(`chess-vault-v${version}`).put(`${path}app.js?v=${version}`,new Response(String(version)));await worker.run('install');await worker.run('activate');assert.deepEqual(worker.removed,['chess-vault-v131']);assert.equal(await(await worker.get('app.js?v=132')).text(),'132');assert.equal(worker.data.has('chess-vault-v88'),true);});

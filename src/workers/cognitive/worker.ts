@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { decide } from "../../domain/cognitive/cognitive-search.js";
 import { validEngineProfile } from "../../domain/cognitive/strength.js";
-import type { EngineRequest } from "../../services/engines/types.js";
+import type { EngineRequest } from "../../shared/types/engine.js";
 import { asError } from "../../shared/lib/errors.js";
 const scope = globalThis as unknown as DedicatedWorkerGlobalScope;
 scope.onmessage = ({

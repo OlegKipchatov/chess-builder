@@ -1,7 +1,7 @@
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
-const root=new URL('../dist/vendor/sf19/',import.meta.url);
+const root=new URL('../public/vendor/sf19/',import.meta.url);
 await mkdir(root,{recursive:true});
 const url='https://registry.npmjs.org/@lichess-org/stockfish-web/-/stockfish-web-0.5.0.tgz';
 const integrity='4p+bnJKr+ufCanyaqUFJkvajVf443sg51+OPnDKjAi91kiY8DGAbfjj5WlmWybwILOF7ouPEjeCYwlPUV3EU3g==';
@@ -19,7 +19,7 @@ if(!createHash('sha256').update(net).digest('hex').startsWith('61e7af4bb97d'))th
 await writeFile(new URL(name,root),net);await writeFile(new URL('package.json',root),'{"type":"module"}\n');
 console.log('Verified Stockfish 19 smallnet and NNUE.');
 // Independent single-threaded SF19 port, with NNUE embedded in its WASM.
-const singleRoot=new URL('../dist/vendor/sf19-single/',import.meta.url);
+const singleRoot=new URL('../public/vendor/sf19-single/',import.meta.url);
 await mkdir(singleRoot,{recursive:true});
 const packageCache=new URL('../node_modules/.cache/stockfish19/',import.meta.url);
 await mkdir(packageCache,{recursive:true});

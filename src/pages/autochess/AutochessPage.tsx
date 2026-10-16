@@ -1,40 +1,42 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect,useMemo,useRef,useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVault } from "../../app/providers/VaultProvider.js";
 import { autoSeriesCoins } from "../../domain/autochess/autochess-rewards.js";
 import {
-armyCapacity,
-battleGame,
-benchPiece,
-buyPiece,
-buyRandomPiece,
-levelPrice,
-placementError,
-placementSquares,
-placePiece,
-PRICES,
-purchaseError,
-purchasePrice,
-reservePieces,
-roundIncome,
-salePrice,
-sellPiece,
-seriesFinished,
-seriesGoal,
-setupError,
-shopOdds,
-upgradeError,
-upgradeShop,
+  armyCapacity,
+  compositionError,
+  positionCompositionError,
+  battleGame,
+  benchPiece,
+  buyPiece,
+  buyRandomPiece,
+  levelPrice,
+  placementError,
+  placementSquares,
+  placePiece,
+  PRICES,
+  purchaseError,
+  purchasePrice,
+  reservePieces,
+  roundIncome,
+  salePrice,
+  sellPiece,
+  seriesFinished,
+  seriesGoal,
+  setupError,
+  shopOdds,
+  upgradeError,
+  upgradeShop,
 } from "../../domain/autochess/autochess.js";
 import { PIECE_NAMES } from "../../domain/catalog/catalog.js";
 import { useAutochess } from "../../features/autochess/useAutochess.js";
 import { Chessboard } from "../../features/chessboard/Chessboard.js";
 import {
-chessPieces,
-type BoardPiece,
+  chessPieces,
+  type BoardPiece,
 } from "../../features/chessboard/model.js";
-import { Page,Stat } from "../../shared/ui/Page.js";
+import { Page, Stat } from "../../shared/ui/Page.js";
 import { Piece } from "../../shared/ui/Piece.js";
 export const AutochessPage = () => {
   const auto = useAutochess(),
@@ -44,7 +46,13 @@ export const AutochessPage = () => {
     { show, toast } = useOverlays(),
     navigate = useNavigate(),
     [selected, setSelected] = useState<string | null>(null),
-    lastTap = useRef({ id: "", at: 0 });
+    lastTap = useRef({ id: "", at: 0 }),
+    lastPurchase = useRef(-Infinity),
+    drag = useRef<{ id: string; x: number; y: number; pointer: number } | null>(
+      null,
+    ),
+    suppressClick = useRef(false),
+    shownOverflow = useRef<string | null>(null);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (event.key === "Escape") setSelected(null);
@@ -52,17 +60,70 @@ export const AutochessPage = () => {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const game = useMemo(
-      () => (run?.battle ? battleGame(run) : null),
-      [run?.battle],
-    ),
+  const game = useMemo(() => (run?.battle ? battleGame(run) : null), [run]),
     pieces: BoardPiece[] = game
       ? chessPieces(game)
       : run?.army
           .filter((p) => p.square)
           .map((p) => ({ ...p, square: p.square!, color: run.color })) || [];
   const piece = run?.army.find((p) => p.id === selected),
-    preparation = run?.phase === "preparation";
+    preparation = run?.phase === "preparation",
+    incompatible = run
+      ? preparation
+        ? compositionError(run.army)
+        : run.phase === "paused" && run.battle
+          ? positionCompositionError(run.battle.initialFen)
+          : ""
+      : "";
+  const showOverflow = () => {
+    if (!run) return;
+    show({
+      title: "Резерв старого забега",
+      body: (
+        <>
+          <p>
+            Сохранены все {reservePieces(run).length} фигур. Теперь в резерве
+            четыре места. Выберите лишнюю фигуру, чтобы расставить её или
+            продать.
+          </p>
+          <div className="auto-overflow-list">
+            {reservePieces(run).map((item) => (
+              <button
+                key={item.id}
+                data-auto-overflow-piece={item.id}
+                onClick={() => {
+                  setSelected(item.id);
+                  show(null);
+                }}
+              >
+                <Piece type={item.type} color={run.color} />
+                {PIECE_NAMES[item.type]}
+              </button>
+            ))}
+          </div>
+          <button className="primary wide" onClick={() => show(null)}>
+            К доске
+          </button>
+        </>
+      ),
+    });
+  };
+  useEffect(() => {
+    if (
+      run &&
+      reservePieces(run).length > 4 &&
+      shownOverflow.current !== run.id
+    ) {
+      shownOverflow.current = run.id;
+      showOverflow();
+    }
+  });
+  const shopAction = (change: () => void) => {
+    const now = performance.now();
+    if (now - lastPurchase.current < 350) return;
+    lastPurchase.current = now;
+    change();
+  };
   const leave = () => {
     auto.pause();
     show({
@@ -121,7 +182,11 @@ export const AutochessPage = () => {
   const select = (id: string) => {
     const time = Date.now();
     if (lastTap.current.id === id && time - lastTap.current.at < 350) {
-      auto.change((value) => benchPiece(value, id));
+      auto.change((value) => {
+        const next = benchPiece(value, id);
+        if (next === value) toast("Резерв заполнен");
+        return next;
+      });
       setSelected(null);
     } else setSelected(id === selected ? null : id);
     lastTap.current = { id, at: time };
@@ -155,30 +220,56 @@ export const AutochessPage = () => {
           появится в бою.
         </p>
         <div
+          style={{ touchAction: preparation ? "none" : undefined }}
           onPointerDown={(event) => {
             const square = (
               event.target as HTMLElement
             ).closest<HTMLButtonElement>("[data-square]")?.dataset.square;
             const found = run.army.find((p) => p.square === square);
-            if (found && preparation)
-              event.currentTarget.dataset.drag = found.id;
+            if (found && preparation && auto.locked) {
+              drag.current = {
+                id: found.id,
+                x: event.clientX,
+                y: event.clientY,
+                pointer: event.pointerId,
+              };
+              event.currentTarget.setPointerCapture(event.pointerId);
+            }
+          }}
+          onPointerCancel={() => {
+            drag.current = null;
           }}
           onPointerUp={(event) => {
-            const id = event.currentTarget.dataset.drag;
-            delete event.currentTarget.dataset.drag;
+            const owned = drag.current;
+            drag.current = null;
+            if (!owned || owned.pointer !== event.pointerId) return;
+            if (event.currentTarget.hasPointerCapture(event.pointerId))
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            if (
+              Math.hypot(event.clientX - owned.x, event.clientY - owned.y) < 8
+            )
+              return;
+            suppressClick.current = true;
             const target = document
               .elementFromPoint(event.clientX, event.clientY)
               ?.closest<HTMLButtonElement>("[data-square]")?.dataset.square;
-            const original = run.army.find((p) => p.id === id);
-            if (id && target && original?.square !== target && preparation) {
-              const error = placementError(run, id, target);
-              if (error) toast(error);
-              else auto.change((value) => placePiece(value, id, target));
-              setSelected(null);
+            if (!target) return;
+            const error = placementError(run, owned.id, target);
+            if (error) toast(error);
+            else auto.change((value) => placePiece(value, owned.id, target));
+            setSelected(null);
+          }}
+          onClickCapture={(event) => {
+            if (suppressClick.current) {
+              event.preventDefault();
+              event.stopPropagation();
+              suppressClick.current = false;
             }
           }}
         >
           <Chessboard
+            feedback
+            id="auto-board"
             pieces={pieces}
             equipped={equipped}
             orientation={run.color}
@@ -208,6 +299,7 @@ export const AutochessPage = () => {
                 return (
                   <button
                     key={slot}
+                    data-auto-piece={item?.id}
                     aria-label={
                       item
                         ? `${PIECE_NAMES[item.type]} в резерве`
@@ -233,25 +325,21 @@ export const AutochessPage = () => {
               disabled={!preparation || !piece || piece.type === "k"}
               onClick={() => {
                 if (selected)
-                  auto.change((value) => sellPiece(value, selected));
+                  shopAction(() =>
+                    auto.change((value) => sellPiece(value, selected)),
+                  );
                 setSelected(null);
               }}
             >
               Продать {piece && piece.type !== "k" ? salePrice(piece) : "—"}
             </button>
           </div>
-          {bench.length > 4 && (
-            <div className="auto-overflow-list">
-              {bench
-                .filter((p, index) => (p.reserveSlot ?? index) >= 4)
-                .map((p) => (
-                  <button key={p.id} onClick={() => select(p.id)}>
-                    <Piece type={p.type} color={run.color} /> Лишний резерв
-                  </button>
-                ))}
-            </div>
-          )}
           <div className="auto-shop-meta">
+            {bench.length > 4 && (
+              <button className="text-button" onClick={showOverflow}>
+                Резерв {bench.length}/4 · Разобрать
+              </button>
+            )}
             <button
               onClick={() =>
                 show({
@@ -293,17 +381,26 @@ export const AutochessPage = () => {
           {run.version === 4 ? (
             <div className="auto-shop-actions">
               <button
+                data-auto-random
                 disabled={!!purchaseError(run)}
                 title={purchaseError(run)}
-                onClick={() => auto.change(buyRandomPiece)}
+                onClick={() =>
+                  shopAction(() =>
+                    auto.change((value) => {
+                      const next = buyRandomPiece(value);
+                      if (next !== value) setSelected(next.army.at(-1)!.id);
+                      return next;
+                    }),
+                  )
+                }
               >
-                Фигура · {purchasePrice(run)} ◈
+                {purchaseError(run) || `Фигура · ${purchasePrice(run)} ◈`}
               </button>
               <button
                 className="auto-level-outlined"
                 disabled={!!upgradeError(run)}
                 title={upgradeError(run)}
-                onClick={() => auto.change(upgradeShop)}
+                onClick={() => shopAction(() => auto.change(upgradeShop))}
               >
                 Улучшить · {levelPrice(run)} ◈
               </button>
@@ -314,7 +411,9 @@ export const AutochessPage = () => {
                 <button
                   key={t}
                   disabled={!!purchaseError(run, PRICES[t])}
-                  onClick={() => auto.change((value) => buyPiece(value, t))}
+                  onClick={() =>
+                    shopAction(() => auto.change((value) => buyPiece(value, t)))
+                  }
                 >
                   <Piece type={t} color={run.color} />
                   {PRICES[t]}
@@ -324,7 +423,7 @@ export const AutochessPage = () => {
           )}
         </div>
         <div className="auto-status">
-          <span role="status">
+          <span id="auto-status" role="status">
             {auto.preparing
               ? `Подготовка движка · попытка ${auto.attempt}`
               : auto.active
@@ -335,54 +434,100 @@ export const AutochessPage = () => {
                     ? setupError(run) || "Армия готова"
                     : "Бой сохранён"}
           </span>
-          <span id="auto-resource">
-            {run.battle?.moves.length || 0}/120 ходов
-          </span>
+          {!preparation && (
+            <span>
+              {" "}
+              · Ход {Math.ceil((run.battle?.moves.length || 0) / 2)} / 60
+            </span>
+          )}
         </div>
         {auto.error && <p role="alert">{auto.error}</p>}
         <div id="auto-action">
           {run.phase === "result" ? (
-            <>
-              {!auto.award ? (
-                <button onClick={auto.retryReward}>Сохранить награду</button>
-              ) : (
-                <>
-                  <p>
-                    +{roundIncome(result)} монет магазина · В серии заработано{" "}
-                    {autoSeriesCoins({ autochessAwards: awards }, run)} ◈
-                  </p>
-                  <button
-                    className="primary"
-                    onClick={() => {
-                      setSelected(null);
-                      if (finished) auto.discard();
-                      else auto.next();
-                    }}
-                  >
-                    {finished ? "Завершить серию" : "Следующий раунд"}
-                  </button>
-                </>
-              )}
-            </>
+            auto.presenting ? (
+              <p>Бой завершён</p>
+            ) : (
+              <>
+                {!auto.award ? (
+                  <button onClick={auto.retryReward}>Сохранить награду</button>
+                ) : (
+                  <>
+                    <p>
+                      +{roundIncome(result)} монет магазина · В серии заработано{" "}
+                      {autoSeriesCoins({ autochessAwards: awards }, run)} ◈
+                    </p>
+                    <button
+                      className="primary"
+                      onClick={() => {
+                        setSelected(null);
+                        if (finished) auto.discard();
+                        else auto.next();
+                      }}
+                    >
+                      {finished ? "Завершить серию" : "Следующий раунд"}
+                    </button>
+                  </>
+                )}
+              </>
+            )
           ) : (
             <button
               className="primary"
               disabled={
                 !auto.locked ||
                 auto.preparing ||
-                (preparation && !!setupError(run))
+                (preparation && !!setupError(run) && !incompatible)
               }
               onClick={() => {
                 setSelected(null);
                 if (auto.active) auto.pause();
+                else if (incompatible)
+                  show({
+                    title: "Исправьте состав",
+                    body: (
+                      <>
+                        <p>{incompatible}</p>
+                        <p>
+                          Фигуры в резерве не учитываются. Можно убрать фигуру
+                          двойным нажатием, обменять её с резервом или продать.
+                          Все фигуры сохранены.
+                        </p>
+                        {run.phase === "paused" && (
+                          <button
+                            data-auto-repair
+                            className="primary wide"
+                            onClick={() => {
+                              auto.pause();
+                              auto.change((value) => ({
+                                ...value,
+                                phase: "preparation",
+                                battle: null,
+                              }));
+                              show(null);
+                            }}
+                          >
+                            Вернуться к расстановке
+                          </button>
+                        )}
+                        <button
+                          className="quiet wide"
+                          onClick={() => show(null)}
+                        >
+                          К доске
+                        </button>
+                      </>
+                    ),
+                  });
                 else auto.start();
               }}
             >
-              {auto.active
-                ? "Пауза"
-                : preparation
-                  ? "Начать бой"
-                  : "Продолжить бой"}
+              {incompatible
+                ? "Исправить состав"
+                : auto.active
+                  ? "Пауза"
+                  : preparation
+                    ? "Начать бой"
+                    : "Продолжить бой"}
             </button>
           )}
         </div>

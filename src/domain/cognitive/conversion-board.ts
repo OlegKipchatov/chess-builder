@@ -1,5 +1,5 @@
-import type { Chess,Square } from "chess.js";
-import type { ConversionMove,RawMove } from "./types.js";
+import type { Chess, Square } from "chess.js";
+import type { ConversionMove, RawMove } from "./types.js";
 interface ChessInternals {
   _moves: () => RawMove[];
   _makeMove: (move: RawMove) => void;

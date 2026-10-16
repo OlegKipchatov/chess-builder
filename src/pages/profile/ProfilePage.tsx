@@ -1,10 +1,12 @@
+import { usePgnImportDialog } from "../../features/game-review/PgnImportDialog.js";
 import { useNavigate } from "@tanstack/react-router";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { usePwaUpdate } from "../../app/providers/PwaProvider.js";
 import { useTheme } from "../../app/providers/ThemeProvider.js";
 import { useVault } from "../../app/providers/VaultProvider.js";
-import { Page,Stat } from "../../shared/ui/Page.js";
+import { Page, Stat } from "../../shared/ui/Page.js";
 export const ProfilePage = () => {
+  const openPgn = usePgnImportDialog();
   const played = useVault((s) => s.played),
     owned = useVault((s) => s.owned.length),
     opened = useVault((s) => s.opened),
@@ -35,10 +37,7 @@ export const ProfilePage = () => {
         >
           Статистика
         </button>
-        <button
-          className="quiet wide"
-          onClick={() => void navigate({ to: "/import" })}
-        >
+        <button className="quiet wide" onClick={openPgn}>
           Открыть PGN
         </button>
       </div>

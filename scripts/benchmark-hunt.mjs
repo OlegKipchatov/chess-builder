@@ -1,4 +1,4 @@
-import {createHunt,startHunt,playerMoves,resolvePlayerMove,releaseHuntInput,tickHunt,calculateMiniGameCoins,materialValues} from '../dist/hunt.js';
+import {createHunt,startHunt,playerMoves,resolvePlayerMove,releaseHuntInput,tickHunt,calculateMiniGameCoins,materialValues} from '../src/domain/hunt/hunt.ts';
 // Deterministic greedy policy, not a claim about observed human play speed.
 const choose = state => playerMoves(state).map(move=>{
   const capture=materialValues[state.pieces[move.to]?.type]||0;

@@ -1,12 +1,12 @@
-import { useCallback,useEffect,useRef,useState } from "react";
-import { useVault,useVaultStore } from "../../app/providers/VaultProvider.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
-playPveAction,
-resignPve,
-resumePveBattle,
-settlePve,
+  playPveAction,
+  resignPve,
+  resumePveBattle,
+  settlePve,
 } from "../../domain/pve/pve-battle.js";
-import type { PveAction,PveBattle } from "../../domain/pve/types.js";
+import type { PveAction, PveBattle } from "../../domain/pve/types.js";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 import type { ChessboardProps } from "../chessboard/Chessboard.js";
 export const usePveBattle = (active: boolean) => {
@@ -25,11 +25,11 @@ export const usePveBattle = (active: boolean) => {
     timers = useRef<ReturnType<typeof setTimeout>[]>([]),
     mounted = useRef(false);
   useEffect(() => {
+    const ownedTimers = timers.current;
     mounted.current = true;
     return () => {
       mounted.current = false;
-      generation.current++;
-      timers.current.forEach(clearTimeout);
+      ownedTimers.forEach(clearTimeout);
       busy.current = false;
     };
   }, []);
@@ -42,6 +42,16 @@ export const usePveBattle = (active: boolean) => {
         const pve = resumePveBattle(s.pve);
         return pve === s.pve ? s : settlePve({ ...s, pve });
       });
+  }, [active, store]);
+  useEffect(() => {
+    if (active) return;
+    generation.current++;
+    timers.current.forEach(clearTimeout);
+    timers.current.length = 0;
+    busy.current = false;
+    setAttack(undefined);
+    setVisual(store.getSnapshot().pve.battle);
+    setPhase("idle");
   }, [active, store]);
   const perform = useCallback(
     async (action: PveAction) => {
@@ -133,12 +143,13 @@ export const usePveBattle = (active: boolean) => {
     },
     [store, active, reduced],
   );
+  const workerBlocked = ["saving", "animating", "failed"].includes(phase);
   useEffect(() => {
     const battle = profile.battle;
     if (
       !active ||
       busy.current ||
-      phase === "failed" ||
+      workerBlocked ||
       !battle ||
       battle.phase !== "playing" ||
       battle.turn !== "b"
@@ -189,16 +200,7 @@ export const usePveBattle = (active: boolean) => {
       clearTimeout(timeout);
       worker.terminate();
     };
-  }, [
-    active,
-    profile.battle?.id,
-    profile.battle?.ply,
-    profile.battle?.phase,
-    phase === "failed",
-    phase === "animating",
-    retry,
-    perform,
-  ]);
+  }, [active, profile.battle, workerBlocked, retry, perform]);
   const resign = async () => {
     generation.current++;
     timers.current.forEach(clearTimeout);

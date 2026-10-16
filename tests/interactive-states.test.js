@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
 import {initialState} from '../src/services/persistence/state.ts';
 import {createStartedGame,boardAvailability} from '../src/domain/chess/session.ts';
-import {createToast} from '../dist/ui/dialog.js';
 
 test('Доступность доски следует очереди хода, анимации и режиму просмотра для обеих сторон',()=>{
   for(const color of ['w','b']){
@@ -26,17 +25,4 @@ test('Доступность доски следует очереди хода, 
   }
 });
 
-test('Обычное уведомление после ошибки сбрасывает акцент и отсчёт закрытия',context=>{
-  context.mock.timers.enable({apis:['setTimeout']});
-  const root={dataset:{},hidden:true},toast=createToast(root);
-  toast('Ошибка сохранения',{error:true});
-  assert.equal(root.dataset.tone,'error');
-  context.mock.timers.tick(4000);
-  toast('Предмет выбран');
-  assert.equal(root.dataset.tone,'neutral');
-  assert.equal(root.textContent,'Предмет выбран');
-  context.mock.timers.tick(1000);
-  assert.equal(root.hidden,false);
-  context.mock.timers.tick(4000);
-  assert.equal(root.hidden,true);
-});
+// Toast lifecycle: tests/react/overlay.test.tsx.

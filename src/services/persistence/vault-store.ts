@@ -1,5 +1,5 @@
 import type { VaultState } from "../../domain/chess/types.js";
-import { initialState,KEY,loadState,type StoragePort } from "./state.js";
+import { initialState, KEY, loadState, type StoragePort } from "./state.js";
 export type TransactionResult<T> =
   { ok: true; value: T; state: VaultState } | { ok: false; error: Error };
 type LockPort = {
@@ -16,6 +16,23 @@ export const createVaultStore = (storage: StoragePort, locks?: LockPort) => {
   const listeners = new Set<() => void>();
   let queue: Promise<unknown> = Promise.resolve();
   const publish = (next: VaultState) => {
+    // Session dependencies retain identity across move commits.
+    for (const key of ["engineProfile", "equipped", "rating"] as const) {
+      if (JSON.stringify(next.game[key]) === JSON.stringify(state.game[key]))
+        Object.defineProperty(next.game, key, {
+          value: state.game[key],
+          enumerable: true,
+          writable: true,
+          configurable: true,
+        });
+    }
+    const entries = new Map(state.archive.map((entry) => [entry.id, entry]));
+    next.archive = next.archive.map((entry) => {
+      const previous = entries.get(entry.id);
+      return previous && JSON.stringify(previous) === JSON.stringify(entry)
+        ? previous
+        : entry;
+    });
     // Reuse unchanged slices so a move cannot invalidate collection/ledger subscribers.
     for (const key of Object.keys(next) as (keyof VaultState)[]) {
       if (JSON.stringify(next[key]) === JSON.stringify(state[key]))

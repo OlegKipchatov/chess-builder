@@ -1,0 +1,1291 @@
+{
+  "baseline": "ee7df974635bf7dd514c24e4d4a6b04bce3af8c6",
+  "input": {
+    "version": 2,
+    "pve": {
+      "version": 1,
+      "revision": 0,
+      "sequence": 0,
+      "levelCap": 3,
+      "stones": 11,
+      "cores": 0,
+      "cleared": [],
+      "nodes": {},
+      "battle": null,
+      "lastResult": null,
+      "stats": {
+        "battles": 0,
+        "wins": 0,
+        "draws": 0,
+        "stonesUsed": 0,
+        "firstEvolutionAt": null,
+        "stoneInvestments": {},
+        "deaths": {},
+        "recent": []
+      },
+      "units": [
+        {
+          "id": "pve-unit-1",
+          "type": "k",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-2",
+          "type": "r",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-3",
+          "type": "n",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-4",
+          "type": "b",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-5",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-6",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-7",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-8",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-9",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": false
+        },
+        {
+          "id": "pve-unit-10",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": false
+        }
+      ]
+    },
+    "autochessAwards": {
+      "legacy-auto": 54
+    },
+    "hunt": {
+      "records": {
+        "timed": {
+          "bestScore": 154
+        },
+        "endless": {
+          "bestScore": 887
+        }
+      },
+      "awards": {
+        "legacy-hunt": 27
+      }
+    },
+    "activity": {
+      "version": 1,
+      "timeZone": "Europe/Copenhagen",
+      "days": [
+        "2026-10-14"
+      ],
+      "frozen": [],
+      "daily": {
+        "2026-10-14": {
+          "aiGames": 1,
+          "aiMoves": 2,
+          "aiCaptures": 0,
+          "aiFinished": 1,
+          "huntGames": 0,
+          "huntScore": 0,
+          "huntMoves": 0,
+          "autoGames": 0,
+          "miniGames": 0,
+          "games": 1,
+          "wins": 1,
+          "questVersion": 2
+        }
+      },
+      "claimed": []
+    },
+    "archive": [
+      {
+        "id": "legacy-match",
+        "finishedAt": "2026-10-14T08:05:00Z",
+        "startedAt": "2026-10-14T08:00:00Z",
+        "rewardBreakdown": {
+          "cleanMoves": 2,
+          "completion": 5,
+          "moves": 0,
+          "result": 18,
+          "outcome": "win",
+          "reason": null,
+          "quality": 0,
+          "qualityStatus": "pending",
+          "rewardVersion": "game-economy-v2",
+          "total": 23
+        },
+        "engineProfile": {
+          "id": "cognitive-v2",
+          "calibrationVersion": "cognitive-v2.1-conversion-1",
+          "targetElo": 600,
+          "effectiveElo": 564.5186052212896,
+          "seed": 3865470566,
+          "profile": "default"
+        },
+        "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. f3 e5 2. g4 Qh4# *",
+        "mode": "bot",
+        "playerColor": "b",
+        "equipped": {
+          "board": "board:gold",
+          "pieces": {
+            "p": "piece:gold:p",
+            "n": "piece:gold:n",
+            "b": "piece:gold:b",
+            "r": "piece:gold:r",
+            "q": "piece:gold:q",
+            "k": "piece:gold:k"
+          }
+        },
+        "result": "Победа",
+        "points": 0,
+        "playerRating": 700,
+        "opponentRating": 600,
+        "ratingDelta": 23,
+        "analysis": {
+          "analysisVersion": "post-game-analysis-v7",
+          "profileVersion": "post-game-profile-v1",
+          "engine": {
+            "name": "Stockfish",
+            "version": "stockfish-19",
+            "nnue": "nn-61e7af4bb97d.nnue"
+          },
+          "gameId": "legacy-match",
+          "sourcePgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. f3 e5 2. g4 Qh4# *",
+          "playerColor": "b",
+          "createdAt": "2026-10-14T08:06:00Z",
+          "status": "complete",
+          "totalPlies": 4,
+          "analyzedPlayerMoves": 2,
+          "moves": [
+            {
+              "ply": 1,
+              "actor": "opponent",
+              "fenBefore": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+              "fenAfter": "rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1",
+              "playedMove": "f2f3",
+              "playedSan": "f3",
+              "status": "not_analyzed",
+              "alternatives": [],
+              "autoPause": false,
+              "primaryEvent": null,
+              "eventPriority": 0
+            },
+            {
+              "ply": 2,
+              "actor": "player",
+              "fenBefore": "rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1",
+              "fenAfter": "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2",
+              "playedMove": "e7e5",
+              "playedSan": "e5",
+              "status": "complete",
+              "alternatives": [
+                {
+                  "move": "e7e6",
+                  "rawScore": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "score": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "wdl": {
+                    "win": 0.143,
+                    "draw": 0.855,
+                    "loss": 0.002
+                  },
+                  "expectedScorePlayer": 0.5705,
+                  "pv": [
+                    "e7e6",
+                    "e2e4",
+                    "c7c5",
+                    "d2d3"
+                  ],
+                  "depth": 13,
+                  "nodes": 75004,
+                  "san": "e6",
+                  "pvSan": [
+                    "e6",
+                    "e4",
+                    "c5",
+                    "d3"
+                  ]
+                },
+                {
+                  "move": "d7d5",
+                  "rawScore": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "score": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "wdl": {
+                    "win": 0.143,
+                    "draw": 0.855,
+                    "loss": 0.002
+                  },
+                  "expectedScorePlayer": 0.5705,
+                  "pv": [
+                    "d7d5",
+                    "d2d4",
+                    "g8f6",
+                    "b1c3"
+                  ],
+                  "depth": 13,
+                  "nodes": 75004,
+                  "san": "d5",
+                  "pvSan": [
+                    "d5",
+                    "d4",
+                    "Nf6",
+                    "Nc3"
+                  ]
+                }
+              ],
+              "autoPause": false,
+              "shortMate": null,
+              "exercise": null,
+              "bestLine": {
+                "move": "e7e5",
+                "rawScore": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "score": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "wdl": {
+                  "win": 0.145,
+                  "draw": 0.853,
+                  "loss": 0.002
+                },
+                "expectedScorePlayer": 0.5715,
+                "pv": [
+                  "e7e5",
+                  "e2e4",
+                  "g8f6",
+                  "d2d4"
+                ],
+                "depth": 13,
+                "nodes": 75004,
+                "san": "e5",
+                "pvSan": [
+                  "e5",
+                  "e4",
+                  "Nf6",
+                  "d4"
+                ]
+              },
+              "playedLine": {
+                "move": "e7e5",
+                "rawScore": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "score": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "wdl": {
+                  "win": 0.145,
+                  "draw": 0.853,
+                  "loss": 0.002
+                },
+                "expectedScorePlayer": 0.5715,
+                "pv": [
+                  "e7e5",
+                  "e2e4",
+                  "g8f6",
+                  "d2d4"
+                ],
+                "depth": 13,
+                "nodes": 75004,
+                "san": "e5",
+                "pvSan": [
+                  "e5",
+                  "e4",
+                  "Nf6",
+                  "d4"
+                ]
+              },
+              "topGap": 0.0010000000000000009,
+              "expectedScoreLoss": 0,
+              "quality": "best",
+              "highlight": null,
+              "mateTransition": null,
+              "bestVsSecondGap": 0.0010000000000000009,
+              "forced": false,
+              "recommendationEvidence": null,
+              "reason": "generic",
+              "explanationKey": "generic",
+              "recommendationRequired": false,
+              "primaryEvent": "best",
+              "eventPriority": 10
+            },
+            {
+              "ply": 3,
+              "actor": "opponent",
+              "fenBefore": "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2",
+              "fenAfter": "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",
+              "playedMove": "g2g4",
+              "playedSan": "g4",
+              "status": "not_analyzed",
+              "alternatives": [],
+              "autoPause": false,
+              "primaryEvent": null,
+              "eventPriority": 0
+            },
+            {
+              "ply": 4,
+              "actor": "player",
+              "fenBefore": "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",
+              "fenAfter": "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",
+              "playedMove": "d8h4",
+              "playedSan": "Qh4#",
+              "status": "complete",
+              "alternatives": [],
+              "autoPause": true,
+              "shortMate": null,
+              "exercise": null,
+              "bestLine": {
+                "move": "d8h4",
+                "rawScore": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "score": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "wdl": {
+                  "win": 1,
+                  "draw": 0,
+                  "loss": 0
+                },
+                "expectedScorePlayer": 1,
+                "pv": [
+                  "d8h4"
+                ],
+                "depth": 18,
+                "nodes": 274283,
+                "san": "Qh4#",
+                "pvSan": [
+                  "Qh4#"
+                ]
+              },
+              "playedLine": {
+                "move": "d8h4",
+                "rawScore": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "score": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "wdl": {
+                  "win": 1,
+                  "draw": 0,
+                  "loss": 0
+                },
+                "expectedScorePlayer": 1,
+                "pv": [
+                  "d8h4"
+                ],
+                "depth": 18,
+                "nodes": 274283,
+                "san": "Qh4#",
+                "pvSan": [
+                  "Qh4#"
+                ]
+              },
+              "topGap": 0,
+              "expectedScoreLoss": 0,
+              "quality": "best",
+              "highlight": "excellent",
+              "mateTransition": "preserves_mate",
+              "bestVsSecondGap": 0,
+              "forced": false,
+              "recommendationEvidence": null,
+              "reason": "found_mate",
+              "explanationKey": "found_mate",
+              "recommendationRequired": false,
+              "primaryEvent": "excellent",
+              "eventPriority": 60
+            }
+          ],
+          "focusEvents": [
+            4
+          ],
+          "summary": {
+            "best": 2,
+            "good": 0,
+            "inaccuracy": 0,
+            "mistake": 0,
+            "blunder": 0,
+            "excellent": 1
+          },
+          "diagnostics": {
+            "searches": [
+              {
+                "ply": 2,
+                "nodes": 75000,
+                "restricted": false,
+                "ms": 515.115186
+              },
+              {
+                "ply": 4,
+                "nodes": 75000,
+                "restricted": false,
+                "ms": 188.8990530000001
+              },
+              {
+                "ply": 4,
+                "nodes": 300000,
+                "restricted": false,
+                "ms": 665.7059609999999
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "rating": {
+      "value": 723,
+      "games": 1,
+      "lastDelta": 23
+    },
+    "settings": {
+      "mode": "bot",
+      "difficulty": "adaptive"
+    },
+    "coins": 1590,
+    "shards": 427,
+    "owned": [
+      "piece:classic:k",
+      "piece:classic:q",
+      "piece:classic:r",
+      "piece:classic:b",
+      "piece:classic:n",
+      "piece:classic:p",
+      "board:classic",
+      "piece:sand:k",
+      "piece:sand:q",
+      "piece:sand:r",
+      "piece:sand:b",
+      "piece:sand:n",
+      "piece:sand:p",
+      "board:sand",
+      "piece:slate:k",
+      "piece:slate:q",
+      "piece:slate:r",
+      "piece:slate:b",
+      "piece:slate:n",
+      "piece:slate:p",
+      "board:slate",
+      "piece:ocean:k",
+      "piece:ocean:q",
+      "piece:ocean:r",
+      "piece:ocean:b",
+      "piece:ocean:n",
+      "piece:ocean:p",
+      "board:ocean",
+      "piece:rose:k",
+      "piece:rose:q",
+      "piece:rose:r",
+      "piece:rose:b",
+      "piece:rose:n",
+      "piece:rose:p",
+      "board:rose",
+      "piece:nebula:k",
+      "piece:nebula:q",
+      "piece:nebula:r",
+      "piece:nebula:b",
+      "piece:nebula:n",
+      "piece:nebula:p",
+      "board:nebula",
+      "piece:aurora:k",
+      "piece:aurora:q",
+      "piece:aurora:r",
+      "piece:aurora:b",
+      "piece:aurora:n",
+      "piece:aurora:p",
+      "board:aurora",
+      "piece:gold:k",
+      "piece:gold:q",
+      "piece:gold:r",
+      "piece:gold:b",
+      "piece:gold:n",
+      "piece:gold:p",
+      "board:gold"
+    ],
+    "equipped": {
+      "board": "board:gold",
+      "pieces": {
+        "p": "piece:gold:p",
+        "n": "piece:gold:n",
+        "b": "piece:gold:b",
+        "r": "piece:gold:r",
+        "q": "piece:gold:q",
+        "k": "piece:gold:k"
+      }
+    },
+    "sets": [
+      {
+        "id": "legacy-gold",
+        "name": "Золотой набор",
+        "board": "board:gold",
+        "pieces": {
+          "p": "piece:gold:p",
+          "n": "piece:gold:n",
+          "b": "piece:gold:b",
+          "r": "piece:gold:r",
+          "q": "piece:gold:q",
+          "k": "piece:gold:k"
+        }
+      }
+    ],
+    "pity": 7,
+    "played": 1,
+    "opened": 37,
+    "game": {
+      "pgn": "1. e4 e5 2. Nf3 Nc6",
+      "mode": "bot",
+      "difficulty": "adaptive",
+      "playerColor": "w",
+      "settled": false,
+      "resigned": false,
+      "startedAt": "2026-10-16T11:00:00Z",
+      "engineProfile": {
+        "id": "cognitive-v2",
+        "calibrationVersion": "cognitive-v2.1-conversion-1",
+        "targetElo": 623,
+        "effectiveElo": 643.6541743315604,
+        "seed": 0,
+        "profile": "default"
+      },
+      "rating": {
+        "before": 723,
+        "opponent": 623,
+        "k": 64
+      },
+      "equipped": {
+        "board": "board:gold",
+        "pieces": {
+          "p": "piece:gold:p",
+          "n": "piece:gold:n",
+          "b": "piece:gold:b",
+          "r": "piece:gold:r",
+          "q": "piece:gold:q",
+          "k": "piece:gold:k"
+        }
+      }
+    }
+  },
+  "expected": {
+    "version": 3,
+    "pve": {
+      "version": 1,
+      "revision": 0,
+      "sequence": 0,
+      "levelCap": 3,
+      "stones": 11,
+      "cores": 0,
+      "cleared": [],
+      "nodes": {},
+      "battle": null,
+      "lastResult": null,
+      "stats": {
+        "battles": 0,
+        "wins": 0,
+        "draws": 0,
+        "stonesUsed": 0,
+        "firstEvolutionAt": null,
+        "stoneInvestments": {
+          "pve-unit-1": 0,
+          "pve-unit-2": 0,
+          "pve-unit-3": 0,
+          "pve-unit-4": 0,
+          "pve-unit-5": 0,
+          "pve-unit-6": 0,
+          "pve-unit-7": 0,
+          "pve-unit-8": 0,
+          "pve-unit-9": 0,
+          "pve-unit-10": 0
+        },
+        "deaths": {
+          "p": 0,
+          "n": 0,
+          "b": 0,
+          "r": 0,
+          "q": 0,
+          "k": 0
+        },
+        "recent": []
+      },
+      "units": [
+        {
+          "id": "pve-unit-1",
+          "type": "k",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-2",
+          "type": "r",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-3",
+          "type": "n",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-4",
+          "type": "b",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-5",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-6",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-7",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-8",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": true
+        },
+        {
+          "id": "pve-unit-9",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": false
+        },
+        {
+          "id": "pve-unit-10",
+          "type": "p",
+          "level": 1,
+          "xp": 0,
+          "deaths": 0,
+          "active": false
+        }
+      ]
+    },
+    "autochessAwards": {},
+    "hunt": {
+      "records": {
+        "timed": {
+          "bestScore": 154
+        },
+        "endless": {
+          "bestScore": 887
+        }
+      },
+      "awards": {
+        "legacy-hunt": 27
+      }
+    },
+    "activity": {
+      "version": 1,
+      "timeZone": "Europe/Copenhagen",
+      "days": [
+        "2026-10-14"
+      ],
+      "frozen": [],
+      "daily": {
+        "2026-10-14": {
+          "games": 1,
+          "wins": 1,
+          "questVersion": 2,
+          "aiGames": 1,
+          "aiMoves": 2,
+          "aiCaptures": 0,
+          "aiFinished": 1,
+          "huntGames": 0,
+          "huntScore": 0,
+          "huntMoves": 0,
+          "autoGames": 0,
+          "miniGames": 0
+        }
+      },
+      "claimed": []
+    },
+    "archive": [
+      {
+        "rewardBreakdown": {
+          "cleanMoves": 2,
+          "completion": 5,
+          "moves": 0,
+          "result": 18,
+          "outcome": "win",
+          "reason": null,
+          "quality": 0,
+          "qualityStatus": "pending",
+          "rewardVersion": "game-economy-v2",
+          "total": 23
+        },
+        "analysis": {
+          "analysisVersion": "post-game-analysis-v7",
+          "profileVersion": "post-game-profile-v1",
+          "engine": {
+            "name": "Stockfish",
+            "version": "stockfish-19",
+            "nnue": "nn-61e7af4bb97d.nnue"
+          },
+          "gameId": "legacy-match",
+          "sourcePgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. f3 e5 2. g4 Qh4# *",
+          "playerColor": "b",
+          "createdAt": "2026-10-14T08:06:00Z",
+          "status": "complete",
+          "totalPlies": 4,
+          "analyzedPlayerMoves": 2,
+          "moves": [
+            {
+              "ply": 1,
+              "actor": "opponent",
+              "fenBefore": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+              "fenAfter": "rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1",
+              "playedMove": "f2f3",
+              "playedSan": "f3",
+              "status": "not_analyzed",
+              "alternatives": [],
+              "autoPause": false,
+              "primaryEvent": null,
+              "eventPriority": 0
+            },
+            {
+              "ply": 2,
+              "actor": "player",
+              "fenBefore": "rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1",
+              "fenAfter": "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2",
+              "playedMove": "e7e5",
+              "playedSan": "e5",
+              "status": "complete",
+              "alternatives": [
+                {
+                  "move": "e7e6",
+                  "rawScore": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "score": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "wdl": {
+                    "win": 0.143,
+                    "draw": 0.855,
+                    "loss": 0.002
+                  },
+                  "expectedScorePlayer": 0.5705,
+                  "pv": [
+                    "e7e6",
+                    "e2e4",
+                    "c7c5",
+                    "d2d3"
+                  ],
+                  "depth": 13,
+                  "nodes": 75004,
+                  "san": "e6",
+                  "pvSan": [
+                    "e6",
+                    "e4",
+                    "c5",
+                    "d3"
+                  ]
+                },
+                {
+                  "move": "d7d5",
+                  "rawScore": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "score": {
+                    "type": "cp",
+                    "value": 55
+                  },
+                  "wdl": {
+                    "win": 0.143,
+                    "draw": 0.855,
+                    "loss": 0.002
+                  },
+                  "expectedScorePlayer": 0.5705,
+                  "pv": [
+                    "d7d5",
+                    "d2d4",
+                    "g8f6",
+                    "b1c3"
+                  ],
+                  "depth": 13,
+                  "nodes": 75004,
+                  "san": "d5",
+                  "pvSan": [
+                    "d5",
+                    "d4",
+                    "Nf6",
+                    "Nc3"
+                  ]
+                }
+              ],
+              "autoPause": false,
+              "shortMate": null,
+              "exercise": null,
+              "bestLine": {
+                "move": "e7e5",
+                "rawScore": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "score": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "wdl": {
+                  "win": 0.145,
+                  "draw": 0.853,
+                  "loss": 0.002
+                },
+                "expectedScorePlayer": 0.5715,
+                "pv": [
+                  "e7e5",
+                  "e2e4",
+                  "g8f6",
+                  "d2d4"
+                ],
+                "depth": 13,
+                "nodes": 75004,
+                "san": "e5",
+                "pvSan": [
+                  "e5",
+                  "e4",
+                  "Nf6",
+                  "d4"
+                ]
+              },
+              "playedLine": {
+                "move": "e7e5",
+                "rawScore": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "score": {
+                  "type": "cp",
+                  "value": 55
+                },
+                "wdl": {
+                  "win": 0.145,
+                  "draw": 0.853,
+                  "loss": 0.002
+                },
+                "expectedScorePlayer": 0.5715,
+                "pv": [
+                  "e7e5",
+                  "e2e4",
+                  "g8f6",
+                  "d2d4"
+                ],
+                "depth": 13,
+                "nodes": 75004,
+                "san": "e5",
+                "pvSan": [
+                  "e5",
+                  "e4",
+                  "Nf6",
+                  "d4"
+                ]
+              },
+              "topGap": 0.0010000000000000009,
+              "expectedScoreLoss": 0,
+              "quality": "best",
+              "highlight": null,
+              "mateTransition": null,
+              "bestVsSecondGap": 0.0010000000000000009,
+              "forced": false,
+              "recommendationEvidence": null,
+              "reason": "generic",
+              "explanationKey": "generic",
+              "recommendationRequired": false,
+              "primaryEvent": "best",
+              "eventPriority": 10
+            },
+            {
+              "ply": 3,
+              "actor": "opponent",
+              "fenBefore": "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2",
+              "fenAfter": "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",
+              "playedMove": "g2g4",
+              "playedSan": "g4",
+              "status": "not_analyzed",
+              "alternatives": [],
+              "autoPause": false,
+              "primaryEvent": null,
+              "eventPriority": 0
+            },
+            {
+              "ply": 4,
+              "actor": "player",
+              "fenBefore": "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",
+              "fenAfter": "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",
+              "playedMove": "d8h4",
+              "playedSan": "Qh4#",
+              "status": "complete",
+              "alternatives": [],
+              "autoPause": true,
+              "shortMate": null,
+              "exercise": null,
+              "bestLine": {
+                "move": "d8h4",
+                "rawScore": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "score": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "wdl": {
+                  "win": 1,
+                  "draw": 0,
+                  "loss": 0
+                },
+                "expectedScorePlayer": 1,
+                "pv": [
+                  "d8h4"
+                ],
+                "depth": 18,
+                "nodes": 274283,
+                "san": "Qh4#",
+                "pvSan": [
+                  "Qh4#"
+                ]
+              },
+              "playedLine": {
+                "move": "d8h4",
+                "rawScore": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "score": {
+                  "type": "mate",
+                  "value": 1
+                },
+                "wdl": {
+                  "win": 1,
+                  "draw": 0,
+                  "loss": 0
+                },
+                "expectedScorePlayer": 1,
+                "pv": [
+                  "d8h4"
+                ],
+                "depth": 18,
+                "nodes": 274283,
+                "san": "Qh4#",
+                "pvSan": [
+                  "Qh4#"
+                ]
+              },
+              "topGap": 0,
+              "expectedScoreLoss": 0,
+              "quality": "best",
+              "highlight": "excellent",
+              "mateTransition": "preserves_mate",
+              "bestVsSecondGap": 0,
+              "forced": false,
+              "recommendationEvidence": null,
+              "reason": "found_mate",
+              "explanationKey": "found_mate",
+              "recommendationRequired": false,
+              "primaryEvent": "excellent",
+              "eventPriority": 60
+            }
+          ],
+          "focusEvents": [
+            4
+          ],
+          "summary": {
+            "best": 2,
+            "good": 0,
+            "inaccuracy": 0,
+            "mistake": 0,
+            "blunder": 0,
+            "excellent": 1
+          },
+          "diagnostics": {
+            "searches": [
+              {
+                "ply": 2,
+                "nodes": 75000,
+                "restricted": false,
+                "ms": 515.115186
+              },
+              {
+                "ply": 4,
+                "nodes": 75000,
+                "restricted": false,
+                "ms": 188.8990530000001
+              },
+              {
+                "ply": 4,
+                "nodes": 300000,
+                "restricted": false,
+                "ms": 665.7059609999999
+              }
+            ]
+          }
+        },
+        "id": "legacy-match",
+        "pgn": "[Event \"?\"]\n[Site \"?\"]\n[Date \"????.??.??\"]\n[Round \"?\"]\n[White \"?\"]\n[Black \"?\"]\n[Result \"*\"]\n\n1. f3 e5 2. g4 Qh4# *",
+        "startedAt": "2026-10-14T08:00:00Z",
+        "engineProfile": {
+          "id": "cognitive-v2",
+          "calibrationVersion": "cognitive-v2.1-conversion-1",
+          "targetElo": 600,
+          "effectiveElo": 564.5186052212896,
+          "seed": 3865470566,
+          "profile": "default"
+        },
+        "finishedAt": "2026-10-14T08:05:00Z",
+        "mode": "bot",
+        "playerColor": "b",
+        "equipped": {
+          "pieces": {
+            "k": "piece:gold:k",
+            "q": "piece:gold:q",
+            "r": "piece:gold:r",
+            "b": "piece:gold:b",
+            "n": "piece:gold:n",
+            "p": "piece:gold:p"
+          },
+          "board": "board:gold"
+        },
+        "result": "Победа",
+        "points": 0,
+        "playerRating": 700,
+        "opponentRating": 600,
+        "ratingDelta": 23
+      }
+    ],
+    "rating": {
+      "value": 723,
+      "games": 1,
+      "lastDelta": 23
+    },
+    "settings": {
+      "mode": "bot",
+      "difficulty": "adaptive"
+    },
+    "coins": 1590,
+    "shards": 427,
+    "owned": [
+      "piece:classic:k",
+      "piece:classic:q",
+      "piece:classic:r",
+      "piece:classic:b",
+      "piece:classic:n",
+      "piece:classic:p",
+      "board:classic",
+      "piece:sand:k",
+      "piece:sand:q",
+      "piece:sand:r",
+      "piece:sand:b",
+      "piece:sand:n",
+      "piece:sand:p",
+      "board:sand",
+      "piece:slate:k",
+      "piece:slate:q",
+      "piece:slate:r",
+      "piece:slate:b",
+      "piece:slate:n",
+      "piece:slate:p",
+      "board:slate",
+      "piece:ocean:k",
+      "piece:ocean:q",
+      "piece:ocean:r",
+      "piece:ocean:b",
+      "piece:ocean:n",
+      "piece:ocean:p",
+      "board:ocean",
+      "piece:rose:k",
+      "piece:rose:q",
+      "piece:rose:r",
+      "piece:rose:b",
+      "piece:rose:n",
+      "piece:rose:p",
+      "board:rose",
+      "piece:nebula:k",
+      "piece:nebula:q",
+      "piece:nebula:r",
+      "piece:nebula:b",
+      "piece:nebula:n",
+      "piece:nebula:p",
+      "board:nebula",
+      "piece:aurora:k",
+      "piece:aurora:q",
+      "piece:aurora:r",
+      "piece:aurora:b",
+      "piece:aurora:n",
+      "piece:aurora:p",
+      "board:aurora",
+      "piece:gold:k",
+      "piece:gold:q",
+      "piece:gold:r",
+      "piece:gold:b",
+      "piece:gold:n",
+      "piece:gold:p",
+      "board:gold"
+    ],
+    "equipped": {
+      "pieces": {
+        "k": "piece:gold:k",
+        "q": "piece:gold:q",
+        "r": "piece:gold:r",
+        "b": "piece:gold:b",
+        "n": "piece:gold:n",
+        "p": "piece:gold:p"
+      },
+      "board": "board:gold"
+    },
+    "sets": [
+      {
+        "id": "legacy-gold",
+        "name": "Золотой набор",
+        "pieces": {
+          "k": "piece:gold:k",
+          "q": "piece:gold:q",
+          "r": "piece:gold:r",
+          "b": "piece:gold:b",
+          "n": "piece:gold:n",
+          "p": "piece:gold:p"
+        },
+        "board": "board:gold"
+      }
+    ],
+    "pity": 7,
+    "played": 1,
+    "opened": 37,
+    "game": {
+      "pgn": "1. e4 e5 2. Nf3 Nc6",
+      "mode": "bot",
+      "difficulty": "adaptive",
+      "playerColor": "w",
+      "started": true,
+      "settled": false,
+      "resigned": false,
+      "rating": {
+        "before": 723,
+        "opponent": 623,
+        "k": 64
+      },
+      "engineFailure": null,
+      "engineProfile": {
+        "id": "cognitive-v2",
+        "calibrationVersion": "cognitive-v2.1-conversion-1",
+        "targetElo": 623,
+        "effectiveElo": 643.6541743315604,
+        "seed": 0,
+        "profile": "default"
+      },
+      "startedAt": "2026-10-16T11:00:00Z",
+      "equipped": {
+        "pieces": {
+          "k": "piece:gold:k",
+          "q": "piece:gold:q",
+          "r": "piece:gold:r",
+          "b": "piece:gold:b",
+          "n": "piece:gold:n",
+          "p": "piece:gold:p"
+        },
+        "board": "board:gold"
+      }
+    }
+  }
+}

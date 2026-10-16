@@ -1,10 +1,10 @@
 import { AUTO } from "../../domain/autochess/autochess.js";
 import { STOCKFISH as C } from "./stockfish-config.js";
 import {
-createEngineWorker,
-recordStockfishRestart,
+  createEngineWorker,
+  recordStockfishRestart,
 } from "./stockfish-lifecycle.js";
-import type { AutoplayEngine,UciWorker } from "./types.js";
+import type { AutoplayEngine, UciWorker } from "../../shared/types/engine.js";
 // One sequential worker per active battle; no rating or difficulty model.
 export const createAutoplayEngine = (
   spawn: () => UciWorker = createEngineWorker,

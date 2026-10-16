@@ -1,4 +1,4 @@
-import type { Chess,Color } from "chess.js";
+import type { Chess, Color } from "chess.js";
 import { REWARD_CONFIG as C } from "./reward-quality.js";
 import type { RewardBreakdown } from "./types.js";
 // Canonical final history only: replay/undo never creates another reward.

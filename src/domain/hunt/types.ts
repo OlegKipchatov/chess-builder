@@ -11,7 +11,7 @@ export interface HuntMove {
   to: string;
 }
 export type HuntPhase = "idle" | "awaitingPlayer" | "resolving" | "finished";
-export type HuntFinishReason = "timer" | "lives" | "no-space" | "aborted";
+export type HuntFinishReason = "timer" | "lives" | "no-space" | "abandoned";
 export interface HuntState {
   runId: string;
   runSeed: string;

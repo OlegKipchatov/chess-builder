@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 export const testLongMateEngine = async page => {
  const results=await page.evaluate(async()=>{
-  const {Chess}=await import('./chess.js?v=132');
-  const {createStockfishClient}=await import('./stockfish-client.js?v=132');
-  const {engineLine}=await import('./stockfish-evaluation.js?v=132');
-  const {verifyShortMate}=await import('./analysis/analysis-reasons.js?v=132');
-  const {prepareMateExercise,createMateExercise}=await import('./analysis/analysis-training.js?v=132');
+  const {Chess}=await import('./probe.js');
+  const {createStockfishClient}=await import('./probe.js');
+  const {engineLine}=await import('./probe.js');
+  const {verifyShortMate}=await import('./probe.js');
+  const {prepareMateExercise,createMateExercise}=await import('./probe.js');
   const search=async game=>{
    const client=createStockfishClient();
    try{return await new Promise((resolve,reject)=>{

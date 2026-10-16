@@ -1,9 +1,9 @@
 import {
-createContext,
-useContext,
-useEffect,
-useState,
-type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
 } from "react";
 type Theme = "system" | "light" | "dark";
 const valid = (value: unknown): value is Theme =>

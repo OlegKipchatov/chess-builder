@@ -1,24 +1,24 @@
-import { Chess,type Square } from "chess.js";
-import { useCallback,useEffect,useMemo,useReducer,useRef } from "react";
+import { Chess, type Square } from "chess.js";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
-import { useVault,useVaultStore } from "../../app/providers/VaultProvider.js";
+import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
-activityDate,
-currentStreak,
+  activityDate,
+  currentStreak,
 } from "../../domain/activity/activity-model.js";
 import { recordCalendarGame } from "../../domain/activity/calendar-rewards.js";
 import {
-abortFailedMatch,
-completedMatch,
-matchEndReason,
+  abortFailedMatch,
+  completedMatch,
+  matchEndReason,
 } from "../../domain/chess/archive.js";
 import { createStartedGame } from "../../domain/chess/session.js";
-import type { ArchiveEntry,SavedGame } from "../../domain/chess/types.js";
+import type { ArchiveEntry, SavedGame } from "../../domain/chess/types.js";
 import { randomPlayStyle } from "../../domain/cognitive/play-style-config.js";
 import { validEngineProfile } from "../../domain/cognitive/strength.js";
 import { createBotClient } from "../../services/engines/bot-client.js";
-import type { EngineClient } from "../../services/engines/types.js";
-import { createRecordId,newGame } from "../../services/persistence/state.js";
+import type { EngineClient } from "../../shared/types/engine.js";
+import { createRecordId, newGame } from "../../services/persistence/state.js";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 type Phase = "idle" | "saving" | "thinking" | "animating" | "failed";
@@ -31,12 +31,14 @@ interface Result {
   activity: { date: string; streak: number } | null;
 }
 interface View {
+  display: { game: Chess; config: SavedGame } | null;
   phase: Phase;
   error: string | null;
   cursor: number | null;
   result: Result | null;
 }
 type Event =
+  | { type: "freeze"; game: Chess; config: SavedGame }
   | { type: "phase"; phase: Phase }
   | { type: "error"; message: string }
   | { type: "cursor"; cursor: number | null }
@@ -44,6 +46,12 @@ type Event =
   | { type: "reset" };
 const reducer = (state: View, event: Event): View => {
   switch (event.type) {
+    case "freeze":
+      return {
+        ...state,
+        phase: "saving",
+        display: { game: event.game, config: event.config },
+      };
     case "phase":
       return { ...state, phase: event.phase, error: null };
     case "error":
@@ -51,9 +59,21 @@ const reducer = (state: View, event: Event): View => {
     case "cursor":
       return { ...state, cursor: event.cursor };
     case "result":
-      return { phase: "idle", error: null, cursor: null, result: event.result };
+      return {
+        display: null,
+        phase: "idle",
+        error: null,
+        cursor: null,
+        result: event.result,
+      };
     case "reset":
-      return { phase: "idle", error: null, cursor: null, result: null };
+      return {
+        display: null,
+        phase: "idle",
+        error: null,
+        cursor: null,
+        result: null,
+      };
   }
 };
 export const useGameSession = () => {
@@ -62,8 +82,9 @@ export const useGameSession = () => {
     { toast } = useOverlays(),
     reduced = useReducedMotion();
   const [view, dispatch] = useReducer(reducer, {
-    phase: "idle",
-    error: null,
+    display: null,
+    phase: saved.engineFailure ? "failed" : "idle",
+    error: saved.engineFailure?.message || null,
     cursor: null,
     result: null,
   });
@@ -83,7 +104,7 @@ export const useGameSession = () => {
     }
     return board;
   }, [saved.pgn]);
-  const game = restored || new Chess();
+  const game = useMemo(() => restored || new Chess(), [restored]);
   useEffect(() => {
     if (restored) return;
     toast(
@@ -104,6 +125,7 @@ export const useGameSession = () => {
     const config = structuredClone(current.game),
       id = createRecordId(),
       finishedAt = new Date().toISOString();
+    dispatch({ type: "freeze", game: board, config });
     let result: Result | null = null;
     const transaction = await store.update((latest) => {
       if (
@@ -151,6 +173,7 @@ export const useGameSession = () => {
       return;
     }
     if (result) dispatch({ type: "result", result });
+    else dispatch({ type: "reset" });
   }, [store]);
   const present = useCallback(() => {
     clearTimeout(timer.current);
@@ -171,15 +194,18 @@ export const useGameSession = () => {
       reduced ? 0 : motionDuration.board,
     );
   }, [store, reduced, settle]);
+  const invalidateRequest = useCallback(() => {
+    request.current++;
+  }, []);
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      request.current++;
+      invalidateRequest();
       engine.current?.terminate();
       clearTimeout(timer.current);
     };
-  }, []);
+  }, [invalidateRequest]);
   useEffect(() => {
     if (
       !saved.started ||
@@ -190,29 +216,44 @@ export const useGameSession = () => {
     const client = createBotClient(saved.engineProfile);
     engine.current = client;
     return () => {
-      request.current++;
+      invalidateRequest();
       client.terminate();
       if (engine.current === client) engine.current = null;
     };
-  }, [saved.startedAt, saved.started, retry]);
+  }, [
+    saved.startedAt,
+    saved.started,
+    saved.engineProfile,
+    saved.mode,
+    retry,
+    invalidateRequest,
+  ]);
   useEffect(() => {
     if (
       restored &&
       saved.started &&
       (saved.resigned || game.isGameOver()) &&
       view.phase !== "animating" &&
-      view.phase !== "saving"
+      view.phase !== "saving" &&
+      view.phase !== "failed"
     )
       void settle();
-  }, [saved.started, saved.resigned, saved.pgn, view.phase, game, settle]);
+  }, [
+    restored,
+    saved.started,
+    saved.resigned,
+    saved.pgn,
+    view.phase,
+    game,
+    settle,
+  ]);
+  const searchBlocked = ["animating", "saving", "failed"].includes(view.phase);
   useEffect(() => {
     if (
       !active ||
       saved.mode !== "bot" ||
       game.turn() === saved.playerColor ||
-      view.phase === "animating" ||
-      view.phase === "saving" ||
-      view.phase === "failed" ||
+      searchBlocked ||
       !engine.current
     )
       return;
@@ -284,9 +325,13 @@ export const useGameSession = () => {
     saved.startedAt,
     active,
     retry,
-    view.phase === "animating",
-    view.phase === "saving",
-    view.phase === "failed",
+    searchBlocked,
+    game,
+    present,
+    saved.engineProfile,
+    saved.mode,
+    saved.playerColor,
+    store,
   ]);
   const start = async () => {
     if (inFlight.current || active) return;

@@ -1,8 +1,8 @@
 import { Chess } from "chess.js";
 import type {
-ArchiveEntry,
-EngineFailure,
-SavedGame,
+  ArchiveEntry,
+  EngineFailure,
+  SavedGame,
 } from "../../domain/chess/types.js";
 import { decisionModeFor } from "../../domain/cognitive/cognitive-model.js";
 import { playStyleName } from "../../domain/cognitive/play-style-config.js";

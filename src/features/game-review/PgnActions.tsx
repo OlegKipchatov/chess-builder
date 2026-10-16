@@ -1,11 +1,11 @@
 import type { Chess } from "chess.js";
 import { useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
-import type { ArchiveEntry,SavedGame } from "../../domain/chess/types.js";
+import type { ArchiveEntry, SavedGame } from "../../domain/chess/types.js";
 import {
-downloadPgn,
-exportPgn,
-sharePgn,
+  downloadPgn,
+  exportPgn,
+  sharePgn,
 } from "../../shared/lib/pgn-export.js";
 const ExportDialog = ({ pgn }: { pgn: string }) => {
   const [message, setMessage] = useState("");
@@ -17,13 +17,16 @@ const ExportDialog = ({ pgn }: { pgn: string }) => {
         aria-label="PGN партии"
         style={{ fontSize: 16, width: "100%", minHeight: 160 }}
       />
-      <div className="dialog-actions">
+      <div className="dialog-actions pgn-actions">
         <button
           onClick={() =>
-            void navigator.clipboard.writeText(pgn).then(
-              () => setMessage("Скопировано"),
-              () => setMessage("Не удалось скопировать. Выделите текст выше."),
-            )
+            void Promise.resolve()
+              .then(() => navigator.clipboard.writeText(pgn))
+              .then(
+                () => setMessage("PGN скопирован"),
+                () =>
+                  setMessage("Не удалось скопировать. Выделите текст выше."),
+              )
           }
         >
           Копировать
@@ -55,7 +58,11 @@ export const PgnActions = ({
       onClick={() =>
         show({
           title: "PGN партии",
-          body: <ExportDialog pgn={exportPgn(game, config)} />,
+          body: (
+            <ExportDialog
+              pgn={config.imported ? game.pgn() : exportPgn(game, config)}
+            />
+          ),
         })
       }
     >

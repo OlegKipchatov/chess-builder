@@ -1,9 +1,7 @@
-import type { Color,Move,Square } from "chess.js";
+import type { Color, Move, Square } from "chess.js";
 import { Chess } from "chess.js";
-import { PLAY_STYLES,validPlayStyle } from "./play-style-config.js";
-import type {
-PlayStyle
-} from "./types.js";
+import { PLAY_STYLES, validPlayStyle } from "./play-style-config.js";
+import type { PlayStyle } from "./types.js";
 
 const clamp = (value: number) => Math.max(-1, Math.min(1, value));
 const xy = (square: string) => [

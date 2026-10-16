@@ -3,10 +3,13 @@ node_modules/
 node_modules
 .DS_Store
 
-dist/vendor/
 
 public/vendor/
 build/
 coverage/
 playwright-report/
 test-results/
+
+/dist/
+
+/tests/fixtures/pwa-v132.tar.gz

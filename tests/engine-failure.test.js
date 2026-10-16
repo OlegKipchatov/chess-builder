@@ -1,4 +1,3 @@
-import {mountAppShell} from '../dist/ui/shell.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
@@ -27,9 +26,4 @@ test('Право отмены переживает перезагрузку, н�
  state.game.engineFailure=null;assert.equal(canAbortFailedMatch(state,game),false);
  state.game.engineFailure={fen:game.fen(),message:'error'};state.game.resigned=true;assert.equal(canAbortFailedMatch(state,game),false);
 });
-test('Прерванная партия исключена из процента побед; отмена доступна за пределами модального окна',()=>{
- const root={};mountAppShell(root);const html=root.innerHTML;
- const app=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
- assert.ok(app.includes("entry.mode==='bot'&&entry.counted!==false"));assert.ok(html.includes('id="abort-failed"'));assert.ok(app.includes("$('#abort-failed').onclick=abortAfterFailure"));
- assert.ok(app.includes('data-download-pgn'));assert.ok(app.includes('data-copy-pgn'));
-});
+// Persisted recovery UI and win-rate regression: tests/react/routes.test.tsx.

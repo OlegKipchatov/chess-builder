@@ -1,11 +1,11 @@
 import type { PieceSymbol } from "chess.js";
 import type {
-CollectionStyle,
-Equipment,
-Item,
-ItemId,
-Rarity,
-StyleId,
+  CollectionStyle,
+  Equipment,
+  Item,
+  ItemId,
+  Rarity,
+  StyleId,
 } from "./types.js";
 export const TYPES: PieceSymbol[] = ["k", "q", "r", "b", "n", "p"];
 export const PIECE_NAMES = {

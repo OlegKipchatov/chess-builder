@@ -1,11 +1,6 @@
-import type {
-EngineLine
-} from "../../services/engines/types.js";
+import type { EngineLine } from "../../shared/types/engine.js";
 import { PROFILE } from "./analysis-config.js";
-import type {
-MoveAnalysis,
-MoveClassification
-} from "./types.js";
+import type { MoveAnalysis, MoveClassification } from "./types.js";
 export const mateState = (line?: EngineLine) =>
   line?.score.type === "mate"
     ? line.score.value > 0

@@ -1,6 +1,19 @@
-import { useBlocker,useNavigate } from "@tanstack/react-router";
-import type { PieceSymbol,Square } from "chess.js";
-import { useEffect,useMemo,useState } from "react";
+import { useHistoryReturn } from "../../features/game-review/HistoryReturnProvider.js";
+import { ActivityCelebration } from "../../features/game-session/ActivityCelebration.js";
+import { eligibleEntry } from "../../domain/analysis/analysis-storage.js";
+import { PIECE_NAMES } from "../../domain/catalog/catalog.js";
+import { useShellPresentation } from "../../app/providers/ShellPresentation.js";
+import { MatchReward } from "../../features/game-session/MatchReward.js";
+import { useBlocker, useNavigate } from "@tanstack/react-router";
+import type { PieceSymbol, Square } from "chess.js";
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVault } from "../../app/providers/VaultProvider.js";
 import { materialBalance } from "../../domain/chess/archive.js";
@@ -14,19 +27,27 @@ import { useGameSession } from "../../features/game-session/useGameSession.js";
 import { Page } from "../../shared/ui/Page.js";
 import { Piece } from "../../shared/ui/Piece.js";
 export const GamePage = () => {
+  const historyOrigin = useHistoryReturn();
   const session = useGameSession(),
     { show } = useOverlays(),
     navigate = useNavigate(),
     equipped = useVault((state) => state.equipped),
     played = useVault((state) => state.played);
-  const [selected, setSelected] = useState<Square | null>(null);
+  const [selected, setSelected] = useState<Square | null>(null),
+    allowNavigation = useRef(false);
   useBlocker({
-    shouldBlockFn: () => session.active || !!session.view.result,
+    shouldBlockFn: () =>
+      !allowNavigation.current && (session.active || !!session.view.result),
     enableBeforeUnload: false,
   });
   const final = session.view.result,
-    live = final?.game || session.game,
-    config = final?.config || session.saved;
+    live = final?.game || session.view.display?.game || session.game,
+    config = final?.config || session.view.display?.config || session.saved;
+  const shell = useShellPresentation();
+  useLayoutEffect(() => {
+    shell(session.saved.started || !!final || !!session.view.display);
+    return () => shell(false);
+  }, [shell, session.saved.started, final, session.view.display]);
   const board = useMemo(
     () => positionAt(live, session.view.cursor),
     [live, session.view.cursor],
@@ -44,13 +65,16 @@ export const GamePage = () => {
   useEffect(() => {
     setSelected(null);
   }, [session.saved.pgn]);
-  useEffect(() => {
+  const presentResult = useEffectEvent(() => {
     if (!final) return;
     const finish = () => {
       session.closeResult();
       show(null);
     };
     const analysis = () => {
+      historyOrigin.fromList = false;
+      historyOrigin.returnTo = "/play";
+      allowNavigation.current = true;
       finish();
       if (final.entry)
         void navigate({
@@ -65,7 +89,7 @@ export const GamePage = () => {
         onClose: finish,
         body: (
           <div className="dialog-actions">
-            {final.entry && (
+            {eligibleEntry(final.entry) && (
               <button className="primary wide" onClick={analysis}>
                 Разобрать партию
               </button>
@@ -86,9 +110,7 @@ export const GamePage = () => {
           onClose: lastStep,
           body: (
             <>
-              <div className="activity-day today closed">
-                {Number(final.activity.date.slice(-2))}
-              </div>
+              <ActivityCelebration event={final.activity} />
               <button className="primary wide" onClick={lastStep}>
                 Продолжить
               </button>
@@ -104,13 +126,8 @@ export const GamePage = () => {
       onClose: final.cancelled ? finish : activity,
       body: (
         <>
-          <p>{final.reason}</p>
-          {final.entry && (
-            <p className="reward-amount">
-              +{final.entry.rewardBreakdown?.total || 0}{" "}
-              <span className="coins">◈</span>
-            </p>
-          )}
+          <p className="match-end-reason">{final.reason}</p>
+          {final.entry && <MatchReward id={final.entry.id} />}
           <button
             className="primary wide"
             onClick={final.cancelled ? finish : activity}
@@ -120,6 +137,9 @@ export const GamePage = () => {
         </>
       ),
     });
+  });
+  useEffect(() => {
+    presentResult();
   }, [final]);
   const activate = (square: Square) => {
     if (!canMove) return;
@@ -136,13 +156,13 @@ export const GamePage = () => {
               {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (
                 <button
                   key={type}
-                  aria-label={type}
+                  aria-label={PIECE_NAMES[type]}
                   onClick={() => {
                     show(null);
                     void session.move(from, square, type);
                   }}
                 >
-                  <Piece type={type} color={config.playerColor} />
+                  <Piece type={type} color={board.turn()} />
                 </button>
               ))}
             </div>
@@ -159,7 +179,7 @@ export const GamePage = () => {
         : null,
     );
   };
-  if (!session.saved.started && !final)
+  if (!session.saved.started && !final && !session.view.display)
     return (
       <Page id="play" title="Игра">
         <div id="game-ready" className="game-ready">
@@ -179,30 +199,38 @@ export const GamePage = () => {
           >
             ▦ Календарь активности <span>›</span>
           </button>
-          <div className="mini-game-entries">
+          <section id="hunt-entry" className="hunt-entry">
+            <h2>Охота</h2>
+            <div className="hunt-modes">
+              <button
+                className="quiet"
+                data-hunt-mode="timed"
+                onClick={() =>
+                  void navigate({ to: "/hunt", search: { mode: "timed" } })
+                }
+              >
+                На время
+              </button>
+              <button
+                className="quiet"
+                data-hunt-mode="endless"
+                onClick={() =>
+                  void navigate({ to: "/hunt", search: { mode: "endless" } })
+                }
+              >
+                На жизни
+              </button>
+            </div>
+          </section>
+          <section id="autochess-entry" className="autochess-entry">
             <button
-              className="panel"
-              onClick={() =>
-                void navigate({ to: "/hunt", search: { mode: "endless" } })
-              }
-            >
-              Бесконечная охота
-            </button>
-            <button
-              className="panel"
-              onClick={() =>
-                void navigate({ to: "/hunt", search: { mode: "timed" } })
-              }
-            >
-              Охота на время
-            </button>
-            <button
-              className="panel"
+              id="autochess-open"
+              className="mode-link"
               onClick={() => void navigate({ to: "/autochess" })}
             >
-              Автошахматы
+              Автошахматы<span aria-hidden="true">↗</span>
             </button>
-          </div>
+          </section>
         </div>
         {played > 0 && (
           <p className="page-supporting">Сыграно партий: {played}</p>
@@ -249,14 +277,21 @@ export const GamePage = () => {
                 <span className="match-person">
                   <span
                     className={`avatar ${config.playerColor === "w" ? "light" : ""}`}
-                  />
+                  >
+                    <Piece type="k" color={config.playerColor} />
+                  </span>
                   <strong>Вы</strong>
                 </span>
                 <span className="versus">VS</span>
                 <span className="match-person">
                   <span
                     className={`avatar ${config.playerColor === "b" ? "light" : ""}`}
-                  />
+                  >
+                    <Piece
+                      type="k"
+                      color={config.playerColor === "w" ? "b" : "w"}
+                    />
+                  </span>
                   <strong>
                     {playStyleName(config.engineProfile?.profile)}
                   </strong>
@@ -283,6 +318,7 @@ export const GamePage = () => {
                     )?.square
                   : null
               }
+              feedback={session.view.cursor === null}
               disabled={!canMove}
               onSquare={activate}
             />

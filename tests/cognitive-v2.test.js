@@ -52,7 +52,7 @@ test('Cognitive v2: load reduces detection, salience protects obvious queen at 1
  assert.ok(detectionProbability(.4,600,1)>detectionProbability(.4,600,.5));
 });
 test('Cognitive v2: no objective dependencies, oracle poison cannot affect the decision',()=>{
- for(const name of ['config','model','search','profile'])assert.doesNotMatch(readFileSync(`dist/cognitive-${name}.js`,'utf8'),/from .*?(stockfish|difficulty-model|candidate-analysis)/);
+ for(const name of ['config','model','search','profile'])assert.doesNotMatch(readFileSync(`src/domain/cognitive/cognitive-${name}.ts`,'utf8'),/from .*?(stockfish|difficulty-model|candidate-analysis)/);
  const args={fen:new Chess().fen(),elo:600,seed:42},a=decide(args);
  const poison=new Proxy({},{get:()=>{throw Error('Objective information read');}});
  assert.deepEqual(decide({...args,objectiveEvaluation:poison,candidates:poison,reference:poison}),a);

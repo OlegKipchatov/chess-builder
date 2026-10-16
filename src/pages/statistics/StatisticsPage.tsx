@@ -1,5 +1,5 @@
 import { useVault } from "../../app/providers/VaultProvider.js";
-import { Page,Stat } from "../../shared/ui/Page.js";
+import { Page, Stat } from "../../shared/ui/Page.js";
 export const StatisticsPage = () => {
   const archive = useVault((s) => s.archive),
     rating = useVault((s) => s.rating),

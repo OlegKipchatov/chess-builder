@@ -1,6 +1,6 @@
 import { Chess } from "chess.js";
-import type { ArchiveEntry,VaultState } from "../chess/types.js";
-import { ANALYSIS_VERSION,ENGINE,PROFILE } from "./analysis-config.js";
+import type { ArchiveEntry, VaultState } from "../chess/types.js";
+import { ANALYSIS_VERSION, ENGINE, PROFILE } from "./analysis-config.js";
 import type { GameAnalysis } from "./types.js";
 export const eligibleEntry = (
   entry: ArchiveEntry | undefined | null,

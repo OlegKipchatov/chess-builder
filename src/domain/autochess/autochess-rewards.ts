@@ -1,6 +1,6 @@
 import { recordCalendarGame } from "../activity/calendar-rewards.js";
 import type { ActivityWallet } from "../activity/types.js";
-import type { AutoAward,AutoRun,RoundResult } from "./types.js";
+import type { AutoAward, AutoRun, RoundResult } from "./types.js";
 // The wallet and its reward receipt (including the result) are one atomic state write.
 export const autoRewardCoins = (result?: Pick<RoundResult, "outcome">) =>
   result?.outcome === "win" ? 3 : result?.outcome === "draw" ? 1 : 0;

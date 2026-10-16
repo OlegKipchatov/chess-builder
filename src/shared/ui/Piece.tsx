@@ -1,5 +1,5 @@
-import type { Color,PieceSymbol } from "chess.js";
-import { memo,type ReactNode } from "react";
+import type { Color, PieceSymbol } from "chess.js";
+import { memo, type ReactNode } from "react";
 import { styleById } from "../../domain/catalog/catalog.js";
 import type { StyleId } from "../../domain/catalog/types.js";
 
