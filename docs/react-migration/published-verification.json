@@ -357,5 +357,13 @@
   "siteSourceCommit": "df7cf3bff0a6b9c148e2bbea9ed151a047a564ab",
   "siteVersion": 52,
   "access": "Existing custom owner-only audience retained",
-  "verificationMethod": "Authenticated HTTP fetches; each runtime file SHA-256 matches both the CI artifact and the independently rebuilt private preview artifact. Browser behavior exercised by CI against that identical artifact."
+  "verificationMethod": "Authenticated HTTP fetches; each runtime file SHA-256 matches both the CI artifact and the independently rebuilt private preview artifact. Browser behavior exercised by CI against that identical artifact.",
+  "previousAddressRedirectStatus": 307,
+  "previousAddressRedirectTarget": "https://gachachess-react-20261017-bf303232.o-kipchatov.chatgpt.site/",
+  "hostingHeaders": {
+    "rootContentType": "text/html",
+    "serviceWorkerContentType": "text/javascript",
+    "contentSecurityPolicy": null,
+    "isolationHeaders": "Applied by the installed service worker; first-control safe reload and single-thread fallback are validated in the PWA browser suites."
+  }
 }
