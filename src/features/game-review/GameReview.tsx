@@ -263,7 +263,9 @@ export const GameReview = ({
                 ) : !analysisMode || analysis?.status !== "complete" ? (
                   <button
                     id={
-                      analysisMode && job.status === "failed"
+                      analysisMode &&
+                      (job.status === "failed" ||
+                        (analysis && analysis.status !== "complete"))
                         ? "analysis-retry"
                         : "archive-analysis"
                     }
@@ -280,7 +282,13 @@ export const GameReview = ({
                   </button>
                 ) : null}
               </div>
-              {job.status === "failed" && <p role="alert">{job.message}</p>}
+              {job.status === "failed" ? (
+                <p role="alert">{job.message}</p>
+              ) : analysis?.status === "failed" ? (
+                <p role="alert">
+                  Не удалось завершить анализ. Повторите попытку.
+                </p>
+              ) : null}
             </div>
           )}
         <div className="analysis-insight-slot">

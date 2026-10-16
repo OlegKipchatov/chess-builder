@@ -12,14 +12,6 @@
 @import "./autochess.css";
 @import "./pve.css";
 /* React shell keeps the established CSS roles and geometry. */
-#toast {
-  position: fixed;
-  bottom: calc(110px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  max-width: calc(100% - 32px);
-}
 .equipment-strip {
   top: calc(var(--header-height, 68px) + 12px);
 }

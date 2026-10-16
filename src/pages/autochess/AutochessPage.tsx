@@ -259,8 +259,11 @@ export const AutochessPage = () => {
         return next;
       });
       setSelected(null);
-    } else setSelected(id === selected ? null : id);
-    lastTap.current = { id, at: time };
+      lastTap.current = { id: "", at: 0 };
+    } else {
+      setSelected(id === selected ? null : id);
+      lastTap.current = { id, at: time };
+    }
   };
   const drop = (square: string) => {
     if (!piece || !preparation) return;
@@ -401,8 +404,10 @@ export const AutochessPage = () => {
                     aria-pressed={item?.id === selected}
                     disabled={!preparation}
                     onClick={() => {
-                      if (item) select(item.id);
-                      else if (selected) {
+                      if (item) {
+                        lastTap.current = { id: "", at: 0 };
+                        setSelected(item.id === selected ? null : item.id);
+                      } else if (selected) {
                         auto.change((value) => benchPiece(value, selected));
                         setSelected(null);
                       }

@@ -198,13 +198,15 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
               </button>
             )}
           </dialog>
-          <div
-            id="toast"
-            role="status"
-            hidden={!message}
-            data-tone={message?.error ? "error" : "neutral"}
-          >
-            {message?.text}
+          <div className="notification-stack">
+            <div
+              id="toast"
+              role="status"
+              hidden={!message}
+              data-tone={message?.error ? "error" : "neutral"}
+            >
+              {message?.text}
+            </div>
           </div>
         </>,
         document.body,
