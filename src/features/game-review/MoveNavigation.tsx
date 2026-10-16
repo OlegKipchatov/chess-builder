@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 interface Props {
@@ -35,7 +36,7 @@ export const MoveNavigation = ({
       start: number | undefined;
     const tick = (now: number) => {
       start ??= now;
-      const fraction = Math.min(1, (now - start) / 420);
+      const fraction = Math.min(1, (now - start) / motionDuration.board);
       setThumb(from + (cursor - from) * fraction);
       if (fraction < 1) frame = requestAnimationFrame(tick);
     };

@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
@@ -111,7 +112,7 @@ export const usePveBattle = (active: boolean) => {
       };
       if (!event.targetId) {
         setVisual(next);
-        schedule(finish, 420);
+        schedule(finish, motionDuration.board);
         return;
       }
       setVisual(battle);
@@ -134,12 +135,12 @@ export const usePveBattle = (active: boolean) => {
           targetId: event.targetId,
           damage: event.damage,
         });
-      }, 420);
+      }, motionDuration.board);
       schedule(() => {
         setAttack(undefined);
         if (event.killed) setVisual(next);
-      }, 840);
-      schedule(finish, event.killed ? 840 : 1260);
+      }, 2 * motionDuration.board);
+      schedule(finish, (event.killed ? 2 : 3) * motionDuration.board);
     },
     [store, active, reduced],
   );

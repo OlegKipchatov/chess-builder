@@ -19,7 +19,7 @@ try{
  const seed=async(count=0,overflow=false)=>{
   const run=createAutoRun('compact-fixture');
    run.color='w';run.level=3;run.round=21;run.purchases=7;run.nextId=8;run.reserve=27;
-   run.results=Array.from({length:20},(_,i)=>({outcome:'draw',shopLevel:1,battleId:run.id+':'+(i+1)}));
+   run.results=Array.from({length:20},(_,i)=>({outcome:'draw',incomeRule:1,shopLevel:1,battleId:run.id+':'+(i+1)}));
    run.opponent=arrangeOpponent(run.opponent,'b');
    run.army=[['k','e1'],['r','h1'],['b','c1'],['n','b1'],['p','a2'],['p','b2'],['p','c2'],['p','d2']].map(([type,square],i)=>({id:i?'piece-'+i:'king',type,square:i&&i<=count?null:square,...(i?{paid:i}:{}),...(i&&i<=count?{reserveSlot:i-1,benched:true}:{})}));
    if(overflow)delete run.reserveRule;

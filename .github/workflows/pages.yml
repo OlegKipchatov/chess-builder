@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [autochess, hunt, layout, pve, performance]
+        suite: [autochess, hunt, layout, pve, shell, performance]
     steps:
       - uses: actions/checkout@v4
         with:

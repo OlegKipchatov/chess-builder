@@ -33,15 +33,17 @@ Audit and implementation in progress. No acceptance check is considered complete
 
 ### Checkpoint: typed React runtime
 
-Generated `dist/` replaces the old source directory. Strict TypeScript and ESLint pass. The latest verified runs contain 375 Node domain/service regression tests and 54 React tests. Five v132-generated storage fixtures cover old formats, rich active games, analysis, activity, PvE and Autochess. All pass.
+Generated `dist/` replaces the old source directory. Strict TypeScript and ESLint pass. The latest verified runs contain 375 Node domain/service regression tests and 59 React tests. Five v132-generated storage fixtures cover old formats, rich active games, analysis, activity, PvE and Autochess. All pass.
 
-The preserved behavior from old DOM tests is now asserted through React render/hook/router tests (board identities, keyboard/animation cleanup, modals, archives, analysis, activity, theme, persistence, Worker lifetime). Old standalone browser scripts still need complete adaptation where they rely on obsolete page IDs and pre-v132 navigation. They are not counted as passed.
+The preserved behavior from old DOM tests is asserted through React render/hook/router tests (board identities, keyboard/animation cleanup, modals, archives, analysis, activity, theme, persistence, Worker lifetime). Browser harnesses now exercise React controls and seed saved fixtures through the typed domain. Original behavioral and geometry assertions remain in place.
 
-The production PWA and Stockfish browser suites have been adapted to generated Vite assets and the actual v132 predecessor. Their execution is pending. The managed local environment lacks the Sites-required `control-browser`; no alternate local server/browser is started. CI on the migration branch is the next available browser-validation path. No installed-PWA or published-preview success is claimed.
+Real Chromium runs on the migration branch in GitHub Actions. Stockfish threaded, single-threaded and failed-initialization fallback checks pass, including verified mate-in-3/mate-in-4 practice and zero surviving parent Workers (peak one). Browser integration checks have exposed and driven fixes to Autochess click capture, compact board geometry, hash search canonicalization and review copy. The complete PWA, mode and layout gates are still being rerun; these are not yet accepted as passed. Browser timing comparison with v132 is also running.
+
+The managed local environment lacks the Sites-required `control-browser`; no alternate local server/browser is started. CI supplies browser validation. No installed-upgrade or published-preview success is claimed until the complete corresponding gate passes.
 
 ### Remaining acceptance gates
 
-- Execute and fix browser checks; migrate remaining standalone layout, PGN/training, Hunt and Autochess cases without dropping their behavioral assertions.
+- Complete the browser checks for PWA updates, layout, PGN/training, Hunt, Autochess and PvE without dropping their behavioral assertions.
 - Verify geometry, safe-area layouts, touch dragging, post-game return and all mode transitions in a real browser.
 - Measure browser interaction performance and compare with v132. Unit/DOM timing is not browser performance evidence.
 - Complete documentation/test coverage reconciliation, then publish and directly verify a new private preview. Production stays unchanged.

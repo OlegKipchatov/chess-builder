@@ -4,7 +4,7 @@
 
 `app → pages → features → services/domain/shared`. Pure domain modules do not import React, browser persistence, Worker constructors or page components. Engine orchestration belongs to services, even when it performs chess calculations. Upstream chess.js and Stockfish binaries are dependencies, not rewritten first-party code.
 
-The app is a Vite SPA. TanStack Router hash history supports GitHub Pages without server rewrites. Pages use React.lazy within a persistent shell. Legacy `#archive`, `#analysis` and `#minigames` links map to appropriate current screens. Route guards retain active chess sessions; navigation does not recreate the vault. Router scroll restoration and a scoped history-return record restore archive position/focus. TanStack Virtual applies only to archives over 50 entries.
+The app is a Vite SPA. TanStack Router hash history supports GitHub Pages without server rewrites. Pages use TanStack lazyRouteComponent within a persistent React shell. Router preloading resolves route chunks before rendering, avoiding a second Suspense import waterfall. Legacy `#archive`, `#analysis` and `#minigames` links map to appropriate current screens. Route guards retain active chess sessions; navigation does not recreate the vault. Router scroll restoration and a scoped history-return record restore archive position/focus. TanStack Virtual applies only to archives over 50 entries.
 
 TanStack Start does not currently provide sufficient benefit: GitHub Pages cannot execute request-time SSR; core gameplay requires client services and offline state. Selected static pages could be prerendered later, but no hydration dependency is imposed on chess. Domain/adapter separation permits a future server host without requiring one today.
 

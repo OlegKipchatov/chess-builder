@@ -83,9 +83,11 @@ try {
     assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).coins),paid.coins);
     if(width===390&&motion==='reduce'){
       await page.locator('[data-hunt-mode="endless"]').click();
+      await page.locator('#board [aria-disabled="false"]').first().waitFor();
       for(let turn=0;turn<100&&!await page.locator('#modal #hunt-result').count();turn++){
         const move=await chooseMove(page,'endless');
         assert.ok(move);await page.locator(`#board [data-square="${move.from}"]`).click();await page.locator(`#board [data-square="${move.to}"]`).click();
+        await page.waitForFunction(()=>document.querySelector('#hunt-result')||document.querySelector('#board').getAttribute('aria-busy')==='false');
       }
       await page.locator('#modal #hunt-result').waitFor();
       assert.equal(await page.locator('.hunt-hud strong').first().textContent(),'0');

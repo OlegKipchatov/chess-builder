@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import { useBoardFit } from "../../features/autochess/useBoardFit.js";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
@@ -363,7 +364,7 @@ export const AutochessPage = () => {
             legal={preparation ? legal : []}
             last={game?.history({ verbose: true }).at(-1)}
             disabled={!preparation || !auto.locked}
-            duration={160}
+            duration={motionDuration.autoBoard}
             onSquare={(square) => {
               if (piece && piece.square !== square && legal.includes(square)) {
                 drop(square);

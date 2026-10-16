@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { PIECE_NAMES, itemById } from "../../domain/catalog/catalog.js";
@@ -31,7 +32,8 @@ const ExperienceRow = ({
       const elapsed = now - start,
         different = change.beforeLevel !== change.afterLevel,
         up = change.afterLevel > change.beforeLevel,
-        second = different && elapsed >= 660;
+        second =
+          different && elapsed >= motionDuration.reveal + motionDuration.fast;
       const level = second ? change.afterLevel : change.beforeLevel,
         from = second
           ? up
@@ -44,12 +46,22 @@ const ExperienceRow = ({
             : up
               ? xpThreshold(change.beforeLevel)
               : 0,
-        t = Math.min(1, (second ? elapsed - 660 : elapsed) / 500);
+        t = Math.min(
+          1,
+          (second
+            ? elapsed - motionDuration.reveal - motionDuration.fast
+            : elapsed) / motionDuration.reveal,
+        );
       setPosition({
         level,
         xp: Math.round(from + (to - from) * (1 - (1 - t) ** 3)),
       });
-      if (elapsed < (different ? 1160 : 500))
+      if (
+        elapsed <
+        (different
+          ? 2 * motionDuration.reveal + motionDuration.fast
+          : motionDuration.reveal)
+      )
         frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);

@@ -30,7 +30,8 @@
     "test:ui:hunt": "node --import tsx scripts/test-hunt-browser.mjs",
     "test:ui:layout": "node --import tsx scripts/test-live-layout.mjs && node --import tsx scripts/test-review-layout.mjs",
     "test:ui:pve": "node --import tsx scripts/test-pve-browser.mjs",
-    "test:ui:performance": "node scripts/test-performance-browser.mjs"
+    "test:ui:performance": "node scripts/test-performance-browser.mjs",
+    "test:ui:shell": "node --import tsx scripts/test-shell-browser.mjs"
   },
   "description": "Устанавливаемые офлайн-шахматы с коллекционными скинами",
   "devDependencies": {

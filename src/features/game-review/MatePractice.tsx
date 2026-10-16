@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import type { PieceSymbol, Square } from "chess.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
@@ -55,7 +56,7 @@ export const MatePractice = ({
       next();
       return;
     }
-    const timer = setTimeout(next, 420);
+    const timer = setTimeout(next, motionDuration.board);
     return () => clearTimeout(timer);
   }, [snapshot.state, reduced]);
   const game = controller.current?.game,

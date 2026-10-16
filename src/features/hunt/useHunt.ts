@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useReducer, useState } from "react";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
@@ -132,7 +133,7 @@ export const useHunt = (mode: HuntMode) => {
     if (!state.presenting) return;
     const timer = setTimeout(
       () => dispatch({ type: "frame", now: Date.now() }),
-      reduced ? 0 : 420,
+      reduced ? 0 : motionDuration.board,
     );
     return () => clearTimeout(timer);
   }, [state.step, state.run.phase, state.queue, state.presenting, reduced]);

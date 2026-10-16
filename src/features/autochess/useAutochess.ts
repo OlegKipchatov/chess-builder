@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import {
   useEffect,
   useReducer,
@@ -94,7 +95,7 @@ export const useAutochess = () => {
             presentations.delete(timer);
             if (live) setPresenting(false);
             resolve();
-          }, 160);
+          }, motionDuration.autoBoard);
           presentations.set(timer, resolve);
         });
       },

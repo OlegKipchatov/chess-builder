@@ -78,6 +78,7 @@ export const testAnalysisLearning = async (page,url) => {
  }
  assert.equal(await page.locator('#analysis-summary').isVisible(),false);
  assert.equal(await page.locator('[data-analysis-line]').count(),0,'Mate practice does not offer its solution');
+ await page.waitForFunction(()=>!document.querySelector('#board').getAnimations({subtree:true}).length);
  const actual=await page.locator('#board').innerHTML();
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(()=>scrollTo(0,0));

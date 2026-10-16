@@ -1,3 +1,4 @@
+import { motionDuration } from "../../shared/styles/motion.js";
 import { MoveList } from "./MoveList.js";
 import { playStyleName } from "../../domain/cognitive/play-style-config.js";
 import { AnalysisInsight } from "./AnalysisInsight.js";
@@ -86,7 +87,7 @@ export const GameReview = ({
           timer.current = setTimeout(() => {
             release.current = null;
             resolve();
-          }, 420);
+          }, motionDuration.board);
         });
       },
       onChange: (snapshot) => {

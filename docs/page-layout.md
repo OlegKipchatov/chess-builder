@@ -1,10 +1,10 @@
 # Page layout
 
-All eight screens use `.tab[data-page-kind] > .page-header + .page-content`.
-`root` and `subpage` share geometry; the archive viewer changes `#play` to
-`detail`. Active gameplay retains its existing hidden heading.
+React pages use `.tab[data-page-kind] > .page-header + .page-content`.
+`root`, `subpage` and `detail` share geometry through `shared/ui/Page.tsx`.
+The archive viewer owns its detail route. Active gameplay retains its hidden heading.
 
-Page tokens live in `ui/styles/tokens.css`, layout rules in `shell.css`:
+Page tokens live in `src/shared/styles/tokens.css`, layout rules in `shell.css`:
 
 - Horizontal inset: 16px mobile, 26px desktop; main max-width stays 1120px.
 - App header to page header: 20px mobile, 24px desktop.
@@ -21,13 +21,12 @@ the page uses block, flex or grid. Collection lists no longer reserve viewport
 height below their last item. Centered cards keep their existing width limits.
 The navigation ResizeObserver also accommodates changes in text size.
 
-Validation for release 53: 29 targeted UI/navigation/PWA tests pass; shell HTML
-is balanced. The worker harness verifies v52 cache cleanup and reload requests.
-Browser mobile/desktop QA and real installed-PWA upgrade remain unverified:
-supervised preview failed before startup (environment mount permission error).
-Check 390px and desktop, expanded FAQ, final collection item, history scrolling,
-profile/statistics/calendar, and history → detail → history. Repeat header-gap
-measurement after adding a technical wrapper and switching block/flex/grid.
+Browser validation lives in `scripts/test-live-layout.mjs`, `test-review-layout.mjs`,
+`test-autochess-browser.mjs`, `test-hunt-browser.mjs` and `test-pve-browser.mjs`.
+They measure mobile/desktop geometry, safe-area spacing, enlarged text, history
+return and stable board bounds. Current execution results are recorded in
+[the migration inventory](react-migration/inventory.md); historical pre-React
+validation does not establish parity for the replacement UI.
 
 ### Высота экрана активной партии
 

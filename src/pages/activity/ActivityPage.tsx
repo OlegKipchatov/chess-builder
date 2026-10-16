@@ -256,4 +256,5 @@ export const ActivityPage = ({
     </Page>
   );
 };
+export const StreakPage = () => <ActivityPage streakOnly />;
 export default ActivityPage;
