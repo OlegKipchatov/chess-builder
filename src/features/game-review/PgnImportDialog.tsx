@@ -8,6 +8,7 @@ const ImportForm = ({ open }: { open: (text: string) => void }) => {
   const [text, setText] = useState(""),
     [error, setError] = useState(""),
     [paste, setPaste] = useState(false),
+    fileInput = useRef<HTMLInputElement>(null),
     generation = useRef(0);
   useEffect(
     () => () => {
@@ -25,32 +26,36 @@ const ImportForm = ({ open }: { open: (text: string) => void }) => {
   return (
     <>
       <p>Откройте одну партию. Импорт не меняет историю, рейтинг и награды.</p>
-      <div className="pgn-import-options">
-        <label className="button">
+      <div className="pgn-import-actions">
+        <button className="quiet" onClick={() => setPaste(true)}>
+          Вставить текст
+        </button>
+        <button className="quiet" onClick={() => fileInput.current?.click()}>
           Выбрать файл
-          <input
-            aria-label="Файл PGN"
-            type="file"
-            accept=".pgn,text/plain,application/x-chess-pgn"
-            onChange={async (event) => {
-              const file = event.target.files?.[0];
-              if (!file) return;
-              if (file.size > MAX_PGN_BYTES) {
-                setError("Файл слишком большой. Максимум — 512 КБ.");
-                return;
-              }
-              const token = ++generation.current;
-              try {
-                const value = await file.text();
-                if (generation.current === token) submit(value);
-              } catch {
-                if (generation.current === token)
-                  setError("Не удалось прочитать файл.");
-              }
-            }}
-          />
-        </label>
-        <button onClick={() => setPaste(true)}>Вставить текст</button>
+        </button>
+        <input
+          ref={fileInput}
+          hidden
+          aria-label="Файл PGN"
+          type="file"
+          accept=".pgn,text/plain,application/x-chess-pgn"
+          onChange={async (event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            if (file.size > MAX_PGN_BYTES) {
+              setError("Файл слишком большой. Максимум — 512 КБ.");
+              return;
+            }
+            const token = ++generation.current;
+            try {
+              const value = await file.text();
+              if (generation.current === token) submit(value);
+            } catch {
+              if (generation.current === token)
+                setError("Не удалось прочитать файл.");
+            }
+          }}
+        />
       </div>
       {paste && (
         <form

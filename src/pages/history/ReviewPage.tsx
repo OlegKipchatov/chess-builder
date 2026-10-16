@@ -1,3 +1,4 @@
+import { PgnEntryActions } from "../../features/game-review/PgnActions.js";
 import { useRouter, useNavigate } from "@tanstack/react-router";
 import { useHistoryReturn } from "../../features/game-review/HistoryReturnProvider.js";
 import { useParams, useSearch } from "@tanstack/react-router";
@@ -13,6 +14,13 @@ export const ReviewPage = () => {
     entry = useVault((s) => s.archive.find((game) => game.id === id));
   return (
     <Page
+      actions={
+        entry ? (
+          <div id="archive-heading-actions">
+            <PgnEntryActions entry={entry} />
+          </div>
+        ) : undefined
+      }
       id="analysis"
       title="Просмотр партии"
       back="/history"
@@ -25,6 +33,7 @@ export const ReviewPage = () => {
     >
       {entry ? (
         <GameReview
+          showExport={false}
           key={entry.id}
           entry={entry}
           autoAnalyze={"analyze" in search && search.analyze === true}

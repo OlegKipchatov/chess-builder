@@ -23,9 +23,11 @@ import { useGameAnalysis } from "./useGameAnalysis.js";
 export const GameReview = ({
   entry,
   autoAnalyze = false,
+  showExport = true,
 }: {
   entry: ArchiveEntry;
   autoAnalyze?: boolean;
+  showExport?: boolean;
 }) => {
   const live = useMemo(() => {
       const board = new Chess();
@@ -35,6 +37,7 @@ export const GameReview = ({
     { job, start, cancel, analysis } = useGameAnalysis(entry),
     [cursor, setCursor] = useState(0),
     [playing, setPlaying] = useState(false),
+    [playbackState, setPlaybackState] = useState("idle"),
     [hint, setHint] = useState(false),
     [footprint, setFootprint] = useState(0),
     surface = useRef<HTMLDivElement>(null),
@@ -86,7 +89,10 @@ export const GameReview = ({
           }, 420);
         });
       },
-      onChange: (snapshot) => setPlaying(snapshot.state === "playing"),
+      onChange: (snapshot) => {
+        setPlaying(snapshot.state === "playing");
+        setPlaybackState(snapshot.state);
+      },
     });
     playback.current = controller;
     void controller.seek(currentCursor());
@@ -156,7 +162,13 @@ export const GameReview = ({
       />
     );
   return (
-    <div ref={surface} className="game-grid analysis-layout">
+    <div
+      ref={surface}
+      id="match-surface"
+      className={`game-grid analysis-layout ${analysisMode ? "analysis-active" : ""}`}
+      data-playback={playbackState}
+      data-mode={hint ? "hint" : "review"}
+    >
       <div className="board-area">
         {summary}
         <Chessboard
@@ -179,11 +191,21 @@ export const GameReview = ({
         />
         <div className="analysis-controls-slot">
           {hint && variation !== null ? (
-            <MoveNavigation
-              cursor={variation}
-              total={visibleVariation(move, true).pv.length}
-              onSeek={setVariation}
-            />
+            <div id="analysis-variation-tools">
+              <MoveNavigation
+                variant
+                cursor={variation}
+                total={visibleVariation(move, true).pv.length}
+                onSeek={setVariation}
+              />
+              <button
+                data-analysis-return
+                className="quiet"
+                onClick={() => setVariation(null)}
+              >
+                Вернуться к партии
+              </button>
+            </div>
           ) : (
             <MoveNavigation
               markers={
@@ -218,14 +240,23 @@ export const GameReview = ({
                   · {job.progress.done}/{job.progress.total}
                 </p>
                 <progress
+                  id="analysis-progress"
                   style={{ visibility: progressVisible ? "visible" : "hidden" }}
                   value={job.progress.done}
                   max={job.progress.total || 1}
                 />
-                <button onClick={cancel}>Отменить</button>
+                <button id="analysis-cancel" onClick={cancel}>
+                  Отменить
+                </button>
               </>
             ) : !analysisMode || analysis?.status !== "complete" ? (
               <button
+                id={
+                  analysisMode && job.status === "failed"
+                    ? "analysis-retry"
+                    : "archive-analysis"
+                }
+                className="primary"
                 onClick={() => {
                   setAnalysisMode(true);
                   if (!analysis || analysis.status !== "complete") void start();
@@ -289,7 +320,7 @@ export const GameReview = ({
           onSeek={(ply) => void playback.current?.seek(ply)}
         />
         <div className="match-actions">
-          <PgnActions game={live} config={entry} />
+          {showExport && <PgnActions game={live} config={entry} />}
         </div>
       </aside>
     </div>

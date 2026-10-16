@@ -6,6 +6,8 @@ import {tmpdir} from 'node:os';
 import {resolve,extname,join} from 'node:path';
 import {chromium} from 'playwright';
 import {Chess} from 'chess.js';
+import {testPgnViewer} from './test-pgn-viewer.mjs';
+import {testAnalysisLearning} from './test-analysis-learning.mjs';
 import {initialState} from '../src/services/persistence/state.ts';
 import {createStartedGame} from '../src/domain/chess/session.ts';
 import {createSession} from '../src/domain/cognitive/cognitive-model.ts';
@@ -43,7 +45,7 @@ const finishDialogs=async page=>{for(let step=0;step<6&&await page.locator('dial
 const offlineEngines=async(page,url)=>{
  for(const elo of [600,1500]){
   const state=initialState();state.game={...createStartedGame(state,()=>0),playerColor:'w',engineProfile:createSession(elo,42)};
-  await setState(page,state);await page.goto(url+'#/play');await page.reload();
+  await setState(page,state);await page.goto(url+'?fixture='+Date.now()+'#/play');
   await page.locator('[data-square="e2"]').click();await page.locator('[data-square="e4"]').click();
   await page.waitForFunction(()=>/1\. e4 [a-hNBRQKO]/.test(JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),null,{timeout:45000});
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn);
@@ -51,7 +53,7 @@ const offlineEngines=async(page,url)=>{
   await page.reload();await page.locator('#board').waitFor();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).game.pgn),saved);
  }
  const state=initialState(),run=createAutoRun('offline-mate');run.color='w';run.phase='paused';run.battle={id:'offline-mate:1',initialFen:'7k/5Q2/6K1/8/8/8/8/8 w - - 0 1',moves:[],elapsed:0,profile:'stockfish19',result:null};
- await setState(page,state);await page.evaluate(value=>localStorage.setItem('gachachess-autochess-v1',JSON.stringify(value)),run);await page.goto(url+'#/autochess');await page.reload();
+ await setState(page,state);await page.evaluate(value=>localStorage.setItem('gachachess-autochess-v1',JSON.stringify(value)),run);await page.goto(url+'?fixture='+Date.now()+'#/autochess');
  await page.getByRole('button',{name:'Продолжить бой'}).click();await page.getByRole('button',{name:'Следующий раунд'}).waitFor({timeout:45000});
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gachachess-autochess-v1')).results.at(-1).outcome),'win');
  await page.getByRole('button',{name:'Выйти',exact:true}).click();await page.getByRole('button',{name:'Сохранить и выйти'}).click();await ready(page);
@@ -64,7 +66,7 @@ try{
   for(const [route,title] of [['collection','Коллекция'],['chests','Сундуки'],['profile','Профиль'],['history','История партий'],['statistics','Статистика'],['calendar','Календарь активности'],['faq','Вопросы и ответы']]){await page.goto(url+'#/'+route);await page.getByRole('heading',{name:title,exact:true}).waitFor();}
   await offlineEngines(page,url);
   const game=new Chess();['f3','e5','g4','Qh4#'].forEach(move=>game.move(move));const state=initialState();state.game={...createStartedGame(state,()=>.9),playerColor:'b'};const settled=completedMatch(state,game,{id:'offline-reward',finishedAt:new Date().toISOString()});
-  await setState(page,settled.state);await page.goto(url+'#/play');await page.reload();await ready(page);
+  await setState(page,settled.state);await page.goto(url+'?fixture='+Date.now()+'#/play');await ready(page);
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).archive[0].rewardBreakdown.qualityStatus==='complete',null,{timeout:60000});
   const paid=await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')));assert.equal(paid.coins,100+paid.archive[0].rewardBreakdown.total);assert.ok(paid.archive[0].rewardBreakdown.quality>0);
   await page.reload();await ready(page);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).coins),paid.coins);
@@ -80,6 +82,8 @@ try{
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.documentElement.style.fontSize='200%');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.evaluate(()=>document.documentElement.style.fontSize='');
   await page.getByLabel('Назад',{exact:true}).click();await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('chess-vault-v3'));delete state.archive[0].analysis;localStorage.setItem('chess-vault-v3',JSON.stringify(state));});await page.reload();
   await page.locator('[data-archive="offline-reward"]').click();await page.getByRole('button',{name:'Разобрать партию'}).click();await page.getByRole('button',{name:'Отменить',exact:true}).click();await page.getByRole('button',{name:'Разобрать партию'}).waitFor();await page.getByLabel('Назад',{exact:true}).click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).archive[0].analysis),undefined);
+  if(base==='/')await testAnalysisLearning(page,url);
+  await testPgnViewer(page,url);
   assert.deepEqual(errors,[]);await context.close();console.log(`PASS ${base}: cold offline, both AI engines, Autochess, lazy routes, restoration, exactly-once quality, real analysis, cache and cancellation`);
  }
  release='legacy';const context=await browser.newContext();const page=await context.newPage();await page.goto(origin+'/chess-builder/');await isolated(page);await ready(page);

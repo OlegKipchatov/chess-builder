@@ -1,0 +1,607 @@
+{
+  "baseline": "ee7df974635bf7dd514c24e4d4a6b04bce3af8c6",
+  "method": "Static import closure of bootstrap and initial game screen, plus CSS; independent gzip per resource. Workers, engine binaries and lazy modes excluded from initial JS/CSS, included in full release.",
+  "baselineInitial": {
+    "rawBytes": 521927,
+    "gzipBytes": 172914,
+    "files": [
+      {
+        "file": "dist/activity-model.js",
+        "bytes": 2698
+      },
+      {
+        "file": "dist/activity.js",
+        "bytes": 116
+      },
+      {
+        "file": "dist/analysis/analysis-classifier.js",
+        "bytes": 2321
+      },
+      {
+        "file": "dist/analysis/analysis-config.js",
+        "bytes": 389
+      },
+      {
+        "file": "dist/analysis/analysis-events.js",
+        "bytes": 2654
+      },
+      {
+        "file": "dist/analysis/analysis-explanations.js",
+        "bytes": 2918
+      },
+      {
+        "file": "dist/analysis/analysis-playback.js",
+        "bytes": 1289
+      },
+      {
+        "file": "dist/analysis/analysis-reasons.js",
+        "bytes": 2645
+      },
+      {
+        "file": "dist/analysis/analysis-recommendations.js",
+        "bytes": 11696
+      },
+      {
+        "file": "dist/analysis/analysis-service.js",
+        "bytes": 7104
+      },
+      {
+        "file": "dist/analysis/analysis-storage.js",
+        "bytes": 1560
+      },
+      {
+        "file": "dist/analysis/analysis-training.js",
+        "bytes": 6832
+      },
+      {
+        "file": "dist/app.js",
+        "bytes": 55707
+      },
+      {
+        "file": "dist/archive.js",
+        "bytes": 4363
+      },
+      {
+        "file": "dist/autochess-battle.js",
+        "bytes": 4887
+      },
+      {
+        "file": "dist/autochess-engine.js",
+        "bytes": 3601
+      },
+      {
+        "file": "dist/autochess-rewards.js",
+        "bytes": 1423
+      },
+      {
+        "file": "dist/autochess.js",
+        "bytes": 30278
+      },
+      {
+        "file": "dist/board.js",
+        "bytes": 12468
+      },
+      {
+        "file": "dist/bot-client.js",
+        "bytes": 1946
+      },
+      {
+        "file": "dist/calendar-rewards.js",
+        "bytes": 6511
+      },
+      {
+        "file": "dist/candidate-analysis.js",
+        "bytes": 2183
+      },
+      {
+        "file": "dist/catalog.js",
+        "bytes": 2494
+      },
+      {
+        "file": "dist/chess.js",
+        "bytes": 107052
+      },
+      {
+        "file": "dist/cognitive-config.js",
+        "bytes": 1456
+      },
+      {
+        "file": "dist/cognitive-model.js",
+        "bytes": 5765
+      },
+      {
+        "file": "dist/collection-model.js",
+        "bytes": 344
+      },
+      {
+        "file": "dist/collection.js",
+        "bytes": 204
+      },
+      {
+        "file": "dist/economy-analysis.js",
+        "bytes": 3073
+      },
+      {
+        "file": "dist/economy.js",
+        "bytes": 1731
+      },
+      {
+        "file": "dist/engine.js",
+        "bytes": 934
+      },
+      {
+        "file": "dist/hunt.js",
+        "bytes": 11399
+      },
+      {
+        "file": "dist/pgn-export.js",
+        "bytes": 3173
+      },
+      {
+        "file": "dist/pgn-import.js",
+        "bytes": 1341
+      },
+      {
+        "file": "dist/pieces.js",
+        "bytes": 2360
+      },
+      {
+        "file": "dist/play-style-config.js",
+        "bytes": 1029
+      },
+      {
+        "file": "dist/pve-battle.js",
+        "bytes": 13304
+      },
+      {
+        "file": "dist/pve-model.js",
+        "bytes": 11391
+      },
+      {
+        "file": "dist/rating.js",
+        "bytes": 1801
+      },
+      {
+        "file": "dist/reward-quality.js",
+        "bytes": 2548
+      },
+      {
+        "file": "dist/session.js",
+        "bytes": 2248
+      },
+      {
+        "file": "dist/state.js",
+        "bytes": 7582
+      },
+      {
+        "file": "dist/stockfish-capabilities.js",
+        "bytes": 884
+      },
+      {
+        "file": "dist/stockfish-client.js",
+        "bytes": 6141
+      },
+      {
+        "file": "dist/stockfish-config.js",
+        "bytes": 509
+      },
+      {
+        "file": "dist/stockfish-evaluation.js",
+        "bytes": 1155
+      },
+      {
+        "file": "dist/stockfish-lifecycle.js",
+        "bytes": 4292
+      },
+      {
+        "file": "dist/strength.js",
+        "bytes": 1881
+      },
+      {
+        "file": "dist/style.css",
+        "bytes": 1015
+      },
+      {
+        "file": "dist/ui/components/activity-calendar.js",
+        "bytes": 6130
+      },
+      {
+        "file": "dist/ui/components/analysis-insight.js",
+        "bytes": 2691
+      },
+      {
+        "file": "dist/ui/components/app-header.js",
+        "bytes": 1325
+      },
+      {
+        "file": "dist/ui/components/archive-list.js",
+        "bytes": 3999
+      },
+      {
+        "file": "dist/ui/components/bottom-navigation.js",
+        "bytes": 1673
+      },
+      {
+        "file": "dist/ui/components/chest-card.js",
+        "bytes": 561
+      },
+      {
+        "file": "dist/ui/components/collection-view.js",
+        "bytes": 4827
+      },
+      {
+        "file": "dist/ui/components/equipment.js",
+        "bytes": 2019
+      },
+      {
+        "file": "dist/ui/components/match-header.js",
+        "bytes": 863
+      },
+      {
+        "file": "dist/ui/components/match-status-panel.js",
+        "bytes": 641
+      },
+      {
+        "file": "dist/ui/components/move-list.js",
+        "bytes": 1018
+      },
+      {
+        "file": "dist/ui/components/move-navigation.js",
+        "bytes": 4222
+      },
+      {
+        "file": "dist/ui/components/wallet-balance.js",
+        "bytes": 255
+      },
+      {
+        "file": "dist/ui/dialog-content.js",
+        "bytes": 7573
+      },
+      {
+        "file": "dist/ui/dialog.js",
+        "bytes": 4627
+      },
+      {
+        "file": "dist/ui/motion.js",
+        "bytes": 477
+      },
+      {
+        "file": "dist/ui/pages/analysis.js",
+        "bytes": 19272
+      },
+      {
+        "file": "dist/ui/pages/archive.js",
+        "bytes": 457
+      },
+      {
+        "file": "dist/ui/pages/autochess.js",
+        "bytes": 32933
+      },
+      {
+        "file": "dist/ui/pages/calendar.js",
+        "bytes": 604
+      },
+      {
+        "file": "dist/ui/pages/chests.js",
+        "bytes": 356
+      },
+      {
+        "file": "dist/ui/pages/collection.js",
+        "bytes": 328
+      },
+      {
+        "file": "dist/ui/pages/faq.js",
+        "bytes": 8219
+      },
+      {
+        "file": "dist/ui/pages/hunt.js",
+        "bytes": 9436
+      },
+      {
+        "file": "dist/ui/pages/play.js",
+        "bytes": 2470
+      },
+      {
+        "file": "dist/ui/pages/profile.js",
+        "bytes": 1515
+      },
+      {
+        "file": "dist/ui/pages/pve.js",
+        "bytes": 36554
+      },
+      {
+        "file": "dist/ui/pages/statistics.js",
+        "bytes": 510
+      },
+      {
+        "file": "dist/ui/primitives.js",
+        "bytes": 2511
+      },
+      {
+        "file": "dist/ui/shell.js",
+        "bytes": 1166
+      }
+    ]
+  },
+  "reactInitial": {
+    "rawBytes": 519866,
+    "gzipBytes": 166160,
+    "files": [
+      {
+        "file": "assets/Chessboard-C4_qypnC.css",
+        "bytes": 1287
+      },
+      {
+        "file": "assets/Chessboard-cuzkm7i1.js",
+        "bytes": 6523
+      },
+      {
+        "file": "assets/GamePage-BjAZK54S.js",
+        "bytes": 16033
+      },
+      {
+        "file": "assets/OverlayProvider-CU-62APS.js",
+        "bytes": 3579
+      },
+      {
+        "file": "assets/PgnActions-CUaPmv8X.js",
+        "bytes": 7244
+      },
+      {
+        "file": "assets/Piece-CdWx-qvR.js",
+        "bytes": 2098
+      },
+      {
+        "file": "assets/VaultProvider-DeBjYK0M.js",
+        "bytes": 71149
+      },
+      {
+        "file": "assets/archive-BYZbejns.js",
+        "bytes": 3522
+      },
+      {
+        "file": "assets/index-BaI0sfId.css",
+        "bytes": 82008
+      },
+      {
+        "file": "assets/index-rSu7hyYZ.js",
+        "bytes": 250948
+      },
+      {
+        "file": "assets/react-dom-wRlgXJwQ.js",
+        "bytes": 3955
+      },
+      {
+        "file": "assets/rolldown-runtime-WkwZ5CU-.js",
+        "bytes": 599
+      },
+      {
+        "file": "assets/stockfish-lifecycle-CalU-8ps.js",
+        "bytes": 2975
+      },
+      {
+        "file": "assets/useBlocker-BkD9lD0H.js",
+        "bytes": 1596
+      },
+      {
+        "file": "assets/useNavigate-D_rrelAy.js",
+        "bytes": 8493
+      },
+      {
+        "file": "assets/useSearch-B1sRDbtF.js",
+        "bytes": 57857
+      }
+    ]
+  },
+  "delta": {
+    "rawBytes": -2061,
+    "gzipBytes": -6754
+  },
+  "reactRuntime": {
+    "rawBytes": 4390844,
+    "gzipBytes": 2670212,
+    "files": [
+      {
+        "file": "dist/assets/ActivityPage-BhRk26ZQ.js",
+        "bytes": 5703
+      },
+      {
+        "file": "dist/assets/AutochessPage-SdVbDJom.js",
+        "bytes": 39177
+      },
+      {
+        "file": "dist/assets/Chessboard-C4_qypnC.css",
+        "bytes": 1287
+      },
+      {
+        "file": "dist/assets/Chessboard-cuzkm7i1.js",
+        "bytes": 6523
+      },
+      {
+        "file": "dist/assets/ChestsPage-DfiRdTxy.js",
+        "bytes": 2679
+      },
+      {
+        "file": "dist/assets/CollectionPage-D9xBqOma.js",
+        "bytes": 5940
+      },
+      {
+        "file": "dist/assets/FaqPage-Xdm5CbS_.js",
+        "bytes": 10095
+      },
+      {
+        "file": "dist/assets/GamePage-BjAZK54S.js",
+        "bytes": 16033
+      },
+      {
+        "file": "dist/assets/GameReview-0UUD1Vt2.js",
+        "bytes": 35494
+      },
+      {
+        "file": "dist/assets/HistoryPage-DScQ1Gni.js",
+        "bytes": 37608
+      },
+      {
+        "file": "dist/assets/HuntPage-BvNcVDUs.js",
+        "bytes": 6525
+      },
+      {
+        "file": "dist/assets/ItemPreview-BswpSDes.js",
+        "bytes": 2461
+      },
+      {
+        "file": "dist/assets/OverlayProvider-CU-62APS.js",
+        "bytes": 3579
+      },
+      {
+        "file": "dist/assets/PgnActions-CUaPmv8X.js",
+        "bytes": 7244
+      },
+      {
+        "file": "dist/assets/PgnImport-Ch4hO2ZL.js",
+        "bytes": 458
+      },
+      {
+        "file": "dist/assets/PgnImportDialog-UURGAwd8.js",
+        "bytes": 3261
+      },
+      {
+        "file": "dist/assets/Piece-CdWx-qvR.js",
+        "bytes": 2098
+      },
+      {
+        "file": "dist/assets/ProfilePage-Dp2rMNvk.js",
+        "bytes": 2629
+      },
+      {
+        "file": "dist/assets/PvePage-T6-tjYpg.js",
+        "bytes": 18637
+      },
+      {
+        "file": "dist/assets/ReviewPage-QW9cs2D8.js",
+        "bytes": 929
+      },
+      {
+        "file": "dist/assets/StatisticsPage-oZAWByK0.js",
+        "bytes": 1097
+      },
+      {
+        "file": "dist/assets/VaultProvider-DeBjYK0M.js",
+        "bytes": 71149
+      },
+      {
+        "file": "dist/assets/archive-BYZbejns.js",
+        "bytes": 3522
+      },
+      {
+        "file": "dist/assets/index-BaI0sfId.css",
+        "bytes": 82008
+      },
+      {
+        "file": "dist/assets/index-rSu7hyYZ.js",
+        "bytes": 250948
+      },
+      {
+        "file": "dist/assets/react-dom-wRlgXJwQ.js",
+        "bytes": 3955
+      },
+      {
+        "file": "dist/assets/rolldown-runtime-WkwZ5CU-.js",
+        "bytes": 599
+      },
+      {
+        "file": "dist/assets/single-DWi9W65d.js",
+        "bytes": 414
+      },
+      {
+        "file": "dist/assets/stockfish-lifecycle-CalU-8ps.js",
+        "bytes": 2975
+      },
+      {
+        "file": "dist/assets/threaded-DWRINZPi.js",
+        "bytes": 1757
+      },
+      {
+        "file": "dist/assets/useBlocker-BkD9lD0H.js",
+        "bytes": 1596
+      },
+      {
+        "file": "dist/assets/useClock-BZ-2uHTP.js",
+        "bytes": 433
+      },
+      {
+        "file": "dist/assets/useNavigate-D_rrelAy.js",
+        "bytes": 8493
+      },
+      {
+        "file": "dist/assets/useSearch-B1sRDbtF.js",
+        "bytes": 57857
+      },
+      {
+        "file": "dist/assets/worker-BRZMu7iD.js",
+        "bytes": 8355
+      },
+      {
+        "file": "dist/assets/worker-D7DmPQVT.js",
+        "bytes": 57243
+      },
+      {
+        "file": "dist/engine-info.html",
+        "bytes": 3274
+      },
+      {
+        "file": "dist/icon-192.png",
+        "bytes": 3951
+      },
+      {
+        "file": "dist/icon-512.png",
+        "bytes": 11620
+      },
+      {
+        "file": "dist/icon-maskable.png",
+        "bytes": 11620
+      },
+      {
+        "file": "dist/index.html",
+        "bytes": 1569
+      },
+      {
+        "file": "dist/manifest.webmanifest",
+        "bytes": 577
+      },
+      {
+        "file": "dist/stockfish19-license.txt",
+        "bytes": 35150
+      },
+      {
+        "file": "dist/sw.js",
+        "bytes": 5856
+      },
+      {
+        "file": "dist/vendor/sf19-single/COPYING.txt",
+        "bytes": 35821
+      },
+      {
+        "file": "dist/vendor/sf19-single/stockfish-19-lite-single.js",
+        "bytes": 21379
+      },
+      {
+        "file": "dist/vendor/sf19-single/stockfish-19-lite-single.wasm",
+        "bytes": 1787571
+      },
+      {
+        "file": "dist/vendor/sf19/nn-61e7af4bb97d.nnue",
+        "bytes": 1166381
+      },
+      {
+        "file": "dist/vendor/sf19/sf_19_smallnet.js",
+        "bytes": 28643
+      },
+      {
+        "file": "dist/vendor/sf19/sf_19_smallnet.wasm",
+        "bytes": 516671
+      }
+    ]
+  },
+  "browserTiming": "Pending equivalent v132/React measurements; build size is not evidence of interaction performance."
+}

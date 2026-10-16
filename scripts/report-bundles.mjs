@@ -1,0 +1,18 @@
+import {execFileSync} from 'node:child_process';
+import {readFile,writeFile,readdir} from 'node:fs/promises';
+import {gzipSync} from 'node:zlib';
+import {posix,resolve} from 'node:path';
+import ts from 'typescript';
+const baseline='ee7df974635bf7dd514c24e4d4a6b04bce3af8c6',manifest=JSON.parse(await readFile('dist/.vite/manifest.json','utf8'));
+const previous=new Map();
+const readPrevious=path=>{if(!previous.has(path))previous.set(path,execFileSync('git',['show',`${baseline}:${path}`]));return previous.get(path);};
+const oldFiles=new Set();
+const walkPrevious=path=>{if(oldFiles.has(path))return;oldFiles.add(path);const source=readPrevious(path).toString();if(path.endsWith('.js')){const tree=ts.createSourceFile(path,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);for(const node of tree.statements)if((ts.isImportDeclaration(node)||ts.isExportDeclaration(node))&&node.moduleSpecifier&&ts.isStringLiteral(node.moduleSpecifier)&&node.moduleSpecifier.text.startsWith('.'))walkPrevious(posix.normalize(posix.join(posix.dirname(path),node.moduleSpecifier.text.split('?')[0])));}else if(path.endsWith('.css'))for(const match of source.matchAll(/@import\s+["']([^"']+)["']/g))walkPrevious(posix.normalize(posix.join(posix.dirname(path),match[1].split('?')[0])));};
+walkPrevious('dist/app.js');walkPrevious('dist/style.css');
+const currentFiles=new Set(),visit=key=>{const value=manifest[key];if(!value)throw Error(`Missing manifest key: ${key}`);if(currentFiles.has(value.file))return;currentFiles.add(value.file);for(const css of value.css||[])currentFiles.add(css);for(const key of value.imports||[])visit(key);};
+visit('index.html');visit('src/pages/game/GamePage.tsx');
+const summarize=async(files,read)=>{let raw=0,gzip=0;const rows=[];for(const file of [...files].sort()){const bytes=await read(file);raw+=bytes.length;gzip+=gzipSync(bytes,{level:9}).length;rows.push({file,bytes:bytes.length});}return{rawBytes:raw,gzipBytes:gzip,files:rows};};
+const old=await summarize(oldFiles,readPrevious),current=await summarize(currentFiles,path=>readFile(resolve('dist',path)));
+const runtime=[];const walk=async dir=>{for(const entry of await readdir(dir,{withFileTypes:true})){const path=posix.join(dir,entry.name);if(entry.isDirectory())await walk(path);else if(/\.(js|css|html|wasm|nnue|png|webmanifest|txt)$/.test(path))runtime.push(path);}};await walk('dist');
+const report={baseline,method:'Static import closure of bootstrap and initial game screen, plus CSS; independent gzip per resource. Workers, engine binaries and lazy modes excluded from initial JS/CSS, included in full release.',baselineInitial:old,reactInitial:current,delta:{rawBytes:current.rawBytes-old.rawBytes,gzipBytes:current.gzipBytes-old.gzipBytes},reactRuntime:await summarize(runtime,path=>readFile(path)),browserTiming:'Pending equivalent v132/React measurements; build size is not evidence of interaction performance.'};
+await writeFile('docs/react-migration/bundle-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({baselineInitial:{raw:old.rawBytes,gzip:old.gzipBytes},reactInitial:{raw:current.rawBytes,gzip:current.gzipBytes},delta:report.delta,fullRuntime:report.reactRuntime.rawBytes},null,2));

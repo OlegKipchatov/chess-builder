@@ -45,7 +45,11 @@ export const AnalysisInsight = ({
         <h2 data-quality={move.highlight || move.quality}>{label}</h2>
         <div className="analysis-insight-actions">
           {move.exercise ? (
-            <button className="primary analysis-variation" onClick={onPractice}>
+            <button
+              data-analysis-practice
+              className="primary analysis-variation"
+              onClick={onPractice}
+            >
               Найти мат
             </button>
           ) : (
@@ -53,6 +57,7 @@ export const AnalysisInsight = ({
               <>
                 {hint && visibleVariation(move, true).pv.length > 1 && (
                   <button
+                    data-analysis-expand
                     className="quiet analysis-variation"
                     aria-pressed={expanded}
                     onClick={onExpand}

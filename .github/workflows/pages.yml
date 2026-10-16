@@ -29,14 +29,17 @@ jobs:
       - name: Fetch and verify pinned Stockfish release
         run: npm run prepare:engine
       - name: Test chess rules and rewards
+        id: regression
         run: npm test
       - name: Install Chromium for offline regression tests
         run: npx playwright install --with-deps chromium
       - name: Test cold offline launch and PWA upgrade
         run: npm run test:pwa:browser
       - name: Test both Stockfish runtimes and initialization fallback
+        if: always() && steps.regression.outcome == 'success'
         run: npm run test:stockfish:browser
       - name: Test offline single-threaded PWA
+        if: always() && steps.regression.outcome == 'success'
         run: npm run test:pwa:single
       - name: Typecheck strict application contracts
         run: npm run typecheck

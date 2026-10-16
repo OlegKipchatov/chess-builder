@@ -1,5 +1,5 @@
-import type { Chess } from "chess.js";
-import { useState } from "react";
+import { Chess } from "chess.js";
+import { useMemo, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import type { ArchiveEntry, SavedGame } from "../../domain/chess/types.js";
 import {
@@ -70,4 +70,17 @@ export const PgnActions = ({
       Экспорт PGN
     </button>
   );
+};
+
+export const PgnEntryActions = ({ entry }: { entry: ArchiveEntry }) => {
+  const game = useMemo(() => {
+    const game = new Chess();
+    try {
+      game.loadPgn(entry.pgn);
+      return game;
+    } catch {
+      return null;
+    }
+  }, [entry.pgn]);
+  return game ? <PgnActions game={game} config={entry} /> : null;
 };

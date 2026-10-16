@@ -105,6 +105,8 @@ export const MatePractice = ({
   };
   return (
     <div
+      id="match-surface"
+      data-practice={snapshot.state}
       className="game-grid analysis-layout analysis-practice"
       style={{ minHeight }}
     >
@@ -142,6 +144,7 @@ export const MatePractice = ({
         </p>
         {["wrong", "unverified"].includes(snapshot.state) && (
           <button
+            data-practice-continue
             className="primary"
             onClick={() => {
               const owned = controller.current;
@@ -153,6 +156,7 @@ export const MatePractice = ({
         )}
         {snapshot.canHint && snapshot.state === "awaitMove" && (
           <button
+            data-practice-hint
             disabled={busy}
             onClick={async () => {
               if (hint) {
@@ -173,6 +177,10 @@ export const MatePractice = ({
           </button>
         )}
         <button
+          data-practice-continue={
+            snapshot.state === "success" ? true : undefined
+          }
+          data-analysis-return={snapshot.state !== "success" ? true : undefined}
           className={snapshot.state === "success" ? "primary" : "quiet"}
           onClick={onClose}
         >

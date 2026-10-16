@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 interface Props {
+  variant?: boolean;
   cursor: number;
   total: number;
   onSeek: (ply: number) => void;
@@ -15,7 +16,9 @@ export const MoveNavigation = ({
   playing,
   onPlay,
   markers = [],
+  variant = false,
 }: Props) => {
+  const prefix = variant ? "variation" : "history";
   const [thumb, setThumb] = useState(cursor),
     dragging = useRef(false),
     previous = useRef(cursor),
@@ -53,6 +56,7 @@ export const MoveNavigation = ({
       <div className="history-buttons">
         <button
           className="icon-button"
+          id={`${prefix}-back`}
           aria-label="Предыдущая позиция"
           disabled={!cursor}
           onClick={() => seek(cursor - 1)}
@@ -62,6 +66,7 @@ export const MoveNavigation = ({
         {onPlay && (
           <button
             className="icon-button"
+            id={playing ? "replay-pause" : "replay-start"}
             aria-label={
               playing
                 ? "Приостановить воспроизведение"
@@ -74,6 +79,8 @@ export const MoveNavigation = ({
         )}
         <button
           className="icon-button"
+          id={`${prefix}-forward`}
+          data-variation-next={variant ? true : undefined}
           aria-label="Следующая позиция"
           disabled={cursor >= total}
           onClick={() => seek(cursor + 1)}
@@ -82,6 +89,7 @@ export const MoveNavigation = ({
         </button>
         <button
           className="icon-button"
+          id={`${prefix}-live`}
           aria-label="К текущему ходу"
           disabled={cursor >= total}
           onClick={() => seek(total)}
@@ -89,11 +97,12 @@ export const MoveNavigation = ({
           ⇥
         </button>
       </div>
-      <span id="history-position" aria-live="polite">
+      <span id={`${prefix}-position`} aria-live="polite">
         {cursor} / {total}
       </span>
       <div className="history-timeline">
         <input
+          id={`${prefix}-slider`}
           className="history-slider"
           type="range"
           min={0}
