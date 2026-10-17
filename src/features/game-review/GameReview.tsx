@@ -135,7 +135,7 @@ export const GameReview = ({
   const balance = materialBalance(board, entry.playerColor);
   const opponent =
     entry.mode === "bot"
-      ? `ИИ · ${playStyleName(entry.engineProfile?.profile)}`
+      ? (entry.engineProfile?.profile ? `ИИ · ${playStyleName(entry.engineProfile.profile)}` : "ИИ")
       : "Игрок 2";
   const summary = (
     <div className="match-summary">

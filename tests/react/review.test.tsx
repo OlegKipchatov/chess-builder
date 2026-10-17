@@ -107,7 +107,7 @@ describe("React review and practice parity", () => {
     delete entry.analysis;
     const view = render(<GameReview entry={entry} />, { wrapper });
     expect(view.container.querySelector(".match-versus")).toHaveTextContent(
-      "ИИ ·",
+      "ИИ",
     );
     expect(view.container.querySelector("#match-points")).toHaveTextContent(
       "0 очков",

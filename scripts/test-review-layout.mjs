@@ -54,10 +54,12 @@ try{
   await page.goto(url+'#/history');await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
   await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();await page.locator('#archive-analysis').waitFor();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
   assert.equal(await page.locator('#analysis h1').innerText(),'История партии');
+  if(width>=390)assert.ok(await page.locator('#analysis h1').evaluate(node=>node.getBoundingClientRect().height<=parseFloat(getComputedStyle(node).lineHeight)+1),'History heading fits one line');
   assert.equal(await page.locator('#archive-heading-actions #export-pgn svg').count(),1);
   assert.equal(await page.locator('#archive-heading-actions #export-pgn').innerText(),'');
   assert.equal(await page.locator('#match-points').innerText(),'0 очков');
-  assert.match(await page.locator('.match-versus').innerText(),/ИИ ·/);
+  assert.match(await page.locator('.match-versus').innerText(),/ИИ/);
+  assert.doesNotMatch(await page.locator('.match-versus').innerText(),/ИИ · ИИ/);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await page.locator('#archive-analysis').scrollIntoViewIfNeeded();
   const original=await page.locator('#archive-analysis').boundingBox();
