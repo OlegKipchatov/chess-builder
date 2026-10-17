@@ -1,5 +1,11 @@
 import { motionDuration } from "../../shared/styles/motion.js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import {
   playPveAction,
@@ -34,7 +40,7 @@ export const usePveBattle = (active: boolean) => {
       busy.current = false;
     };
   }, []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!busy.current) setVisual(profile.battle);
   }, [profile.battle]);
   useEffect(() => {

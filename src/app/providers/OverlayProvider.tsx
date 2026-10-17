@@ -27,6 +27,7 @@ interface Overlays {
 const Context = createContext<Overlays | null>(null);
 export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   const [content, setContent] = useState<ModalContent | null>(null),
+    [closing, setClosing] = useState(false),
     [message, setMessage] = useState<{ text: string; error: boolean } | null>(
       null,
     ),
@@ -47,6 +48,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     animation.current?.cancel();
     animation.current = null;
     if (next) {
+      setClosing(false);
       current.current = next;
       setContent(next);
       return;
@@ -57,9 +59,14 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
       setContent(null);
     };
     if (dialog.current?.open && canAnimate() && dialog.current.animate) {
+      setClosing(true);
       const owned = dialog.current.animate(
         [{ transform: "translateY(0)" }, { transform: "translateY(100%)" }],
-        { duration: motionDuration.exit, easing: motionEasing.exit },
+        {
+          duration: motionDuration.exit,
+          easing: motionEasing.exit,
+          fill: "forwards",
+        },
       );
       animation.current = owned;
       void owned.finished.then(finish, () => {});
@@ -115,6 +122,8 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
       heading.current?.focus({ preventScroll: true });
     } else if (node.open) {
       node.close();
+      animation.current?.cancel();
+      animation.current = null;
       document.body.classList.remove("dialog-open");
       height.current = 0;
       const previous = returnTo.current;
@@ -153,6 +162,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
           <dialog
             ref={dialog}
             id="modal"
+            className={closing ? "is-closing" : undefined}
             aria-labelledby="modal-title"
             onCancel={(event) => {
               event.preventDefault();

@@ -139,7 +139,13 @@ describe("React overlays parity", () => {
     expect(animate.mock.calls[0][1]).toMatchObject({ duration: 200 });
     fireEvent.click(screen.getByLabelText("Закрыть"));
     const obsolete = finish;
+    expect(animate.mock.calls.at(-1)?.[1]).toMatchObject({
+      duration: 180,
+      fill: "forwards",
+    });
+    expect(document.querySelector("dialog")).toHaveClass("is-closing");
     fireEvent.click(screen.getByText("Пешка"));
+    expect(document.querySelector("dialog")).not.toHaveClass("is-closing");
     await act(async () => obsolete());
     expect(screen.getByText("Превращение")).toBeVisible();
   });

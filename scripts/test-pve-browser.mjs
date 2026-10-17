@@ -27,7 +27,27 @@ try{
   await page.locator('[data-pve-toggle]').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).pve.units.filter(u=>u.active).length===7);await page.locator('[data-pve-toggle]').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).pve.units.filter(u=>u.active).length===8);
   await page.getByRole('button',{name:'Рюкзак',exact:true}).click();await page.getByRole('heading',{name:'Камни опыта · 11'}).waitFor();await page.goBack();await page.locator('#pve-army-board').waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:`/tmp/gachachess-pve-army-${width}.png`,fullPage:true});
-  await page.getByRole('button',{name:'Карта',exact:true}).click();await page.locator('[data-pve-node="trail"]').click();await page.locator('dialog').getByRole('button',{name:'Начать бой'}).click();await page.locator('#pve-board').waitFor();
+  await page.getByRole('button',{name:'Карта',exact:true}).click();await page.locator('[data-pve-node="trail"]').click();
+  await page.evaluate(()=>{
+   window.pveStartFrames=[];window.samplePveStart=true;
+   const sample=()=>{if(!window.samplePveStart)return;const dialog=document.querySelector('dialog'),board=document.querySelector('#pve-board'),rect=board?.getBoundingClientRect();window.pveStartFrames.push({title:document.querySelector('#pve h1')?.textContent,board:!!board,open:dialog.open,closing:dialog.classList.contains('is-closing'),y:rect?.y,width:rect?.width,backdrop:dialog.open?Number(getComputedStyle(dialog,'::backdrop').opacity):0,dialogY:dialog.open?dialog.getBoundingClientRect().y:null});requestAnimationFrame(sample);};requestAnimationFrame(sample);
+  });
+  await page.locator('dialog').getByRole('button',{name:'Начать бой'}).click();await page.locator('#pve-board').waitFor();await page.locator('dialog').waitFor({state:'hidden'});await page.waitForTimeout(100);
+  const frames=await page.evaluate(()=>{window.samplePveStart=false;return window.pveStartFrames;});
+  assert.ok(frames.filter(frame=>frame.title==='Бой · PvE').every(frame=>frame.board),'Battle never renders without its board');
+  const closing=frames.filter(frame=>frame.closing&&frame.open);
+  if(width<760){
+   assert.ok(closing.length>1,'Mobile sheet exit is sampled');
+   assert.ok(closing.every(frame=>frame.board),'Battle is ready before preview dismisses');
+   for(let i=1;i<closing.length;i++){
+    assert.ok(closing[i].dialogY>=closing[i-1].dialogY-1,'Closing sheet never flashes back to its starting position');
+    assert.ok(closing[i].backdrop<=closing[i-1].backdrop+.01,'Backdrop fades out without reappearing');
+   }
+  }
+  const exposed=frames.filter(frame=>frame.board&&!frame.open);
+  assert.ok(exposed.length>1);
+  assert.ok(exposed.every(frame=>Math.abs(frame.y-exposed[0].y)<1&&Math.abs(frame.width-exposed[0].width)<1),'Exposed battle board stays in place');
+  console.log(`PASS PvE entry ${width}: no blank battle, stable board, continuous sheet/backdrop exit`);
   const before=(await saved()).pve.battle,move=allMoves(before)[0];await page.locator(`#pve-board [data-square="${move.from}"]`).click();assert.match(await page.locator('#pve-inspect').innerText(),/HP.*Урон/);await page.locator(`#pve-board [data-square="${move.to}"]`).click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).pve.battle.ply===2);await page.waitForFunction(()=>document.querySelector('#pve-board').getAttribute('aria-busy')==='false');
   const position=(await saved()).pve.battle;await page.getByRole('button',{name:'К карте',exact:true}).click();await page.waitForFunction(()=>window.pveWorkers.live===0);await page.reload();await page.getByRole('button',{name:'Продолжить бой',exact:true}).click();await page.locator('#pve-board').waitFor();assert.deepEqual((await saved()).pve.battle,position);
   const wallet=await saved();await page.getByRole('button',{name:'Сдаться',exact:true}).click();await page.locator('dialog').getByRole('button',{name:'Сдаться',exact:true}).click();await page.locator('#pve-battle-result').waitFor();await page.locator('dialog').getByRole('button',{name:'Далее'}).click();await page.locator('#pve-reward').waitFor();await page.locator('dialog').getByRole('button',{name:'Далее'}).click();await page.locator('#pve-experience').waitFor();assert.equal(await page.locator('.pve-experience-row').count(),8);await page.locator('dialog').getByRole('button',{name:'К карте'}).click();await page.locator('.pve-map').waitFor();await page.reload();await page.locator('.pve-map').waitFor();assert.equal((await saved()).coins,wallet.coins);assert.equal((await saved()).pve.stones,wallet.pve.stones+1);assert.equal((await saved()).pve.battle,null);

@@ -82,9 +82,9 @@ export const PvePage = () => {
   }, [change, go]);
   const begin = async (node: PveNode) => {
     if (await change((profile) => beginPveBattle(profile, node.id))) {
-      show(null);
       setSelectedNode(null);
-      go("battle");
+      await navigate({ to: "/pve", search: { view: "battle" } });
+      show(null);
     }
   };
   const preview = (node: PveNode) => {
