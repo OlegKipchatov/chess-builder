@@ -40,7 +40,7 @@ export const testAnalysisLearning = async (page,url) => {
  assert.doesNotMatch(await page.locator('#analysis-insight').innerText(),/Партия завершена/);
  await slider.press('Home');assert.equal(await page.locator('#history-position').innerText(),'0 / 30');
  assert.match(await page.locator('.analysis-position-message').innerText(),/Начальная позиция/);
- await page.getByRole('button',{name:'Разбор хода 8',exact:true}).click();assert.equal(await page.locator('#history-position').innerText(),'8 / 30');
+ await page.locator('[data-insight-ply="8"]').click();assert.equal(await page.locator('#history-position').innerText(),'8 / 30');
  await slider.press('Home');
  await slider.press('ArrowRight');assert.equal(await page.locator('#history-position').innerText(),'1 / 30');
  await slider.evaluate(node=>{node.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(node,'3.4');node.dispatchEvent(new Event('input',{bubbles:true}));});
