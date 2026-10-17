@@ -22,7 +22,7 @@ export const ReviewPage = () => {
         ) : undefined
       }
       id="analysis"
-      title="Просмотр партии"
+      title="История партии"
       back="/history"
       onBack={() => {
         if (origin.fromList) {

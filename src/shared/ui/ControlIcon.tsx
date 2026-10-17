@@ -1,5 +1,6 @@
 const paths = {
   back: "M19 12H5m7 7-7-7 7-7",
+  download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
   previous: "m15 5-7 7 7 7",
   next: "m9 5 7 7-7 7",
   live: "m5 5 9 7-9 7zM19 5v14",

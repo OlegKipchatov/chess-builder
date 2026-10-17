@@ -62,7 +62,7 @@
   background: var(--board-legal);
   border-radius: 50%;
 }
-.square.legal.occupied:after {
+.square.legal.capture:after {
   width: 88%;
   height: 88%;
   border: 4px solid var(--board-capture);

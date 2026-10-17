@@ -1,4 +1,5 @@
 import { Chess } from "chess.js";
+import { ControlIcon } from "../../shared/ui/ControlIcon.js";
 import { useMemo, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import type { ArchiveEntry, SavedGame } from "../../domain/chess/types.js";
@@ -47,15 +48,19 @@ const ExportDialog = ({ pgn }: { pgn: string }) => {
 export const PgnActions = ({
   game,
   config,
+  compact = false,
 }: {
   game: Chess;
   config: Partial<SavedGame & ArchiveEntry>;
+  compact?: boolean;
 }) => {
   const { show } = useOverlays();
   return (
     <button
       id="export-pgn"
-      className="quiet"
+      className={compact ? "quiet icon-button" : "quiet"}
+      aria-label="Экспортировать PGN"
+      title="Экспортировать PGN"
       onClick={() =>
         show({
           title: "PGN партии",
@@ -67,7 +72,7 @@ export const PgnActions = ({
         })
       }
     >
-      Экспортировать PGN
+      {compact ? <ControlIcon name="download" /> : "Экспортировать PGN"}
     </button>
   );
 };
@@ -82,5 +87,5 @@ export const PgnEntryActions = ({ entry }: { entry: ArchiveEntry }) => {
       return null;
     }
   }, [entry.pgn]);
-  return game ? <PgnActions game={game} config={entry} /> : null;
+  return game ? <PgnActions game={game} config={entry} compact /> : null;
 };

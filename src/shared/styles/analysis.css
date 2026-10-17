@@ -247,6 +247,9 @@
   min-width: 44px;
   padding: 10px;
 }
+#analysis > .page-header .page-header-start > .icon-button {
+  background: var(--control);
+}
 #archive-heading-actions svg {
   width: 24px;
   height: 24px;

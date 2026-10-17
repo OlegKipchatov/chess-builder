@@ -117,7 +117,7 @@ describe("React routing, collection and history", () => {
       "loss",
     );
     fireEvent.click(row);
-    await screen.findByRole("heading", { name: "Просмотр партии" });
+    await screen.findByRole("heading", { name: "История партии" });
     fireEvent.click(screen.getByLabelText("Назад"));
     await screen.findByRole("heading", { name: "История партий" });
     await waitFor(() =>
@@ -243,7 +243,7 @@ describe("React routing, collection and history", () => {
     const view = await setup("/history", state);
     await screen.findByRole("heading", { name: "История партий" });
     fireEvent.click(view.container.querySelector('[data-archive="0"]')!);
-    await screen.findByRole("heading", { name: "Просмотр партии" });
+    await screen.findByRole("heading", { name: "История партии" });
     fireEvent.click(screen.getByLabelText("Начать воспроизведение"));
     await waitFor(() => expect(screen.getByRole("slider")).toHaveValue("1"));
     fireEvent.click(screen.getByLabelText("Назад"));
@@ -273,7 +273,7 @@ describe("React routing, collection and history", () => {
     ).toBeLessThan(25);
     fireEvent.scroll(list, { target: { scrollTop: 520 } });
     fireEvent.click(view.container.querySelector('[data-archive="5"]')!);
-    await screen.findByRole("heading", { name: "Просмотр партии" });
+    await screen.findByRole("heading", { name: "История партии" });
     fireEvent.click(screen.getByLabelText("Назад"));
     await screen.findByRole("heading", { name: "История партий" });
     await waitFor(() =>

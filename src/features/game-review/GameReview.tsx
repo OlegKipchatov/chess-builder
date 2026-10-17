@@ -1,4 +1,5 @@
 import { boardAnnotation, moveAnnotation } from "./annotations.js";
+import { materialBalance } from "../../domain/chess/archive.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { MoveList } from "./MoveList.js";
 import { playStyleName } from "../../domain/cognitive/play-style-config.js";
@@ -131,6 +132,11 @@ export const GameReview = ({
     return positionAt(live, cursor);
   }, [live, cursor, hint, variation, move]);
   const pieces = useMemo(() => chessPieces(board), [board]);
+  const balance = materialBalance(board, entry.playerColor);
+  const opponent =
+    entry.mode === "bot"
+      ? `ИИ · ${playStyleName(entry.engineProfile?.profile)}`
+      : "Игрок 2";
   const summary = (
     <div className="match-summary">
       <div className="match-versus">
@@ -139,7 +145,7 @@ export const GameReview = ({
             ? live.getHeaders().White || "Белые"
             : entry.playerColor === "w"
               ? "Вы"
-              : playStyleName(entry.engineProfile?.profile)}
+              : opponent}
         </strong>
         <span className="versus">VS</span>
         <strong>
@@ -147,9 +153,18 @@ export const GameReview = ({
             ? live.getHeaders().Black || "Чёрные"
             : entry.playerColor === "b"
               ? "Вы"
-              : playStyleName(entry.engineProfile?.profile)}
+              : opponent}
         </strong>
       </div>
+      <strong
+        id="match-points"
+        data-balance={
+          balance > 0 ? "positive" : balance < 0 ? "negative" : "zero"
+        }
+      >
+        {balance > 0 ? "+" : ""}
+        {balance} очков
+      </strong>
     </div>
   );
   if (practice)

@@ -50,7 +50,13 @@ try {
     for(let i=0;i<18;i++){
       const move=await chooseMove(page,'timed');
       if(!move)break;
-      await page.locator(`#board [data-square="${move.from}"]`).click();await page.locator(`#board [data-square="${move.to}"]`).click();
+      await page.locator(`#board [data-square="${move.from}"]`).click();
+      for (const target of await page.locator('#board .legal.capture').all()) {
+        const ring=await target.evaluate(node=>{const style=getComputedStyle(node,'::after');return {border:style.borderTopWidth,background:style.backgroundColor};});
+        assert.equal(ring.border,'4px','Capturable pieces retain their visible ring');
+        assert.equal(ring.background,'rgba(0, 0, 0, 0)');
+      }
+      await page.locator(`#board [data-square="${move.to}"]`).click();
       await page.waitForFunction(()=>document.querySelector('#board').getAttribute('aria-busy')==='false');
     }
     assert.ok(Number(await page.locator('.hunt-hud strong').nth(1).textContent())>0);

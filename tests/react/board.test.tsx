@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { Chess } from "chess.js";
+import { readFileSync } from "node:fs";
 import { Chessboard } from "../../src/features/chessboard/Chessboard";
 import { chessPieces } from "../../src/features/chessboard/model";
 import { initialState } from "../../src/services/persistence/state";
@@ -101,6 +102,14 @@ describe("React chessboard parity", () => {
       "legal",
       "capture",
     );
+    expect(view.container.querySelector('[data-square="e5"]')).not.toHaveClass(
+      "capture",
+    );
+    const ringRule = readFileSync("src/shared/styles/board.css", "utf8").match(
+      /\.square\.legal\.capture:after\s*\{([^}]+)\}/,
+    )?.[1];
+    expect(ringRule).toContain("border: 4px solid var(--board-capture)");
+    expect(ringRule).toContain("background: transparent");
     expect(view.container.querySelector('[data-square="e1"]')).toHaveClass(
       "check",
     );

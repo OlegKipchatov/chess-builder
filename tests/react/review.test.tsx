@@ -60,33 +60,31 @@ const fixture = () => {
       blunder: 0,
       excellent: 0,
     },
-    moves: game
-      .history({ verbose: true })
-      .map((move, i) => ({
-        ply: i + 1,
-        actor: i % 2 ? "opponent" : "player",
-        fenBefore: move.before,
-        fenAfter: move.after,
-        playedMove: move.from + move.to,
-        playedSan: move.san,
-        status: "complete",
-        quality: i === 2 ? "mistake" : "best",
-        expectedScoreLoss: i === 2 ? 0.1 : 0,
-        alternatives: [],
-        autoPause: i === 2,
-        ...(i === 2
-          ? {
-              bestLine: {
-                move: "d2d4",
-                san: "d4",
-                pv: ["d2d4", "e5d4"],
-                pvSan: ["d4", "exd4"],
-                score: { type: "cp", value: 30 },
-                expectedScorePlayer: 0.55,
-              },
-            }
-          : {}),
-      })),
+    moves: game.history({ verbose: true }).map((move, i) => ({
+      ply: i + 1,
+      actor: i % 2 ? "opponent" : "player",
+      fenBefore: move.before,
+      fenAfter: move.after,
+      playedMove: move.from + move.to,
+      playedSan: move.san,
+      status: "complete",
+      quality: i === 2 ? "mistake" : "best",
+      expectedScoreLoss: i === 2 ? 0.1 : 0,
+      alternatives: [],
+      autoPause: i === 2,
+      ...(i === 2
+        ? {
+            bestLine: {
+              move: "d2d4",
+              san: "d4",
+              pv: ["d2d4", "e5d4"],
+              pvSan: ["d4", "exd4"],
+              score: { type: "cp", value: 30 },
+              expectedScorePlayer: 0.55,
+            },
+          }
+        : {}),
+    })),
   };
   entry.analysis = analysis;
   return { state, entry, analysis };
@@ -102,6 +100,28 @@ const setup = (state = initialState()) => {
   return { store, wrapper };
 };
 describe("React review and practice parity", () => {
+  it("restores the opponent label and material balance while replaying captures", async () => {
+    const { entry } = fixture(),
+      { wrapper } = setup();
+    entry.pgn = "1. e4 d5 2. exd5";
+    delete entry.analysis;
+    const view = render(<GameReview entry={entry} />, { wrapper });
+    expect(view.container.querySelector(".match-versus")).toHaveTextContent(
+      "ИИ ·",
+    );
+    expect(view.container.querySelector("#match-points")).toHaveTextContent(
+      "0 очков",
+    );
+    fireEvent.change(screen.getByRole("slider"), { target: { value: "3" } });
+    await act(async () => {});
+    expect(view.container.querySelector("#match-points")).toHaveTextContent(
+      "+1 очков",
+    );
+    expect(view.container.querySelector("#match-points")).toHaveAttribute(
+      "data-balance",
+      "positive",
+    );
+  });
   it("reuses compatible saved analysis without an engine; incompatible cache never masquerades as ready", () => {
     const { entry, analysis } = fixture(),
       { wrapper } = setup();
