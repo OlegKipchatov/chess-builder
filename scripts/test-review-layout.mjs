@@ -54,7 +54,11 @@ try{
   await page.goto(url+'#/history');await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
   await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();await page.locator('#archive-analysis').waitFor();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
   assert.equal(await page.locator('#analysis h1').innerText(),'История партии');
-  if(width>=390)assert.ok(await page.locator('#analysis h1').evaluate(node=>node.getBoundingClientRect().height<=parseFloat(getComputedStyle(node).lineHeight)+1),'History heading fits one line');
+  if(width>=390){
+    const heading=await page.locator('#analysis h1').evaluate(node=>{const style=getComputedStyle(node),rect=node.getBoundingClientRect(),header=node.closest('.page-header');return {height:rect.height,width:rect.width,lineHeight:style.lineHeight,font:style.font,columns:getComputedStyle(header).gridTemplateColumns,gap:getComputedStyle(header).columnGap,viewport:innerWidth};});
+    await page.screenshot({path:`/tmp/gacha-history-heading-${width}.png`,fullPage:true});
+    assert.ok(heading.height<=parseFloat(heading.lineHeight)+1,`History heading fits one line: ${JSON.stringify(heading)}`);
+  }
   assert.equal(await page.locator('#archive-heading-actions #export-pgn svg').count(),1);
   assert.equal(await page.locator('#archive-heading-actions #export-pgn').innerText(),'');
   assert.equal(await page.locator('#match-points').innerText(),'0 очков');
