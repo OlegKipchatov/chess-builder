@@ -2,7 +2,7 @@ import { Piece } from "../shared/ui/Piece.js";
 import { ImportedGameProvider } from "../features/game-review/ImportedGameProvider.js";
 import { HistoryReturnProvider } from "../features/game-review/HistoryReturnProvider.js";
 import { ShellPresentation } from "./providers/ShellPresentation.js";
-import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { Outlet, useMatches, useNavigate } from "@tanstack/react-router";
 import { Suspense, useEffect, useLayoutEffect, useState, useRef } from "react";
 import { RewardProcessor } from "../features/game-session/RewardProcessor.js";
 import { usePwaUpdate } from "./providers/PwaProvider.js";
@@ -76,13 +76,13 @@ const Wallet = () => {
 export const App = () => {
   const [held, setHeld] = useState(false);
   const active = useVault((s) => s.game.started),
-    location = useLocation(),
+    presented = useMatches({ select: (matches) => matches.at(-1) }),
     navigate = useNavigate(),
     header = useRef<HTMLElement>(null),
     nav = useRef<HTMLElement>(null),
     pwa = usePwaUpdate(),
     store = useVaultStore(),
-    path = location.pathname,
+    path = presented?.pathname ?? "/play",
     mode = ["/hunt", "/autochess"].includes(path),
     detail = path.startsWith("/history/") || path === "/import",
     hidden = active || held || mode || detail || path === "/pve";
@@ -126,7 +126,7 @@ export const App = () => {
     if (nav.current) observer.observe(nav.current);
     resize();
     return () => observer.disconnect();
-  }, [hidden, location.searchStr]);
+  }, [hidden, presented?.search]);
   return (
     <ShellPresentation value={setHeld}>
       <header ref={header}>

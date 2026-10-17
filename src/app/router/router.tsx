@@ -175,6 +175,9 @@ export const makeRouter = (vault: VaultStore, history = createHashHistory()) =>
     context: { vault },
     scrollRestoration: true,
     defaultPreload: "intent",
+    // Keep the current screen until its replacement is ready. A pending
+    // placeholder would blank the page and collapse its scroll geometry.
+    defaultPendingMs: Infinity,
     defaultPendingComponent: () => <p role="status">Загрузка…</p>,
   });
 declare module "@tanstack/react-router" {

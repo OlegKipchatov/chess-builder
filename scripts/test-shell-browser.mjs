@@ -11,6 +11,38 @@ const server=createServer(async(req,res)=>{try{const path=resolve(root,'.'+new U
 await new Promise(done=>server.listen(0,'127.0.0.1',done));
 const browser=await chromium.launch({headless:true,executablePath:process.env.PWA_BROWSER_EXECUTABLE,args:['--no-sandbox','--disable-gpu']}),url=`http://127.0.0.1:${server.address().port}/`,now=new Date('2026-10-16T12:00:00Z');
 try{
+ // Delay a real lazy chunk past the router's former pending threshold.
+ // Sample every painted frame, not just the eventual destination.
+ for(const [width,colorScheme] of [[390,'dark'],[1280,'light']]){
+  const context=await browser.newContext({viewport:{width,height:900},colorScheme,serviceWorkers:'block'}),page=await context.newPage();
+  let release,requested;
+  const gate=new Promise(resolve=>{release=resolve;}),requestSeen=new Promise(resolve=>{requested=resolve;});
+  await page.route('**/assets/PvePage-*.js',async route=>{requested();await gate;await route.continue();});
+  await page.goto(url);await page.locator('#start-game').waitFor();
+  await page.evaluate(()=>{
+   window.navigationFrames=[];window.navigationHeader=document.querySelector('header');
+   window.sampleNavigation=true;
+   const sample=()=>{if(!window.sampleNavigation)return;const screen=document.querySelector('main .tab');window.navigationFrames.push({title:screen?.querySelector('h1')?.textContent,visible:!!screen&&getComputedStyle(screen).display!=='none'&&screen.getBoundingClientRect().height>0,nav:!document.querySelector('#app-nav').hidden,pve:document.body.classList.contains('pve-active')});requestAnimationFrame(sample);};requestAnimationFrame(sample);
+  });
+  await page.locator('[data-tab="pve"]').click();await requestSeen;
+  await page.waitForTimeout(1400);
+  assert.equal(await page.locator('#play h1').innerText(),'Игры');
+  assert.equal(await page.locator('#app-nav').isVisible(),true);
+  assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('pve-active')),false);
+  if(width===1280){
+   await page.locator('[data-tab="collection"]').click();await page.locator('#collection h1').waitFor();
+  }
+  release();
+  if(width===390)await page.locator('#pve h1').waitFor();
+  await page.waitForTimeout(100);
+  const frames=await page.evaluate(()=>{window.sampleNavigation=false;return window.navigationFrames;});
+  assert.ok(frames.length>30);
+  assert.ok(frames.every(frame=>frame.visible&&frame.title),'No blank frame during lazy navigation');
+  assert.ok(frames.filter(frame=>frame.title==='Игры').every(frame=>frame.nav&&!frame.pve),'Shell stays with the displayed route');
+  assert.equal(await page.evaluate(()=>document.querySelector('header')===window.navigationHeader),true,'Header never remounts');
+  if(width===1280)assert.equal(await page.locator('#collection h1').innerText(),'Коллекция','Late chunk cannot replace a newer destination');
+  await context.close();console.log(`PASS navigation ${width}: delayed chunk retains screen, shell and header without blank frames`);
+ }
  for(const width of [320,390,1280]){
   const context=await browser.newContext({viewport:{width,height:900},colorScheme:'light'}),page=await context.newPage(),errors=[];
   page.on('pageerror',error=>errors.push(error.message));await page.clock.setFixedTime(now);

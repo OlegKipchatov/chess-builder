@@ -22,6 +22,11 @@ Main and nested navigation stays instant. Do not animate PageHeader, statistics
 sections, card heights, width, margin, padding or page geometry. The existing
 mobile dialog content-height animation is a functional exception that removes a jump.
 
+Lazy navigation keeps the currently presented screen until its replacement is
+ready. Shell classes and navigation visibility follow committed route matches,
+not the requested URL. Never replace an existing page with a transient loading
+placeholder; test delayed chunks and superseded navigation frame by frame.
+
 Buttons animate filter (actual brightness feedback) and background-color, never
 outline or disabled opacity. Focus is immediate; disabling cancels feedback immediately.
 Read-only chess squares retain full opacity and contrast: aria-disabled blocks moves, not visibility.

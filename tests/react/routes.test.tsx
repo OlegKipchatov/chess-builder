@@ -46,6 +46,42 @@ const setup = async (path = "/play", state = initialState()) => {
   return { store, router, ...view };
 };
 describe("React routing, collection and history", () => {
+  it("keeps the presented screen and shell together while the next route loads", async () => {
+    const view = await setup();
+    const route = view.router.routesById["/pve"];
+    const previousLoader = route.options.loader;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    route.update({ loader: () => gate });
+    try {
+      act(() => {
+        void view.router.navigate({ to: "/pve" });
+      });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      });
+      expect(
+        screen.getByRole("heading", { name: "Игры", exact: true }),
+      ).toBeVisible();
+      expect(view.container.querySelector("#app-nav")).toBeVisible();
+      expect(document.body).not.toHaveClass("pve-active");
+      expect(screen.queryByText("Загрузка…")).not.toBeInTheDocument();
+      await act(async () => {
+        release();
+      });
+      expect(
+        await screen.findByRole("heading", { name: "Поход", exact: true }),
+      ).toBeVisible();
+      expect(document.body).toHaveClass("pve-active");
+      expect(view.container.querySelector("#app-nav")).not.toBeVisible();
+    } finally {
+      release();
+      route.update({ loader: previousLoader });
+      view.unmount();
+    }
+  });
   it("renders every lazy screen once with unique ids, without the legacy app bootstrap", async () => {
     const view = await setup();
     for (const [path, title] of [
