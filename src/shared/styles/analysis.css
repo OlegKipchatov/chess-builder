@@ -251,7 +251,7 @@
   background: var(--control);
 }
 #analysis > .page-header {
-  column-gap: 8px;
+  column-gap: 4px;
 }
 #archive-heading-actions svg {
   width: 24px;
