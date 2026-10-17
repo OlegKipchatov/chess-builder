@@ -92,7 +92,7 @@ export const GamePage = () => {
       show({
         title: final.cancelled ? "Партия отменена" : "Партия завершена",
         onClose: finish,
-        hideCloseButton: true,
+        closeLabel: "Готово",
         body: (
           <div className="dialog-actions">
             {eligibleEntry(final.entry) && (
@@ -100,9 +100,6 @@ export const GamePage = () => {
                 Разобрать партию
               </button>
             )}
-            <button className="quiet wide" onClick={finish}>
-              Готово
-            </button>
           </div>
         ),
       });
@@ -114,13 +111,11 @@ export const GamePage = () => {
               ? `${final.activity.streak} дней подряд`
               : "Сегодня с игрой",
           onClose: lastStep,
-          hideCloseButton: true,
+          closeLabel: "Продолжить",
+          closeVariant: "primary",
           body: (
             <>
               <ActivityCelebration event={final.activity} />
-              <button className="primary wide" onClick={lastStep}>
-                Продолжить
-              </button>
             </>
           ),
         });
@@ -131,17 +126,12 @@ export const GamePage = () => {
         ? "Партия отменена"
         : final.entry?.result || "Партия завершена",
       onClose: final.cancelled ? finish : activity,
-      hideCloseButton: true,
+      closeLabel: "Продолжить",
+      closeVariant: "primary",
       body: (
         <>
           <p className="match-end-reason">{final.reason}</p>
           {final.entry && <MatchReward id={final.entry.id} />}
-          <button
-            className="primary wide"
-            onClick={final.cancelled ? finish : activity}
-          >
-            Продолжить
-          </button>
         </>
       ),
     });
