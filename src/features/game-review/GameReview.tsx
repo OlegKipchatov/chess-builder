@@ -1,3 +1,4 @@
+import { boardAnnotation, moveAnnotation } from "./annotations.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { MoveList } from "./MoveList.js";
 import { playStyleName } from "../../domain/cognitive/play-style-config.js";
@@ -184,6 +185,7 @@ export const GameReview = ({
               : null
           }
           disabled
+          annotation={hint ? null : boardAnnotation(move)}
           arrow={
             hint && move
               ? visibleVariation(move, variation !== null).pv[variation ?? 0]
@@ -213,7 +215,7 @@ export const GameReview = ({
                 analysisMode
                   ? analysis?.moves
                       .filter(isImportantInsight)
-                      .map((move) => move.ply)
+                      .map(moveAnnotation)
                   : []
               }
               cursor={cursor}
@@ -331,13 +333,7 @@ export const GameReview = ({
         <MoveList
           moves={live.history()}
           cursor={cursor}
-          important={
-            analysisMode
-              ? analysis?.moves
-                  .filter(isImportantInsight)
-                  .map((move) => move.ply)
-              : []
-          }
+          annotations={analysisMode ? analysis?.moves.map(moveAnnotation) : []}
           onSeek={(ply) => void playback.current?.seek(ply)}
         />
         <div className="match-actions">

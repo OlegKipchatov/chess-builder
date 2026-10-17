@@ -1,3 +1,4 @@
+import type { MoveAnnotation } from "./annotations.js";
 import { ControlIcon } from "../../shared/ui/ControlIcon.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -9,7 +10,7 @@ interface Props {
   onSeek: (ply: number) => void;
   playing?: boolean;
   onPlay?: () => void;
-  markers?: number[];
+  markers?: MoveAnnotation[];
 }
 export const MoveNavigation = ({
   cursor,
@@ -151,11 +152,15 @@ export const MoveNavigation = ({
             role="group"
             aria-label="Моменты разбора"
           >
-            {markers.map((ply) => (
+            {markers.map(({ ply, quality, label }) => (
               <button
                 key={ply}
                 className="history-marker"
-                aria-label={`Разбор хода ${ply}`}
+                data-quality={quality}
+                data-insight-ply={ply}
+                aria-current={cursor === ply ? "true" : undefined}
+                aria-label={`Разбор хода ${Math.ceil(ply / 2)}: ${label}`}
+                title={`Ход ${Math.ceil(ply / 2)} · ${label}`}
                 style={{ left: `${(ply / total) * 100}%` }}
                 onClick={() => seek(ply)}
               />

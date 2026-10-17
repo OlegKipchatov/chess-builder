@@ -92,6 +92,7 @@ export const GamePage = () => {
       show({
         title: final.cancelled ? "Партия отменена" : "Партия завершена",
         onClose: finish,
+        hideCloseButton: true,
         body: (
           <div className="dialog-actions">
             {eligibleEntry(final.entry) && (
@@ -113,6 +114,7 @@ export const GamePage = () => {
               ? `${final.activity.streak} дней подряд`
               : "Сегодня с игрой",
           onClose: lastStep,
+          hideCloseButton: true,
           body: (
             <>
               <ActivityCelebration event={final.activity} />
@@ -129,6 +131,7 @@ export const GamePage = () => {
         ? "Партия отменена"
         : final.entry?.result || "Партия завершена",
       onClose: final.cancelled ? finish : activity,
+      hideCloseButton: true,
       body: (
         <>
           <p className="match-end-reason">{final.reason}</p>

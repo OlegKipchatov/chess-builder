@@ -62,3 +62,11 @@
   filter: drop-shadow(0 1px 2px #0008);
   z-index: 8;
 }
+
+.annotation {
+  position: absolute;
+  width: 12.5%;
+  height: 12.5%;
+  z-index: 7;
+  pointer-events: none;
+}

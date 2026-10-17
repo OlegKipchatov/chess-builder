@@ -414,3 +414,15 @@
   visibility: hidden;
   pointer-events: none;
 }
+
+/* Keep semantic quality colour when the current move is selected. */
+.history-move[data-quality="mistake"],
+.history-move[data-quality="blunder"] {
+  color: var(--negative);
+}
+.history-move[data-quality="inaccuracy"] {
+  color: var(--muted);
+}
+.history-move[data-quality="excellent"] {
+  color: var(--accent);
+}

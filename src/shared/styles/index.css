@@ -81,8 +81,7 @@
   padding: 0;
   list-style: none;
 }
-.moves button[aria-current],
-.moves button.important {
+.moves button[aria-current] {
   background: var(--accent-soft);
 }
 #pgn-import textarea {

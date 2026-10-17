@@ -196,6 +196,12 @@ export interface ChessboardProps {
   label?: string;
   arrow?: string | null;
   feedback?: boolean;
+  annotation?: {
+    square: string;
+    quality: string;
+    symbol: string;
+    label: string;
+  } | null;
 }
 const noop = () => {};
 export const Chessboard = memo(
@@ -214,6 +220,7 @@ export const Chessboard = memo(
     attack,
     arrow,
     feedback = false,
+    annotation = null,
     label = "Шахматная доска",
   }: ChessboardProps) => {
     const markerId = useId();
@@ -304,6 +311,26 @@ export const Chessboard = memo(
             />
           );
         })}
+        {annotation && (
+          <span
+            className={`${styles.annotation} analysis-marker`}
+            data-square-annotation={annotation.square}
+            style={{
+              left: `${boardPoint(annotation.square, orientation).x * 12.5}%`,
+              top: `${boardPoint(annotation.square, orientation).y * 12.5}%`,
+            }}
+            role="img"
+            aria-label={`${annotation.square}: ${annotation.label}`}
+          >
+            <span
+              className="analysis-badge"
+              data-quality={annotation.quality}
+              aria-hidden="true"
+            >
+              {annotation.symbol}
+            </span>
+          </span>
+        )}
         {arrowPoints && (
           <svg
             className={`${styles.arrow} analysis-arrow`}

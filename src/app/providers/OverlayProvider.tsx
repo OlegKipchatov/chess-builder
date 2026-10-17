@@ -16,6 +16,7 @@ export interface ModalContent {
   body: ReactNode;
   onClose?: () => void;
   dismissible?: boolean;
+  hideCloseButton?: boolean;
 }
 interface Overlays {
   isOpen: boolean;
@@ -187,14 +188,14 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
               </h2>
               {content?.body}
             </div>
-            {content?.dismissible !== false && (
+            {content?.dismissible !== false && !content?.hideCloseButton && (
               <button
                 id="close-modal"
-                className="icon-button"
+                className="ui-button quiet wide"
                 aria-label="Закрыть"
                 onClick={close}
               >
-                ×
+                Закрыть
               </button>
             )}
           </dialog>

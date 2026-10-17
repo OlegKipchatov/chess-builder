@@ -1,3 +1,5 @@
+import {Chess} from 'chess.js';
+import {ANALYSIS_VERSION,ENGINE,PROFILE} from '../src/domain/analysis/analysis-config.ts';
 import assert from 'node:assert/strict';
 import {initialState} from '../src/services/persistence/state.ts';
 import {ITEMS} from '../src/domain/catalog/catalog.ts';
@@ -56,6 +58,30 @@ try{
   await page.evaluate(()=>{window.Worker=class{postMessage(){queueMicrotask(()=>this.onerror?.(Error('Test worker failure')));}terminate(){}};});
   await page.locator('#archive-analysis').evaluate(button=>button.click());await page.locator('#analysis-retry').waitFor();
   const retry=await page.locator('#analysis-retry').boundingBox();assert.deepEqual(retry,original,'Retry preserves original button rectangle');
+ }
+ // The v132 annotations must survive React rendering and the CSS cascade.
+ const state=initialState(),game=new Chess();game.loadPgn('1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4');
+ const entry={id:'annotations',pgn:game.pgn(),mode:'bot',playerColor:'w',finishedAt:'2026-10-17T09:00:00Z',result:'Поражение',equipped:state.equipped};
+ const qualities=['inaccuracy','best','mistake','best','blunder','best','best'];
+ entry.analysis={analysisVersion:ANALYSIS_VERSION,profileVersion:PROFILE.version,engine:ENGINE,gameId:entry.id,sourcePgn:entry.pgn,playerColor:'w',createdAt:'2026-10-17',status:'complete',totalPlies:7,analyzedPlayerMoves:4,focusEvents:[1,3,5,7],summary:{best:1,good:0,inaccuracy:1,mistake:1,blunder:1,excellent:1},moves:game.history({verbose:true}).map((m,i)=>({ply:i+1,actor:i%2?'opponent':'player',fenBefore:m.before,fenAfter:m.after,playedMove:m.from+m.to,playedSan:m.san,status:'complete',quality:qualities[i],highlight:i===6?'excellent':null,expectedScoreLoss:i%2?0:.2,alternatives:[],autoPause:i%2===0}))};
+ state.archive=[entry];
+ for(const width of [390,1280])for(const theme of ['dark','light']){
+  await page.evaluate(({state,theme})=>{localStorage.setItem('chess-vault-v3',JSON.stringify(state));localStorage.setItem('gachachess-theme',theme);},{state,theme});
+  await page.setViewportSize({width,height:844});await page.goto(url+'?annotations='+width+theme+'#/history/annotations?analyze=true');
+  await page.locator('.history-marker').first().waitFor();
+  assert.equal(await page.locator('.history-marker').count(),4);
+  for(const [ply,quality,symbol,token] of [[1,'inaccuracy','?!','--muted'],[3,'mistake','?','--negative'],[5,'blunder','??','--negative'],[7,'excellent','!','--accent']]){
+   const marker=page.locator(`[data-insight-ply="${ply}"]`);await marker.click();
+   await page.locator('.analysis-badge').waitFor();
+   assert.equal(await marker.getAttribute('data-quality'),quality);
+   assert.equal(await marker.getAttribute('aria-current'),'true');
+   assert.equal(await page.locator('.analysis-badge').innerText(),symbol);
+   const expected=await page.evaluate(token=>{const probe=document.createElement('span');probe.style.color=`var(${token})`;document.body.append(probe);const value=getComputedStyle(probe).color;probe.remove();return value;},token);
+   assert.equal(await marker.evaluate(node=>getComputedStyle(node,'::after').backgroundColor),expected);
+   assert.equal(await page.locator('.analysis-badge').evaluate(node=>getComputedStyle(node).color),expected);
+   if(width>760)assert.equal(await page.locator('.history-move[aria-current]').evaluate(node=>getComputedStyle(node).color),expected);
+  }
+  await page.screenshot({path:`/tmp/gacha-analysis-annotations-${width}-${theme}.png`,fullPage:true});
  }
  await context.close();console.log('PASS collection and analysis layout at 320, 390, 1280: filter, sticky gap, set title, legacy availability, retry geometry');
 }catch(error){for(const context of browser.contexts())for(const page of context.pages())await page.screenshot({path:'/tmp/gacha-collection-failure.png',fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
