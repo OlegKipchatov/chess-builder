@@ -56,14 +56,14 @@ try{
   const listBack=await backAppearance();assert.equal(listBack.width,44);assert.equal(listBack.height,44);assert.notEqual(listBack.background,'rgba(0, 0, 0, 0)');
   assert.equal(listBack.gap,'16px','Header preserves the documented spacing');
   const assertHeaderGeometry=async()=>{
-    const geometry=await page.locator('.page-header').evaluate(header=>{const button=header.querySelector('.back-button').getBoundingClientRect(),title=header.querySelector('h1').getBoundingClientRect(),content=header.parentElement.querySelector('.page-content').getBoundingClientRect();return {gap:title.left-button.right,inset:button.left-content.left,titleRight:title.right,headerRight:header.getBoundingClientRect().right};});
+    const geometry=await page.locator('.page-header').evaluate(header=>{const button=header.querySelector('.back-button').getBoundingClientRect(),title=header.querySelector('h1').getBoundingClientRect(),content=header.parentElement.getBoundingClientRect();return {gap:title.left-button.right,inset:button.left-content.left,titleRight:title.right,headerRight:header.getBoundingClientRect().right};});
     assert.equal(geometry.gap,16,'Title has a 16px gap after the back control');
     assert.equal(geometry.inset,0,'Back control aligns with page content');
     assert.ok(geometry.titleRight<=geometry.headerRight+1,'Wrapped title stays inside header');
   };
   await assertHeaderGeometry();
   for(const route of ['statistics','faq']){
-    await page.goto(url+'#/'+route);await page.locator('.page-header .back-button').waitFor();
+    await page.goto(url+'#/'+route);await page.locator(`#${route} .page-header .back-button`).waitFor();
     await assertHeaderGeometry();
     await page.screenshot({path:`/tmp/gacha-${route}-header-${width}.png`,fullPage:true});
   }
