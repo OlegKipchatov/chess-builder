@@ -68,7 +68,8 @@ export const testAnalysisLearning = async (page,url) => {
  assert.equal(await page.locator('#board .analysis-arrow').count(),1);
  assert.equal(await page.locator('#analysis-variation-tools').isVisible(),false);
  assert.equal(await page.locator('#history-slider').isVisible(),true);
- assert.doesNotMatch(await page.locator('#analysis-insight').innerText(),/Nf6|f6/);
+ assert.match(await page.locator('#analysis-insight').innerText(),/Пешка f7–f6/);
+ assert.doesNotMatch(await page.locator('#analysis-insight').innerText(),/Nf6|Конь g8–f6|Bf5|Bd3/);
  await page.locator('[data-analysis-line]').click();
  await seek(24);
  for(const width of [320,390,1280]){
