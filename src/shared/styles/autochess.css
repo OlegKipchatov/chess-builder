@@ -17,26 +17,6 @@ body.autochess-active main {
   padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
   max-width: 860px;
 }
-.autochess-active #autochess > .page-content {
-  padding: 0;
-}
-.autochess-active #autochess > .page-header {
-  column-gap: 8px;
-  align-items: center;
-  margin: 0 0 4px;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-}
-.autochess-active #autochess h1 {
-  font-size: var(--type-section);
-  letter-spacing: -0.3px;
-}
-.auto-round {
-  grid-column: 3;
-  grid-row: 1;
-  font-size: var(--type-secondary);
-  white-space: nowrap;
-  color: var(--muted);
-}
 .autochess-surface {
   width: 100%;
   max-width: 600px;
@@ -268,7 +248,7 @@ body.autochess-active main {
   .autochess-surface {
     max-width: 480px;
   }
-  .autochess-active #autochess > .page-header {
+  .autochess-active #autochess > .game-header {
     max-width: 480px;
     margin-inline: auto;
   }
@@ -306,4 +286,16 @@ body.autochess-active main {
   border: 1px solid var(--accent);
   color: var(--accent);
   opacity: 1;
+}
+
+/* The shop purchase is a visible secondary action, including unavailable prices. */
+.auto-buy {
+  font-weight: 650;
+}
+.auto-buy:disabled {
+  opacity: 1;
+  color: var(--muted);
+}
+.auto-buy:active:not(:disabled) {
+  background: var(--control-hover);
 }

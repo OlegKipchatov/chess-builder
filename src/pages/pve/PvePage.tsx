@@ -1,3 +1,4 @@
+import { GameHeader } from "../../shared/ui/GameHeader.js";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ControlIcon } from "../../shared/ui/ControlIcon.js";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
@@ -197,8 +198,15 @@ export const PvePage = () => {
     <Page
       id="pve"
       title={view === "battle" ? "Бой · PvE" : "Поход"}
-      onBack={view === "battle" ? () => go("map") : undefined}
-      backLabel="К карте"
+      header={
+        view === "battle" ? (
+          <GameHeader
+            title="Бой · PvE"
+            exitLabel="К карте"
+            onExit={() => go("map")}
+          />
+        ) : undefined
+      }
     >
       {view === "map" && (
         <PveMap

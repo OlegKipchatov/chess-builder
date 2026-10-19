@@ -1,3 +1,4 @@
+import { GameHeader } from "../../shared/ui/GameHeader.js";
 import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
 import type { Square } from "chess.js";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
@@ -129,10 +130,12 @@ const HuntGame = ({ mode }: { mode: "timed" | "endless" }) => {
     <Page
       id="hunt"
       title={mode === "timed" ? "Охота на время" : "Бесконечная охота"}
-      actions={
-        <button aria-label="Закрыть охоту" onClick={exit}>
-          ×
-        </button>
+      header={
+        <GameHeader
+          title={mode === "timed" ? "Охота на время" : "Бесконечная охота"}
+          exitLabel="Закрыть охоту"
+          onExit={exit}
+        />
       }
     >
       <div className="hunt-layout hunt-surface">
@@ -196,14 +199,12 @@ const HuntGame = ({ mode }: { mode: "timed" | "endless" }) => {
               </p>
             )}
           </section>
-        ) : (
+        ) : mode === "endless" ? (
           <p className="page-supporting">
-            Берите чёрные фигуры и защищайте свои.{" "}
-            {mode === "timed"
-              ? "У вас 60 секунд. Время идёт и в фоне."
-              : "За каждые 20 очков материала вы получаете жизнь."}
+            Берите чёрные фигуры и защищайте свои. За каждые 20 очков материала
+            вы получаете жизнь.
           </p>
-        )}
+        ) : null}
       </div>
     </Page>
   );

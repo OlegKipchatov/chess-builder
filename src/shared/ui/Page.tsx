@@ -9,6 +9,7 @@ export const Page = ({
   actions,
   onBack,
   backLabel,
+  header,
 }: {
   id: string;
   title: string;
@@ -17,6 +18,7 @@ export const Page = ({
   actions?: ReactNode;
   onBack?: () => void;
   backLabel?: string;
+  header?: ReactNode;
 }) => {
   const navigate = useNavigate();
   return (
@@ -25,25 +27,27 @@ export const Page = ({
       className="tab"
       data-page-kind={back || onBack ? "subpage" : "root"}
     >
-      <div className="page-header">
-        {(back || onBack) && (
-          <div className="page-header-start">
-            <BackButton
-              label={backLabel}
-              onClick={
-                onBack ||
-                (() => {
-                  if (back) void navigate({ to: back });
-                })
-              }
-            />
+      {header ?? (
+        <div className="page-header">
+          {(back || onBack) && (
+            <div className="page-header-start">
+              <BackButton
+                label={backLabel}
+                onClick={
+                  onBack ||
+                  (() => {
+                    if (back) void navigate({ to: back });
+                  })
+                }
+              />
+            </div>
+          )}
+          <div className="page-header-content">
+            <h1>{title}</h1>
           </div>
-        )}
-        <div className="page-header-content">
-          <h1>{title}</h1>
+          {actions && <div className="page-header-end">{actions}</div>}
         </div>
-        {actions && <div className="page-header-end">{actions}</div>}
-      </div>
+      )}
       <div className="page-content">{children}</div>
     </section>
   );

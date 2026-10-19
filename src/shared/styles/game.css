@@ -18,18 +18,11 @@
   width: 100%;
   min-height: 52px;
 }
-.match-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0 16px;
-  flex-wrap: wrap;
-}
 .match-versus {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
+  flex-wrap: wrap;
+  gap: 8px;
   min-width: 0;
 }
 .match-person {
@@ -39,7 +32,7 @@
   min-width: 0;
 }
 .match-person strong {
-  font-size: 0.875rem;
+  font: inherit;
   overflow-wrap: anywhere;
 }
 .avatar {
@@ -62,7 +55,7 @@
   flex: none;
 }
 #match-points {
-  font-size: 1rem;
+  font-size: var(--type-secondary);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -74,10 +67,6 @@
 }
 #match-points[data-balance="zero"] {
   color: var(--text);
-}
-#resign {
-  order: -1;
-  color: var(--muted);
 }
 .game-grid aside .panel {
   padding: 20px;
@@ -186,7 +175,6 @@
   .move-log {
     display: none;
   }
-  .match-summary,
   .match-versus {
     gap: 8px;
   }
@@ -203,30 +191,6 @@
 @media (max-width: 359px) {
   .history-buttons {
     gap: 5px;
-  }
-}
-
-#resign {
-  width: 36px;
-  height: 36px;
-  min-height: 36px;
-  padding: 8px;
-}
-#resign svg {
-  width: 18px;
-  height: 18px;
-}
-@media (max-width: 760px) {
-  #resign {
-    width: 44px;
-    height: 44px;
-    min-height: 44px;
-    padding: 13px;
-    background: transparent;
-  }
-  #resign svg {
-    width: 18px;
-    height: 18px;
   }
 }
 
@@ -350,11 +314,6 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.match-summary {
-  flex-wrap: nowrap;
-  padding: 0 0 12px;
-  min-height: 56px;
-}
 #match-points {
   display: block;
   min-width: 8ch;
@@ -363,52 +322,11 @@
 .match-person:has(#player-name) {
   flex-shrink: 0;
 }
-.match-person strong {
-  overflow-wrap: normal;
-}
+
 #player-name {
   white-space: nowrap;
 }
-#resign {
-  position: relative;
-  isolation: isolate;
-  width: 44px;
-  height: 44px;
-  min-height: 44px;
-  padding: 14px;
-  background: transparent;
-  border-radius: var(--radius-md);
-  color: var(--muted);
-}
-#resign::before {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  z-index: -1;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
-#resign svg {
-  width: 16px;
-  height: 16px;
-}
-@media (hover: hover) {
-  #resign:hover {
-    background: transparent;
-    color: var(--text);
-  }
-  #resign:hover::before {
-    background: var(--surface-hover);
-  }
-}
-#resign:active {
-  background: transparent;
-  background-image: none;
-  color: var(--text);
-}
-#resign:active::before {
-  background: var(--surface);
-}
+
 .history-controls {
   flex-direction: row;
   justify-content: space-between;
@@ -522,9 +440,8 @@
     );
     align-self: center;
   }
-  body.match-active .match-summary {
-    padding-inline: 4px;
-    gap: 8px;
+  body.match-active .board-area > .game-header {
+    margin-inline: 4px;
   }
   body.match-active #status {
     padding-inline: 4px;
@@ -541,9 +458,6 @@
   }
 }
 
-#resign {
-  flex: 0 0 44px;
-}
 @media (min-width: 761px) {
   .game-grid {
     grid-template-columns: minmax(0, 600px) minmax(280px, 320px);
@@ -770,14 +684,6 @@
   }
 }
 
-/* Grouped playback uses one surface; the compact resign control owns its outline. */
-#resign {
-  box-shadow: none;
-}
-#resign::before {
-  box-shadow: none;
-}
-
 /* The live match is a viewport, not a scrolling document. Scope to the
    presented page: a saved active game must not lock Profile or Collections. */
 html:has(body.match-active #play.active-match) {
@@ -808,4 +714,8 @@ body.match-active:has(#play.active-match) #app > main {
      can scroll here. The normal game remains still, without scroll chaining. */
   overflow-y: auto;
   overscroll-behavior: none;
+}
+
+.board-area > .game-header {
+  margin-block-end: 12px;
 }
