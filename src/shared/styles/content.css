@@ -363,6 +363,8 @@ th:not(:first-child) {
 }
 
 .calendar-layout {
+  width: 100%;
+  min-width: 0;
   max-width: 540px;
   margin: auto;
   display: grid;
@@ -376,39 +378,30 @@ th:not(:first-child) {
   max-width: none;
   box-sizing: border-box;
 }
-.calendar-month-heading {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+.calendar-streak-summary .eyebrow {
+  margin: 0 0 16px;
+  color: var(--accent);
 }
-.calendar-month-heading h2,
+.calendar-layout .activity-calendar h2 {
+  margin: 28px 0 0;
+  font-size: var(--type-section);
+}
 .calendar-rewards h2,
 .calendar-freeze h2 {
   margin: 0;
   font-size: 1rem;
 }
-.streak-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.875rem;
-}
 .calendar-layout .calendar-grid {
-  gap: 4px;
-  margin-top: 12px;
+  gap: 7px;
+  margin-top: 18px;
 }
 .calendar-layout .calendar-day {
-  border-radius: 8px;
-  max-height: 48px;
+  border-radius: 12px;
 }
 .calendar-layout .calendar-legend {
-  gap: 8px;
-  margin-top: 12px;
-  font-size: 0.75rem;
+  gap: 12px;
+  margin-top: 24px;
+  font-size: var(--page-meta-size);
 }
 .calendar-description {
   font-size: 0.875rem;

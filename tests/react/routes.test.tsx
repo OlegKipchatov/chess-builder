@@ -111,7 +111,7 @@ describe("React routing, collection and history", () => {
       ["/statistics", "Статистика"],
       ["/faq", "Вопросы и ответы"],
       ["/calendar", "Календарь активности"],
-      ["/streak", "Серия активности"],
+      ["/streak", "Календарь активности"],
       ["/history", "История партий"],
       ["/autochess", "Автошахматы"],
       ["/pve", "Поход"],

@@ -115,17 +115,18 @@ export const ActivityPage = ({
   return (
     <Page
       id={streakOnly ? "streak" : "calendar"}
-      title={streakOnly ? "Серия активности" : "Календарь активности"}
-      back="/play"
+      title="Календарь активности"
+      back={streakOnly ? undefined : "/play"}
     >
       <div className="calendar-layout">
         {streakOnly ? (
           <>
             <article className="panel activity-calendar">
-              <div className="calendar-month-heading">
-                <h2>{title}</h2>
-                <span className="streak-chip">ϟ {dayLabel(streak)}</span>
+              <div className="calendar-streak-summary">
+                <p className="eyebrow">Текущая серия</p>
+                <strong className="streak-value">{dayLabel(streak)}</strong>
               </div>
+              <h2>{title}</h2>
               <div className="calendar-grid" role="group" aria-label={title}>
                 {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day) => (
                   <span className="calendar-weekday" key={day}>
@@ -161,14 +162,15 @@ export const ActivityPage = ({
               </div>
               <p className="calendar-legend">
                 <span>
-                  <i className="calendar-key" aria-hidden="true" /> С игрой
+                  <i className="calendar-key" aria-hidden="true" /> С партией
                 </span>
                 <span>
                   <i className="calendar-key today" aria-hidden="true" />{" "}
                   Сегодня
                 </span>
                 <span>
-                  <i className="calendar-key frozen" /> Заморожен
+                  <i className="calendar-key frozen" aria-hidden="true" />{" "}
+                  Заморожен
                 </span>
               </p>
             </article>

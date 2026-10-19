@@ -58,7 +58,25 @@ try{
   await page.screenshot({path:`/tmp/gachachess-reward-${width}.png`,fullPage:true});
   await page.locator('dialog').getByRole('button',{name:'В коллекцию',exact:true}).click();await page.locator('.navigation-target').waitFor();
   await page.locator(`[data-equip="${expected.result.item.id}"]`).click();await page.waitForFunction(id=>JSON.parse(localStorage.getItem('chess-vault-v3')).equipped.pieces.k===id,expected.result.item.id);
+  const checkCalendarWidth = async () => {
+   const geometry = await page.locator('.calendar-layout').evaluate(layout => {
+    const rect = layout.getBoundingClientRect(), parent = layout.parentElement.getBoundingClientRect();
+    return {width:rect.width,expected:Math.min(540,parent.width),center:rect.x+rect.width/2,parentCenter:parent.x+parent.width/2};
+   });
+   assert.ok(Math.abs(geometry.width-geometry.expected)<1,`Calendar must fill available width: ${JSON.stringify(geometry)}`);
+   assert.ok(Math.abs(geometry.center-geometry.parentCenter)<1,'Calendar stays centered');
+  };
+  await page.evaluate(()=>{location.hash='/streak';});
+  await page.getByRole('heading',{name:'Календарь активности',exact:true}).waitFor();
+  for(const calendarWidth of [320,390,768,1024,1440]) {
+   await page.setViewportSize({width:calendarWidth,height:900});
+   await checkCalendarWidth();
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+   await page.screenshot({path:`/tmp/gachachess-streak-width-${width}-${calendarWidth}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width,height:900});
   await page.evaluate(()=>{location.hash='/calendar';});await page.getByRole('heading',{name:'Задачи на сегодня'}).waitFor();
+  await checkCalendarWidth();
   assert.equal(await page.locator('.calendar-rewards .calendar-reward').count(),6);
   const reward=visibleCalendarRewards(state.activity,now).find(row=>row.group==='daily'&&!row.id.endsWith(':all'));
   await page.getByRole('button',{name:'Забрать награду: '+reward.title,exact:true}).evaluate(button=>{button.click();button.click();});

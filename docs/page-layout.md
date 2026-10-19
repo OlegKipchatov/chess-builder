@@ -19,6 +19,12 @@ Components own their internal spacing only. Technical wrappers around content
 must not add margins or padding. Header spacing remains padding-owned whether
 the page uses block, flex or grid. Collection lists no longer reserve viewport
 height below their last item. Centered cards keep their existing width limits.
+Calendar layouts explicitly use `width: 100%` and `max-width: 540px` inside the
+flex page content. Auto inline margins must not shrink them to text width.
+The header calendar (`/streak`) is titled «Календарь активности». Its month card
+starts with «Текущая серия» and a large accent count, followed by the month and
+spacious square day cells. Keep the frozen-day treatment and legend. Do not
+replace this summary with a chip alongside the month.
 The navigation ResizeObserver also accommodates changes in text size.
 
 Browser validation lives in `scripts/test-live-layout.mjs`, `test-review-layout.mjs`,
