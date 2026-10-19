@@ -91,6 +91,27 @@ try{
   await page.getByRole('button',{name:'Статистика',exact:true}).click();await page.getByRole('heading',{name:'Статистика',exact:true}).waitFor();assert.match(await page.locator('.statistics-grid').first().innerText(),/Рейтинг/);assert.match(await page.locator('.statistics-progress').innerText(),/Открыто сундуков/);await page.getByLabel('Назад',{exact:true}).click();await page.getByRole('button',{name:'Вопросы и ответы',exact:true}).click();await page.locator('details').first().locator('summary').click();assert.equal(await page.locator('details').first().evaluate(node=>node.open),true);
   for(const scheme of ['light','dark']) {
    await page.emulateMedia({colorScheme:scheme});
+   const summary=page.locator('#faq details').first().locator('summary');
+   await summary.evaluate(node=>{node.parentElement.open=false;node.focus({preventScroll:true});});
+   const stableHeader=await summary.evaluate(async node=>{
+    const read=()=>{const rect=node.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(node);const text=range.getBoundingClientRect(),style=getComputedStyle(node);return {height:rect.height,width:rect.width,textX:text.left-rect.left,textY:text.top-rect.top,color:style.color,filter:style.filter,opacity:style.opacity};};
+    const before=read(),frames=[];let replacements=0;
+    const observer=new MutationObserver(records=>{replacements+=records.filter(record=>record.type==='childList'||record.type==='characterData').length;});
+    observer.observe(node,{childList:true,characterData:true,subtree:true});
+    for(const open of [true,false]){
+     node.click();
+     for(let frame=0;frame<12;frame++){await new Promise(resolve=>requestAnimationFrame(resolve));frames.push({open:node.parentElement.open,expectedOpen:open,...read()});}
+    }
+    observer.disconnect();
+    return {before,frames,replacements,sameNode:node===document.querySelector('#faq details summary'),focused:node===document.activeElement,tapHighlight:getComputedStyle(node).webkitTapHighlightColor};
+   });
+   assert.equal(stableHeader.replacements,0,'Disclosure preserves heading text nodes');
+   assert.equal(stableHeader.sameNode,true);assert.equal(stableHeader.focused,true);
+   assert.equal(stableHeader.tapHighlight,'rgba(0, 0, 0, 0)','Native touch overlay must not tint heading text');
+   for(const {open,expectedOpen,...frame} of stableHeader.frames){assert.equal(open,expectedOpen);assert.deepEqual(frame,stableHeader.before,'Heading geometry and foreground stay stable across disclosure frames');}
+   await summary.scrollIntoViewIfNeeded();
+   const point=await summary.boundingBox();await page.mouse.move(point.x+point.width/2,point.y+point.height/2);await page.mouse.down();
+   assert.equal(await summary.evaluate(node=>getComputedStyle(node).color),stableHeader.before.color,'Pressed feedback does not recolor text');await page.mouse.up();
    await page.locator('#faq details').evaluateAll(nodes=>nodes.forEach(node=>{node.open=true;}));
    assert.equal(await page.locator('#faq details').evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).borderTopStyle==='solid'&&node.querySelector('.disclosure-content'))),true,'FAQ question and answer share a styled card');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);

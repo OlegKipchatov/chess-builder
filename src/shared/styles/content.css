@@ -161,6 +161,12 @@
   padding: 20px;
   font-size: 1rem;
   font-weight: 600;
+  border-bottom: 1px solid transparent;
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+.faq-accordion > summary:active {
+  background-color: var(--control);
 }
 .faq-accordion > summary::-webkit-details-marker {
   display: none;
@@ -179,7 +185,7 @@
   outline-offset: -3px;
 }
 .faq-accordion[open] > summary {
-  border-bottom: 1px solid var(--border);
+  border-bottom-color: var(--border);
 }
 .disclosure-content {
   padding: 20px;
