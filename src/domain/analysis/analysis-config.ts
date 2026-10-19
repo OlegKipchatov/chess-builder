@@ -1,4 +1,4 @@
-export const ANALYSIS_VERSION = "post-game-analysis-v7";
+export const ANALYSIS_VERSION = "post-game-analysis-v11";
 export const PROFILE = Object.freeze({
   version: "post-game-profile-v1",
   quickNodes: 75000,

@@ -1,3 +1,4 @@
+import { ToastNotification } from "../../shared/ui/ToastNotification.js";
 import {
   createContext,
   useCallback,
@@ -172,6 +173,10 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     },
     [],
   );
+  const dismissToast = () => {
+    clearTimeout(timer.current);
+    setMessage(null);
+  };
   useSheetGesture(
     dialog,
     content,
@@ -229,17 +234,13 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
               )}
             </div>
             <div id="modal-content">{content?.body}</div>
+            {content && (
+              <ToastNotification message={message} onDismiss={dismissToast} />
+            )}
           </dialog>
-          <div className="notification-stack">
-            <div
-              id="toast"
-              role="status"
-              hidden={!message}
-              data-tone={message?.error ? "error" : "neutral"}
-            >
-              {message?.text}
-            </div>
-          </div>
+          {!content && (
+            <ToastNotification message={message} onDismiss={dismissToast} />
+          )}
         </>,
         document.body,
       )}

@@ -6,20 +6,25 @@ export const isImportantInsight = (move: MoveAnalysis | undefined | null) =>
   !move.forced &&
   (["inaccuracy", "mistake", "blunder"].includes(move.quality || "") ||
     move.highlight === "excellent" ||
+    !!move.outcome ||
     ["mate_opportunity", "missed_mate", "allowed_mate"].includes(
       move.reason || "",
     ));
 export const eventFor = (move: MoveAnalysis) => {
   if (move.status !== "complete" || move.forced)
     return { primaryEvent: null, eventPriority: 0, autoPause: false };
-  const primaryEvent = [
-    "allowed_mate",
-    "missed_mate",
-    "mate_opportunity",
-  ].includes(move.reason || "")
-    ? move.reason
-    : move.highlight || move.quality;
+  const primaryEvent =
+    (move.reason === "allowed_mate" ? "allowed_mate" : move.outcome?.reason) ||
+    (["allowed_mate", "missed_mate", "mate_opportunity"].includes(
+      move.reason || "",
+    )
+      ? move.reason
+      : move.highlight || move.quality);
   const eventPriority = {
+    allowed_stalemate: 100,
+    lost_win: 90,
+    missed_draw: 90,
+    saved_draw: 60,
     allowed_mate: 100,
     missed_mate: 95,
     mate_opportunity: 60,
@@ -31,6 +36,10 @@ export const eventFor = (move: MoveAnalysis) => {
     good: 0,
   }[
     primaryEvent as
+      | "allowed_stalemate"
+      | "lost_win"
+      | "missed_draw"
+      | "saved_draw"
       | "allowed_mate"
       | "missed_mate"
       | "mate_opportunity"
@@ -44,7 +53,11 @@ export const eventFor = (move: MoveAnalysis) => {
   return { primaryEvent, eventPriority, autoPause: false };
 };
 export const selectEvents = (moves: MoveAnalysis[]) => {
-  let previous: { solutions: string[]; distance: number } | null = null,
+  let previous: {
+      solutions: string[];
+      distance: number;
+      owner: MoveAnalysis;
+    } | null = null,
     theme: { key: string; outcome: string; owner: MoveAnalysis } | null = null;
   moves.forEach((move) => {
     delete move.repeatedOpportunity;
@@ -86,10 +99,18 @@ export const selectEvents = (moves: MoveAnalysis[]) => {
       move.shortMate!.moves === previous.distance &&
       move.quality !== "blunder" &&
       move.quality !== "mistake"
-    )
+    ) {
       move.repeatedOpportunity = true;
+      move.repeatedFromPly = previous.owner.ply;
+      previous.owner.relatedPlies ??= [previous.owner.ply];
+      previous.owner.relatedPlies.push(move.ply);
+    }
     previous = opportunity
-      ? { solutions, distance: move.shortMate!.moves }
+      ? {
+          solutions,
+          distance: move.shortMate!.moves,
+          owner: move.repeatedOpportunity && previous ? previous.owner : move,
+        }
       : null;
   });
   moves.forEach((move) => Object.assign(move, eventFor(move)));

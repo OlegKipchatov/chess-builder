@@ -1,5 +1,7 @@
 const paths = {
   back: "M19 12H5m7 7-7-7 7-7",
+  copy: "M9 9h12v12H9zM15 5V3H3v12h2",
+  share: "M12 16V3m-5 5 5-5 5 5M5 13v8h14v-8",
   download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
   previous: "m15 5-7 7 7 7",
   next: "m9 5 7 7-7 7",

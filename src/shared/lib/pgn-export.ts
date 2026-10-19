@@ -86,16 +86,34 @@ export const pgnFileName = (date = new Date()) => {
   const pad = (value: number) => String(value).padStart(2, "0");
   return `GachaChess_${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}.pgn`;
 };
+export const canSharePgn = (pgn: string, date = new Date()) => {
+  try {
+    return (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function" &&
+      !!navigator.canShare?.({
+        files: [
+          new File([pgn], pgnFileName(date), {
+            type: "application/x-chess-pgn",
+          }),
+        ],
+      })
+    );
+  } catch {
+    return false;
+  }
+};
 export const sharePgn = async (pgn: string, date = new Date()) => {
   const file = new File([pgn], pgnFileName(date), {
     type: "application/x-chess-pgn",
   });
-  if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+  if (canSharePgn(pgn, date)) {
     try {
       await navigator.share({ files: [file], text: pgn });
       return;
     } catch (error) {
       if (asError(error).name === "AbortError") return;
+      throw error;
     }
   }
   downloadPgn(pgn, date);
@@ -108,7 +126,7 @@ export const downloadPgn = (pgn: string, date = new Date()) => {
     link = document.createElement("a");
   link.href = url;
   link.download = file.name;
-  document.body.append(link);
+  (document.querySelector("dialog[open]") || document.body).append(link);
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);

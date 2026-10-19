@@ -4,6 +4,13 @@ export type DecisionQuality =
   "best" | "good" | "inaccuracy" | "mistake" | "blunder";
 export type QualityDecision =
   { forced: true; loss?: never } | { forced?: false; loss: number };
+export interface RewardCheckpoint {
+  profile: string;
+  playerColor: "w" | "b";
+  initialFen: string;
+  moves: string[];
+  decisions: QualityDecision[];
+}
 export interface QualitySummary {
   status: "complete";
   total: number;

@@ -14,6 +14,7 @@ export const RewardProcessor = () => {
     [failedId, setFailedId] = useState<string | null>(null),
     [retry, retrySave] = useReducer((value: number) => value + 1, 0);
   const store = useVaultStore(),
+    playing = useVault((state) => state.game.started),
     id = useVault(
       (state) =>
         state.archive.find((entry) =>
@@ -23,16 +24,34 @@ export const RewardProcessor = () => {
         )?.id,
     );
   useEffect(() => {
-    if (!id) return;
+    if (!id || playing) return;
     const entry = store.getSnapshot().archive.find((entry) => entry.id === id);
     if (!entry) return;
     const controller = new AbortController();
+    const unsubscribe = store.subscribe(() => {
+      if (store.getSnapshot().game.started) controller.abort();
+    });
     setFailedId(null);
     const process = async () => {
       let quality = cached.current?.id === id ? cached.current.quality : null;
       if (!quality) {
         try {
-          quality = await analyzeReward(entry, { signal: controller.signal });
+          quality = await analyzeReward(entry, {
+            signal: controller.signal,
+            onCheckpoint: async (rewardCheckpoint) => {
+              if (controller.signal.aborted) return;
+              await store.update((latest) =>
+                controller.signal.aborted
+                  ? latest
+                  : {
+                      ...latest,
+                      archive: latest.archive.map((row) =>
+                        row.id === id ? { ...row, rewardCheckpoint } : row,
+                      ),
+                    },
+              );
+            },
+          });
         } catch (cause) {
           const failure = cause as {
             diagnostics?: QualityFailure["diagnostics"];
@@ -55,8 +74,11 @@ export const RewardProcessor = () => {
       else if (cached.current?.id === id) cached.current = null;
     };
     void process();
-    return () => controller.abort();
-  }, [id, store, retry]);
+    return () => {
+      unsubscribe();
+      controller.abort();
+    };
+  }, [id, playing, store, retry]);
   return failedId && failedId === id ? (
     <div role="alert">
       <p>Не удалось сохранить бонус за качество игры.</p>

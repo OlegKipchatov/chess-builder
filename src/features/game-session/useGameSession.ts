@@ -21,6 +21,7 @@ import type { EngineClient } from "../../shared/types/engine.js";
 import { createRecordId, newGame } from "../../services/persistence/state.js";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 import { motionDuration } from "../../shared/styles/motion.js";
+import { useLiveRewardAnalysis } from "./useLiveRewardAnalysis.js";
 type Phase = "idle" | "saving" | "thinking" | "animating" | "failed";
 interface Result {
   game: Chess;
@@ -116,8 +117,20 @@ export const useGameSession = () => {
   }, [restored, saved.pgn, store, toast]);
   const active =
     !!restored && saved.started && !saved.resigned && !game.isGameOver();
+  const stopRewardAnalysis = useLiveRewardAnalysis(
+    active &&
+      saved.mode === "bot" &&
+      !saved.settled &&
+      !saved.engineFailure &&
+      game.turn() === saved.playerColor &&
+      view.phase === "idle" &&
+      view.cursor === null,
+    saved.pgn,
+    saved.startedAt,
+  );
   const settle = useCallback(async () => {
     if (settling.current) return;
+    stopRewardAnalysis();
     settling.current = true;
     const current = store.getSnapshot(),
       board = new Chess();
@@ -174,7 +187,7 @@ export const useGameSession = () => {
     }
     if (result) dispatch({ type: "result", result });
     else dispatch({ type: "reset" });
-  }, [store]);
+  }, [store, stopRewardAnalysis]);
   const present = useCallback(() => {
     clearTimeout(timer.current);
     dispatch({ type: "phase", phase: "animating" });
@@ -361,6 +374,7 @@ export const useGameSession = () => {
       return false;
     inFlight.current = true;
     dispatch({ type: "phase", phase: "saving" });
+    stopRewardAnalysis();
     const result = await store.update((latest) => {
       if (latest.game.pgn !== saved.pgn) return latest;
       const board = new Chess();
@@ -375,6 +389,7 @@ export const useGameSession = () => {
     return result.ok;
   };
   const resign = async () => {
+    stopRewardAnalysis();
     request.current++;
     engine.current?.terminate();
     clearTimeout(timer.current);
@@ -386,6 +401,7 @@ export const useGameSession = () => {
     else dispatch({ type: "error", message: result.error.message });
   };
   const abort = async () => {
+    stopRewardAnalysis();
     request.current++;
     engine.current?.terminate();
     const result = await store.update(

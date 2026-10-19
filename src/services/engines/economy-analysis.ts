@@ -1,12 +1,18 @@
 import { Chess } from "chess.js";
 import type { ArchiveEntry } from "../../domain/chess/types.js";
 import {
+  ECONOMY_PROFILE,
   expectedScore,
   summarizeQuality,
 } from "../../domain/economy/reward-quality.js";
+import {
+  matchingRewardCheckpoint,
+  rewardMoveToken,
+} from "../../domain/economy/reward-checkpoint.js";
 import type {
   QualityDecision,
   QualitySummary,
+  RewardCheckpoint,
 } from "../../domain/economy/types.js";
 import { aborted, asError } from "../../shared/lib/errors.js";
 import { createStockfishClient } from "./stockfish-client.js";
@@ -19,19 +25,21 @@ import type {
 } from "../../shared/types/engine.js";
 // A separate full-strength fixed-node profile, never the adaptive opponent.
 export const analyzeReward = async (
-  entry: ArchiveEntry,
+  entry: Pick<ArchiveEntry, "pgn" | "playerColor" | "rewardCheckpoint">,
   {
     onProgress = () => {},
     onRetry = () => {},
     createClient = createStockfishClient,
     requestTimeoutMs = C.economyRequestMs,
     signal,
+    onCheckpoint = () => {},
   }: {
     onProgress?: (done: number, total: number) => void;
     onRetry?: (state: { done: number; total: number; attempt: number }) => void;
     createClient?: () => EngineClient;
     requestTimeoutMs?: number;
     signal?: AbortSignal;
+    onCheckpoint?: (checkpoint: RewardCheckpoint) => void | Promise<void>;
   } = {},
 ): Promise<QualitySummary> => {
   const final = new Chess();
@@ -46,6 +54,11 @@ export const analyzeReward = async (
   const total = history.filter(
     (move) => move.color === entry.playerColor,
   ).length;
+  const checkpoint = matchingRewardCheckpoint(
+    entry.rewardCheckpoint,
+    history,
+    entry.playerColor,
+  );
   const search = async (searchMove?: string): Promise<RawEngineLine> => {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -125,15 +138,28 @@ export const analyzeReward = async (
     throw new Error("Search exhausted");
   };
   try {
-    for (const move of history) {
-      const token = move.from + move.to + (move.promotion || "");
+    for (const [ply, move] of history.entries()) {
+      if (signal?.aborted) throw aborted();
+      const token = rewardMoveToken(move);
       if (move.color === entry.playerColor) {
-        if (position.moves().length <= 1) decisions.push({ forced: true });
+        if (checkpoint && done < checkpoint.decisions.length)
+          decisions.push(checkpoint.decisions[done]);
+        else if (position.moves().length <= 1) decisions.push({ forced: true });
         else {
           const best = await search();
           const played = best.move === token ? best : await search(token);
           decisions.push({
             loss: Math.max(0, expectedScore(best) - expectedScore(played)),
+          });
+        }
+        if (signal?.aborted) throw aborted();
+        if (!checkpoint || done >= checkpoint.decisions.length) {
+          await onCheckpoint({
+            profile: ECONOMY_PROFILE.version,
+            playerColor: entry.playerColor,
+            initialFen: history[0].before,
+            moves: history.slice(0, ply + 1).map(rewardMoveToken),
+            decisions: [...decisions],
           });
         }
         onProgress(++done, total);

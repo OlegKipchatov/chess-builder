@@ -72,6 +72,9 @@ export const completedMatch = (
     id,
     finishedAt,
     startedAt: state.game.startedAt,
+    ...(state.game.rewardCheckpoint
+      ? { rewardCheckpoint: state.game.rewardCheckpoint }
+      : {}),
     rewardBreakdown: state.game.settled ? null : rewardBreakdown,
     engineProfile: state.game.engineProfile
       ? structuredClone(state.game.engineProfile)

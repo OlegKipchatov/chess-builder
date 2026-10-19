@@ -20,7 +20,7 @@ test('reported game: both mate-in-two opportunities verified, no invented mistak
  assert.equal(result.status,'complete');
  for(const ply of [24,26]){
   const move=result.moves[ply-1];assert.equal(move.reason,'mate_opportunity');assert.equal(move.quality,'best');
-  assert.deepEqual(move.shortMate,{moves:2,verified:true});assert.equal(move.recommendationRequired,true);
+  assert.deepEqual(move.shortMate,{moves:2,verified:true,proof:'exhaustive'});assert.equal(move.recommendationRequired,true);
   assert.ok(move.exercise.solutions.some(solution=>solution.move===move.bestLine.move));
   const board=new Chess(move.fenBefore);move.bestLine.pv.forEach(token=>board.move({from:token.slice(0,2),to:token.slice(2,4),promotion:token[4]}));assert.ok(board.isCheckmate());
  }
@@ -37,7 +37,7 @@ test('every visible useful card pauses, including repeated opportunities',()=>{
  assert.deepEqual(selectEvents(rows),[1,3,5,7,9]);assert.equal(rows[8].reason,'mate_opportunity');
  rows.push({ply:11,actor:'player',status:'complete',quality:'good'}, {ply:13,actor:'player',status:'complete',quality:'best',reason:'mate_opportunity'}, {ply:15,actor:'player',status:'complete',quality:'blunder',reason:'missed_mate',expectedScoreLoss:.5});
  assert.deepEqual(selectEvents(rows),[1,3,5,7,9,13,15]);
- assert.equal(detectReason({mateTransition:'missed_mate',expectedScoreLoss:.5}),'missed_mate');
+ assert.equal(detectReason({mateTransition:'missed_mate',expectedScoreLoss:.5}),'mate_opportunity');
 });
 const fakeFactory=(requests,{outside=false,stale=false}={})=>()=>{
  const client={terminate:()=>{client.dead=true;},postMessage:data=>{
@@ -106,6 +106,18 @@ test('playback pauses after animation, resumes, and manual navigation invalidate
 });
 test('eligibility excludes technical failures, local games and zero player decisions',()=>{
  assert.equal(eligibleEntry({...entry(),counted:false}),false);assert.equal(eligibleEntry(entry('1. e4','b')),false);assert.equal(eligibleEntry({...entry(),mode:'local'}),false);assert.ok(eligibleEntry(entry()));
+});
+test('imported PGN analyzes either chosen side without archive metadata',async()=>{
+ for(const color of ['w','b']){
+  const imported={...entry('1. e4 e5 2. Nf3 Nc6',color),mode:'local',imported:true,counted:false,finishedAt:''};
+  assert.equal(eligibleEntry(imported),true);
+  const calls=[],result=await analyzeGame(imported,{createClient:fakeFactory(calls)});
+  assert.equal(result.status,'complete');assert.equal(result.playerColor,color);
+  assert.equal(result.analyzedPlayerMoves,2);
+  assert.ok(calls.every(call=>new Chess(call.fen).turn()===color));
+ }
+ assert.equal(eligibleEntry({...entry('1. e4','b'),imported:true}),false);
+ assert.equal(eligibleEntry({...entry('bad PGN'),imported:true}),false);
 });
 test('mate game with real SF19: both colors, bounded passes, legal short PV', {timeout:60000},async()=>{
  for(const color of ['w','b']){

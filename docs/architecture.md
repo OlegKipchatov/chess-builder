@@ -16,6 +16,11 @@ TanStack Start does not currently provide sufficient benefit: GitHub Pages canno
 
 `useGameAnalysis` owns an AbortController and job generation. Results must match both the entry and source PGN; compatibility gates cached analysis. Generation is checked again inside the persistence queue. `GameReview` owns playback, hints and variation position. `MatePractice` owns its exercise controller, opponent presentation and attempt counts.
 
+Imported PGNs use the same analysis pipeline, but bypass the persistence queue.
+`ImportedGameProvider` holds the selected side and one result per color in memory.
+Each import has a unique session ID; replacing it or changing sides remounts the
+review and cancels its worker. Late results must match the ID, PGN and color.
+
 `useHunt`, `useAutochess` and `usePveBattle` own their mode-specific transitions. React reducers/hooks orchestrate framework-independent rules. PvE move and settlement persist atomically. Autochess has its own existing storage key and lock, and preserves old shop/reserve versions.
 
 `ThemeProvider`, `OverlayProvider` and `PwaProvider` have narrow responsibilities. Dialog content is React, with native modal focus containment, static-heading focus, focus return and controlled mobile transitions. PWA update reloads wait for safe app state, closed dialogs and a visible document.

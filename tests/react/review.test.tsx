@@ -179,6 +179,23 @@ describe("React review and practice parity", () => {
     expect(
       screen.queryByLabelText("Начать воспроизведение"),
     ).not.toBeInTheDocument();
+    const returnButton = screen.getByRole("button", { name: "Вернуться к партии" });
+    expect(returnButton.closest(".history-buttons")).toBeTruthy();
+    expect(returnButton.closest(".history-controls")).toContainElement(
+      screen.getByRole("slider"),
+    );
+    fireEvent.click(returnButton);
+    expect(screen.getByRole("slider")).toHaveValue("3");
+    expect(view.container.querySelector("#match-surface")).toHaveAttribute(
+      "data-mode",
+      "review",
+    );
+    expect(view.container.querySelector('[data-square="f3"]')).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("Конь"),
+    );
+    expect(screen.getByRole("button", { name: "Подсказка" })).toHaveFocus();
+    expect(screen.queryByRole("button", { name: "Вернуться к партии" })).toBeNull();
     expect(analyzeGame).not.toHaveBeenCalled();
   });
   it("cancels a running analysis and ignores a late result after leaving", async () => {
@@ -234,6 +251,7 @@ describe("React review and practice parity", () => {
     expect(screen.getByText("Верно")).toHaveAttribute("role", "status");
     expect(screen.queryByText("Продолжить")).toBeNull();
     act(() => vi.advanceTimersByTime(420));
+    expect(screen.getByRole("heading", { name: "Мат в 1" })).toBeVisible();
     expect(screen.getByText("Ход соперника")).toHaveAttribute("role", "status");
     act(() => vi.advanceTimersByTime(420));
     expect(screen.getByText("Найдите продолжение")).toHaveAttribute(
@@ -242,6 +260,32 @@ describe("React review and practice parity", () => {
     );
     view.unmount();
     expect(vi.getTimerCount()).toBe(0);
+  });
+  it("shows the no-serious-errors result only for a completed analysis at the end", async () => {
+    const { entry, analysis } = fixture(), { wrapper } = setup();
+    analysis.moves.forEach(move => { move.quality = "good"; move.expectedScoreLoss = 0; });
+    const view = render(<GameReview entry={entry} />, { wrapper });
+    expect(screen.queryByText("Серьёзных ошибок не найдено.")).toBeNull();
+    fireEvent.change(screen.getByRole("slider"), { target: { value: "3" } });
+    await act(async () => {});
+    expect(screen.getByText("Серьёзных ошибок не найдено.")).toBeVisible();
+    view.unmount();
+  });
+  it("shows a retryable hint failure without closing practice", async () => {
+    const exercise: MateExercise = { fen: "7k/8/5K2/8/8/8/8/3Q4 w - - 0 1", mateIn: 1, solutions: [] };
+    const attempts = new Map([[exercise.fen.split(" ").slice(0, 4).join(" "), 5]]), { wrapper } = setup();
+    render(<MatePractice exercise={exercise} equipped={initialState().equipped} attempts={attempts} onClose={() => {}} />, { wrapper });
+    await act(async () => fireEvent.click(screen.getByText("Подсказка")));
+    expect(screen.getByText("Не удалось получить подсказку. Попробуйте ещё раз.")).toHaveAttribute("role", "status");
+    expect(screen.getByText("Подсказка")).toBeEnabled();
+  });
+  it("does not expose a raw engine exception in the interface", async () => {
+    const { entry } = fixture(); delete entry.analysis;
+    vi.mocked(analyzeGame).mockRejectedValueOnce(new Error("Incomplete MultiPV secret diagnostic"));
+    const { wrapper } = setup();
+    const view = renderHook(() => useGameAnalysis(entry), { wrapper });
+    await act(async () => view.result.current.start());
+    expect(view.result.current.job).toEqual({ status: "failed", message: "Не удалось завершить анализ. Попробуйте ещё раз." });
   });
   it("five wrong attempts survive exit and re-entry before a hint is requested", async () => {
     const exercise: MateExercise = {

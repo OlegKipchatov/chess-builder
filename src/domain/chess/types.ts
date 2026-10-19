@@ -4,7 +4,7 @@ import type { GameAnalysis } from "../analysis/types.js";
 import type { AutoAward } from "../autochess/types.js";
 import type { Equipment, ItemId, SavedSet } from "../catalog/types.js";
 import type { ArchivedEngineProfile } from "../cognitive/types.js";
-import type { RewardBreakdown } from "../economy/types.js";
+import type { RewardBreakdown, RewardCheckpoint } from "../economy/types.js";
 import type { HuntProgress } from "../hunt/types.js";
 import type { PveProfile } from "../pve/types.js";
 export interface Rating {
@@ -23,6 +23,7 @@ export interface EngineFailure {
   message: string;
 }
 export interface SavedGame {
+  rewardCheckpoint?: RewardCheckpoint;
   pgn: string;
   mode: MatchMode;
   difficulty: "adaptive" | "easy" | "normal" | "hard";
@@ -37,6 +38,7 @@ export interface SavedGame {
   equipped?: Equipment;
 }
 export interface ArchiveEntry {
+  rewardCheckpoint?: RewardCheckpoint;
   analysis?: GameAnalysis;
   imported?: boolean;
   id: string;

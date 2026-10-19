@@ -1,3 +1,4 @@
+import { detectOutcome } from "../../domain/analysis/analysis-outcomes.js";
 import { Chess } from "chess.js";
 import { createStockfishClient } from "../engines/stockfish-client.js";
 import { engineLine } from "../../domain/chess/evaluation.js";
@@ -177,6 +178,7 @@ export const analyzeGame = async (
       ...move,
       shortMate: null,
       exercise: null,
+      outcome: null,
       status: "complete",
       bestLine,
       playedLine,
@@ -192,6 +194,7 @@ export const analyzeGame = async (
     result.bestEvidence = decorate(bestLine);
     result.playedEvidence = decorate(playedLine);
     lines.forEach(decorate);
+    result.outcome = detectOutcome(result, lines, prefixes[move.ply - 1]);
     result.recommendationEvidence = recommendationEvidence(
       result,
       entry.playerColor,

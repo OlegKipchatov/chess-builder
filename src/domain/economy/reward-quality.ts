@@ -116,7 +116,9 @@ export const applyQualityReward = (
     ...state,
     coins: state.coins + bonus,
     archive: state.archive.map((row) =>
-      row.id === id ? { ...row, rewardBreakdown } : row,
+      row.id === id
+        ? { ...row, rewardBreakdown, rewardCheckpoint: undefined }
+        : row,
     ),
   };
 };

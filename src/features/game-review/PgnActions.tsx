@@ -1,15 +1,17 @@
 import { Chess } from "chess.js";
 import { ControlIcon } from "../../shared/ui/ControlIcon.js";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import type { ArchiveEntry, SavedGame } from "../../domain/chess/types.js";
 import {
+  canSharePgn,
   downloadPgn,
   exportPgn,
   sharePgn,
 } from "../../shared/lib/pgn-export.js";
 const ExportDialog = ({ pgn }: { pgn: string }) => {
-  const [message, setMessage] = useState("");
+  const { toast } = useOverlays();
+  const canShare = canSharePgn(pgn);
   return (
     <>
       <textarea
@@ -20,28 +22,46 @@ const ExportDialog = ({ pgn }: { pgn: string }) => {
       />
       <div className="dialog-actions pgn-actions">
         <button
+          type="button"
+          className="quiet icon-button"
+          aria-label="Копировать"
+          title="Копировать"
           onClick={() =>
             void Promise.resolve()
               .then(() => navigator.clipboard.writeText(pgn))
               .then(
-                () => setMessage("PGN скопирован"),
+                () => toast("PGN скопирован"),
                 () =>
-                  setMessage("Не удалось скопировать. Выделите текст выше."),
+                  toast("Не удалось скопировать. Выделите текст PGN.", {
+                    error: true,
+                  }),
               )
           }
         >
-          Копировать
+          <ControlIcon name="copy" />
         </button>
-        <button onClick={() => downloadPgn(pgn)}>Скачать</button>
         <button
-          onClick={() =>
-            void sharePgn(pgn).catch(() => setMessage("Не удалось поделиться"))
-          }
+          type="button"
+          className="quiet icon-button"
+          aria-label={canShare ? "Поделиться" : "Скачать"}
+          title={canShare ? "Поделиться" : "Скачать"}
+          onClick={() => {
+            if (canShare)
+              void sharePgn(pgn).catch(() =>
+                toast("Не удалось поделиться", { error: true }),
+              );
+            else {
+              try {
+                downloadPgn(pgn);
+              } catch {
+                toast("Не удалось скачать", { error: true });
+              }
+            }
+          }}
         >
-          Поделиться
+          <ControlIcon name={canShare ? "share" : "download"} />
         </button>
       </div>
-      <p role="status">{message}</p>
     </>
   );
 };

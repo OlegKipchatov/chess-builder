@@ -145,22 +145,30 @@ export const MatePractice = ({
         )}
       </div>
       <aside className="analysis-panel">
-        <h2>Мат в {exercise.mateIn}</h2>
+        <h2>
+          {snapshot.state === "success"
+            ? "Мат"
+            : `Мат в ${Math.max(1, snapshot.remainingMoves ?? exercise.mateIn)}`}
+        </h2>
         <p role="status">
           {
             {
-              awaitMove: "Найдите продолжение",
-              wrong: "Попробуйте другое продолжение",
+              awaitMove: snapshot.hintUnavailable
+                ? "Не удалось получить подсказку. Попробуйте ещё раз."
+                : "Найдите продолжение",
+              wrong:
+                "В заданное число ходов мат не получился. Попробуйте иначе.",
+              longer_mate:
+                "Найденный мат длиннее задания. Попробуйте найти более короткий путь.",
               success: "Мат! Задача решена",
               correct: "Верно",
               opponent: "Ход соперника",
               checking: "Проверяем продолжение…",
-              unverified:
-                "Движок не смог подтвердить вариант. Попробуйте ещё раз.",
+              unverified: "Мат пока не подтверждён. Попробуйте ещё раз.",
             }[snapshot.state]
           }
         </p>
-        {["wrong", "unverified"].includes(snapshot.state) && (
+        {["wrong", "unverified", "longer_mate"].includes(snapshot.state) && (
           <button
             data-practice-continue
             className="primary"

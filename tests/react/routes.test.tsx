@@ -305,9 +305,9 @@ describe("React routing, collection and history", () => {
     const abort = await screen.findByText("Закрыть без награды");
     expect(abort.closest("dialog")).toBeNull();
     expect(screen.getByText("Stockfish timeout")).toBeVisible();
-    fireEvent.click(screen.getByText("Экспортировать PGN"));
-    expect(screen.getByText("Копировать")).toBeVisible();
-    expect(screen.getByText("Скачать")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Экспортировать PGN" }));
+    expect(screen.getByRole("button", { name: "Копировать" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Скачать" })).toBeVisible();
     fireEvent.click(screen.getByLabelText("Закрыть"));
     fireEvent.click(abort);
     await screen.findByText("Партия с ИИ");
@@ -368,6 +368,29 @@ describe("React routing, collection and history", () => {
     );
   });
 
+  it("asks before reading PGN clipboard and preserves text on denied access", async () => {
+    const readText = vi.fn().mockResolvedValue("1. e4 e5 *");
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { readText } });
+    await setup("/profile");
+    await screen.findByRole("heading", { name: "Профиль" });
+    fireEvent.click(screen.getByText("Открыть PGN"));
+    fireEvent.click(screen.getByText("Вставить текст"));
+    expect(screen.getByRole("heading", { name: "Вставить текст из буфера обмена?" })).toBeVisible();
+    expect(readText).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Вставить" }));
+    const field = await screen.findByPlaceholderText("Вставьте сюда запись партии");
+    expect(field).toHaveValue("1. e4 e5 *");
+    expect(field).not.toHaveFocus();
+    readText.mockRejectedValue(new Error("denied"));
+    fireEvent.click(screen.getByText("Вставить текст"));
+    fireEvent.click(screen.getByRole("button", { name: "Вставить" }));
+    expect(await screen.findByPlaceholderText("Вставьте сюда запись партии")).toHaveValue("1. e4 e5 *");
+    expect(await screen.findByRole("status")).toHaveTextContent("Вставьте текст вручную");
+    fireEvent.click(screen.getByText("Вставить текст"));
+    fireEvent.click(screen.getByRole("button", { name: "Закрыть" }));
+    expect(screen.getByPlaceholderText("Вставьте сюда запись партии")).toHaveValue("1. e4 e5 *");
+  });
+
   it("PGN text import is modal, read-only, preserves headers on export and never focuses its textarea", async () => {
     const view = await setup("/profile");
     await screen.findByRole("heading", { name: "Профиль" });
@@ -377,26 +400,44 @@ describe("React routing, collection and history", () => {
     fireEvent.click(screen.getByText("Открыть PGN"));
     expect(document.querySelector("dialog")?.open).toBe(true);
     fireEvent.click(screen.getByText("Вставить текст"));
-    fireEvent.change(screen.getByLabelText("Текст PGN"), {
+    fireEvent.click(screen.getByRole("button", { name: "Вручную" }));
+    fireEvent.change(screen.getByLabelText("Запись партии"), {
       target: { value: "invalid" },
     });
     fireEvent.click(screen.getByText("Открыть партию"));
     expect(screen.getByRole("alert")).toHaveTextContent("Не удалось прочитать");
-    fireEvent.change(screen.getByLabelText("Текст PGN"), {
+    fireEvent.change(screen.getByLabelText("Запись партии"), {
       target: { value: pgn },
     });
     fireEvent.click(screen.getByText("Открыть партию"));
     await screen.findByLabelText("Шахматная доска");
     expect(screen.getByText("Alice")).toBeVisible();
     expect(screen.getByText("Bob")).toBeVisible();
-    expect(screen.queryByText("Разобрать партию")).toBeNull();
-    fireEvent.click(screen.getByText("Экспортировать PGN"));
+    expect(screen.getByRole("button", { name: "Разобрать партию" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Экспортировать PGN" }));
     const text = screen.getByRole("textbox", { name: "PGN партии" });
     expect(text).not.toHaveFocus();
     expect((text as HTMLTextAreaElement).value).toContain(
       '[Date "2024.03.04"]',
     );
     expect((text as HTMLTextAreaElement).value).toContain('[Event "External"]');
+    expect(localStorage.getItem(KEY)).toBe(before);
+    fireEvent.click(screen.getByRole("button", { name: "Закрыть" }));
+    expect(screen.queryByRole("button", { name: "Открыть другой PGN" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Просмотр партии" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Экспортировать PGN" }).closest(".page-header")).toBeTruthy();
+    fireEvent.click(view.container.querySelector("#pgn-import .page-header .back-button")!);
+    await screen.findByRole("heading", { name: "Профиль" });
+    fireEvent.click(screen.getByRole("button", { name: "Открыть PGN" }));
+    fireEvent.click(screen.getByRole("button", { name: "Вставить текст" }));
+    fireEvent.click(screen.getByRole("button", { name: "Вручную" }));
+    fireEvent.change(screen.getByLabelText("Запись партии"), {
+      target: { value: '[SetUp "1"]\n[FEN "7k/8/5K2/8/8/8/8/7R b - - 0 1"]\n\n1... Kg8 *' },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Открыть партию" }));
+    expect(await screen.findByRole("button", { name: "Чёрные" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Белые" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Разобрать партию" })).toBeVisible();
     expect(localStorage.getItem(KEY)).toBe(before);
   });
   it("keeps the Autochess purchase transactional under a double click", async () => {

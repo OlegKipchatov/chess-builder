@@ -1,7 +1,7 @@
 import type { MoveAnalysis } from "../../domain/analysis/types.js";
 import { isImportantInsight } from "../../domain/analysis/analysis-events.js";
 import {
-  qualityLabel,
+  insightLabel,
   explanationFor,
 } from "../../domain/analysis/analysis-explanations.js";
 import {
@@ -26,18 +26,7 @@ export const AnalysisInsight = ({
   onPractice?: () => void;
 }) => {
   if (!move || !isImportantInsight(move)) return null;
-  const label =
-      move.reason === "allowed_mate"
-        ? "Допущен мат"
-        : move.reason === "mate_opportunity"
-          ? "Матовая возможность"
-          : move.reason === "missed_mate"
-            ? "Упущен мат"
-            : move.highlight
-              ? "Отличный ход"
-              : move.quality
-                ? qualityLabel[move.quality]
-                : "Ваш ход",
+  const label = insightLabel(move),
     line = insightLines(move)[0],
     explanation = explanationFor(move);
   return (
@@ -83,7 +72,8 @@ export const AnalysisInsight = ({
         </div>
       </div>
       <p>
-        Вы сыграли: <strong>{humanMove(move.playedSan)}</strong>
+        Вы сыграли:{" "}
+        <strong>{humanMove(move.playedSan, move.playedMove)}</strong>
       </p>
       {explanation && <p>{explanation}</p>}
       {(move.relatedPlies?.length || 0) > 1 && (

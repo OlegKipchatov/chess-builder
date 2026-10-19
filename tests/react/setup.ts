@@ -34,3 +34,7 @@ HTMLDialogElement.prototype.close = function () {
 };
 
 window.scrollTo = vi.fn();
+
+// jsdom exposes popover CSS but does not implement the top-layer API.
+HTMLElement.prototype.showPopover = function () { this.style.display = 'block'; };
+HTMLElement.prototype.hidePopover = function () { this.style.removeProperty('display'); };
