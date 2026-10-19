@@ -83,7 +83,7 @@ try {
     assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).coins),paid.coins);
     assert.doesNotMatch(await page.locator('#hunt-entry').textContent(),/рекорд/i);
     await page.locator('[data-hunt-mode="endless"]').click();await page.getByRole('button',{name:'Закрыть охоту'}).click();
-    const exit=await page.locator('dialog').getByRole('button',{name:'Выйти',exact:true}).boundingBox(),content=await page.locator('#modal-content').boundingBox();
+    const exit=await page.locator('dialog').getByRole('button',{name:'Выйти',exact:true}).boundingBox(),content=await page.locator('#modal-content').evaluate(node=>{const style=getComputedStyle(node);return {width:node.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)};});
     assert.ok(Math.abs(exit.width-content.width)<2,'Exit action fills modal content width');
     await page.locator('dialog').getByRole('button',{name:'Выйти',exact:true}).click();await page.locator('[data-hunt-mode="timed"]').waitFor();
     assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chess-vault-v3')).coins),paid.coins);

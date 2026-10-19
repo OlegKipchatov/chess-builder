@@ -92,7 +92,6 @@ export const GamePage = () => {
       show({
         title: final.cancelled ? "Партия отменена" : "Партия завершена",
         onClose: finish,
-        closeLabel: "Готово",
         body: (
           <div className="dialog-actions">
             {eligibleEntry(final.entry) && (
@@ -111,11 +110,12 @@ export const GamePage = () => {
               ? `${final.activity.streak} дней подряд`
               : "Сегодня с игрой",
           onClose: lastStep,
-          closeLabel: "Продолжить",
-          closeVariant: "primary",
           body: (
             <>
               <ActivityCelebration event={final.activity} />
+              <button className="primary wide" onClick={lastStep}>
+                Продолжить
+              </button>
             </>
           ),
         });
@@ -126,12 +126,15 @@ export const GamePage = () => {
         ? "Партия отменена"
         : final.entry?.result || "Партия завершена",
       onClose: final.cancelled ? finish : activity,
-      closeLabel: "Продолжить",
-      closeVariant: "primary",
       body: (
         <>
           <p className="match-end-reason">{final.reason}</p>
           {final.entry && <MatchReward id={final.entry.id} />}
+          {!final.cancelled && (
+            <button className="primary wide" onClick={activity}>
+              Продолжить
+            </button>
+          )}
         </>
       ),
     });
@@ -148,7 +151,6 @@ export const GamePage = () => {
       if (target.some((move) => move.promotion))
         show({
           title: "Превращение пешки",
-          dismissible: false,
           body: (
             <div className="promotion-options">
               {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (

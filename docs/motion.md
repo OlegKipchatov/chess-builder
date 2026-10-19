@@ -10,6 +10,7 @@ After changing it, run `npm run motion:generate`; `npm run motion:check` verifie
 | Instant | 0 ms | Navigation, focus, disabled and accessibility states |
 | Fast | 160 ms | Hover, pressed, short feedback, disappearance |
 | Standard | 200 ms | Local UI changes, functional mobile sheet resizing, game start |
+| Sheet return | 360 ms | Gentle return after pulling a sheet upward |
 | Enter | 260 ms | Existing bottom sheet entry and future large overlays |
 | Exit | 180 ms | Overlay dismissal; always shorter than Enter |
 | Board | 420 ms | Piece movement, including castling |
@@ -74,3 +75,13 @@ a short portrait screen, desktop and 200% text before changing this layout.
 RPG pieces retain their centered 78% width/height. Never shrink or offset artwork
 to make room for HP. Keep the original overlaid level/HP geometry during damage
 feedback as well; position the damage number absolutely without resizing the bar.
+
+## Sheet gestures
+
+Direct manipulation follows the pointer without a transition or React renders.
+Upward resistance is bounded to 28px, with the bottom surface extended under the
+viewport. Release after an upward pull uses sheetReturn (360ms), with a gentler
+sheetReturn easing and no bounce. A short downward drag retains Standard (200ms).
+Dismissal starts from the current dragged offset using Exit (180ms); no jump to
+zero. A new modal step, resize, cancellation or unmount resets transient motion.
+Reduced motion retains direct manipulation, with immediate return/dismissal.
