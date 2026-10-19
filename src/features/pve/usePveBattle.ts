@@ -1,3 +1,4 @@
+import { useNotificationError } from "../../shared/hooks/useNotificationError.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import {
   useCallback,
@@ -25,7 +26,7 @@ export const usePveBattle = (active: boolean) => {
     [phase, setPhase] = useState<
       "idle" | "saving" | "thinking" | "animating" | "failed"
     >("idle"),
-    [error, setError] = useState(""),
+    [error, setError] = useNotificationError(),
     [retry, bump] = useState(0),
     busy = useRef(false),
     generation = useRef(0),
@@ -148,7 +149,7 @@ export const usePveBattle = (active: boolean) => {
       }, 2 * motionDuration.board);
       schedule(finish, (event.killed ? 2 : 3) * motionDuration.board);
     },
-    [store, active, reduced],
+    [store, active, reduced, setError],
   );
   const workerBlocked = ["saving", "animating", "failed"].includes(phase);
   useEffect(() => {
@@ -216,7 +217,7 @@ export const usePveBattle = (active: boolean) => {
       clearTimeout(timeout);
       worker.terminate();
     };
-  }, [active, profile.battle, workerBlocked, retry, perform]);
+  }, [active, profile.battle, workerBlocked, retry, perform, setError]);
   const resign = async () => {
     generation.current++;
     timers.current.forEach(clearTimeout);

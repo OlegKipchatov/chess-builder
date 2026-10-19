@@ -1,3 +1,4 @@
+import { ErrorNotification } from "../../shared/ui/ErrorNotification.js";
 import {
   createHashHistory,
   lazyRouteComponent,
@@ -24,10 +25,10 @@ const root = createRootRouteWithContext<{ vault: VaultStore }>()({
     </Page>
   ),
   errorComponent: ({ error, reset }) => (
-    <Page id="error" title="Не удалось открыть экран">
-      <p role="alert">
-        {error instanceof Error ? error.message : String(error)}
-      </p>
+    <Page id="error" title="GachaChess">
+      <ErrorNotification
+        message={`Не удалось открыть экран. ${error instanceof Error ? error.message : String(error)}`}
+      />
       <button onClick={reset}>Повторить</button>
     </Page>
   ),

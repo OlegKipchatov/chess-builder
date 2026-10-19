@@ -1,3 +1,4 @@
+import { useNotificationError } from "../../shared/hooks/useNotificationError.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import {
   useEffect,
@@ -22,7 +23,7 @@ export const useAutochess = () => {
   const [store] = useState(() => createAutoStore(localStorage)),
     run = useSyncExternalStore(store.subscribe, store.getSnapshot),
     wallet = useVaultStore(),
-    [error, setError] = useState(""),
+    [error, setError] = useNotificationError(),
     [locked, setLocked] = useState(false),
     [award, setAward] = useState(false),
     [presenting, setPresenting] = useState(false),
@@ -61,7 +62,7 @@ export const useAutochess = () => {
       cancelled = true;
       release?.();
     };
-  }, []);
+  }, [setError]);
   useEffect(() => {
     if (!locked) return;
     let live = true;
@@ -134,7 +135,7 @@ export const useAutochess = () => {
       window.removeEventListener("pagehide", pagehide);
       window.removeEventListener("storage", storage);
     };
-  }, [store, locked, reduced]);
+  }, [store, locked, reduced, setError]);
   useEffect(() => {
     if (run?.phase !== "result" || presenting) return;
     let live = true;
@@ -149,7 +150,7 @@ export const useAutochess = () => {
     return () => {
       live = false;
     };
-  }, [run, presenting, revision, wallet]);
+  }, [run, presenting, revision, wallet, setError]);
   const save = (next: AutoRun | null) => {
     if (!locked) return false;
     try {

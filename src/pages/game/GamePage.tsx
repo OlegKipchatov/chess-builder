@@ -362,8 +362,7 @@ export const GamePage = () => {
               </p>
             )}
             {session.view.error && (
-              <div role="alert">
-                <p>{session.view.error}</p>
+              <div>
                 <button onClick={session.retry}>Повторить</button>
                 <button onClick={() => void session.abort()}>
                   Закрыть без награды

@@ -1,3 +1,4 @@
+import { OverlayProvider } from "../../src/app/providers/OverlayProvider";
 import {
   act,
   fireEvent,
@@ -54,7 +55,9 @@ const setup = () => {
   blocked = true;
   const view = render(
     <VaultProvider store={store}>
-      <RewardProcessor />
+      <OverlayProvider>
+        <RewardProcessor />
+      </OverlayProvider>
     </VaultProvider>,
   );
   return {
@@ -82,7 +85,9 @@ describe("quality reward persistence", () => {
       expect(store.getSnapshot().coins).toBe(100 + quality.total),
     );
     expect(analyzeReward).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Повторить сохранение бонуса" }),
+    ).not.toBeInTheDocument();
     await act(async () => store.refresh());
     expect(store.getSnapshot().coins).toBe(100 + quality.total);
   });

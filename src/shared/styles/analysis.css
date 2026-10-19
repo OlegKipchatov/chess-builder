@@ -437,3 +437,33 @@
 .history-move[data-quality="excellent"] {
   color: var(--accent);
 }
+
+/* Shared by history, imported PGN and mate practice. */
+.match-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+.match-summary .match-versus {
+  flex: 1;
+  min-width: 0;
+}
+.match-summary .match-versus strong {
+  overflow-wrap: anywhere;
+}
+.match-summary #match-points {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.practice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.practice-actions > button {
+  margin: 0;
+}

@@ -43,7 +43,7 @@ export const ActivityPage = ({
     }).format(first);
   const commit = async (transform: Parameters<typeof store.update>[0]) => {
     const result = await store.update(transform);
-    if (!result.ok) toast(result.error.message);
+    if (!result.ok) toast(result.error.message, { type: "error" });
   };
   const amount = (row: CalendarReward) => (
     <>

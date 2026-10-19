@@ -1,3 +1,4 @@
+import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useEffect, useReducer, useRef, useState } from "react";
 import type {
   QualitySummary,
@@ -7,6 +8,7 @@ import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
 import { applyQualityReward } from "../../domain/economy/reward-quality.js";
 import { analyzeReward } from "../../services/engines/economy-analysis.js";
 export const RewardProcessor = () => {
+  const { toast } = useOverlays();
   const cached = useRef<{
       id: string;
       quality: QualitySummary | QualityFailure;
@@ -70,18 +72,21 @@ export const RewardProcessor = () => {
           : applyQualityReward(latest, id, quality),
       );
       if (controller.signal.aborted) return;
-      if (!result.ok) setFailedId(id);
-      else if (cached.current?.id === id) cached.current = null;
+      if (!result.ok) {
+        setFailedId(id);
+        toast("Не удалось сохранить бонус за качество игры.", {
+          type: "error",
+        });
+      } else if (cached.current?.id === id) cached.current = null;
     };
     void process();
     return () => {
       unsubscribe();
       controller.abort();
     };
-  }, [id, playing, store, retry]);
+  }, [id, playing, store, retry, toast]);
   return failedId && failedId === id ? (
-    <div role="alert">
-      <p>Не удалось сохранить бонус за качество игры.</p>
+    <div>
       <button
         className="quiet"
         onClick={() => {

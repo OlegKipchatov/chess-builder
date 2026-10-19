@@ -1,3 +1,4 @@
+import { useNotificationError } from "../../shared/hooks/useNotificationError.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useReducer, useState } from "react";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
@@ -118,7 +119,7 @@ export const useHunt = (mode: HuntMode) => {
       initial(value, crypto.randomUUID(), Date.now()),
     ),
     [award, setAward] = useState<"pending" | "saved" | "failed">("pending"),
-    [error, setError] = useState(""),
+    [error, setError] = useNotificationError(),
     [retry, bump] = useReducer((n: number) => n + 1, 0),
     store = useVaultStore(),
     reduced = useReducedMotion();
@@ -157,7 +158,7 @@ export const useHunt = (mode: HuntMode) => {
     return () => {
       live = false;
     };
-  }, [state.run, state.queue.length, state.presenting, retry, store]);
+  }, [state.run, state.queue.length, state.presenting, retry, store, setError]);
   return {
     state,
     award,

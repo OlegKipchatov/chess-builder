@@ -74,7 +74,7 @@ try{
  await page.reload();await page.locator('#auto-board .square').first().waitFor();
  await page.waitForFunction(()=>document.querySelector('#auto-board').parentElement.style.width);
  assert.equal(await page.locator('#auto-action > button').textContent(),'Исправить состав');const invalidGeometry=await geometry(),incompatibleSaved=await stored();
- await page.locator('#auto-action > button').click();await page.getByText('Исправьте состав',{exact:true}).waitFor();assert.match(await page.locator('dialog').textContent(),/Обычный состав/);
+ await page.locator('#auto-action > button').click();await page.getByText('Расстановка фигур',{exact:true}).waitFor();assert.match(await page.locator('.notification-card[data-tone=warning]').textContent(),/Обычный состав/);
  await page.getByRole('button',{name:'К доске',exact:true}).click();assert.deepEqual(await geometry(),invalidGeometry);
  await page.locator('#auto-board [data-square="a2"]').dblclick();assert.equal(await page.locator('#auto-action > button').textContent(),'Начать бой');assert.deepEqual(await geometry(),invalidGeometry);
  await page.locator('[data-auto-piece="piece-1"]').click();const beforeInvalid=await stored();

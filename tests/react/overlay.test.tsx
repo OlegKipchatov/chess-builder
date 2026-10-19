@@ -1,3 +1,4 @@
+import { ToastNotification } from "../../src/shared/ui/ToastNotification";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode } from "react";
 import { describe, it, expect, vi } from "vitest";
@@ -39,7 +40,7 @@ const Harness = () => {
       >
         Пешка
       </button>
-      <button onClick={() => toast("Ошибка", { error: true })}>Ошибка</button>
+      <button onClick={() => toast("Ошибка", { type: "error" })}>Ошибка</button>
       <button onClick={() => toast("Выбрано")}>Обычное</button>
     </main>
   );
@@ -93,21 +94,110 @@ describe("React overlays parity", () => {
     fireEvent.click(screen.getByText("Ферзь"));
     expect(screen.getByText("Игра")).toHaveFocus();
   });
-  it("a normal toast resets the error tone and its five second timeout", () => {
+  it("keeps duplicate actions and independent five-second deadlines", () => {
     vi.useFakeTimers();
     const view = setup();
-    fireEvent.click(screen.getByText("Ошибка"));
-    expect(screen.getByRole("status")).toHaveAttribute("data-tone", "error");
+    fireEvent.click(screen.getByRole("button", { name: "Ошибка" }));
+    expect(
+      screen.getByRole("alert").closest(".notification-card"),
+    ).toHaveAttribute("data-tone", "error");
     act(() => vi.advanceTimersByTime(4000));
-    fireEvent.click(screen.getByText("Обычное"));
-    expect(screen.getByRole("status")).toHaveAttribute("data-tone", "neutral");
+    fireEvent.click(screen.getByRole("button", { name: "Обычное" }));
+    fireEvent.click(screen.getByRole("button", { name: "Обычное" }));
+    expect(screen.getAllByText("Выбрано")).toHaveLength(2);
+    expect(document.querySelectorAll(".toast-countdown circle")).toHaveLength(
+      3,
+    );
     act(() => vi.advanceTimersByTime(1000));
-    expect(screen.getByRole("status")).toBeVisible();
-    act(() => vi.advanceTimersByTime(4000));
-    expect(document.querySelector("#toast")).not.toBeVisible();
+    expect(
+      screen.getByRole("alert").closest(".notification-card"),
+    ).toHaveAttribute("data-leaving");
+    act(() => vi.advanceTimersByTime(180));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getAllByRole("status")).toHaveLength(2);
+    act(() => vi.advanceTimersByTime(3820));
+    act(() => vi.advanceTimersByTime(180));
+    expect(document.querySelectorAll(".notification-card")).toHaveLength(0);
     view.unmount();
     expect(vi.getTimerCount()).toBe(0);
-    vi.useRealTimers();
+  });
+  it("shows three messages and stacks overflow without stealing focus", () => {
+    setup();
+    const action = screen.getByRole("button", { name: "Обычное" });
+    action.focus();
+    for (let index = 0; index < 6; index++) fireEvent.click(action);
+    expect(
+      document.querySelectorAll(".notification-card:not([data-stacked])"),
+    ).toHaveLength(3);
+    expect(
+      document.querySelectorAll(
+        ".notification-card[data-stacked][inert][aria-hidden=true]",
+      ),
+    ).toHaveLength(3);
+    expect(screen.getAllByRole("status")).toHaveLength(3);
+    expect(action).toHaveFocus();
+  });
+  it("preserves elapsed lifetime when opening and closing a modal", () => {
+    vi.useFakeTimers();
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Обычное" }));
+    act(() => vi.advanceTimersByTime(2000));
+    fireEvent.click(screen.getByRole("button", { name: "Пешка" }));
+    expect(screen.getByRole("status").closest("dialog")).not.toBeNull();
+    expect(document.querySelector(".toast-countdown circle")).toHaveStyle({
+      animationDelay: "-2000ms",
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Ферзь" }));
+    act(() => vi.advanceTimersByTime(3000));
+    act(() => vi.advanceTimersByTime(180));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+  it("positions variable-height cards continuously and retains visible overflow layers", () => {
+    const height = vi
+      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return Number(this.textContent?.match(/height=(\d+)/)?.[1] || 44);
+      });
+    const messages = [44, 80, 60, 90, 44, 44].map((value, id) => ({
+      id,
+      text: `height=${value}`,
+      type: "neutral" as const,
+      createdAt: Date.now(),
+    }));
+    const view = render(
+      <ToastNotification messages={messages} onDismiss={() => {}} />,
+    );
+    const slots = () => [
+      ...document.querySelectorAll<HTMLElement>(".notification-slot"),
+    ];
+    const original = slots()[0];
+    expect(slots()[1].style.transform).toBe("translateY(52px) scale(1)");
+    expect(slots()[2].style.transform).toBe("translateY(140px) scale(1)");
+    expect(slots()[3].style.transform).toBe("translateY(120px) scale(0.96)");
+    expect(
+      slots()
+        .slice(3)
+        .map((slot) => slot.style.opacity),
+    ).toEqual(["0.75", "0.5", "0.25"]);
+    expect(slots().every((slot) => Number(slot.style.zIndex) > 0)).toBe(true);
+    expect(slots()[3].textContent).toContain("height=90");
+    view.rerender(
+      <ToastNotification
+        messages={[
+          {
+            id: 99,
+            text: "height=100",
+            type: "neutral",
+            createdAt: Date.now(),
+          },
+          ...messages,
+        ]}
+        onDismiss={() => {}}
+      />,
+    );
+    expect(slots()[1]).toBe(original);
+    expect(original.style.transform).toBe("translateY(108px) scale(1)");
+    height.mockRestore();
   });
   it("mobile height morph is 200ms; obsolete exit completion cannot close the next dialog", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({

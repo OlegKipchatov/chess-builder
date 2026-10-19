@@ -1,145 +1,231 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ControlIcon } from "./ControlIcon.js";
-export const ToastNotification = ({
-  message,
+import { motionDuration } from "../styles/motion.js";
+
+export type NotificationType = "error" | "warning" | "success" | "neutral";
+export interface ToastOptions {
+  type?: NotificationType;
+}
+export interface Notification {
+  id: number;
+  text: string;
+  type: NotificationType;
+  createdAt: number;
+}
+export const NOTIFICATION_DURATION = 5000;
+
+const NotificationCard = ({
+  item,
+  index,
   onDismiss,
 }: {
-  message: { text: string; error: boolean } | null;
-  onDismiss: () => void;
+  item: Notification;
+  index: number;
+  onDismiss: (id: number) => void;
+}) => {
+  const node = useRef<HTMLDivElement>(null);
+  const [leaving, setLeaving] = useState(false);
+  const origin = useRef<{ id: number; x: number; y: number } | null>(null);
+  const [elapsed] = useState(() => Date.now() - item.createdAt);
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setLeaving(true),
+      Math.max(0, item.createdAt + NOTIFICATION_DURATION - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [item.createdAt]);
+  useEffect(() => {
+    if (!leaving) return;
+    const reduced = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const timer = setTimeout(
+      () => onDismiss(item.id),
+      reduced ? 0 : motionDuration.exit,
+    );
+    return () => clearTimeout(timer);
+  }, [leaving, item.id, onDismiss]);
+  const reset = () => {
+    origin.current = null;
+    node.current?.style.removeProperty("translate");
+    node.current?.style.removeProperty("opacity");
+  };
+  return (
+    <div
+      ref={node}
+      className="notification-card"
+      data-tone={item.type}
+      data-leaving={leaving || undefined}
+      data-stacked={index >= 3 || undefined}
+      aria-hidden={index >= 3 || undefined}
+      inert={index >= 3 || undefined}
+      data-no-sheet-drag
+      onPointerDown={(event) => {
+        if (
+          !event.isPrimary ||
+          event.button !== 0 ||
+          (event.target as Element).closest("button")
+        )
+          return;
+        origin.current = {
+          id: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+        };
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      }}
+      onPointerMove={(event) => {
+        const start = origin.current;
+        if (!start || start.id !== event.pointerId) return;
+        const dx = Math.min(0, event.clientX - start.x);
+        const dy = Math.max(0, event.clientY - start.y);
+        event.currentTarget.style.translate = `${dx}px ${dy}px`;
+        event.currentTarget.style.opacity = String(
+          Math.max(0.15, 1 - Math.hypot(dx, dy) / 140),
+        );
+      }}
+      onPointerUp={(event) => {
+        const start = origin.current;
+        if (!start || start.id !== event.pointerId) return;
+        const dy = event.clientY - start.y;
+        const dx = event.clientX - start.x;
+        if (
+          (dy >= 32 && dy >= Math.abs(dx)) ||
+          (dx <= -32 && -dx > Math.abs(dy))
+        ) {
+          event.currentTarget.style.setProperty(
+            "--dismiss-x",
+            dx < 0 && -dx > Math.abs(dy) ? "-16px" : "0px",
+          );
+          event.currentTarget.style.setProperty(
+            "--dismiss-y",
+            dy >= Math.abs(dx) ? "16px" : "0px",
+          );
+          origin.current = null;
+          setLeaving(true);
+        } else reset();
+      }}
+      onPointerCancel={reset}
+      onLostPointerCapture={() => {
+        if (origin.current) reset();
+      }}
+    >
+      <span
+        className="notification-text"
+        role={item.type === "error" ? "alert" : "status"}
+        aria-atomic="true"
+      >
+        {item.text}
+      </span>
+      <button
+        type="button"
+        className="toast-dismiss"
+        aria-label="Скрыть уведомление"
+        onClick={() => setLeaving(true)}
+      >
+        <svg className="toast-countdown" viewBox="0 0 36 36" aria-hidden="true">
+          <circle
+            cx="18"
+            cy="18"
+            r="15"
+            pathLength="1"
+            style={{
+              animationDuration: `${NOTIFICATION_DURATION}ms`,
+              animationDelay: `${-elapsed}ms`,
+            }}
+          />
+        </svg>
+        <ControlIcon name="close" />
+      </button>
+    </div>
+  );
+};
+
+export const ToastNotification = ({
+  messages,
+  onDismiss,
+}: {
+  messages: Notification[];
+  onDismiss: (id: number) => void;
 }) => {
   const host = useRef<HTMLDivElement>(null);
-  const toast = useRef<HTMLDivElement>(null);
-  const dismiss = useRef(onDismiss);
-  dismiss.current = onDismiss;
+  const hasMessages = messages.length > 0;
+  const updateLayout = useRef(() => {});
+  useLayoutEffect(() => {
+    const layer = host.current;
+    if (!layer) return;
+    const slots = Array.from(
+      layer.querySelectorAll<HTMLElement>(".notification-slot"),
+    );
+    const measure = () => {
+      // Read intrinsic sizes together before writing transforms. The cards never
+      // switch between flow and absolute positioning as they enter the stack.
+      const heights = slots.map(
+        (slot) => (slot.firstElementChild as HTMLElement)?.offsetHeight || 44,
+      );
+      let bottom = 0;
+      let lastHeight = 44;
+      slots.forEach((slot, index) => {
+        const height = heights[index];
+        const depth = Math.max(0, index - 2);
+        const y =
+          index < 3 ? bottom : bottom - 8 - height + Math.min(depth, 3) * 10;
+        slot.style.transform = `translateY(${y}px) scale(${1 - Math.min(depth, 3) * 0.04})`;
+        slot.style.opacity = String(
+          depth === 0
+            ? 1
+            : depth === 1
+              ? 0.75
+              : depth === 2
+                ? 0.5
+                : depth === 3
+                  ? 0.25
+                  : 0,
+        );
+        slot.style.zIndex = String(slots.length - index);
+        slot.style.clipPath = depth
+          ? `inset(${Math.max(0, height - lastHeight)}px 0 0)`
+          : "none";
+        if (index < 3) {
+          bottom += height + 8;
+          lastHeight = height;
+        }
+      });
+      layer.style.height = `${Math.max(0, bottom - 8) + Math.min(Math.max(0, slots.length - 3), 3) * 10}px`;
+    };
+    updateLayout.current = measure;
+    measure();
+    const observer = new ResizeObserver(measure);
+    slots.forEach((slot) => {
+      if (slot.firstElementChild) observer.observe(slot.firstElementChild);
+    });
+    return () => observer.disconnect();
+  }, [messages]);
   useEffect(() => {
-    const node = host.current,
-      target = toast.current;
-    if (!message || !node || !target) return;
+    const node = host.current;
+    if (!node || !hasMessages) return;
     node.showPopover?.();
-    let origin: { id: number; x: number; y: number } | null = null;
-    const reset = () => {
-      origin = null;
-      target.style.removeProperty("translate");
-      target.style.removeProperty("opacity");
-    };
-    const begin = (
-      element: EventTarget | null,
-      id: number,
-      x: number,
-      y: number,
-    ) => {
-      if (element instanceof Element && element.closest("button")) return;
-      origin = { id, x, y };
-    };
-    const move = (x: number, y: number) => {
-      if (!origin) return;
-      const dx = x - origin.x,
-        dy = y - origin.y;
-      target.style.translate = `${dx}px ${dy}px`;
-      target.style.opacity = String(
-        Math.max(0.25, 1 - Math.hypot(dx, dy) / 180),
-      );
-    };
-    const end = (x: number, y: number) => {
-      const distance = origin ? Math.hypot(x - origin.x, y - origin.y) : 0;
-      reset();
-      if (distance >= 32) dismiss.current();
-    };
-    const touchStart = (event: TouchEvent) => {
-      if (event.touches.length !== 1) {
-        reset();
-        return;
-      }
-      const point = event.touches[0];
-      begin(event.target, point.identifier, point.clientX, point.clientY);
-    };
-    const touchMove = (event: TouchEvent) => {
-      if (!origin) return;
-      const point = Array.from(event.touches).find(
-        (t) => t.identifier === origin!.id,
-      );
-      if (!point) return;
-      if (event.cancelable) event.preventDefault();
-      move(point.clientX, point.clientY);
-    };
-    const touchEnd = (event: TouchEvent) => {
-      const point = Array.from(event.changedTouches).find(
-        (t) => t.identifier === origin?.id,
-      );
-      if (point) end(point.clientX, point.clientY);
-    };
-    const pointerDown = (event: PointerEvent) => {
-      if (
-        event.pointerType === "touch" ||
-        !event.isPrimary ||
-        event.button !== 0
-      )
-        return;
-      begin(event.target, event.pointerId, event.clientX, event.clientY);
-      if (origin) target.setPointerCapture?.(event.pointerId);
-    };
-    const pointerMove = (event: PointerEvent) => {
-      if (event.pointerType !== "touch" && origin?.id === event.pointerId)
-        move(event.clientX, event.clientY);
-    };
-    const pointerUp = (event: PointerEvent) => {
-      if (event.pointerType !== "touch" && origin?.id === event.pointerId)
-        end(event.clientX, event.clientY);
-    };
-    const pointerCancel = (event: PointerEvent) => {
-      if (event.pointerType !== "touch") reset();
-    };
-    target.addEventListener("touchstart", touchStart, { passive: true });
-    target.addEventListener("touchmove", touchMove, { passive: false });
-    target.addEventListener("touchend", touchEnd);
-    target.addEventListener("touchcancel", reset);
-    target.addEventListener("pointerdown", pointerDown);
-    target.addEventListener("pointermove", pointerMove);
-    target.addEventListener("pointerup", pointerUp);
-    target.addEventListener("pointercancel", pointerCancel);
-    return () => {
-      target.removeEventListener("touchstart", touchStart);
-      target.removeEventListener("touchmove", touchMove);
-      target.removeEventListener("touchend", touchEnd);
-      target.removeEventListener("touchcancel", reset);
-      target.removeEventListener("pointerdown", pointerDown);
-      target.removeEventListener("pointermove", pointerMove);
-      target.removeEventListener("pointerup", pointerUp);
-      target.removeEventListener("pointercancel", pointerCancel);
-      reset();
-      node.hidePopover?.();
-    };
-  }, [message]);
+    updateLayout.current();
+    return () => node.hidePopover?.();
+  }, [hasMessages]);
   return (
     <div
       ref={host}
-      className="notification-stack toast-layer"
+      className="toast-layer"
+      aria-label="Уведомления"
       popover={
         typeof HTMLElement !== "undefined" &&
         "showPopover" in HTMLElement.prototype
           ? "manual"
           : undefined
       }
-      hidden={!message}
+      hidden={!hasMessages}
     >
-      <div
-        ref={toast}
-        id="toast"
-        data-no-sheet-drag
-        role="status"
-        hidden={!message}
-        data-tone={message?.error ? "error" : "neutral"}
-      >
-        <span>{message?.text}</span>
-        <button
-          type="button"
-          className="toast-dismiss"
-          aria-label="Скрыть уведомление"
-          onClick={onDismiss}
-        >
-          <ControlIcon name="close" />
-        </button>
-      </div>
+      {messages.map((item, index) => (
+        <div className="notification-slot" key={item.id}>
+          <NotificationCard item={item} index={index} onDismiss={onDismiss} />
+        </div>
+      ))}
     </div>
   );
 };
