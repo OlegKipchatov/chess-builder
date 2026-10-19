@@ -231,12 +231,15 @@ describe("React review and practice parity", () => {
     await act(async () =>
       fireEvent.click(view.container.querySelector('[data-square="b4"]')!),
     );
-    expect(screen.getByRole("status").textContent).toBe("Верно");
+    expect(screen.getByText("Верно")).toHaveAttribute("role", "status");
     expect(screen.queryByText("Продолжить")).toBeNull();
     act(() => vi.advanceTimersByTime(420));
-    expect(screen.getByRole("status").textContent).toBe("Ход соперника");
+    expect(screen.getByText("Ход соперника")).toHaveAttribute("role", "status");
     act(() => vi.advanceTimersByTime(420));
-    expect(screen.getByRole("status").textContent).toBe("Найдите продолжение");
+    expect(screen.getByText("Найдите продолжение")).toHaveAttribute(
+      "role",
+      "status",
+    );
     view.unmount();
     expect(vi.getTimerCount()).toBe(0);
   });

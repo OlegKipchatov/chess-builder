@@ -163,7 +163,7 @@ export const useAutochess = () => {
   };
   const change = (transform: (run: AutoRun) => AutoRun) => {
     const current = store.getSnapshot();
-    if (current) save(transform(current));
+    return current ? save(transform(current)) : false;
   };
   return {
     run,

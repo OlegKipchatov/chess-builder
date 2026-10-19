@@ -777,3 +777,35 @@
 #resign::before {
   box-shadow: none;
 }
+
+/* The live match is a viewport, not a scrolling document. Scope to the
+   presented page: a saved active game must not lock Profile or Collections. */
+html:has(body.match-active #play.active-match) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.match-active:has(#play.active-match) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.match-active:has(#play.active-match) #app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+body.match-active:has(#play.active-match) #app > header {
+  flex: none;
+}
+body.match-active:has(#play.active-match) #app > main {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin-block: 0;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  /* Only genuine overflow (short landscape, enlarged text, error details)
+     can scroll here. The normal game remains still, without scroll chaining. */
+  overflow-y: auto;
+  overscroll-behavior: none;
+}

@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { useBoardFit } from "../../features/autochess/useBoardFit.js";
 import { useNavigate } from "@tanstack/react-router";
@@ -32,8 +33,12 @@ import {
 } from "../../domain/autochess/autochess.js";
 import { PIECE_NAMES } from "../../domain/catalog/catalog.js";
 import { useAutochess } from "../../features/autochess/useAutochess.js";
-import { Chessboard } from "../../features/chessboard/Chessboard.js";
 import {
+  BoardDragSource,
+  Chessboard,
+} from "../../features/chessboard/Chessboard.js";
+import {
+  boardSquares,
   chessPieces,
   type BoardPiece,
 } from "../../features/chessboard/model.js";
@@ -47,15 +52,14 @@ export const AutochessPage = () => {
     { show, toast } = useOverlays(),
     navigate = useNavigate(),
     [selected, setSelected] = useState<string | null>(null),
+    [reserveContainer, setReserveContainer] = useState<HTMLDivElement | null>(
+      null,
+    ),
     surface = useRef<HTMLDivElement>(null),
     created = useRef(false),
     finishedShown = useRef<string | null>(null),
     lastTap = useRef({ id: "", at: 0 }),
     lastPurchase = useRef(-Infinity),
-    drag = useRef<{ id: string; x: number; y: number; pointer: number } | null>(
-      null,
-    ),
-    suppressClick = useRef(false),
     shownOverflow = useRef<string | null>(null);
   const boardWidth = useBoardFit(surface, !!run);
   useEffect(() => {
@@ -247,7 +251,8 @@ export const AutochessPage = () => {
     result = run.results.at(-1),
     legal = piece
       ? placementSquares(piece.type, run.color).filter(
-          (square) => !placementError(run, piece.id, square),
+          (square) =>
+            square !== piece.square && !placementError(run, piece.id, square),
         )
       : [];
   const select = (id: string) => {
@@ -298,69 +303,77 @@ export const AutochessPage = () => {
         </p>
         <div
           style={{
-            touchAction: preparation ? "none" : undefined,
             width: boardWidth,
             visibility: boardWidth === undefined ? "hidden" : undefined,
             alignSelf: "center",
           }}
-          onPointerDown={(event) => {
-            suppressClick.current = false;
-            const square = (
-              event.target as HTMLElement
-            ).closest<HTMLButtonElement>("[data-square]")?.dataset.square;
-            const found = run.army.find((p) => p.square === square);
-            if (found && preparation && auto.locked) {
-              drag.current = {
-                id: found.id,
-                x: event.clientX,
-                y: event.clientY,
-                pointer: event.pointerId,
-              };
-            }
-          }}
-          onPointerMove={(event) => {
-            const owned = drag.current;
-            if (
-              owned?.pointer === event.pointerId &&
-              Math.hypot(event.clientX - owned.x, event.clientY - owned.y) >=
-                8 &&
-              !event.currentTarget.hasPointerCapture(event.pointerId)
-            )
-              event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerCancel={() => {
-            drag.current = null;
-          }}
-          onPointerUp={(event) => {
-            const owned = drag.current;
-            drag.current = null;
-            if (!owned || owned.pointer !== event.pointerId) return;
-            if (event.currentTarget.hasPointerCapture(event.pointerId))
-              event.currentTarget.releasePointerCapture(event.pointerId);
-            if (
-              Math.hypot(event.clientX - owned.x, event.clientY - owned.y) < 8
-            )
-              return;
-            suppressClick.current = true;
-            const target = document
-              .elementFromPoint(event.clientX, event.clientY)
-              ?.closest<HTMLButtonElement>("[data-square]")?.dataset.square;
-            if (!target) return;
-            const error = placementError(run, owned.id, target);
-            if (error) toast(error);
-            else auto.change((value) => placePiece(value, owned.id, target));
-            setSelected(null);
-          }}
-          onClickCapture={(event) => {
-            if (suppressClick.current) {
-              event.preventDefault();
-              event.stopPropagation();
-              suppressClick.current = false;
-            }
-          }}
         >
           <Chessboard
-            feedback
+            feedback={!!game}
+            captureContext={`${run.id}:${run.battle?.id ?? "preparation"}`}
+            reservePieces={bench.map((piece) => ({
+              ...piece,
+              square: `reserve:${piece.id}`,
+              color: run.color,
+            }))}
+            reserveContent={
+              reserveContainer
+                ? createPortal(
+                    <>
+                      {Array.from({ length: 4 }, (_, slot) => {
+                        const item = bench.find(
+                          (p, index) => (p.reserveSlot ?? index) === slot,
+                        );
+                        return (
+                          <BoardDragSource
+                            key={slot}
+                            source={
+                              item ? `reserve:${item.id}` : `empty:${slot}`
+                            }
+                            data-auto-piece={item?.id}
+                            aria-label={
+                              item
+                                ? `${PIECE_NAMES[item.type]} в резерве`
+                                : "Пустой слот резерва"
+                            }
+                            aria-pressed={item?.id === selected}
+                            disabled={!preparation || !auto.locked}
+                            dragDisabled={!item}
+                            onClick={() => {
+                              if (item) {
+                                lastTap.current = { id: "", at: 0 };
+                                setSelected(
+                                  item.id === selected ? null : item.id,
+                                );
+                              } else if (selected) {
+                                auto.change((value) =>
+                                  benchPiece(value, selected),
+                                );
+                                setSelected(null);
+                              }
+                            }}
+                          >
+                            {item && (
+                              <Piece type={item.type} color={run.color} />
+                            )}
+                          </BoardDragSource>
+                        );
+                      })}
+                    </>,
+                    reserveContainer,
+                  )
+                : null
+            }
+            onReserveMove={(id, to) => {
+              if (!preparation || !auto.locked || placementError(run, id, to))
+                return false;
+              const accepted = auto.change((value) =>
+                placePiece(value, id, to),
+              );
+              lastTap.current = { id: "", at: 0 };
+              setSelected(null);
+              return accepted;
+            }}
             id="auto-board"
             pieces={pieces}
             equipped={equipped}
@@ -370,6 +383,38 @@ export const AutochessPage = () => {
             last={game?.history({ verbose: true }).at(-1)}
             disabled={!preparation || !auto.locked}
             duration={motionDuration.autoBoard}
+            moves={
+              preparation && auto.locked
+                ? run.army.flatMap((piece) =>
+                    boardSquares
+                      .filter(
+                        (square) =>
+                          square !== piece.square &&
+                          !placementError(run, piece.id, square),
+                      )
+                      .map((to) => ({
+                        from: piece.square ?? `reserve:${piece.id}`,
+                        to,
+                      })),
+                  )
+                : []
+            }
+            onMove={(from, to) => {
+              const owned = run.army.find((piece) => piece.square === from);
+              if (
+                !owned ||
+                !preparation ||
+                !auto.locked ||
+                placementError(run, owned.id, to)
+              )
+                return false;
+              const accepted = auto.change((value) =>
+                placePiece(value, owned.id, to),
+              );
+              lastTap.current = { id: "", at: 0 };
+              setSelected(null);
+              return accepted;
+            }}
             onSquare={(square) => {
               if (piece && !piece.square) {
                 drop(square);
@@ -387,37 +432,7 @@ export const AutochessPage = () => {
         </div>
         <div id="auto-shop">
           <div className="auto-reserve-row">
-            <div className="auto-reserve">
-              {Array.from({ length: 4 }, (_, slot) => {
-                const item = bench.find(
-                  (p, index) => (p.reserveSlot ?? index) === slot,
-                );
-                return (
-                  <button
-                    key={slot}
-                    data-auto-piece={item?.id}
-                    aria-label={
-                      item
-                        ? `${PIECE_NAMES[item.type]} в резерве`
-                        : "Пустой слот резерва"
-                    }
-                    aria-pressed={item?.id === selected}
-                    disabled={!preparation}
-                    onClick={() => {
-                      if (item) {
-                        lastTap.current = { id: "", at: 0 };
-                        setSelected(item.id === selected ? null : item.id);
-                      } else if (selected) {
-                        auto.change((value) => benchPiece(value, selected));
-                        setSelected(null);
-                      }
-                    }}
-                  >
-                    {item && <Piece type={item.type} color={run.color} />}
-                  </button>
-                );
-              })}
-            </div>
+            <div className="auto-reserve" ref={setReserveContainer}></div>
             <button
               className="auto-sale"
               aria-label="Продать выбранную фигуру"

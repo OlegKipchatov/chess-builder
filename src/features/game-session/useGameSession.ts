@@ -358,7 +358,7 @@ export const useGameSession = () => {
       view.cursor !== null ||
       (saved.mode === "bot" && game.turn() !== saved.playerColor)
     )
-      return;
+      return false;
     inFlight.current = true;
     dispatch({ type: "phase", phase: "saving" });
     const result = await store.update((latest) => {
@@ -369,9 +369,10 @@ export const useGameSession = () => {
       return { ...latest, game: { ...latest.game, pgn: board.pgn() } };
     });
     inFlight.current = false;
-    if (!mounted.current) return;
+    if (!mounted.current) return false;
     if (!result.ok) dispatch({ type: "error", message: result.error.message });
     else present();
+    return result.ok;
   };
   const resign = async () => {
     request.current++;

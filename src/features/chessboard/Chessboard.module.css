@@ -70,3 +70,31 @@
   z-index: 7;
   pointer-events: none;
 }
+
+.board [data-draggable="true"],
+.reserveSource:not(:disabled) {
+  cursor: grab;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.board [data-drop-target="true"] {
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+.dragPreview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  cursor: grabbing;
+}
+.dragPreview > svg {
+  width: 84%;
+  height: 84%;
+}
+.dragPreview.combat > svg {
+  width: 78%;
+  height: 78%;
+}
