@@ -1,5 +1,4 @@
 import { ControlIcon } from "./ControlIcon.js";
-import styles from "./BackButton.module.css";
 
 export const BackButton = ({
   onClick,
@@ -10,7 +9,7 @@ export const BackButton = ({
 }) => (
   <button
     type="button"
-    className={styles.button}
+    className="back-button"
     aria-label={label}
     onClick={onClick}
   >

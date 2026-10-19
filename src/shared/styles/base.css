@@ -136,6 +136,31 @@ small {
   width: 22px;
   height: 22px;
 }
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: var(--control);
+  color: var(--text);
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+.back-button svg {
+  width: 22px;
+  height: 22px;
+}
+@media (hover: hover) {
+  .back-button:hover {
+    background: var(--control-hover);
+  }
+}
+.back-button:active {
+  background: var(--control-hover);
+}
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
