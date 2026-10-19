@@ -51,7 +51,7 @@ try{
   await page.locator('[data-load-set]').click();await page.locator('[data-load-set]:disabled').waitFor();assert.equal(await page.locator('[data-load-set]').isDisabled(),true);
   await page.reload();await page.locator('[data-collection-view="saved"]').click();assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрано');
   await page.screenshot({path:`/tmp/gacha-collection-review-${width}.png`,fullPage:true});
-  await page.goto(url+'#/history');await page.locator('#history .page-header-start button').waitFor();
+  await page.goto(url+'#/history');await page.locator('#archive .page-header-start button').waitFor();
   const backAppearance=async()=>page.locator('.page-header-start button').evaluate(button=>{const style=getComputedStyle(button),rect=button.getBoundingClientRect(),svg=button.querySelector('svg').getBoundingClientRect();return {width:rect.width,height:rect.height,x:rect.x,background:style.backgroundColor,radius:style.borderRadius,iconWidth:svg.width,iconHeight:svg.height,gap:getComputedStyle(button.closest('.page-header')).columnGap};});
   const listBack=await backAppearance();assert.equal(listBack.width,44);assert.equal(listBack.height,44);assert.notEqual(listBack.background,'rgba(0, 0, 0, 0)');
   await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
