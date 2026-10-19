@@ -75,7 +75,8 @@
   font-size: 0.875rem;
 }
 @media (min-width: 761px) and (min-height: 700px) {
-  .hunt-surface {
+  .hunt-surface,
+  #hunt > .game-header {
     max-width: min(600px, calc(100dvh - 260px));
   }
 }

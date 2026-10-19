@@ -1,4 +1,4 @@
-import { ControlIcon } from "../../shared/ui/ControlIcon.js";
+import { GameHeader } from "../../shared/ui/GameHeader.js";
 import { MoveList } from "../../features/game-review/MoveList.js";
 import { useHistoryReturn } from "../../features/game-review/HistoryReturnProvider.js";
 import { ActivityCelebration } from "../../features/game-session/ActivityCelebration.js";
@@ -277,76 +277,52 @@ export const GamePage = () => {
       <div className="page-content">
         <div className="game-grid" id="match-surface">
           <div className="board-area">
-            <div className="match-summary">
-              <button
-                id="resign"
-                className="icon-button"
-                aria-label="Сдаться"
-                disabled={!!final}
-                onClick={() =>
-                  show({
-                    title: "Завершить партию?",
-                    body: (
-                      <>
-                        <p>
-                          Сдача будет засчитана как поражение. До первого вашего
-                          хода партия отменяется.
-                        </p>
-                        <button
-                          className="danger wide"
-                          onClick={() => {
-                            void session.resign();
-                          }}
-                        >
-                          Сдаться
-                        </button>
-                      </>
-                    ),
-                  })
-                }
-              >
-                <ControlIcon name="close" />
-              </button>
-              <div className="match-versus">
-                <span className="match-person">
-                  <span
-                    className={`avatar ${config.playerColor === "w" ? "light" : ""}`}
-                  >
-                    <Piece type="k" color={config.playerColor} />
-                  </span>
-                  <strong>Вы</strong>
-                </span>
-                <span className="versus">VS</span>
-                <span className="match-person">
-                  <span
-                    className={`avatar ${config.playerColor === "b" ? "light" : ""}`}
-                  >
-                    <Piece
-                      type="k"
-                      color={config.playerColor === "w" ? "b" : "w"}
-                    />
-                  </span>
-                  <strong>
-                    {config.mode === "bot"
-                      ? `ИИ · ${playStyleName(config.engineProfile?.profile)}`
-                      : "Игрок 2"}
-                  </strong>
-                </span>
-              </div>
-              <strong
-                id="match-points"
-                data-balance={
-                  materialBalance(board, config.playerColor) > 0
-                    ? "positive"
-                    : materialBalance(board, config.playerColor) < 0
-                      ? "negative"
-                      : "zero"
-                }
-              >
-                {materialBalance(board, config.playerColor) > 0 ? "+" : ""}
-                {materialBalance(board, config.playerColor)} очков
-              </strong>
-            </div>
+            <GameHeader
+              exitId="resign"
+              exitLabel="Сдаться"
+              exitDisabled={!!final}
+              onExit={() =>
+                show({
+                  title: "Завершить партию?",
+                  body: (
+                    <>
+                      <p>
+                        Сдача будет засчитана как поражение. До первого вашего
+                        хода партия отменяется.
+                      </p>
+                      <button
+                        className="danger wide"
+                        onClick={() => {
+                          void session.resign();
+                        }}
+                      >
+                        Сдаться
+                      </button>
+                    </>
+                  ),
+                })
+              }
+              title={
+                config.mode === "bot"
+                  ? playStyleName(config.engineProfile?.profile)
+                  : "Игрок 2"
+              }
+              status={
+                <strong
+                  id="match-points"
+                  data-balance={
+                    materialBalance(board, config.playerColor) > 0
+                      ? "positive"
+                      : materialBalance(board, config.playerColor) < 0
+                        ? "negative"
+                        : "zero"
+                  }
+                >
+                  {materialBalance(board, config.playerColor) > 0 ? "+" : ""}
+                  {materialBalance(board, config.playerColor)} очков
+                </strong>
+              }
+            />
             <p id="status" className="turn-status" aria-live="polite">
               {board.isCheck() ? "Шах · " : ""}Ход{" "}
               {board.turn() === "w" ? "белых" : "чёрных"}

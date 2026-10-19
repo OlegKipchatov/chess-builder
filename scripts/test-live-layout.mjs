@@ -22,7 +22,7 @@ try{
   await page.locator('#match-points').evaluate(node=>{node.textContent='−39 очков';});
   assert.deepEqual(await page.locator('#board').boundingBox(),before);
   assert.equal(await page.locator('#hint').count(),0);
-  const summary=await page.locator('.match-summary').boundingBox(),nav=await page.locator('.history-controls').boundingBox();
+  const summary=await page.locator('.board-area > .game-header').boundingBox(),nav=await page.locator('.history-controls').boundingBox();
   assert.ok(summary.y+summary.height<=before.y);assert.ok(nav.y>=before.y+before.height);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   if(width<=760){
@@ -76,7 +76,7 @@ try{
   await page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--app-header-height').trim()===`${document.querySelector('header').getBoundingClientRect().height}px`);
   const geometry=await page.evaluate(()=>{
    const box=selector=>document.querySelector(selector).getBoundingClientRect();
-   return {headerBottom:box('header').bottom,summaryTop:box('.match-summary').top,boardWidth:box('#board').width,exportBottom:box('#export-pgn').bottom,height:innerHeight,scrollHeight:document.documentElement.scrollHeight};
+   return {headerBottom:box('header').bottom,summaryTop:box('.board-area > .game-header').top,boardWidth:box('#board').width,exportBottom:box('#export-pgn').bottom,height:innerHeight,scrollHeight:document.documentElement.scrollHeight};
   });
   const gap=geometry.summaryTop-geometry.headerBottom;
   assert.ok(gap>=19&&gap<=21,`${name}: header-to-game gap ${gap}px`);

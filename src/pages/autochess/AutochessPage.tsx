@@ -1,3 +1,4 @@
+import { GameHeader } from "../../shared/ui/GameHeader.js";
 import { createPortal } from "react-dom";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { useBoardFit } from "../../features/autochess/useBoardFit.js";
@@ -222,7 +223,7 @@ export const AutochessPage = () => {
               void navigate({ to: "/play" });
             }}
           >
-            Удалить серию
+            Выйти без сохранения
           </button>
         </>
       ),
@@ -285,13 +286,8 @@ export const AutochessPage = () => {
     <Page
       id="autochess"
       title="Автошахматы"
-      actions={
-        <>
-          <span className="auto-round">Раунд {run.round}</span>
-          <button aria-label="Выйти" onClick={leave}>
-            ×
-          </button>
-        </>
+      header={
+        <GameHeader title="Автошахматы" exitLabel="Выйти" onExit={leave} />
       }
     >
       <div ref={surface} className="autochess-surface" id="auto-content">
@@ -507,6 +503,7 @@ export const AutochessPage = () => {
             <div className="auto-shop-actions">
               <button
                 data-auto-random
+                className="quiet auto-buy"
                 disabled={!!purchaseError(run)}
                 title={purchaseError(run)}
                 onClick={() =>

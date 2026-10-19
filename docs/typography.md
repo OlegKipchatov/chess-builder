@@ -17,7 +17,9 @@ Keep the system font and existing visual hierarchy. Roles live in `src/shared/st
 
 The existing 1.375rem dialog heading and larger streak/reward emphasis remain
 contextual variants, not new semantic roles. Do not normalize every existing
-heading to one visual size. Eyebrows must never hold explanatory sentences.
+heading to one visual size. Live game headers use `GameHeader`: an H1 with the
+Section size (1.25rem) in every mode, plus Secondary metadata. Page headings
+outside the playing field retain the Page role. Eyebrows must never hold explanatory sentences.
 
 Canonical terms: предмет (generic collectible), фигура (chess piece), доска,
 набор (saved/composed appearance). Keep Коллекция/Коллекции as section names.
