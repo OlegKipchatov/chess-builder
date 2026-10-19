@@ -83,7 +83,6 @@ export const MatePractice = ({
       if (moves.some((move) => move.promotion))
         show({
           title: "Превращение пешки",
-          dismissible: false,
           body: (
             <div className="promotion-options">
               {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (

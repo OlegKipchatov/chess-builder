@@ -4,18 +4,60 @@ dialog {
   box-shadow: 0 20px 64px var(--shadow);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 28px;
+  padding: 0;
   width: min(460px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
-  overflow: auto;
+  overflow: hidden;
   text-align: center;
 }
 dialog::backdrop {
   background: var(--overlay);
   backdrop-filter: blur(6px);
 }
-dialog h2 {
-  margin: 0 0 12px;
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68px;
+  padding: 20px 64px 8px;
+}
+.modal-header h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+dialog .modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 10px;
+  border-radius: 50%;
+  background: var(--control-hover);
+  color: var(--muted);
+  --focus-color: var(--muted);
+}
+.modal-close svg {
+  width: 24px;
+  height: 24px;
+}
+#modal-content {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 8px 24px 24px;
+}
+#modal-content:empty {
+  padding-top: 0;
 }
 dialog p {
   color: var(--muted);
@@ -111,9 +153,6 @@ dialog form .primary {
   font: 0.875rem monospace;
 }
 @media (max-width: 760px) {
-  dialog {
-    padding: 20px;
-  }
   .promotion {
     gap: 4px;
   }
@@ -171,25 +210,57 @@ dialog.is-closing {
 @media (max-width: 760px) {
   dialog {
     position: fixed;
-    inset: auto 0 0;
+    inset: auto 0 -32px;
     margin: 0;
     width: 100%;
     max-width: none;
-    max-height: calc(100dvh - max(16px, env(safe-area-inset-top)));
+    max-height: calc(100dvh - max(16px, env(safe-area-inset-top)) + 32px);
     border-radius: 24px 24px 0 0;
     border-bottom: 0;
-    padding: 12px 20px max(20px, env(safe-area-inset-bottom));
+    padding: 0 0 32px;
     overscroll-behavior: contain;
     box-sizing: border-box;
   }
-  dialog::before {
+  .modal-header {
+    min-height: 76px;
+    padding: 32px 64px 8px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+  }
+  .modal-header[data-dismissible="true"]::before {
     content: "";
-    display: block;
+    position: absolute;
+    top: 12px;
+    left: calc(50% - 18px);
     width: 36px;
     height: 4px;
     border-radius: 4px;
     background: var(--muted);
-    margin: 0 auto 20px;
+  }
+  dialog .modal-close {
+    top: 4px;
+    right: max(4px, env(safe-area-inset-right));
+    background: transparent;
+  }
+  #modal-content {
+    padding: 8px 24px max(24px, env(safe-area-inset-bottom));
+  }
+  dialog[open][data-gesture-started="true"] {
+    animation: none;
+  }
+  dialog[data-dragging="true"] {
+    will-change: translate;
+  }
+  dialog[data-dragging="true"] .modal-header {
+    cursor: grabbing;
+  }
+  dialog[data-settling] {
+    transition: translate var(--motion-standard) var(--motion-ease-sheet);
+  }
+  dialog[data-settling="up"] {
+    transition: translate var(--motion-sheetReturn) var(--motion-ease-sheetReturn);
   }
   dialog[open] {
     animation: sheet-enter var(--motion-enter) var(--motion-ease-sheet);
@@ -199,10 +270,10 @@ dialog.is-closing {
   }
   .dialog-footer {
     position: sticky;
-    bottom: calc(-1 * max(20px, env(safe-area-inset-bottom)));
+    bottom: calc(-1 * max(24px, env(safe-area-inset-bottom)));
     background: var(--raised);
-    padding: 12px 0 max(20px, env(safe-area-inset-bottom));
-    margin-bottom: calc(-1 * max(20px, env(safe-area-inset-bottom)));
+    padding: 12px 0 max(24px, env(safe-area-inset-bottom));
+    margin-bottom: calc(-1 * max(24px, env(safe-area-inset-bottom)));
   }
 }
 @keyframes sheet-enter {
@@ -246,6 +317,9 @@ dialog.is-closing::backdrop {
 @media (prefers-reduced-motion: reduce) {
   dialog.is-closing::backdrop {
     animation: none;
+  }
+  dialog[data-settling] {
+    transition: none;
   }
 }
 
@@ -373,7 +447,7 @@ textarea.pgn-text {
 }
 
 /* Static dialog headings receive initial focus without a control-like outline. */
-#modal-content h2[tabindex="-1"]:focus {
+#modal-title:focus {
   outline: none;
 }
 

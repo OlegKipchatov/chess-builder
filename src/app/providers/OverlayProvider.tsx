@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { ControlIcon } from "../../shared/ui/ControlIcon.js";
+import { useSheetGesture } from "../../shared/hooks/useSheetGesture.js";
 import { motionDuration, motionEasing } from "../../shared/styles/motion.js";
 export interface ModalContent {
   title: string;
@@ -16,8 +18,6 @@ export interface ModalContent {
   body: ReactNode;
   onClose?: () => void;
   dismissible?: boolean;
-  closeLabel?: string;
-  closeVariant?: "primary" | "quiet";
 }
 interface Overlays {
   isOpen: boolean;
@@ -39,12 +39,21 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     generation = useRef(0),
     height = useRef(0),
     current = useRef(content),
-    mounted = useRef(false);
+    mounted = useRef(false),
+    dismissing = useRef(false);
   const canAnimate = () =>
     matchMedia("(max-width: 760px)").matches &&
     !matchMedia("(prefers-reduced-motion: reduce)").matches;
   const show = useCallback((next: ModalContent | null) => {
     const token = ++generation.current;
+    const node = dialog.current;
+    const offset = node ? getComputedStyle(node).translate : "none";
+    if (node) {
+      delete node.dataset.dragging;
+      delete node.dataset.settling;
+      node.style.removeProperty("translate");
+    }
+    dismissing.current = !next;
     animation.current?.cancel();
     animation.current = null;
     if (next) {
@@ -61,7 +70,15 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     if (dialog.current?.open && canAnimate() && dialog.current.animate) {
       setClosing(true);
       const owned = dialog.current.animate(
-        [{ transform: "translateY(0)" }, { transform: "translateY(100%)" }],
+        [
+          {
+            transform:
+              offset && offset !== "none"
+                ? `translate(${offset.trim().split(/\s+/).join(", ")})`
+                : "translateY(0)",
+          },
+          { transform: "translateY(100%)" },
+        ],
         {
           duration: motionDuration.exit,
           easing: motionEasing.exit,
@@ -74,7 +91,8 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   }, []);
   const close = () => {
     const previous = current.current;
-    if (!previous || previous.dismissible === false) return;
+    if (!previous || previous.dismissible === false || dismissing.current)
+      return;
     const token = generation.current;
     previous.onClose?.();
     if (generation.current === token) show(null);
@@ -122,6 +140,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
       heading.current?.focus({ preventScroll: true });
     } else if (node.open) {
       node.close();
+      delete node.dataset.gestureStarted;
       animation.current?.cancel();
       animation.current = null;
       document.body.classList.remove("dialog-open");
@@ -153,7 +172,12 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     },
     [],
   );
-  const touchStart = useRef<number | null>(null);
+  useSheetGesture(
+    dialog,
+    content,
+    !!content && content.dismissible !== false && !closing,
+    close,
+  );
   return (
     <Context value={{ show, toast, isOpen: !!content }}>
       {children}
@@ -169,26 +193,21 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
               close();
             }}
             onClick={(event) => {
-              if (event.target === dialog.current) close();
-            }}
-            onTouchStart={(event) => {
+              if (event.target !== dialog.current) return;
+              const rect = event.currentTarget.getBoundingClientRect();
               if (
-                event.target === dialog.current ||
-                (event.target as HTMLElement).closest("h2")
-              )
-                touchStart.current = event.touches[0]?.clientY ?? null;
-            }}
-            onTouchEnd={(event) => {
-              if (
-                touchStart.current !== null &&
-                (event.changedTouches[0]?.clientY ?? 0) - touchStart.current >
-                  70
+                event.clientX < rect.left ||
+                event.clientX > rect.right ||
+                event.clientY < rect.top ||
+                event.clientY > rect.bottom
               )
                 close();
-              touchStart.current = null;
             }}
           >
-            <div id="modal-content">
+            <div
+              className="modal-header"
+              data-dismissible={content?.dismissible !== false}
+            >
               <h2
                 ref={heading}
                 id="modal-title"
@@ -197,18 +216,19 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
               >
                 {content?.title}
               </h2>
-              {content?.body}
+              {content?.dismissible !== false && (
+                <button
+                  type="button"
+                  id="close-modal"
+                  className="modal-close"
+                  aria-label="Закрыть"
+                  onClick={close}
+                >
+                  <ControlIcon name="close" />
+                </button>
+              )}
             </div>
-            {content?.dismissible !== false && (
-              <button
-                id="close-modal"
-                className={`ui-button ${content?.closeVariant || "quiet"} wide`}
-                aria-label={content?.closeLabel || "Закрыть"}
-                onClick={close}
-              >
-                {content?.closeLabel || "Закрыть"}
-              </button>
-            )}
+            <div id="modal-content">{content?.body}</div>
           </dialog>
           <div className="notification-stack">
             <div

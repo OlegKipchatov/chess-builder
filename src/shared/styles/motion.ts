@@ -3,6 +3,7 @@ export const motionDuration = Object.freeze({
   instant: 0,
   fast: 160,
   standard: 200,
+  sheetReturn: 360,
   enter: 260,
   exit: 180,
   board: 420,
@@ -14,6 +15,7 @@ export const motionEasing = Object.freeze({
   enter: "ease-out",
   exit: "ease-in",
   sheet: "cubic-bezier(.16,1,.3,1)",
+  sheetReturn: "cubic-bezier(.22,.61,.36,1)",
   board: "cubic-bezier(.25,.1,.25,1)",
   reveal: "ease-out",
 });
