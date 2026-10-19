@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { ControlIcon } from "../../shared/ui/ControlIcon.js";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useVault, useVaultStore } from "../../app/providers/VaultProvider.js";
@@ -197,17 +198,8 @@ export const PvePage = () => {
     <Page
       id="pve"
       title={view === "battle" ? "Бой · PvE" : "Поход"}
-      actions={
-        view === "battle" ? (
-          <button
-            className="pve-back"
-            aria-label="К карте"
-            onClick={() => go("map")}
-          >
-            ← <span>К карте</span>
-          </button>
-        ) : undefined
-      }
+      onBack={view === "battle" ? () => go("map") : undefined}
+      backLabel="К карте"
     >
       {view === "map" && (
         <PveMap
@@ -252,7 +244,7 @@ export const PvePage = () => {
             aria-label="Выйти из похода"
             onClick={() => void navigate({ to: "/play" })}
           >
-            ←
+            <ControlIcon name="back" />
           </button>
           {(["map", "army", "bag"] as const).map((target, index) => (
             <button

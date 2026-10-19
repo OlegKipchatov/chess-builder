@@ -1,4 +1,4 @@
-import { ControlIcon } from "./ControlIcon.js";
+import { BackButton } from "./BackButton.js";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 export const Page = ({
@@ -8,6 +8,7 @@ export const Page = ({
   back,
   actions,
   onBack,
+  backLabel,
 }: {
   id: string;
   title: string;
@@ -15,20 +16,27 @@ export const Page = ({
   back?: "/play" | "/profile" | "/history";
   actions?: ReactNode;
   onBack?: () => void;
+  backLabel?: string;
 }) => {
   const navigate = useNavigate();
   return (
-    <section id={id} className="tab" data-page-kind={back ? "subpage" : "root"}>
+    <section
+      id={id}
+      className="tab"
+      data-page-kind={back || onBack ? "subpage" : "root"}
+    >
       <div className="page-header">
-        {back && (
+        {(back || onBack) && (
           <div className="page-header-start">
-            <button
-              className="icon-button"
-              aria-label="Назад"
-              onClick={onBack || (() => void navigate({ to: back }))}
-            >
-              <ControlIcon name="back" />
-            </button>
+            <BackButton
+              label={backLabel}
+              onClick={
+                onBack ||
+                (() => {
+                  if (back) void navigate({ to: back });
+                })
+              }
+            />
           </div>
         )}
         <div className="page-header-content">

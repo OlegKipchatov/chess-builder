@@ -9,6 +9,10 @@ Page tokens live in `src/shared/styles/tokens.css`, layout rules in `shell.css`:
 - Horizontal inset: 16px mobile, 26px desktop; main max-width stays 1120px.
 - App header to page header: 20px mobile, 24px desktop.
 - Heading row: minimum 44px to accommodate the unchanged BackButton.
+- All header returns use `shared/ui/BackButton.tsx` through `Page`, including
+  custom `onBack` actions in PvE. Use one 44px control with `--control` background, a 22px SVG,
+  and an 8px header gap. Do not override its background or header gutters by
+  page ID. Hover, pressed and keyboard focus retain visible feedback.
 - Header to content: `.page-content` owns 20px/24px padding, never margins.
 - Major sections: 24px gap; related groups: 16px; supporting metadata: 8px.
 - Bottom reserve: measured navigation height + 14px offset + safe area + 24px.

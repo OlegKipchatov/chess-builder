@@ -262,7 +262,7 @@ main:has(> #app-nav[hidden]):not(:has(#pve-nav)) {
 .tab > .page-header {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  column-gap: 16px;
+  column-gap: 8px;
   row-gap: var(--page-meta-gap);
   margin: 0;
   padding: 0;

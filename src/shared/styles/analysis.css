@@ -247,18 +247,6 @@
   min-width: 44px;
   padding: 10px;
 }
-#analysis > .page-header .page-header-start > .icon-button {
-  background: var(--control);
-}
-#analysis > .page-header {
-  column-gap: 4px;
-}
-@media (max-width: 760px) {
-  /* Let icon hit areas use half the page gutter without shrinking the title. */
-  #analysis > .page-header {
-    margin-inline: -8px;
-  }
-}
 #archive-heading-actions svg {
   width: 24px;
   height: 24px;

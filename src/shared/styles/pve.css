@@ -634,15 +634,6 @@
 #pve-nav .pve-nav-exit svg {
   margin: 0;
 }
-.pve-back {
-  width: auto;
-  gap: 6px;
-  padding-inline: 8px;
-  white-space: nowrap;
-}
-.pve-back span {
-  font-size: var(--type-secondary);
-}
 
 .pve-army-page {
   max-width: 520px;

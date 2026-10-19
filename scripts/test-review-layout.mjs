@@ -51,9 +51,13 @@ try{
   await page.locator('[data-load-set]').click();await page.locator('[data-load-set]:disabled').waitFor();assert.equal(await page.locator('[data-load-set]').isDisabled(),true);
   await page.reload();await page.locator('[data-collection-view="saved"]').click();assert.equal(await page.locator('[data-load-set]').innerText(),'Выбрано');
   await page.screenshot({path:`/tmp/gacha-collection-review-${width}.png`,fullPage:true});
-  await page.goto(url+'#/history');await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
+  await page.goto(url+'#/history');await page.locator('#history .page-header-start button').waitFor();
+  const backAppearance=async()=>page.locator('.page-header-start button').evaluate(button=>{const style=getComputedStyle(button),rect=button.getBoundingClientRect(),svg=button.querySelector('svg').getBoundingClientRect();return {width:rect.width,height:rect.height,x:rect.x,background:style.backgroundColor,radius:style.borderRadius,iconWidth:svg.width,iconHeight:svg.height,gap:getComputedStyle(button.closest('.page-header')).columnGap};});
+  const listBack=await backAppearance();assert.equal(listBack.width,44);assert.equal(listBack.height,44);assert.notEqual(listBack.background,'rgba(0, 0, 0, 0)');
+  await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
   await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();await page.locator('#archive-analysis').waitFor();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
   assert.equal(await page.locator('#analysis h1').innerText(),'История партии');
+  assert.deepEqual(await backAppearance(),listBack,'List and detail share the same back control and header gutter');
   if(width>=390){
     const heading=await page.locator('#analysis h1').evaluate(node=>{const style=getComputedStyle(node),rect=node.getBoundingClientRect(),header=node.closest('.page-header');return {height:rect.height,width:rect.width,lineHeight:style.lineHeight,font:style.font,columns:getComputedStyle(header).gridTemplateColumns,gap:getComputedStyle(header).columnGap,viewport:innerWidth};});
     await page.screenshot({path:`/tmp/gacha-history-heading-${width}.png`,fullPage:true});
