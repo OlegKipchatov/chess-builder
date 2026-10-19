@@ -271,6 +271,12 @@ main:has(> #app-nav[hidden]):not(:has(#pve-nav)) {
   grid-column: 1;
   grid-row: 1;
 }
+@media (max-width: 760px) {
+  .tab > .page-header:has(> .page-header-start > .back-button) {
+    margin-inline: -8px;
+    column-gap: 4px;
+  }
+}
 .tab > .page-header > .page-header-content {
   grid-column: 2;
   grid-row: 1;
