@@ -91,6 +91,7 @@ try{
   await page.getByRole('button',{name:'Статистика',exact:true}).click();await page.getByRole('heading',{name:'Статистика',exact:true}).waitFor();assert.match(await page.locator('.statistics-grid').first().innerText(),/Рейтинг/);assert.match(await page.locator('.statistics-progress').innerText(),/Открыто сундуков/);await page.getByLabel('Назад',{exact:true}).click();await page.getByRole('button',{name:'Вопросы и ответы',exact:true}).click();await page.locator('details').first().locator('summary').click();assert.equal(await page.locator('details').first().evaluate(node=>node.open),true);
   for(const scheme of ['light','dark']) {
    await page.emulateMedia({colorScheme:scheme});
+   await page.waitForFunction(scheme=>document.documentElement.dataset.theme===scheme,scheme);
    const summary=page.locator('#faq details').first().locator('summary');
    await summary.evaluate(node=>{node.parentElement.open=false;node.focus({preventScroll:true});});
    const stableHeader=await summary.evaluate(async node=>{
