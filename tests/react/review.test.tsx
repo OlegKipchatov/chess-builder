@@ -145,7 +145,8 @@ describe("React review and practice parity", () => {
     const { entry } = fixture(),
       { wrapper } = setup();
     const view = render(<GameReview entry={entry} />, { wrapper });
-    fireEvent.click(screen.getByText("Разобрать партию"));
+    expect(screen.queryByText("Разобрать партию")).toBeNull();
+    expect(view.container.querySelector(".analysis-active")).toBeTruthy();
     fireEvent.change(screen.getByRole("slider"), { target: { value: "3" } });
     await act(async () => {});
     fireEvent.click(screen.getByText("Подсказка"));

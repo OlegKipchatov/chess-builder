@@ -67,25 +67,27 @@ export const ProfilePage = () => {
             Обновить приложение
           </button>
         )}
-        <button
-          className="quiet wide"
-          onClick={() => {
-            if (pwa.canInstall) void pwa.install();
-            else
-              show({
-                title: "Установить приложение",
-                body: (
-                  <p>
-                    Откройте меню браузера и выберите «Установить приложение»
-                    или «На экран Домой». После полной загрузки приложение
-                    доступно без интернета.
-                  </p>
-                ),
-              });
-          }}
-        >
-          Установить приложение
-        </button>
+        {!pwa.installed && (
+          <button
+            className="quiet wide"
+            onClick={() => {
+              if (pwa.canInstall) void pwa.install();
+              else
+                show({
+                  title: "Установить приложение",
+                  body: (
+                    <p>
+                      Откройте меню браузера и выберите «Установить приложение»
+                      или «На экран Домой». После полной загрузки приложение
+                      доступно без интернета.
+                    </p>
+                  ),
+                });
+            }}
+          >
+            Установить приложение
+          </button>
+        )}
         <button
           className="quiet wide"
           onClick={() => void navigate({ to: "/faq" })}

@@ -33,6 +33,7 @@ const Harness = () => {
         Результат
       </button>
       <output>{pwa.available ? "Доступно" : "Нет обновления"}</output>
+      <output>{pwa.installed ? "Установлено" : "Можно установить"}</output>
     </>
   );
 };
@@ -67,6 +68,32 @@ const setup = async (controlled = true, waiting = true) => {
   return { ...view, service, postMessage, reload, reg };
 };
 describe("PWA safe update lifecycle", () => {
+  it("detects an iOS home-screen launch before an install prompt can appear", async () => {
+    vi.stubGlobal(
+      "navigator",
+      Object.assign(Object.create(navigator), { standalone: true }),
+    );
+    await setup();
+    expect(screen.getByText("Установлено")).toBeVisible();
+  });
+  it("tracks display mode and appinstalled, and removes the display subscription", async () => {
+    const mode = Object.assign(new EventTarget(), { matches: true });
+    vi.stubGlobal("matchMedia", () => mode);
+    const view = await setup();
+    expect(screen.getByText("Установлено")).toBeVisible();
+    act(() => {
+      mode.matches = false;
+      mode.dispatchEvent(new Event("change"));
+    });
+    expect(screen.getByText("Можно установить")).toBeVisible();
+    act(() => window.dispatchEvent(new Event("appinstalled")));
+    expect(screen.getByText("Установлено")).toBeVisible();
+    act(() => mode.dispatchEvent(new Event("change")));
+    expect(screen.getByText("Установлено")).toBeVisible();
+    const remove = vi.spyOn(mode, "removeEventListener");
+    view.unmount();
+    expect(remove).toHaveBeenCalledWith("change", expect.any(Function));
+  });
   it("never activates a waiting update automatically, waits for a safe UI, and reloads once", async () => {
     const view = await setup();
     expect(view.postMessage).not.toHaveBeenCalled();

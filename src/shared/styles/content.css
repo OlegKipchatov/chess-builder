@@ -152,16 +152,64 @@
   overflow: hidden;
 }
 .faq-accordion > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  list-style: none;
   cursor: pointer;
   padding: 20px;
   font-size: 1rem;
   font-weight: 600;
+}
+.faq-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+.faq-accordion > summary::after {
+  content: "+";
+  flex: 0 0 1em;
+  text-align: center;
+  color: var(--muted);
+}
+.faq-accordion[open] > summary::after {
+  content: "−";
+}
+.faq-accordion > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
 }
 .faq-accordion[open] > summary {
   border-bottom: 1px solid var(--border);
 }
 .disclosure-content {
   padding: 20px;
+  overflow-wrap: anywhere;
+}
+.disclosure-content > :first-child {
+  margin-top: 0;
+}
+.disclosure-content > :last-child {
+  margin-bottom: 0;
+}
+.disclosure-content > .faq-probability-group {
+  margin-block: 16px;
+}
+.disclosure-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-secondary);
+  margin-block: 16px;
+}
+.disclosure-content caption {
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.disclosure-content th,
+.disclosure-content td {
+  padding: 8px 4px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
 }
 .disclosure-content > .panel {
   margin: 0;

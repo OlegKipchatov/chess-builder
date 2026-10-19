@@ -44,7 +44,7 @@ export const GameReview = ({
     [hint, setHint] = useState(false),
     [footprint, setFootprint] = useState(0),
     surface = useRef<HTMLDivElement>(null),
-    [analysisMode, setAnalysisMode] = useState(autoAnalyze),
+    [analysisRequested, setAnalysisMode] = useState(autoAnalyze),
     [progressVisible, setProgressVisible] = useState(false),
     [variation, setVariation] = useState<number | null>(null),
     [practice, setPractice] = useState<MateExercise | null>(null),
@@ -53,6 +53,7 @@ export const GameReview = ({
     timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     release = useRef<(() => void) | null>(null),
     attempts = useRef(new Map<string, number>());
+  const analysisMode = analysisRequested || !!analysis;
   const currentCursor = useEffectEvent(() => cursor);
   const move = analysisMode ? analysis?.moves[cursor - 1] : undefined;
   useEffect(() => {
@@ -135,7 +136,9 @@ export const GameReview = ({
   const balance = materialBalance(board, entry.playerColor);
   const opponent =
     entry.mode === "bot"
-      ? (entry.engineProfile?.profile ? `ИИ · ${playStyleName(entry.engineProfile.profile)}` : "ИИ")
+      ? entry.engineProfile?.profile
+        ? `ИИ · ${playStyleName(entry.engineProfile.profile)}`
+        : "ИИ"
       : "Игрок 2";
   const summary = (
     <div className="match-summary">

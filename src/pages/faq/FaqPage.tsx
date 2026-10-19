@@ -11,8 +11,8 @@ const questions = [
     "До первого собственного хода сдача отменяет партию. После первого хода она считается поражением. До 10 собственных ходов монеты и бонус за качество не начисляются. Начиная с 10-го действует обычная награда за поражение. Незавершённые и прерванные из-за ошибки ИИ партии награду не дают.",
   ],
   [
-    "Что означают очки?",
-    "Очки показывают разницу в материале. Пешка — 1, конь и слон — 3, ладья — 5, ферзь — 9. Это не рейтинг и не валюта.",
+    "Что означает материальный баланс?",
+    "Материальный баланс показывает разницу в стоимости фигур. Пешка — 1, конь и слон — 3, ладья — 5, ферзь — 9. Это не рейтинг и не валюта.",
   ],
   [
     "Как подбирается соперник?",
@@ -42,9 +42,9 @@ const questions = [
 export const FaqPage = () => (
   <Page id="faq" title="Вопросы и ответы" back="/profile">
     {questions.map(([title, ...paragraphs]) => (
-      <details className="disclosure" key={title}>
+      <details className="faq-accordion" key={title}>
         <summary>{title}</summary>
-        <article className="panel">
+        <article className="disclosure-content">
           {paragraphs.map((text) => (
             <p key={text}>{text}</p>
           ))}
@@ -56,44 +56,44 @@ export const FaqPage = () => (
         </article>
       </details>
     ))}
-    <details className="disclosure">
+    <details className="faq-accordion">
       <summary>Что выпадает из сундука?</summary>
-      <article className="panel">
+      <article className="disclosure-content">
         <p>
           Сундук стоит 100 монет и открывается только по нажатию. Накопление 100
           монет не запускает покупку автоматически.
         </p>
-        <table>
-          <caption>Тип награды</caption>
-          <tbody>
+        <section className="faq-probability-group">
+          <h3>Тип награды</h3>
+          <dl className="probability-list">
             {[
               ["Одна фигура", "85%"],
               ["Одна доска", "10%"],
               ["15 осколков", "5%"],
             ].map(([name, value]) => (
-              <tr key={name}>
-                <th>{name}</th>
-                <td>{value}</td>
-              </tr>
+              <div key={name}>
+                <dt>{name}</dt>
+                <dd>{value}</dd>
+              </div>
             ))}
-          </tbody>
-        </table>
-        <table>
-          <caption>Редкость предмета</caption>
-          <tbody>
+          </dl>
+        </section>
+        <section className="faq-probability-group">
+          <h3>Редкость предмета</h3>
+          <dl className="probability-list">
             {[
               ["Обычная", "60%"],
               ["Редкая", "30%"],
               ["Эпическая", "9%"],
               ["Легендарная", "1%"],
             ].map(([name, value]) => (
-              <tr key={name}>
-                <th>{name}</th>
-                <td>{value}</td>
-              </tr>
+              <div key={name}>
+                <dt>{name}</dt>
+                <dd>{value}</dd>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </dl>
+        </section>
         <p>
           Десятое открытие без эпического или легендарного предмета гарантирует
           одну из этих редкостей: 90% эпическая, 10% легендарная. На гарантии:
@@ -101,9 +101,9 @@ export const FaqPage = () => (
         </p>
       </article>
     </details>
-    <details className="disclosure">
+    <details className="faq-accordion">
       <summary>Для чего нужны осколки?</summary>
-      <article className="panel">
+      <article className="disclosure-content">
         <p>
           Осколки нужны для создания конкретных предметов и заморозки
           пропущенного дня. Обменять их на монеты нельзя.

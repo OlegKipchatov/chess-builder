@@ -32,9 +32,8 @@ export const testAnalysisLearning = async (page,url) => {
  await page.locator('[data-archive="training-fixture"]').click();
  await page.locator('#history-slider').press('End');assert.equal(await page.locator('#history-position').innerText(),'30 / 30');
  await page.locator('#history-slider').press('Home');assert.equal(await page.locator('#history-position').innerText(),'0 / 30');
- assert.equal(await page.locator('#archive-analysis').evaluate(node=>node.closest('.board-area')!==null&&node.getBoundingClientRect().top>=document.querySelector('#board').getBoundingClientRect().bottom),true);
+ assert.equal(await page.locator('#archive-analysis').count(),0,'Saved analysis opens immediately');
  assert.match(await page.locator('.moves').innerText(),/Nc3/);
- await page.locator('#archive-analysis').click();
  await page.locator('#match-surface.analysis-active').waitFor({state:'visible'});
  assert.equal(await page.locator('#analysis-progress').isVisible(),false,'Cached analysis has no loading flash');
  assert.match(await page.locator('.moves').innerText(),/Nc3/);

@@ -17,6 +17,7 @@ interface PwaContext {
   ready: boolean;
   error: string;
   canInstall: boolean;
+  installed: boolean;
   updating: boolean;
   update: () => void;
   install: () => Promise<boolean>;
@@ -27,11 +28,17 @@ const Context = createContext<PwaContext>({
   ready: false,
   error: "",
   canInstall: false,
+  installed: false,
   updating: false,
   update: () => {},
   install: async () => false,
 });
 const reloadPage = () => location.reload();
+const appDisplayMode =
+  "(display-mode: standalone), (display-mode: minimal-ui), (display-mode: fullscreen)";
+const isAppWindow = () =>
+  window.matchMedia(appDisplayMode).matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true;
 export const PwaProvider = ({
   children,
   reload = reloadPage,
@@ -59,6 +66,7 @@ export const PwaProvider = ({
     [ready, setReady] = useState(false),
     [error, setError] = useState(""),
     [canInstall, setCanInstall] = useState(false),
+    [installed, setInstalled] = useState(isAppWindow),
     [updating, setUpdating] = useState(false),
     registration = useRef<ServiceWorkerRegistration | null>(null),
     installEvent = useRef<InstallEvent | null>(null),
@@ -67,20 +75,28 @@ export const PwaProvider = ({
     if (error) toast(error, { error: true });
   }, [error, toast]);
   useEffect(() => {
+    const mode = window.matchMedia(appDisplayMode);
+    let installationConfirmed = false;
+    const syncMode = () => setInstalled(installationConfirmed || isAppWindow());
     const before = (event: Event) => {
         event.preventDefault();
+        if (installationConfirmed || isAppWindow()) return;
         installEvent.current = event as InstallEvent;
         setCanInstall(true);
       },
       installed = () => {
+        installationConfirmed = true;
+        setInstalled(true);
         installEvent.current = null;
         setCanInstall(false);
       };
     window.addEventListener("beforeinstallprompt", before);
     window.addEventListener("appinstalled", installed);
+    mode.addEventListener("change", syncMode);
     return () => {
       window.removeEventListener("beforeinstallprompt", before);
       window.removeEventListener("appinstalled", installed);
+      mode.removeEventListener("change", syncMode);
     };
   }, []);
   useEffect(() => {
@@ -174,6 +190,7 @@ export const PwaProvider = ({
         ready,
         error,
         canInstall,
+        installed,
         updating,
         update,
         install,
