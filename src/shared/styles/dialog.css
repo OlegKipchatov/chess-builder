@@ -400,6 +400,18 @@ dialog.is-closing::backdrop {
   color: var(--muted);
   margin: -4px 0 12px;
 }
+.cancelled-match {
+  display: grid;
+  gap: 24px;
+}
+.cancelled-match > p {
+  margin: 0;
+  font-size: var(--type-secondary);
+}
+.cancelled-match > button {
+  width: 100%;
+  margin: 0;
+}
 #modal-content > button.primary,
 #modal-content > button.danger {
   display: block;
