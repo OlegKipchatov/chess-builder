@@ -3,6 +3,12 @@ import {Chess} from 'chess.js';
 import {prepareMateExercise} from '../src/services/analysis/analysis-training.ts';
 import {ANALYSIS_VERSION,PROFILE,ENGINE} from '../src/domain/analysis/analysis-config.ts';
 export const testAnalysisLearning = async (page,url) => {
+ // Focus may move on a read-only board; position, highlights and pieces may not.
+ const boardMarkup = () => page.locator('#board').evaluate(board => {
+  const copy = board.cloneNode(true);
+  copy.querySelectorAll('[data-square]').forEach(cell => cell.removeAttribute('tabindex'));
+  return copy.innerHTML;
+ });
  const saved=await page.evaluate(()=>localStorage.getItem('chess-vault-v3'));
  const state=JSON.parse(saved);
   const pgn='1. Nc3 c6 2. Nf3 d5 3. d4 f6 4. Nxd5 cxd5 5. a4 e5 6. Nxe5 fxe5 7. Bf4 exf4 8. Kd2 g5 9. h4 Bg7 10. Rh3 Bxd4 11. Rh2 Bxb2 12. Ra2 Qb6 13. hxg5 h6 14. Rh4 Qb4+ 15. c3 Qxc3#';
@@ -79,7 +85,7 @@ export const testAnalysisLearning = async (page,url) => {
  assert.equal(await page.locator('#analysis-summary').isVisible(),false);
  assert.equal(await page.locator('[data-analysis-line]').count(),0,'Mate practice does not offer its solution');
  await page.waitForFunction(()=>!document.querySelector('#board').getAnimations({subtree:true}).length);
- const actual=await page.locator('#board').innerHTML();
+ const actual=await boardMarkup();
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(()=>scrollTo(0,0));
  await page.screenshot({path:'/tmp/gacha-slider-390.png',fullPage:true});
@@ -93,8 +99,12 @@ export const testAnalysisLearning = async (page,url) => {
  const practiceState=()=>page.locator('#match-surface').getAttribute('data-practice');
  const choose=async(from,to)=>{await square(from).click();await square(to).click();};
  await choose('d8','b6');assert.equal(await practiceState(),'wrong');
- const wrong=await page.locator('#board').innerHTML();
- await square('a7').click({force:true});assert.equal(await page.locator('#board').innerHTML(),wrong);
+ const wrong=await boardMarkup();
+ await square('a7').click({force:true});assert.equal(await boardMarkup(),wrong);
+ assert.equal(await page.locator('#board [data-square][tabindex="0"]').count(),1);
+ assert.equal(await square('a7').getAttribute('tabindex'),'0');
+ assert.equal(await square('a7').evaluate(cell=>cell===document.activeElement),true);
+ assert.equal(await practiceState(),'wrong');
  await page.locator('[data-practice-continue]').click();assert.equal(await practiceState(),'awaitMove');
  assert.match(await square('d8').getAttribute('aria-label'),/ферзь/i);
  for(let attempt=1;attempt<5;attempt++){
@@ -121,7 +131,7 @@ export const testAnalysisLearning = async (page,url) => {
  assert.equal(await page.locator('#analysis-practice-tools [data-analysis-return]').isVisible(),false,'Success has only one return action');
  await page.screenshot({path:'/tmp/gacha-training-success.png',fullPage:true});
  await page.locator('[data-practice-continue]').click();
- assert.equal(await page.locator('#board').innerHTML(),actual);
+ assert.equal(await boardMarkup(),actual);
  assert.equal(await page.locator('#history-position').innerText(),'24 / 30');
  await seek(8);
  await page.locator('[data-analysis-line]').scrollIntoViewIfNeeded();
