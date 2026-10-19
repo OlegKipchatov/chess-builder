@@ -69,7 +69,7 @@ export const PvePage = () => {
         ...state,
         pve: transform(state.pve),
       }));
-      if (!result.ok) toast(result.error.message);
+      if (!result.ok) toast(result.error.message, { type: "error" });
       return result.ok;
     },
     [store, toast],
@@ -152,7 +152,10 @@ export const PvePage = () => {
                 ).then((ok) => {
                   if (ok) {
                     show(null);
-                    toast("Фигура эволюционировала. Уровень и опыт сохранены.");
+                    toast(
+                      "Фигура эволюционировала. Уровень и опыт сохранены.",
+                      { type: "success" },
+                    );
                   }
                 })
               }

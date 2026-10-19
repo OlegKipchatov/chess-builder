@@ -1,3 +1,4 @@
+import { useNotificationError } from "../../shared/hooks/useNotificationError.js";
 import { useOverlays } from "./OverlayProvider.js";
 import {
   createContext,
@@ -46,7 +47,7 @@ export const PwaProvider = ({
   children: ReactNode;
   reload?: () => void;
 }) => {
-  const { isOpen, toast } = useOverlays(),
+  const { isOpen } = useOverlays(),
     [busy, setBusy] = useState(true),
     [pending, setPending] = useState(false),
     reloaded = useRef(false);
@@ -64,16 +65,13 @@ export const PwaProvider = ({
   }, [pending, busy, isOpen, reload]);
   const [available, setAvailable] = useState(false),
     [ready, setReady] = useState(false),
-    [error, setError] = useState(""),
+    [error, setError] = useNotificationError(),
     [canInstall, setCanInstall] = useState(false),
     [installed, setInstalled] = useState(isAppWindow),
     [updating, setUpdating] = useState(false),
     registration = useRef<ServiceWorkerRegistration | null>(null),
     installEvent = useRef<InstallEvent | null>(null),
     requested = useRef(false);
-  useEffect(() => {
-    if (error) toast(error, { error: true });
-  }, [error, toast]);
   useEffect(() => {
     const mode = window.matchMedia(appDisplayMode);
     let installationConfirmed = false;
@@ -164,7 +162,7 @@ export const PwaProvider = ({
       navigator.serviceWorker.removeEventListener("controllerchange", changed);
       document.removeEventListener("visibilitychange", check);
     };
-  }, []);
+  }, [setError]);
   const update = () => {
     if (busy || isOpen) return;
     requested.current = true;

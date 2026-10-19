@@ -30,10 +30,10 @@ const ExportDialog = ({ pgn }: { pgn: string }) => {
             void Promise.resolve()
               .then(() => navigator.clipboard.writeText(pgn))
               .then(
-                () => toast("PGN скопирован"),
+                () => toast("PGN скопирован", { type: "success" }),
                 () =>
                   toast("Не удалось скопировать. Выделите текст PGN.", {
-                    error: true,
+                    type: "error",
                   }),
               )
           }
@@ -48,13 +48,13 @@ const ExportDialog = ({ pgn }: { pgn: string }) => {
           onClick={() => {
             if (canShare)
               void sharePgn(pgn).catch(() =>
-                toast("Не удалось поделиться", { error: true }),
+                toast("Не удалось поделиться", { type: "error" }),
               );
             else {
               try {
                 downloadPgn(pgn);
               } catch {
-                toast("Не удалось скачать", { error: true });
+                toast("Не удалось скачать", { type: "error" });
               }
             }
           }}

@@ -95,7 +95,6 @@ export const ProfilePage = () => {
           Вопросы и ответы
         </button>
       </div>
-      {pwa.error && <p role="alert">{pwa.error}</p>}
     </Page>
   );
 };

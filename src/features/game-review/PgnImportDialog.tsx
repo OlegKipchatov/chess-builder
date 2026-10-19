@@ -1,3 +1,4 @@
+import { useNotificationError } from "../../shared/hooks/useNotificationError.js";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useOverlays } from "../../app/providers/OverlayProvider.js";
@@ -16,7 +17,7 @@ const ImportForm = ({
   editing?: boolean;
 }) => {
   const [text, setText] = useState(initialText),
-    [error, setError] = useState(""),
+    [, setError] = useNotificationError(),
     [paste] = useState(editing),
     fileInput = useRef<HTMLInputElement>(null),
     generation = useRef(0);
@@ -51,6 +52,7 @@ const ImportForm = ({
           accept=".pgn,text/plain,application/x-chess-pgn"
           onChange={async (event) => {
             const file = event.target.files?.[0];
+            event.target.value = "";
             if (!file) return;
             if (file.size > MAX_PGN_BYTES) {
               setError("Файл слишком большой. Максимум — 512 КБ.");
@@ -86,7 +88,6 @@ const ImportForm = ({
           </button>
         </form>
       )}
-      {error && <p role="alert">{error}</p>}
     </>
   );
 };
@@ -162,7 +163,7 @@ const ClipboardPrompt = ({ onDone }: { onDone: (text?: string) => void }) => {
     } catch {
       if (!active.current) return;
       onDone();
-      toast("Вставьте текст вручную", { error: true });
+      toast("Вставьте текст вручную", { type: "error" });
     }
   };
   return (

@@ -1,3 +1,4 @@
+import { ErrorNotification } from "../../shared/ui/ErrorNotification.js";
 import type { RewardBreakdown } from "../../domain/economy/types.js";
 import { useVault } from "../../app/providers/VaultProvider.js";
 import { plural } from "../../shared/ui/Page.js";
@@ -48,10 +49,10 @@ export const RewardBreakdownView = ({
         </>
       )}
       {breakdown.qualityStatus === "fallback" && (
-        <p className="reward-note">
-          Не удалось оценить качество после повторных попыток. Начислен
-          резервный бонус: 5 монет.
-        </p>
+        <ErrorNotification
+          type="warning"
+          message="Не удалось оценить качество после повторных попыток. Начислен резервный бонус: 5 монет."
+        />
       )}
       {breakdown.reason === "early-resignation" && (
         <p className="reward-note">

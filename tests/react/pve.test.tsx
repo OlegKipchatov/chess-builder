@@ -1,3 +1,4 @@
+import { OverlayProvider } from "../../src/app/providers/OverlayProvider";
 import { act, renderHook } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import type { ReactNode } from "react";
@@ -62,7 +63,9 @@ const setup = async ({
   localStorage.setItem(KEY, JSON.stringify(state));
   const store = createVaultStore(localStorage),
     wrapper = ({ children }: { children: ReactNode }) => (
-      <VaultProvider store={store}>{children}</VaultProvider>
+      <VaultProvider store={store}>
+        <OverlayProvider>{children}</OverlayProvider>
+      </VaultProvider>
     );
   const view = renderHook(({ active }) => usePveBattle(active), {
     wrapper,

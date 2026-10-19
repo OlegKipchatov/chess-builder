@@ -1,3 +1,5 @@
+import { useOverlays } from "./providers/OverlayProvider.js";
+import { ErrorNotification } from "../shared/ui/ErrorNotification.js";
 import { Piece } from "../shared/ui/Piece.js";
 import { ImportedGameProvider } from "../features/game-review/ImportedGameProvider.js";
 import { HistoryReturnProvider } from "../features/game-review/HistoryReturnProvider.js";
@@ -81,6 +83,7 @@ const Wallet = () => {
   );
 };
 export const App = () => {
+  const { toast } = useOverlays();
   const [held, setHeld] = useState(false);
   const active = useVault((s) => s.game.started),
     presented = useMatches({ select: (matches) => matches.at(-1) }),
@@ -177,12 +180,20 @@ export const App = () => {
       </header>
       <main>
         {storageError && (
-          <div role="alert">
-            <p>
-              Не удалось прочитать сохранение. Данные не удалены, запись
-              приостановлена.
-            </p>
-            <button onClick={() => store.refresh()}>Повторить чтение</button>
+          <div>
+            <ErrorNotification message="Не удалось прочитать сохранение. Данные не удалены, запись приостановлена." />
+            <button
+              onClick={() => {
+                store.refresh();
+                if (store.getError())
+                  toast(
+                    "Не удалось прочитать сохранение. Данные не удалены, запись приостановлена.",
+                    { type: "error" },
+                  );
+              }}
+            >
+              Повторить чтение
+            </button>
           </div>
         )}
         <RewardProcessor />

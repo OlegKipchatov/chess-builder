@@ -311,21 +311,9 @@ export const GameReview = ({
                   </button>
                 ) : null}
               </div>
-              {job.status === "failed" ? (
-                <p role="alert">{job.message}</p>
-              ) : analysis?.status === "failed" ? (
-                <p role="alert">
-                  Не удалось завершить анализ. Повторите попытку.
-                </p>
-              ) : null}
             </div>
           )}
         <div className="analysis-insight-slot">
-          {analysis?.status === "partial" && (
-            <p role="status">
-              Часть ходов не удалось проверить. Можно повторить анализ.
-            </p>
-          )}
           <AnalysisInsight
             move={move}
             hint={hint}

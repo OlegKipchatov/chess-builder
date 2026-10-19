@@ -59,7 +59,7 @@ export const PveBattleView = ({
         {visual.phase === "result"
           ? "Бой завершён"
           : battle.error
-            ? "Ход ИИ недоступен"
+            ? "Бой приостановлен"
             : `${isKingThreatened(visual) ? "Король под ударом · " : ""}${visual.turn === "w" ? "Ваш ход" : "Ход соперника"}`}
       </div>
       <Chessboard
@@ -130,7 +130,6 @@ export const PveBattleView = ({
         {event &&
           `${event.from} → ${event.to}${event.enPassant ? " · на проходе" : ""}${event.damage ? ` · −${event.damage} HP${event.killed ? " · фигура повержена" : ""}` : ""}${event.promoted ? " · временное превращение в ферзя" : ""}`}
       </div>
-      {battle.error && <p role="alert">{battle.error}</p>}
       <div className="pve-battle-actions">
         <button
           className="quiet"

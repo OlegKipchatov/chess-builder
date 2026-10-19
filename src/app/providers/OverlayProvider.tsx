@@ -1,4 +1,8 @@
-import { ToastNotification } from "../../shared/ui/ToastNotification.js";
+import {
+  ToastNotification,
+  type Notification,
+  type ToastOptions,
+} from "../../shared/ui/ToastNotification.js";
 import {
   createContext,
   useCallback,
@@ -23,19 +27,17 @@ export interface ModalContent {
 interface Overlays {
   isOpen: boolean;
   show: (content: ModalContent | null) => void;
-  toast: (message: string, options?: { error?: boolean }) => void;
+  toast: (message: string, options?: ToastOptions) => void;
 }
 const Context = createContext<Overlays | null>(null);
 export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   const [content, setContent] = useState<ModalContent | null>(null),
     [closing, setClosing] = useState(false),
-    [message, setMessage] = useState<{ text: string; error: boolean } | null>(
-      null,
-    ),
+    [messages, setMessages] = useState<Notification[]>([]),
+    sequence = useRef(0),
     dialog = useRef<HTMLDialogElement>(null),
     heading = useRef<HTMLHeadingElement>(null),
     returnTo = useRef<HTMLElement | null>(null),
-    timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     animation = useRef<Animation | null>(null),
     generation = useRef(0),
     height = useRef(0),
@@ -101,7 +103,6 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   const dispose = useCallback(() => {
     mounted.current = false;
     generation.current++;
-    clearTimeout(timer.current);
     animation.current?.cancel();
     dialog.current?.close();
     document.body.classList.remove("dialog-open");
@@ -165,18 +166,19 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   }, [content]);
-  const toast = useCallback(
-    (text: string, options: { error?: boolean } = {}) => {
-      clearTimeout(timer.current);
-      setMessage({ text, error: !!options.error });
-      timer.current = setTimeout(() => setMessage(null), 5000);
-    },
-    [],
-  );
-  const dismissToast = () => {
-    clearTimeout(timer.current);
-    setMessage(null);
-  };
+  const toast = useCallback((text: string, options: ToastOptions = {}) => {
+    if (!text) return;
+    const notification: Notification = {
+      id: ++sequence.current,
+      text,
+      type: options.type ?? "neutral",
+      createdAt: Date.now(),
+    };
+    setMessages((previous) => [notification, ...previous]);
+  }, []);
+  const dismissToast = useCallback((id: number) => {
+    setMessages((previous) => previous.filter((item) => item.id !== id));
+  }, []);
   useSheetGesture(
     dialog,
     content,
@@ -235,11 +237,11 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
             </div>
             <div id="modal-content">{content?.body}</div>
             {content && (
-              <ToastNotification message={message} onDismiss={dismissToast} />
+              <ToastNotification messages={messages} onDismiss={dismissToast} />
             )}
           </dialog>
           {!content && (
-            <ToastNotification message={message} onDismiss={dismissToast} />
+            <ToastNotification messages={messages} onDismiss={dismissToast} />
           )}
         </>,
         document.body,

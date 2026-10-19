@@ -1,3 +1,4 @@
+import { ErrorNotification } from "../../shared/ui/ErrorNotification.js";
 import { PgnEntryActions } from "../../features/game-review/PgnActions.js";
 import { useRouter, useNavigate } from "@tanstack/react-router";
 import { useHistoryReturn } from "../../features/game-review/HistoryReturnProvider.js";
@@ -39,7 +40,7 @@ export const ReviewPage = () => {
           autoAnalyze={"analyze" in search && search.analyze === true}
         />
       ) : (
-        <p role="alert">Партия не найдена.</p>
+        <ErrorNotification message="Партия не найдена." />
       )}
     </Page>
   );

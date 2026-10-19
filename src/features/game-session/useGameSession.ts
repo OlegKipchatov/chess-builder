@@ -82,13 +82,27 @@ export const useGameSession = () => {
     store = useVaultStore(),
     { toast } = useOverlays(),
     reduced = useReducedMotion();
-  const [view, dispatch] = useReducer(reducer, {
+  const [view, dispatchState] = useReducer(reducer, {
     display: null,
     phase: saved.engineFailure ? "failed" : "idle",
     error: saved.engineFailure?.message || null,
     cursor: null,
     result: null,
   });
+  const dispatch = useCallback(
+    (event: Event) => {
+      if (event.type === "error") toast(event.message, { type: "error" });
+      dispatchState(event);
+    },
+    [toast],
+  );
+  const initialFailure = useRef(saved.engineFailure?.message);
+  useEffect(() => {
+    if (initialFailure.current) {
+      toast(initialFailure.current, { type: "error" });
+      initialFailure.current = undefined;
+    }
+  }, [toast]);
   const [retry, restart] = useReducer((n: number) => n + 1, 0);
   const engine = useRef<EngineClient | null>(null),
     request = useRef(0),
@@ -110,6 +124,7 @@ export const useGameSession = () => {
     if (restored) return;
     toast(
       "Не удалось восстановить позицию. Прогресс сохранён; начните новую партию.",
+      { type: "error" },
     );
     void store.update((state) =>
       state.game.pgn === saved.pgn ? { ...state, game: newGame() } : state,
@@ -187,7 +202,7 @@ export const useGameSession = () => {
     }
     if (result) dispatch({ type: "result", result });
     else dispatch({ type: "reset" });
-  }, [store, stopRewardAnalysis]);
+  }, [store, stopRewardAnalysis, dispatch]);
   const present = useCallback(() => {
     clearTimeout(timer.current);
     dispatch({ type: "phase", phase: "animating" });
@@ -206,7 +221,7 @@ export const useGameSession = () => {
       },
       reduced ? 0 : motionDuration.board,
     );
-  }, [store, reduced, settle]);
+  }, [store, reduced, settle, dispatch]);
   const invalidateRequest = useCallback(() => {
     request.current++;
   }, []);
@@ -334,6 +349,7 @@ export const useGameSession = () => {
     };
     // A search is owned by the persisted position, not by the thinking view transition.
   }, [
+    dispatch,
     saved.pgn,
     saved.startedAt,
     active,
@@ -360,7 +376,7 @@ export const useGameSession = () => {
           },
     );
     inFlight.current = false;
-    if (!result.ok) toast(result.error.message);
+    if (!result.ok) toast(result.error.message, { type: "error" });
     else dispatch({ type: "reset" });
   };
   const move = async (from: Square, to: Square, promotion?: string) => {
@@ -412,7 +428,7 @@ export const useGameSession = () => {
         }) || latest,
     );
     if (result.ok) dispatch({ type: "reset" });
-    else toast(result.error.message);
+    else toast(result.error.message, { type: "error" });
   };
   return {
     saved,

@@ -162,14 +162,6 @@ body.match-active #update-app {
   pointer-events: auto;
   max-width: 100%;
 }
-#toast {
-  border: 1px solid var(--border-strong);
-  background: var(--accent-soft);
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  overflow-wrap: anywhere;
-}
 .update-app {
   box-shadow: 0 4px 20px var(--shadow);
   font-size: 0.875rem;
@@ -337,12 +329,6 @@ body.match-active #play > .page-content {
   width: 100%;
 }
 
-#toast[data-tone="error"] {
-  color: var(--negative);
-  border-color: var(--negative);
-  background: color-mix(in srgb, var(--negative) 10%, var(--panel));
-}
-
 /* Same navigation model on all devices; wider screens gain comfortable content space. */
 .brand {
   font-weight: 700;
@@ -414,11 +400,6 @@ body.match-active #play > .page-content {
 }
 
 /* Floating feedback belongs to the raised layer, not the brand background. */
-#toast:not([data-tone="error"]) {
-  background: var(--raised);
-  border-color: var(--border);
-  box-shadow: 0 8px 28px var(--shadow);
-}
 
 .wallet:not(.shards) {
   color: var(--coins);
@@ -428,45 +409,153 @@ body.match-active #play > .page-content {
   border: 0;
 }
 
-.notification-stack.toast-layer {
-  inset: calc(16px + env(safe-area-inset-top)) auto auto 50%;
+/* Fixed top-layer geometry in every game mode, including native dialogs. */
+.toast-layer {
+  position: fixed;
+  inset: calc(12px + env(safe-area-inset-top)) auto auto 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100vw - 24px));
+  align-items: center;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--text);
   overflow: visible;
+  z-index: 1000;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
 }
-.toast-layer[hidden] { display: none; }
-.toast-layer #toast {
+.toast-layer[hidden] {
+  display: none;
+}
+.notification-slot {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  transform-origin: bottom center;
+  pointer-events: none;
+  transition:
+    transform var(--motion-standard) var(--motion-ease-local),
+    opacity var(--motion-standard) var(--motion-ease-local),
+    clip-path var(--motion-standard) var(--motion-ease-local);
+}
+.notification-card {
+  --notification-tone: var(--muted);
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 8px 8px 16px;
+  gap: 8px;
+  min-height: 44px;
+  width: max-content;
+  max-width: 100%;
+  padding: 0 2px 0 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--raised);
+  box-shadow: 0 4px 20px var(--shadow);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  pointer-events: auto;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: notification-enter var(--motion-enter) ease-out;
+  transition:
+    opacity var(--motion-standard),
+    transform var(--motion-standard);
+}
+.notification-card[data-tone="error"] {
+  --notification-tone: var(--negative);
+}
+.notification-card[data-tone="warning"] {
+  --notification-tone: var(--warning);
+}
+.notification-card[data-tone="success"] {
+  --notification-tone: var(--accent);
+}
+.notification-card:not([data-tone="neutral"]) {
+  color: var(--notification-tone);
+  background: color-mix(in srgb, var(--notification-tone) 10%, var(--raised));
+}
+.notification-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .toast-dismiss {
+  position: relative;
   display: grid;
   place-items: center;
   flex: 0 0 44px;
   width: 44px;
   height: 44px;
+  min-height: 44px;
+  margin: 0;
   padding: 0;
   background: transparent;
-  color: inherit;
-}
-.toast-dismiss svg { width: 20px; height: 20px; }
-
-.toast-layer #toast {
-  gap: 4px;
-  padding: 0 4px 0 12px;
-  min-height: 44px;
-  line-height: 1.4;
-  user-select: none;
-  -webkit-user-select: none;
-}
-.toast-layer .toast-dismiss {
-  margin: 0;
-  min-height: 44px;
+  color: var(--muted);
   border-radius: var(--radius-sm);
+}
+.toast-dismiss > svg {
+  width: 20px;
+  height: 20px;
+}
+.toast-dismiss .toast-countdown {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  color: var(--notification-tone);
+  transform: rotate(-90deg);
+}
+.toast-countdown circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: notification-countdown 5s linear forwards;
+}
+.notification-card[data-stacked] {
+  pointer-events: none;
+}
+.notification-card[data-leaving] {
+  animation: notification-exit var(--motion-exit) ease-in forwards;
+  pointer-events: none;
+}
+@keyframes notification-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes notification-exit {
+  to {
+    opacity: 0;
+    transform: translate(var(--dismiss-x, 0px), var(--dismiss-y, -16px));
+  }
+}
+@keyframes notification-countdown {
+  to {
+    stroke-dashoffset: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .notification-slot,
+  .notification-card,
+  .toast-countdown circle {
+    animation: none;
+    transition: none;
+  }
+  .notification-card[data-leaving] {
+    opacity: 0;
+  }
 }

@@ -113,3 +113,16 @@ Autochess preparation and each battle use separate capture contexts. Switching
 contexts clears capture ghosts and material labels without remounting the board;
 revealing an opponent or replacing setup IDs with battle IDs is not a capture.
 Actual captures within the same battle retain their normal feedback.
+
+## Notifications
+
+Top-center notifications enter over Enter, exit over Exit and fade into overflow
+with Standard. Lifetime is five seconds from creation; a CSS ring shows the same
+deadline. Leftward/downward direct manipulation follows the pointer without React updates.
+Reduced motion disables entry/exit/stack/ring animation but preserves dismissal
+and expiry. Opening a modal must never restart the deadline.
+
+Notification layout uses measured card heights and a separate absolute wrapper
+for position/scale/opacity. Entry, exit and drag stay on the inner card; they
+never overwrite the stack transform. Overflow retains three visible trailing
+edges (10px steps) with 75/50/25% opacity and positive descending z-index.

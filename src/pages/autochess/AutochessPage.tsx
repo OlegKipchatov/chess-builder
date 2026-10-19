@@ -236,7 +236,6 @@ export const AutochessPage = () => {
           Соберите армию и расставьте фигуры. Stockfish сыграет за обе стороны.
           Цель серии — 15 побед до 5 поражений.
         </p>
-        {auto.error && <p role="alert">{auto.error}</p>}
         <button
           className="primary"
           disabled={!auto.locked}
@@ -261,7 +260,7 @@ export const AutochessPage = () => {
     if (lastTap.current.id === id && time - lastTap.current.at < 350) {
       auto.change((value) => {
         const next = benchPiece(value, id);
-        if (next === value) toast("Резерв заполнен");
+        if (next === value) toast("Резерв заполнен", { type: "warning" });
         return next;
       });
       setSelected(null);
@@ -275,7 +274,7 @@ export const AutochessPage = () => {
     if (!piece || !preparation) return;
     const error = placementError(run, piece.id, square);
     if (error) {
-      toast(error);
+      toast(error, { type: "warning" });
       return;
     }
     if (placePiece(run, piece.id, square) === run) return;
@@ -565,7 +564,6 @@ export const AutochessPage = () => {
             </span>
           )}
         </div>
-        {auto.error && <p role="alert">{auto.error}</p>}
         <div id="auto-action">
           {run.phase === "result" ? (
             auto.presenting ? (
@@ -601,12 +599,12 @@ export const AutochessPage = () => {
               onClick={() => {
                 setSelected(null);
                 if (auto.active) auto.pause();
-                else if (incompatible)
+                else if (incompatible) {
+                  toast(incompatible, { type: "warning" });
                   show({
-                    title: "Исправьте состав",
+                    title: "Расстановка фигур",
                     body: (
                       <>
-                        <p>{incompatible}</p>
                         <p>
                           Фигуры в резерве не учитываются. Можно убрать фигуру
                           двойным нажатием, обменять её с резервом или продать.
@@ -638,7 +636,7 @@ export const AutochessPage = () => {
                       </>
                     ),
                   });
-                else auto.start();
+                } else auto.start();
               }}
             >
               {incompatible

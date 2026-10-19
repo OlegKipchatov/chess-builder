@@ -1,3 +1,4 @@
+import { useOverlays } from "../../app/providers/OverlayProvider.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useVaultStore } from "../../app/providers/VaultProvider.js";
 import { analyzeGame } from "../../services/analysis/analysis-service.js";
@@ -19,6 +20,7 @@ export const useGameAnalysis = (
   entry: ArchiveEntry,
   onAnalysisReady?: (analysis: GameAnalysis) => void,
 ) => {
+  const { toast } = useOverlays();
   const store = useVaultStore(),
     [job, setJob] = useState<Job>(() =>
       isCompatible(entry.analysis, entry)
@@ -27,6 +29,18 @@ export const useGameAnalysis = (
     ),
     owned = useRef<AbortController | null>(null),
     generation = useRef(0);
+  const initialStatus = useRef(entry.analysis?.status);
+  useEffect(() => {
+    if (initialStatus.current === "partial")
+      toast("Часть ходов не удалось проверить. Можно повторить анализ.", {
+        type: "warning",
+      });
+    if (initialStatus.current === "failed")
+      toast("Не удалось завершить анализ. Повторите попытку.", {
+        type: "error",
+      });
+    initialStatus.current = undefined;
+  }, [toast]);
   useEffect(
     () => () => {
       generation.current++;
@@ -64,19 +78,27 @@ export const useGameAnalysis = (
       if (token === generation.current && !controller.signal.aborted) {
         onAnalysisReady?.(analysis);
         setJob({ status: "ready", analysis });
+        if (analysis.status === "partial")
+          toast("Часть ходов не удалось проверить. Можно повторить анализ.", {
+            type: "warning",
+          });
+        if (analysis.status === "failed")
+          toast("Не удалось завершить анализ. Повторите попытку.", {
+            type: "error",
+          });
       }
     } catch (error) {
-      if (token === generation.current && !controller.signal.aborted)
-        setJob({
-          status: "failed",
-          message:
-            error instanceof Error &&
-            error.message === "Не удалось сохранить разбор. Попробуйте ещё раз."
-              ? error.message
-              : "Не удалось завершить анализ. Попробуйте ещё раз.",
-        });
+      if (token === generation.current && !controller.signal.aborted) {
+        const message =
+          error instanceof Error &&
+          error.message === "Не удалось сохранить разбор. Попробуйте ещё раз."
+            ? error.message
+            : "Не удалось завершить анализ. Попробуйте ещё раз.";
+        setJob({ status: "failed", message });
+        toast(message, { type: "error" });
+      }
     }
-  }, [entry, store, onAnalysisReady]);
+  }, [entry, store, onAnalysisReady, toast]);
   const cancel = useCallback(() => {
     generation.current++;
     owned.current?.abort();

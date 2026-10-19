@@ -186,7 +186,6 @@ const HuntGame = ({ mode }: { mode: "timed" | "endless" }) => {
           <section className="panel">
             {hunt.award === "failed" ? (
               <>
-                <p role="alert">{hunt.error}</p>
                 <button className="primary wide" onClick={hunt.retry}>
                   Сохранить награду
                 </button>

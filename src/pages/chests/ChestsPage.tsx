@@ -36,7 +36,7 @@ export const ChestsPage = () => {
     if (!mounted.current) return;
     setBusy(false);
     if (!result.ok) {
-      toast(result.error.message);
+      toast(result.error.message, { type: "error" });
       return;
     }
     const reward = result.value;

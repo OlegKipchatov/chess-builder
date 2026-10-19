@@ -35,7 +35,7 @@ export const MatePractice = ({
     [selected, setSelected] = useState<Square | null>(null),
     [hint, setHint] = useState<string | null>(null),
     [busy, setBusy] = useState(false),
-    { show } = useOverlays(),
+    { show, toast } = useOverlays(),
     reduced = useReducedMotion();
   useEffect(() => {
     const owned = createMateExercise(exercise, { attempts });
@@ -73,6 +73,10 @@ export const MatePractice = ({
     const next = await promise;
     if (controller.current !== owned) return false;
     setSnapshot(next);
+    if (next.state === "unverified")
+      toast("Мат пока не подтверждён. Попробуйте ещё раз.", {
+        type: "warning",
+      });
     setBusy(false);
     return next.state === "correct" || next.state === "success";
   };
@@ -150,70 +154,78 @@ export const MatePractice = ({
             ? "Мат"
             : `Мат в ${Math.max(1, snapshot.remainingMoves ?? exercise.mateIn)}`}
         </h2>
-        <p role="status">
-          {
+        {snapshot.state !== "unverified" && (
+          <p role="status">
             {
-              awaitMove: snapshot.hintUnavailable
-                ? "Не удалось получить подсказку. Попробуйте ещё раз."
-                : "Найдите продолжение",
-              wrong:
-                "В заданное число ходов мат не получился. Попробуйте иначе.",
-              longer_mate:
-                "Найденный мат длиннее задания. Попробуйте найти более короткий путь.",
-              success: "Мат! Задача решена",
-              correct: "Верно",
-              opponent: "Ход соперника",
-              checking: "Проверяем продолжение…",
-              unverified: "Мат пока не подтверждён. Попробуйте ещё раз.",
-            }[snapshot.state]
-          }
-        </p>
-        {["wrong", "unverified", "longer_mate"].includes(snapshot.state) && (
-          <button
-            data-practice-continue
-            className="primary"
-            onClick={() => {
-              const owned = controller.current;
-              if (owned) setSnapshot(owned.continue());
-            }}
-          >
-            Продолжить
-          </button>
+              {
+                awaitMove: "Найдите продолжение",
+                wrong:
+                  "В заданное число ходов мат не получился. Попробуйте иначе.",
+                longer_mate:
+                  "Найденный мат длиннее задания. Попробуйте найти более короткий путь.",
+                success: "Мат! Задача решена",
+                correct: "Верно",
+                opponent: "Ход соперника",
+                checking: "Проверяем продолжение…",
+                unverified: "Мат пока не подтверждён. Попробуйте ещё раз.",
+              }[snapshot.state]
+            }
+          </p>
         )}
-        {snapshot.canHint && snapshot.state === "awaitMove" && (
+        <div className="practice-actions">
+          {["wrong", "unverified", "longer_mate"].includes(snapshot.state) && (
+            <button
+              data-practice-continue
+              className="primary"
+              onClick={() => {
+                const owned = controller.current;
+                if (owned) setSnapshot(owned.continue());
+              }}
+            >
+              Продолжить
+            </button>
+          )}
+          {snapshot.canHint && snapshot.state === "awaitMove" && (
+            <button
+              data-practice-hint
+              disabled={busy}
+              onClick={async () => {
+                if (hint) {
+                  setHint(null);
+                  return;
+                }
+                const owned = controller.current;
+                if (!owned) return;
+                setBusy(true);
+                const move = await owned.getHint();
+                if (controller.current !== owned) return;
+                setHint(move || null);
+                if (!move)
+                  toast("Не удалось получить подсказку. Попробуйте ещё раз.", {
+                    type: "error",
+                  });
+                setSnapshot(owned.getSnapshot());
+                setBusy(false);
+              }}
+            >
+              {hint ? "Скрыть" : "Подсказка"}
+            </button>
+          )}
           <button
-            data-practice-hint
-            disabled={busy}
-            onClick={async () => {
-              if (hint) {
-                setHint(null);
-                return;
-              }
-              const owned = controller.current;
-              if (!owned) return;
-              setBusy(true);
-              const move = await owned.getHint();
-              if (controller.current !== owned) return;
-              setHint(move || null);
-              setSnapshot(owned.getSnapshot());
-              setBusy(false);
-            }}
+            data-practice-continue={
+              snapshot.state === "success" ? true : undefined
+            }
+            data-analysis-return={
+              snapshot.state !== "success" ? true : undefined
+            }
+            className={snapshot.state === "success" ? "primary" : "quiet"}
+            onClick={onClose}
           >
-            {hint ? "Скрыть" : "Подсказка"}
+            {snapshot.state === "success"
+              ? "Продолжить просмотр"
+              : "Вернуться к партии"}
           </button>
-        )}
-        <button
-          data-practice-continue={
-            snapshot.state === "success" ? true : undefined
-          }
-          data-analysis-return={snapshot.state !== "success" ? true : undefined}
-          className={snapshot.state === "success" ? "primary" : "quiet"}
-          onClick={onClose}
-        >
-          {snapshot.state === "success"
-            ? "Продолжить просмотр"
-            : "Вернуться к партии"}
-        </button>
+        </div>
       </aside>
     </div>
   );
