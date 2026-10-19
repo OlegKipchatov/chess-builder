@@ -28,7 +28,7 @@ export const verifyShortMate = async (
     }
     return proof.isCheckmate() &&
       proof.history().length <= 2 * line.score.value - 1
-      ? { moves: line.score.value, verified: true }
+      ? { moves: line.score.value, verified: true, proof: "engine" as const }
       : null;
   }
   const game = new Chess(fen),
@@ -42,7 +42,8 @@ export const verifyShortMate = async (
   } catch {
     return null;
   }
-  if (game.isCheckmate()) return { moves: 1, verified: true };
+  if (game.isCheckmate())
+    return { moves: 1, verified: true, proof: "exhaustive" as const };
   if (line.score.value !== 2 || game.isGameOver()) return null;
   for (const reply of game.moves()) {
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -59,7 +60,7 @@ export const verifyShortMate = async (
     game.undo();
     if (!mate) return null;
   }
-  return { moves: 2, verified: true };
+  return { moves: 2, verified: true, proof: "exhaustive" as const };
 };
 export const material = (game: Chess, color: Color) =>
   game
@@ -108,10 +109,19 @@ export const describeLine = (
 export const detectReason = (move: MoveAnalysis): Reason | null => {
   if (move.forced) return null;
   if (move.mateTransition === "allowed_mate") return "allowed_mate";
+  if (move.outcome) return move.outcome.reason;
+  if (
+    move.mateTransition === "missed_mate" &&
+    move.bestLine?.score.type === "mate" &&
+    move.bestLine.score.value > 4
+  )
+    return "generic";
   if (move.mateTransition === "missed_mate")
-    return (move.expectedScoreLoss ?? 0) <= 0.025
-      ? "mate_opportunity"
-      : "missed_mate";
+    // A CP score is not a proof that the mating continuation was lost.
+    return move.playedLine?.score?.type === "mate" &&
+      move.playedLine.score.value <= 0
+      ? "missed_mate"
+      : "mate_opportunity";
   if (move.highlight)
     return move.playedLine!.score.type === "mate" &&
       move.playedLine!.score.value > 0

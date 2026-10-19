@@ -4,20 +4,29 @@ import { motionDuration } from "../../shared/styles/motion.js";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useReducedMotion } from "../../shared/hooks/useReducedMotion.js";
 interface Props {
+  evaluation?: {
+    value: string;
+    change: string;
+    direction: string;
+    description: string;
+  };
   variant?: boolean;
   cursor: number;
   total: number;
   onSeek: (ply: number) => void;
   playing?: boolean;
   onPlay?: () => void;
+  onReturn?: () => void;
   markers?: MoveAnnotation[];
 }
 export const MoveNavigation = ({
   cursor,
   total,
+  evaluation,
   onSeek,
   playing,
   onPlay,
+  onReturn,
   markers = [],
   variant = false,
 }: Props) => {
@@ -55,8 +64,14 @@ export const MoveNavigation = ({
     setThumb(Math.round(thumb));
   };
   return (
-    <div className="history-controls" role="group" aria-label="История ходов">
-      <div className="history-buttons">
+    <div
+      className={`history-controls${evaluation ? " history-controls-evaluated" : ""}`}
+      role="group"
+      aria-label={variant ? "Просмотр варианта" : "История ходов"}
+    >
+      <div
+        className={`history-buttons${onReturn ? " history-buttons-with-return" : ""}`}
+      >
         <button
           className="icon-button"
           id={`${prefix}-back`}
@@ -93,16 +108,42 @@ export const MoveNavigation = ({
         <button
           className="icon-button"
           id={`${prefix}-live`}
-          aria-label="К текущему ходу"
+          aria-label={variant ? "В конец варианта" : "К текущему ходу"}
           disabled={cursor >= total}
           onClick={() => seek(total)}
         >
           <ControlIcon name="live" />
         </button>
+        {onReturn && (
+          <button
+            type="button"
+            className="icon-button history-return"
+            data-analysis-return
+            aria-label="Вернуться к партии"
+            title="Вернуться к партии"
+            onClick={onReturn}
+          >
+            <ControlIcon name="back" />
+          </button>
+        )}
       </div>
-      <span id={`${prefix}-position`} aria-live="polite">
-        {cursor} / {total}
-      </span>
+      <div className="history-position-summary" aria-live="polite">
+        {evaluation && (
+          <span
+            className="history-evaluation"
+            title={evaluation.description}
+            aria-label={`Перевес ${evaluation.value}. Изменение ${evaluation.change}. ${evaluation.description}`}
+          >
+            <span data-direction={evaluation.direction}>
+              {evaluation.change}
+            </span>
+            <strong>{evaluation.value}</strong>
+          </span>
+        )}
+        <span id={`${prefix}-position`}>
+          {evaluation ? `${cursor}/${total}` : `${cursor} / ${total}`}
+        </span>
+      </div>
       <div className="history-timeline">
         <input
           id={`${prefix}-slider`}
@@ -113,7 +154,9 @@ export const MoveNavigation = ({
           step="any"
           value={thumb}
           disabled={!total}
-          aria-label="Позиция в истории партии"
+          aria-label={
+            variant ? "Позиция в варианте" : "Позиция в истории партии"
+          }
           aria-valuetext={`${cursor} из ${total}`}
           style={
             {

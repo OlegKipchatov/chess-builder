@@ -467,3 +467,13 @@ textarea.pgn-text {
 dialog .quiet {
   background: var(--control-hover);
 }
+
+textarea.pgn-import-text {
+  display: block;
+  width: 100%;
+  height: clamp(280px, 45dvh, 520px);
+  min-height: 280px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}

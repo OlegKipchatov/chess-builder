@@ -513,6 +513,12 @@
   justify-content: flex-start;
   min-width: 0;
 }
+.history-buttons-with-return {
+  flex-wrap: wrap;
+}
+.history-buttons .history-return {
+  margin-inline-start: 8px;
+}
 .history-controls > span {
   white-space: nowrap;
   text-align: right;
@@ -719,3 +725,31 @@ body.match-active:has(#play.active-match) #app > main {
 .board-area > .game-header {
   margin-block-end: 12px;
 }
+
+.history-position-summary {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: .8125rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.history-controls-evaluated { column-gap: 4px; }
+.history-controls-evaluated #history-position { min-width: 0; }
+.history-evaluation {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+}
+.history-evaluation strong {
+  color: var(--text);
+  border-inline-start: 1px solid var(--control-border);
+  padding-inline-start: 6px;
+}
+.history-evaluation [data-direction="negative"] { color: var(--negative); }
+.history-evaluation [data-direction="positive"] { color: var(--accent); }

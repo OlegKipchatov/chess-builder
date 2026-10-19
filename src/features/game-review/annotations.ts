@@ -1,5 +1,5 @@
 import type { MoveAnalysis } from "../../domain/analysis/types.js";
-import { qualityLabel } from "../../domain/analysis/analysis-explanations.js";
+import { insightLabel } from "../../domain/analysis/analysis-explanations.js";
 
 export interface MoveAnnotation {
   ply: number;
@@ -21,9 +21,7 @@ export const moveAnnotation = (move: MoveAnalysis): MoveAnnotation => ({
           string
         >
       )[move.quality || ""] || "",
-  label: move.highlight
-    ? "Отличный ход"
-    : (move.quality ? qualityLabel[move.quality] : null) || "Важный момент",
+  label: insightLabel(move),
 });
 
 export const boardAnnotation = (move?: MoveAnalysis | null) => {

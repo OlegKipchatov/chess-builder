@@ -427,3 +427,46 @@ body.match-active #play > .page-content {
 .profile-avatar {
   border: 0;
 }
+
+.notification-stack.toast-layer {
+  inset: calc(16px + env(safe-area-inset-top)) auto auto 50%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: visible;
+}
+.toast-layer[hidden] { display: none; }
+.toast-layer #toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  touch-action: none;
+}
+.toast-dismiss {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+.toast-dismiss svg { width: 20px; height: 20px; }
+
+.toast-layer #toast {
+  gap: 4px;
+  padding: 0 4px 0 12px;
+  min-height: 44px;
+  line-height: 1.4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.toast-layer .toast-dismiss {
+  margin: 0;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+}

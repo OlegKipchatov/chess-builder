@@ -6,6 +6,17 @@
   max-width: 920px;
   margin: auto;
 }
+.pgn-analysis-side {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.pgn-analysis-side > span {
+  color: var(--muted);
+  font-size: var(--type-secondary);
+}
 .analysis-grid .board-area {
   min-width: 0;
   width: 100%;

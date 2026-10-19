@@ -189,14 +189,21 @@ const createEngineExercise = (
     game,
     getSnapshot: snapshot,
     getHint: async () => {
-      const line = await search();
-      const remaining = exercise.mateIn - Math.floor(game.history().length / 2);
-      return !disposed &&
-        line.scoreType === "mate" &&
-        line.scoreValue > 0 &&
-        line.scoreValue <= remaining
-        ? line.move
-        : null;
+      try {
+        const line = await search();
+        const remaining =
+          exercise.mateIn - Math.floor(game.history().length / 2);
+        return !disposed &&
+          line.scoreType === "mate" &&
+          line.scoreValue > 0 &&
+          line.scoreValue <= remaining
+          ? line.move
+          : null;
+      } catch {
+        client?.terminate();
+        client = null;
+        return null;
+      }
     },
     submit: async (token) => {
       if (disposed || state !== "awaitMove") return snapshot();
@@ -220,8 +227,8 @@ const createEngineExercise = (
         if (disposed) return snapshot();
         // Root is now the defending side: a negative mate proves the user's continuation.
         if (line.scoreType !== "mate") state = "unverified";
-        else if (line.scoreValue >= 0 || Math.abs(line.scoreValue) > remaining)
-          state = "wrong";
+        else if (line.scoreValue >= 0) state = "wrong";
+        else if (Math.abs(line.scoreValue) > remaining) state = "longer_mate";
         else {
           reply = line.move;
           state = "correct";
@@ -236,7 +243,7 @@ const createEngineExercise = (
       return snapshot();
     },
     continue: () => {
-      if (["wrong", "unverified"].includes(state)) {
+      if (["wrong", "unverified", "longer_mate"].includes(state)) {
         game.undo();
         state = "awaitMove";
       } else if (state === "correct") {
@@ -266,7 +273,8 @@ const withAttempts = (
   exercise: ExerciseController,
   { attempts = new Map<string, number>() }: ExerciseOptions = {},
 ): ExerciseController => {
-  let hintPending = false;
+  let hintPending = false,
+    hintUnavailable = false;
   const position = () => {
     const game = exercise.game;
     return game.fen().split(" ").slice(0, 4).join(" ");
@@ -276,23 +284,35 @@ const withAttempts = (
     hintPending,
     failedAttempts: attempts.get(position()) || 0,
     canHint: (attempts.get(position()) || 0) >= 5,
+    hintUnavailable,
+    remainingMoves: Math.max(
+      0,
+      exercise.getSnapshot().mateIn -
+        (["wrong", "unverified", "longer_mate"].includes(
+          exercise.getSnapshot().state,
+        )
+          ? Math.floor(exercise.game.history().length / 2)
+          : Math.ceil(exercise.game.history().length / 2)),
+    ),
   });
   return {
     ...exercise,
     getSnapshot: snapshot,
     continue: () => {
+      hintUnavailable = false;
       exercise.continue();
       return snapshot();
     },
     submit: (token: string) => {
       if (hintPending || exercise.getSnapshot().state !== "awaitMove")
         return snapshot();
+      hintUnavailable = false;
       const key = position(),
         before = exercise.game.history().length;
       const finish = () => {
         if (
           exercise.game.history().length > before &&
-          exercise.getSnapshot().state === "wrong"
+          ["wrong", "longer_mate"].includes(exercise.getSnapshot().state)
         )
           attempts.set(key, (attempts.get(key) || 0) + 1);
         return snapshot();
@@ -308,9 +328,13 @@ const withAttempts = (
       )
         return null;
       hintPending = true;
+      hintUnavailable = false;
       try {
-        return await exercise.getHint();
+        const hint = await exercise.getHint();
+        hintUnavailable = !hint;
+        return hint;
       } catch {
+        hintUnavailable = true;
         return null;
       } finally {
         hintPending = false;

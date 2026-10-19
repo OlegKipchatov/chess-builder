@@ -11,11 +11,9 @@ export const eligibleEntry = (
     !entry.id ||
     typeof entry.pgn !== "string" ||
     !entry.pgn.trim() ||
-    entry.imported ||
-    entry.counted === false ||
     entry.engineFailure ||
-    entry.mode !== "bot" ||
-    !entry.finishedAt ||
+    (!entry.imported &&
+      (entry.counted === false || entry.mode !== "bot" || !entry.finishedAt)) ||
     !["w", "b"].includes(entry.playerColor)
   )
     return false;

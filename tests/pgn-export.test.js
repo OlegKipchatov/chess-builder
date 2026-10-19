@@ -20,3 +20,17 @@ test('Архивная сдача, ничья и нестандартная на
  const restored=new Chess();restored.loadPgn(exportPgn(game,{playerColor:'b',result:'Поражение'}));assert.equal(restored.fen(),game.fen());assert.equal(restored.getHeaders().Result,'1-0');
  restored.loadPgn(exportPgn(new Chess(),{result:'Ничья'}));assert.equal(restored.getHeaders().Result,'1/2-1/2');
 });
+test('Capability detection rejects unavailable file sharing and errors are not hidden by download',async()=>{
+ const {canSharePgn}=await import('../src/shared/lib/pgn-export.ts');
+ const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');
+ try {
+  Object.defineProperty(globalThis,'navigator',{configurable:true,value:{share:async()=>{},canShare:()=>false}});
+  assert.equal(canSharePgn('1. e4 *'),false);
+  navigator.canShare=()=>{throw Error('policy');};assert.equal(canSharePgn('1. e4 *'),false);
+  navigator.canShare=()=>true;
+  navigator.share=async()=>{throw Error('denied');};
+  await assert.rejects(sharePgn('1. e4 *'),/denied/);
+  navigator.share=async()=>{throw Object.assign(Error('cancelled'),{name:'AbortError'});};
+  await assert.doesNotReject(sharePgn('1. e4 *'));
+ } finally {if(descriptor)Object.defineProperty(globalThis,'navigator',descriptor);else delete globalThis.navigator;}
+});

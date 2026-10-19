@@ -12,6 +12,10 @@ export type Reason =
   | "missed_capture"
   | "missed_tactic"
   | "promotion"
+  | "allowed_stalemate"
+  | "lost_win"
+  | "missed_draw"
+  | "saved_draw"
   | "generic";
 export type MateTransition =
   "allowed_mate" | "missed_mate" | "preserves_mate" | "already_lost" | null;
@@ -60,7 +64,9 @@ interface FactBase {
 export type ComparisonFact = FactBase &
   (
     | { kind: "material"; bestDelta: number; actualDelta: number }
-    | { kind: "promotion" | "threat"; step: TraceStep }
+    | { kind: "exchange"; steps: TraceStep[]; actualEnd: number }
+    | { kind: "promotion"; step: TraceStep }
+    | { kind: "threat"; step: TraceStep; response?: TraceStep }
     | { kind: "check"; step: TraceStep; followup?: TraceStep }
     | {
         kind: "target_escape";
@@ -85,6 +91,7 @@ export interface Recommendation {
   text: string;
   pv: string[];
   facts: unknown[];
+  tactic?: "fork" | "pin" | "discovered_attack" | "deflection";
   reason?: Reason | null;
   themeKey?: string | null;
   playedPv?: string[];
@@ -94,6 +101,19 @@ export interface Recommendation {
     bestPlies: number;
     playedPlies: number;
   };
+}
+export type DrawMechanism =
+  | "perpetual_check"
+  | "stalemate"
+  | "repetition"
+  | "insufficient"
+  | "fifty_moves";
+export interface OutcomeEvidence {
+  reason: "allowed_stalemate" | "lost_win" | "missed_draw" | "saved_draw";
+  mechanism?: DrawMechanism;
+  immediate: boolean;
+  pv: string[];
+  text: string;
 }
 export interface MateReply {
   move: string;
@@ -126,7 +146,12 @@ export interface MoveAnalysis extends Partial<MoveClassification> {
   recommendationEvidence?: Recommendation | null;
   reason?: Reason | null;
   explanationKey?: string | null;
-  shortMate?: { moves: number; verified: boolean } | null;
+  shortMate?: {
+    moves: number;
+    verified: boolean;
+    proof?: "exhaustive" | "engine";
+  } | null;
+  outcome?: OutcomeEvidence | null;
   exercise?: MateExercise | null;
   recommendationRequired?: boolean;
   repeatedOpportunity?: boolean;
@@ -175,13 +200,16 @@ export type ExerciseState =
   | "correct"
   | "opponent"
   | "checking"
-  | "unverified";
+  | "unverified"
+  | "longer_mate";
 export interface ExerciseSnapshot {
   fen: string;
   state: ExerciseState;
   mateIn: number;
   turn: Color;
   hintPending?: boolean;
+  hintUnavailable?: boolean;
+  remainingMoves?: number;
   failedAttempts?: number;
   canHint?: boolean;
 }

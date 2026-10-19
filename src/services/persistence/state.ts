@@ -1,5 +1,6 @@
 import type { PieceSymbol } from "chess.js";
 import { Chess } from "chess.js";
+import { restoreRewardCheckpoint } from "../../domain/economy/reward-checkpoint.js";
 import {
   initialActivity,
   normalizeActivity,
@@ -196,6 +197,9 @@ export const migrateState = (
   );
   next.settings = { mode: "bot", difficulty: "adaptive" };
   next.game.playerColor = input.game?.playerColor === "b" ? "b" : "w";
+  next.game.rewardCheckpoint = restoreRewardCheckpoint(
+    input.game?.rewardCheckpoint,
+  );
   if (next.game.mode === "bot" && !next.game.settled) {
     next.game.difficulty = "adaptive";
     if (next.game.started && !next.game.rating)
@@ -211,46 +215,51 @@ export const migrateState = (
     .filter(
       (entry) => typeof entry?.id === "string" && typeof entry.pgn === "string",
     )
-    .map((entry) => ({
-      ...(entry.counted === false ? { counted: false } : {}),
-      ...(typeof entry.engineFailure?.fen === "string" &&
-      typeof entry.engineFailure.message === "string"
-        ? {
-            engineFailure: {
-              fen: entry.engineFailure.fen.slice(0, 120),
-              message: entry.engineFailure.message.slice(0, 240),
-            },
-          }
-        : {}),
-      ...(entry.rewardBreakdown?.rewardVersion === "game-economy-v2"
-        ? { rewardBreakdown: structuredClone(entry.rewardBreakdown) }
-        : {}),
-      ...(restoreAnalysis(entry.analysis, entry)
-        ? { analysis: restoreAnalysis(entry.analysis, entry) }
-        : {}),
-      id: entry.id,
-      pgn: entry.pgn,
-      startedAt: typeof entry.startedAt === "string" ? entry.startedAt : "",
-      engineProfile: validArchivedProfile(entry.engineProfile)
-        ? { ...entry.engineProfile }
-        : null,
-      finishedAt: typeof entry.finishedAt === "string" ? entry.finishedAt : "",
-      mode: entry.mode === "local" ? "local" : "bot",
-      playerColor: entry.playerColor === "b" ? "b" : "w",
-      equipped: validEquipment(entry.equipped, next.owned),
-      result:
-        typeof entry.result === "string"
-          ? entry.result.slice(0, 40)
-          : "Партия завершена",
-      points: integer(entry.points),
-      playerRating: integer(entry.playerRating, 1000),
-      opponentRating: Number.isSafeInteger(entry.opponentRating)
-        ? entry.opponentRating
-        : null,
-      ratingDelta: Number.isSafeInteger(entry.ratingDelta)
-        ? entry.ratingDelta
-        : null,
-    }));
+    .map((entry) => {
+      const rewardCheckpoint = restoreRewardCheckpoint(entry.rewardCheckpoint);
+      return {
+        ...(entry.counted === false ? { counted: false } : {}),
+        ...(typeof entry.engineFailure?.fen === "string" &&
+        typeof entry.engineFailure.message === "string"
+          ? {
+              engineFailure: {
+                fen: entry.engineFailure.fen.slice(0, 120),
+                message: entry.engineFailure.message.slice(0, 240),
+              },
+            }
+          : {}),
+        ...(entry.rewardBreakdown?.rewardVersion === "game-economy-v2"
+          ? { rewardBreakdown: structuredClone(entry.rewardBreakdown) }
+          : {}),
+        ...(restoreAnalysis(entry.analysis, entry)
+          ? { analysis: restoreAnalysis(entry.analysis, entry) }
+          : {}),
+        id: entry.id,
+        ...(rewardCheckpoint ? { rewardCheckpoint } : {}),
+        pgn: entry.pgn,
+        startedAt: typeof entry.startedAt === "string" ? entry.startedAt : "",
+        engineProfile: validArchivedProfile(entry.engineProfile)
+          ? { ...entry.engineProfile }
+          : null,
+        finishedAt:
+          typeof entry.finishedAt === "string" ? entry.finishedAt : "",
+        mode: entry.mode === "local" ? "local" : "bot",
+        playerColor: entry.playerColor === "b" ? "b" : "w",
+        equipped: validEquipment(entry.equipped, next.owned),
+        result:
+          typeof entry.result === "string"
+            ? entry.result.slice(0, 40)
+            : "Партия завершена",
+        points: integer(entry.points),
+        playerRating: integer(entry.playerRating, 1000),
+        opponentRating: Number.isSafeInteger(entry.opponentRating)
+          ? entry.opponentRating
+          : null,
+        ratingDelta: Number.isSafeInteger(entry.ratingDelta)
+          ? entry.ratingDelta
+          : null,
+      };
+    });
   next.sets = (Array.isArray(input.sets) ? input.sets : [])
     .filter((s) => typeof s?.id === "string" && typeof s.name === "string")
     .slice(0, 12)

@@ -15,7 +15,10 @@ type Job =
   | { status: "running"; progress: AnalysisProgress }
   | { status: "ready"; analysis: GameAnalysis }
   | { status: "failed"; message: string };
-export const useGameAnalysis = (entry: ArchiveEntry) => {
+export const useGameAnalysis = (
+  entry: ArchiveEntry,
+  onAnalysisReady?: (analysis: GameAnalysis) => void,
+) => {
   const store = useVaultStore(),
     [job, setJob] = useState<Job>(() =>
       isCompatible(entry.analysis, entry)
@@ -29,7 +32,7 @@ export const useGameAnalysis = (entry: ArchiveEntry) => {
       generation.current++;
       owned.current?.abort();
     },
-    [entry.id],
+    [entry.id, entry.pgn, entry.playerColor],
   );
   const start = useCallback(async () => {
     owned.current?.abort();
@@ -49,22 +52,31 @@ export const useGameAnalysis = (entry: ArchiveEntry) => {
         },
       });
       if (token !== generation.current || controller.signal.aborted) return;
-      const saved = await store.update((state) =>
-        token === generation.current && !controller.signal.aborted
-          ? attachAnalysis(state, entry.id, analysis)
-          : state,
-      );
-      if (!saved.ok) throw saved.error;
-      if (token === generation.current && !controller.signal.aborted)
+      if (!entry.imported) {
+        const saved = await store.update((state) =>
+          token === generation.current && !controller.signal.aborted
+            ? attachAnalysis(state, entry.id, analysis)
+            : state,
+        );
+        if (!saved.ok)
+          throw new Error("Не удалось сохранить разбор. Попробуйте ещё раз.");
+      }
+      if (token === generation.current && !controller.signal.aborted) {
+        onAnalysisReady?.(analysis);
         setJob({ status: "ready", analysis });
+      }
     } catch (error) {
       if (token === generation.current && !controller.signal.aborted)
         setJob({
           status: "failed",
-          message: error instanceof Error ? error.message : String(error),
+          message:
+            error instanceof Error &&
+            error.message === "Не удалось сохранить разбор. Попробуйте ещё раз."
+              ? error.message
+              : "Не удалось завершить анализ. Попробуйте ещё раз.",
         });
     }
-  }, [entry, store]);
+  }, [entry, store, onAnalysisReady]);
   const cancel = useCallback(() => {
     generation.current++;
     owned.current?.abort();
@@ -77,6 +89,7 @@ export const useGameAnalysis = (entry: ArchiveEntry) => {
     analysis:
       job.status === "ready" &&
       job.analysis.gameId === entry.id &&
+      job.analysis.playerColor === entry.playerColor &&
       job.analysis.sourcePgn === entry.pgn
         ? job.analysis
         : isCompatible(entry.analysis, entry)

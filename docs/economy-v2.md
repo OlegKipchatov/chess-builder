@@ -11,8 +11,30 @@ no own moves cancels the game. Natural short endings pay normally. Legacy local
 matches do not mint V2 rewards. Failed/unfinished games do not pay.
 
 Base settlement atomically persists wallet, archive and reset active game. The
-archive stores `rewardVersion`, breakdown and pending quality status. A sequential
-local queue evaluates pending games, then atomically writes bonus and final status.
+archive stores `rewardVersion`, breakdown and pending quality status. During the
+player's idle turn, a cancellable background job evaluates completed own moves
+using exactly the same fixed-node profile. It starts after the board animation
+and a 200 ms idle delay; there is no analysis during the opponent's search.
+Moving, resigning, changing game, leaving the screen or hiding the application
+cancels the job and releases its Stockfish Worker. The cognitive opponent uses
+its existing separate Worker; searches never run concurrently with reward work.
+
+Each fully evaluated decision is persisted in the active game's
+`rewardCheckpoint`: profile version, player color, initial FEN, canonical move
+prefix and decisions. On reload, only matching history is reused. Changed
+history/color/profile or malformed checkpoints are recalculated. An interrupted
+decision is retried; completed decisions are retained. Settlement transfers the
+checkpoint to the archive atomically with the game result. A sequential local
+queue evaluates only missing decisions, then atomically writes bonus and final
+status and discards the checkpoint. A fully evaluated game needs no Worker.
+Old pending games pause while a new game is active. Foreground/background
+cancellation is never a failure or a reason to pay the reserve bonus.
+Background failures leave unfinished work for final processing; a background
+checkpoint storage failure cannot award coins or modify the gameplay state.
+Saving the checkpoint is optional for final processing: a storage failure cannot
+replace an earned exact bonus with the fallback; the existing save retry keeps
+the calculated bonus in memory.
+
 Final states are idempotent. Restart resumes pending analysis; viewing history
 never reprices completed rewards. A failed search is retried up to three attempts,
 recreating the Worker/client and validating the request id and WDL. Exhausted

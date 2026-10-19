@@ -1,10 +1,14 @@
+import { positionEvaluation } from "../../domain/analysis/position-evaluation.js";
 import { boardAnnotation, moveAnnotation } from "./annotations.js";
 import { materialBalance } from "../../domain/chess/archive.js";
 import { motionDuration } from "../../shared/styles/motion.js";
 import { MoveList } from "./MoveList.js";
 import { playStyleName } from "../../domain/cognitive/play-style-config.js";
 import { AnalysisInsight } from "./AnalysisInsight.js";
-import { visibleVariation } from "../../domain/analysis/presentation.js";
+import {
+  visibleVariation,
+  reviewCompletion,
+} from "../../domain/analysis/presentation.js";
 import { Chess } from "chess.js";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { isImportantInsight } from "../../domain/analysis/analysis-events.js";
@@ -27,17 +31,19 @@ export const GameReview = ({
   entry,
   autoAnalyze = false,
   showExport = true,
+  onAnalysisReady,
 }: {
   entry: ArchiveEntry;
   autoAnalyze?: boolean;
   showExport?: boolean;
+  onAnalysisReady?: (analysis: GameAnalysis) => void;
 }) => {
   const live = useMemo(() => {
       const board = new Chess();
       board.loadPgn(entry.pgn);
       return board;
     }, [entry.pgn]),
-    { job, start, cancel, analysis } = useGameAnalysis(entry),
+    { job, start, cancel, analysis } = useGameAnalysis(entry, onAnalysisReady),
     [cursor, setCursor] = useState(0),
     [playing, setPlaying] = useState(false),
     [playbackState, setPlaybackState] = useState("idle"),
@@ -218,17 +224,20 @@ export const GameReview = ({
                 cursor={variation}
                 total={visibleVariation(move, true).pv.length}
                 onSeek={setVariation}
+                onReturn={() => {
+                  setVariation(null);
+                  setHint(false);
+                  surface.current
+                    ?.querySelector<HTMLButtonElement>("[data-analysis-line]")
+                    ?.focus({ preventScroll: true });
+                }}
               />
-              <button
-                data-analysis-return
-                className="quiet"
-                onClick={() => setVariation(null)}
-              >
-                Вернуться к партии
-              </button>
             </div>
           ) : (
             <MoveNavigation
+              evaluation={
+                analysisMode ? positionEvaluation(analysis, cursor) : undefined
+              }
               markers={
                 analysisMode
                   ? analysis?.moves
@@ -343,7 +352,9 @@ export const GameReview = ({
             </p>
           )}
           {cursor === live.history().length && !isImportantInsight(move) && (
-            <p className="analysis-position-message">Просмотр завершён.</p>
+            <p className="analysis-position-message">
+              {reviewCompletion(analysisMode ? analysis : undefined)}
+            </p>
           )}
         </div>
       </div>

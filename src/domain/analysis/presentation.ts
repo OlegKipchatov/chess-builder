@@ -5,6 +5,8 @@ export const visibleVariation = (
   expanded = false,
 ) => {
   const line = move?.bestLine;
+  if (expanded && move?.outcome?.reason === "missed_draw")
+    return { pv: move.outcome.pv, san: [] };
   if (!line) return { pv: [], san: [] };
   if (expanded && move.recommendationEvidence?.pv)
     return { pv: move.recommendationEvidence.pv, san: [] };
@@ -36,9 +38,10 @@ export const insightLines = (move: MoveAnalysis | undefined | null) => {
   return [move.bestLine];
 };
 /** Plain-language move description used by insight cards, without revealing coordinates. */
-export const humanMove = (san: string): string => {
+export const humanMove = (san: string, token?: string): string => {
   if (!san) return "";
-  if (san.startsWith("O-O")) return "Рокировка";
+  if (san.startsWith("O-O-O")) return "Длинная рокировка";
+  if (san.startsWith("O-O")) return "Короткая рокировка";
   const names: Record<string, string> = {
     K: "Король",
     Q: "Ферзь",
@@ -48,8 +51,30 @@ export const humanMove = (san: string): string => {
   };
   return (
     (names[san[0]!] || "Пешка") +
+    (token && /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token)
+      ? ` ${token.slice(0, 2)}–${token.slice(2, 4)}`
+      : "") +
     (san.includes("x") ? " — взятие" : "") +
     (san.includes("=") ? " — превращение" : "") +
     (san.endsWith("#") ? " · мат" : san.endsWith("+") ? " · шах" : "")
   );
+};
+
+export const reviewCompletion = (
+  analysis?: import("./types.js").GameAnalysis,
+) => {
+  if (analysis?.status !== "complete") return "Просмотр завершён.";
+  const serious = analysis.moves.some(
+    (move) =>
+      move.actor === "player" &&
+      move.status === "complete" &&
+      (["mistake", "blunder"].includes(move.quality || "") ||
+        [
+          "allowed_stalemate",
+          "lost_win",
+          "missed_draw",
+          "allowed_mate",
+        ].includes(move.reason || "")),
+  );
+  return serious ? "Разбор завершён." : "Серьёзных ошибок не найдено.";
 };

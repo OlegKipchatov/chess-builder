@@ -8,6 +8,7 @@ import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {MoveNavigation} from '../src/features/game-review/MoveNavigation.tsx';
 import {variationArrowPoints} from '../src/features/chessboard/model.ts';
+import {explanationFor} from '../src/domain/analysis/analysis-explanations.ts';
 const line={move:'g1f3',san:'Nf3',pvSan:['Nf3','Nc6'],expectedScorePlayer:.47};
 const move={actor:'player',status:'complete',playedMove:'g1f3',playedSan:'Nf3',quality:'best',highlight:null,reason:'generic',expectedScoreLoss:0,bestLine:line,playedLine:line,alternatives:[]};
 test('Cards and autoplay pauses share the same definition of importance',()=>{
@@ -46,6 +47,21 @@ test('Mate challenge does not disclose the solution until requested',()=>{
  assert.match(html,/Найти мат/);assert.doesNotMatch(html,/data-analysis-line|Показать решение/);assert.match(html,/мат в два хода/);
  assert.doesNotMatch(html,/Qa5|Qc3|Ошибка/);
 });
+test('Long mates are not proposed; four-move opportunities remain',()=>{
+ for(const distance of [5,11,21,22]){
+  const explanation=explanationFor({...move,reason:'mate_opportunity',bestLine:{...line,score:{type:'mate',value:distance}}});
+  assert.doesNotMatch(explanation,/мат|при любой защите/);
+ }
+ const explanation=explanationFor({...move,reason:'mate_opportunity',bestLine:{...line,score:{type:'mate',value:4}}});
+ assert.match(explanation,/Вы могли поставить мат в четыре хода/);
+});
+test('Missing or adverse mate scores never invent a distance or a retained advantage',()=>{
+ for(const score of [undefined,{type:'cp',value:500},{type:'mate',value:-3},{type:'mate',value:0}]){
+  const explanation=explanationFor({...move,reason:'missed_mate',bestLine:{...line,score}});
+  assert.doesNotMatch(explanation,/мат при любой защите|упустили|снизили свои шансы/);
+  assert.doesNotMatch(explanation,/мат в |сохранил преимущество|undefined/);
+ }
+});
 test('Meaningful positives remain without redundant played-move alternatives',()=>{
  assert.match(analysisInsight({...move,highlight:'excellent',reason:'only_move'}),/Отличный ход/);
  assert.deepEqual(insightLines({...move,highlight:'excellent'}),[]);
@@ -56,4 +72,21 @@ test('Variation controls are next to board, not inside insight; orientation and 
  assert.deepEqual(variationArrowPoints('e2e4','b'),[3.5,1.5,3.5,3.5]);
  assert.deepEqual(variationArrowPoints('e7e8q','w'),[4.5,1.5,4.5,.5]);
  assert.equal(variationArrowPoints('<bad>'),null);
+});
+
+test('Five-move mate does not create a challenge or a positive-only stop',async()=>{
+ const {detectReason}=await import('../src/domain/analysis/analysis-reasons.ts');
+ const {prepareMateExercise}=await import('../src/services/analysis/analysis-training.ts');
+ for(const distance of [4,5]){
+  const row={...move,mateTransition:'missed_mate',bestLine:{...line,score:{type:'mate',value:distance}},shortMate:{verified:true,moves:distance}};
+  row.reason=detectReason(row);
+  assert.equal(row.reason,distance===4?'mate_opportunity':'generic');
+  assert.equal(isImportantInsight(row),distance===4);
+  if(distance===5){
+   assert.equal(await prepareMateExercise(row),null);
+   const mistake={...row,quality:'blunder'};
+   assert.equal(isImportantInsight(mistake),true);
+   assert.doesNotMatch(explanationFor(mistake),/мат/);
+  }
+ }
 });

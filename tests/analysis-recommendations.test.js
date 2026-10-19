@@ -26,7 +26,7 @@ for(const [piece,fen,best,played] of [
   const input=decision(black?mirrorFen(fen):fen,black?best.map(mirrorToken):best,black?played.map(mirrorToken):played);
   const result=buildRecommendation(input,black?'b':'w');
   assert.equal(result.kind,'material');assert.equal(result.coverage,'verified_line');assert.ok(result.comparison.bestDelta>0);
-  assert.match(result.text,/материальная выгода/);assert.equal(result.pv.length,2);
+  assert.match(result.text,/забрать ферзя/);assert.match(result.text,/более ценную фигуру/);assert.equal(result.pv.length,2);
  }
 });
 
@@ -48,13 +48,15 @@ test('A double attack is explained as a threat, never guaranteed material',()=>{
  const input=decision('6k1/2r5/5q2/8/8/2N5/8/6K1 w - - 0 1',['c3d5','f6g5'],['g1h1']);
  const result=buildRecommendation(input,'w');
  assert.equal(result.kind,'threat');assert.match(result.text,/одновременное нападение/);
- assert.equal(result.facts[0].step.threats.length,2);assert.match(result.text,/не гарантирует/);
+ assert.equal(result.facts[0].step.threats.length,2);assert.match(result.text,/соперник уводит ферзя/);
+ assert.doesNotMatch(result.text,/выигрываете|забираете|гарантирует/);
+ assert.deepEqual(result.pv,['c3d5','f6g5']);
 });
 
 test('Quiet positions use an explicit evidence limit instead of invented strategic prose',()=>{
  const result=buildRecommendation(decision(new Chess().fen(),['d2d4','d7d5'],['e2e4','e7e5']),'w');
  assert.equal(result.coverage,'evaluation_only');assert.deepEqual(result.facts,[]);
- assert.match(result.text,/не позволяет надёжно объяснить/);
+ assert.match(result.text,/Вы могли выбрать более сильное продолжение/);
  assert.doesNotMatch(result.text,/контроль центра|короля|выигры/);
 });
 
@@ -76,7 +78,8 @@ test('Replay handles promotion, castling, en passant and bounded cyclic lines',(
 test('Material lost in actual line is compared against the alternative',()=>{
  const fen='4k3/8/8/8/8/8/q7/R3K3 w - - 0 1';
  const input=decision(fen,['a1a2','e8d7'],['e1f1','a2a1']);
- const result=buildRecommendation(input,'w');assert.equal(result.kind,'material');assert.equal(result.reason,'lost_material');
+ const result=buildRecommendation(input,'w');assert.equal(result.kind,'target_escape');assert.equal(result.reason,'lost_material');
+ assert.match(result.text,/забрать ферзя/);assert.match(result.text,/забирает ладью/);
  assert.deepEqual(result.playedPv,['e1f1','a2a1']);
  assert.equal(compareContinuations(null,null).length,0);
 });

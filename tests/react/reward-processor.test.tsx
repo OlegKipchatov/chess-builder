@@ -119,4 +119,38 @@ describe("quality reward persistence", () => {
     await act(async () => finish(quality));
     expect(store.getSnapshot().coins).toBe(100);
   });
+  it("pauses pending archive analysis for a new game and ignores its late result", async () => {
+    let finish!: (value: typeof quality) => void;
+    vi.mocked(analyzeReward)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      )
+      .mockResolvedValue(quality);
+    const { store, recover } = setup();
+    recover();
+    const signal = vi.mocked(analyzeReward).mock.calls[0][1]!.signal!;
+    await act(async () =>
+      store.update((state) => ({
+        ...state,
+        game: { ...state.game, started: true },
+      })),
+    );
+    expect(signal.aborted).toBe(true);
+    await act(async () => finish(quality));
+    expect(store.getSnapshot().coins).toBe(100);
+    expect(analyzeReward).toHaveBeenCalledTimes(1);
+    await act(async () =>
+      store.update((state) => ({
+        ...state,
+        game: { ...state.game, started: false },
+      })),
+    );
+    await waitFor(() =>
+      expect(store.getSnapshot().coins).toBe(100 + quality.total),
+    );
+    expect(analyzeReward).toHaveBeenCalledTimes(2);
+  });
 });
