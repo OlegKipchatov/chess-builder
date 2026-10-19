@@ -65,9 +65,14 @@ export const createVaultStore = (storage: StoragePort, locks?: LockPort) => {
         };
       }
     };
-    const pending = queue.then(() =>
-      locks ? locks.request("gachachess-vault-v3", execute) : execute(),
-    );
+    const pending = queue
+      .then(() =>
+        locks ? locks.request("gachachess-vault-v3", execute) : execute(),
+      )
+      .catch((cause): TransactionResult<T> => ({
+        ok: false,
+        error: cause instanceof Error ? cause : new Error(String(cause)),
+      }));
     queue = pending.catch(() => undefined);
     return pending;
   };
@@ -83,7 +88,9 @@ export const createVaultStore = (storage: StoragePort, locks?: LockPort) => {
       transact((current) => ({ state: transform(current), value: undefined })),
     refresh: () => {
       try {
-        publish(loadState(storage));
+        const next = loadState(storage);
+        error = null;
+        publish(next);
       } catch (cause) {
         error = cause instanceof Error ? cause : new Error(String(cause));
         listeners.forEach((listener) => listener());

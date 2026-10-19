@@ -10,6 +10,33 @@ import {
 import { createAutoRun, AUTO_KEY } from "../../src/domain/autochess/autochess";
 import { openChest } from "../../src/domain/economy/economy";
 describe("atomic persistence", () => {
+  it("unblocks writes only after a successful reread without replacing damaged data", async () => {
+    let raw = "broken JSON";
+    const write = vi.fn((_: string, value: string) => {
+      raw = value;
+    });
+    const store = createVaultStore({ getItem: () => raw, setItem: write });
+    store.refresh();
+    expect(store.getError()).not.toBeNull();
+    expect((await store.update((s) => ({ ...s, coins: 999 }))).ok).toBe(false);
+    expect(write).not.toHaveBeenCalled();
+    raw = JSON.stringify({ ...initialState(), coins: 541 });
+    store.refresh();
+    expect(store.getError()).toBeNull();
+    expect((await store.update((s) => ({ ...s, coins: s.coins + 1 }))).ok).toBe(
+      true,
+    );
+    expect(store.getSnapshot().coins).toBe(542);
+  });
+  it("reports a lock failure and permits a later transaction", async () => {
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce(Error("lock failed"))
+      .mockImplementation((_, callback) => callback());
+    const store = createVaultStore(localStorage, { request });
+    expect((await store.update((s) => s)).ok).toBe(false);
+    expect((await store.update((s) => s)).ok).toBe(true);
+  });
   it("does not publish a debit or reward when the write fails", async () => {
     const state = initialState(),
       raw = JSON.stringify(state),

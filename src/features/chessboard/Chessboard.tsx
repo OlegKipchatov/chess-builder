@@ -113,6 +113,8 @@ const MovingPiece = memo(
     a.piece.level === b.piece.level,
 );
 interface CellProps {
+  tabIndex: number;
+  onFocus: (square: Square) => void;
   square: Square;
   dark: boolean;
   selected: boolean;
@@ -129,6 +131,8 @@ interface CellProps {
 }
 const Cell = memo(
   ({
+    tabIndex,
+    onFocus,
     square,
     dark,
     selected,
@@ -154,6 +158,8 @@ const Cell = memo(
         check ? "check" : "",
       ].join(" ")}
       data-square={square}
+      tabIndex={tabIndex}
+      onFocus={() => onFocus(square)}
       aria-label={label}
       aria-pressed={selected}
       aria-disabled={disabled}
@@ -224,6 +230,9 @@ export const Chessboard = memo(
     label = "Шахматная доска",
   }: ChessboardProps) => {
     const markerId = useId();
+    const [focusedSquare, setFocusedSquare] = useState<Square>(
+      orientation === "b" ? "h1" : "a8",
+    );
     const arrowPoints = arrow ? variationArrowPoints(arrow, orientation) : null;
     const reduced = useReducedMotion(),
       root = useRef<HTMLDivElement>(null);
@@ -269,6 +278,13 @@ export const Chessboard = memo(
             [],
         ),
         index = cells.indexOf(event.currentTarget);
+      if (
+        (event.key === "ArrowLeft" && index % 8 === 0) ||
+        (event.key === "ArrowRight" && index % 8 === 7) ||
+        (event.key === "ArrowUp" && index < 8) ||
+        (event.key === "ArrowDown" && index >= 56)
+      )
+        return;
       cells[Math.max(0, Math.min(63, index + directions[event.key]))]?.focus({
         preventScroll: true,
       });
@@ -295,6 +311,8 @@ export const Chessboard = memo(
           return (
             <Cell
               key={square}
+              tabIndex={focusedSquare === square ? 0 : -1}
+              onFocus={setFocusedSquare}
               square={square}
               dark={(Math.floor(index / 8) + (index % 8)) % 2 === 1}
               selected={selected === square}

@@ -27,6 +27,35 @@ const animations = () => {
   return { animate, cancel };
 };
 describe("React chessboard parity", () => {
+  it.each(["w", "b"] as const)(
+    "has one Tab stop and keeps horizontal arrows within a rank (%s)",
+    (orientation) => {
+      const view = render(
+        <Chessboard
+          pieces={chessPieces(scene())}
+          equipped={equipped}
+          orientation={orientation}
+        />,
+      );
+      const cells = [
+        ...view.container.querySelectorAll<HTMLButtonElement>("[data-square]"),
+      ];
+      expect(cells.filter((cell) => cell.tabIndex === 0)).toHaveLength(1);
+      fireEvent.focus(cells[7]);
+      act(() => cells[7].focus());
+      fireEvent.keyDown(cells[7], { key: "ArrowRight" });
+      expect(cells[7]).toHaveFocus();
+      fireEvent.keyDown(cells[7], { key: "ArrowDown" });
+      expect(cells[15]).toHaveFocus();
+      expect(cells.filter((cell) => cell.tabIndex === 0)).toEqual([cells[15]]);
+      act(() => cells[0].focus());
+      fireEvent.keyDown(cells[0], { key: "ArrowLeft" });
+      expect(cells[0]).toHaveFocus();
+      act(() => cells[58].focus());
+      fireEvent.keyDown(cells[58], { key: "ArrowDown" });
+      expect(cells[58]).toHaveFocus();
+    },
+  );
   it("renders 64 stable squares, both orientations and semantic interaction", () => {
     const onSquare = vi.fn(),
       game = scene(),

@@ -3,7 +3,14 @@ import { ImportedGameProvider } from "../features/game-review/ImportedGameProvid
 import { HistoryReturnProvider } from "../features/game-review/HistoryReturnProvider.js";
 import { ShellPresentation } from "./providers/ShellPresentation.js";
 import { Outlet, useMatches, useNavigate } from "@tanstack/react-router";
-import { Suspense, useEffect, useLayoutEffect, useState, useRef } from "react";
+import {
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { RewardProcessor } from "../features/game-session/RewardProcessor.js";
 import { usePwaUpdate } from "./providers/PwaProvider.js";
 import { useVault, useVaultStore } from "./providers/VaultProvider.js";
@@ -82,6 +89,11 @@ export const App = () => {
     nav = useRef<HTMLElement>(null),
     pwa = usePwaUpdate(),
     store = useVaultStore(),
+    storageError = useSyncExternalStore(
+      store.subscribe,
+      store.getError,
+      store.getError,
+    ),
     path = presented?.pathname ?? "/play",
     mode = ["/hunt", "/autochess"].includes(path),
     detail = path.startsWith("/history/") || path === "/import",
@@ -164,12 +176,16 @@ export const App = () => {
         </button>
       </header>
       <main>
-        {store.getError() && (
-          <p role="alert">
-            Не удалось прочитать сохранение. Запись приостановлена:{" "}
-            {store.getError()?.message}
-          </p>
+        {storageError && (
+          <div role="alert">
+            <p>
+              Не удалось прочитать сохранение. Данные не удалены, запись
+              приостановлена.
+            </p>
+            <button onClick={() => store.refresh()}>Повторить чтение</button>
+          </div>
         )}
+        <RewardProcessor />
         <HistoryReturnProvider>
           <ImportedGameProvider>
             <Suspense fallback={<p role="status">Загрузка…</p>}>
@@ -211,7 +227,6 @@ export const App = () => {
           </button>
         </div>
       )}
-      <RewardProcessor />
     </ShellPresentation>
   );
 };

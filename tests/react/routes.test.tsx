@@ -46,6 +46,25 @@ const setup = async (path = "/play", state = initialState()) => {
   return { store, router, ...view };
 };
 describe("React routing, collection and history", () => {
+  it("shows read failure even without a changed snapshot and offers recovery", async () => {
+    const view = await setup("/profile");
+    act(() => {
+      localStorage.setItem(KEY, "broken JSON");
+      view.store.refresh();
+    });
+    expect(
+      screen.getByRole("button", { name: "Повторить чтение" }),
+    ).toBeVisible();
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ ...initialState(), coins: 541 }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Повторить чтение" }));
+    expect(
+      screen.queryByRole("button", { name: "Повторить чтение" }),
+    ).not.toBeInTheDocument();
+    expect(view.store.getSnapshot().coins).toBe(541);
+  });
   it("keeps the presented screen and shell together while the next route loads", async () => {
     const view = await setup();
     const route = view.router.routesById["/pve"];
