@@ -78,6 +78,11 @@ feedback as well; position the damage number absolutely without resizing the bar
 
 ## Sheet gestures
 
+Keep the native dialog open when confirmation transitions to a result or another
+modal step, including asynchronous resignation. Replace its content directly;
+do not call show(null) before the next step. The backdrop must remain continuous
+and must not run an exit/entry cycle between steps.
+
 Direct manipulation follows the pointer without a transition or React renders.
 Upward resistance is bounded to 28px, with the bottom surface extended under the
 viewport. Release after an upward pull uses sheetReturn (360ms), with a gentler

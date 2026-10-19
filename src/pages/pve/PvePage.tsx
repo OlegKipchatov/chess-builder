@@ -181,7 +181,6 @@ export const PvePage = () => {
           <button
             className="danger pve-dialog-primary"
             onClick={() => {
-              show(null);
               void battle.resign().then(() => setConfirming(false));
             }}
           >

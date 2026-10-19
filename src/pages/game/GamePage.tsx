@@ -76,6 +76,21 @@ export const GamePage = () => {
       session.closeResult();
       show(null);
     };
+    if (final.cancelled) {
+      show({
+        title: "Партия отменена",
+        onClose: finish,
+        body: (
+          <div className="cancelled-match">
+            <p>Рейтинг не изменился.</p>
+            <button className="primary wide" onClick={finish}>
+              К выбору игры
+            </button>
+          </div>
+        ),
+      });
+      return;
+    }
     const analysis = () => {
       historyOrigin.fromList = false;
       historyOrigin.returnTo = "/play";
@@ -90,7 +105,7 @@ export const GamePage = () => {
     };
     const lastStep = () =>
       show({
-        title: final.cancelled ? "Партия отменена" : "Партия завершена",
+        title: "Партия завершена",
         onClose: finish,
         body: (
           <div className="dialog-actions">
@@ -122,19 +137,15 @@ export const GamePage = () => {
       else lastStep();
     };
     show({
-      title: final.cancelled
-        ? "Партия отменена"
-        : final.entry?.result || "Партия завершена",
-      onClose: final.cancelled ? finish : activity,
+      title: final.entry?.result || "Партия завершена",
+      onClose: activity,
       body: (
         <>
           <p className="match-end-reason">{final.reason}</p>
           {final.entry && <MatchReward id={final.entry.id} />}
-          {!final.cancelled && (
-            <button className="primary wide" onClick={activity}>
-              Продолжить
-            </button>
-          )}
+          <button className="primary wide" onClick={activity}>
+            Продолжить
+          </button>
         </>
       ),
     });
@@ -273,7 +284,6 @@ export const GamePage = () => {
                         <button
                           className="danger wide"
                           onClick={() => {
-                            show(null);
                             void session.resign();
                           }}
                         >

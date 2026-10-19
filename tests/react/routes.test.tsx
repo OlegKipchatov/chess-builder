@@ -46,6 +46,33 @@ const setup = async (path = "/play", state = initialState()) => {
   return { store, router, ...view };
 };
 describe("React routing, collection and history", () => {
+  it.each(["К выбору игры", "Закрыть"])(
+    "keeps cancellation in the same dialog and exits through %s",
+    async (action) => {
+      const state = initialState();
+      state.game = createStartedGame(state, () => 0);
+      const { store } = await setup("/play", state);
+      fireEvent.click(await screen.findByRole("button", { name: "Сдаться" }));
+      const dialog = document.querySelector("dialog")!;
+      const close = vi.spyOn(dialog, "close");
+      const open = vi.spyOn(dialog, "showModal");
+      fireEvent.click(dialog.querySelector("button.danger")!);
+      expect(dialog.open).toBe(true);
+      expect(dialog).not.toHaveClass("is-closing");
+      await screen.findByRole("heading", { name: "Партия отменена" });
+      expect(document.querySelector("dialog")).toBe(dialog);
+      expect(close).not.toHaveBeenCalled();
+      expect(open).not.toHaveBeenCalled();
+      expect(screen.getByText("Рейтинг не изменился.")).toBeVisible();
+      expect(dialog).not.toHaveTextContent("Сдача");
+      expect(store.getSnapshot().rating).toEqual(state.rating);
+      expect(store.getSnapshot().archive).toEqual(state.archive);
+      expect(store.getSnapshot().coins).toBe(state.coins);
+      fireEvent.click(screen.getByRole("button", { name: action }));
+      await screen.findByRole("button", { name: "Партия с ИИ" });
+      expect(dialog.open).toBe(false);
+    },
+  );
   it("shows read failure even without a changed snapshot and offers recovery", async () => {
     const view = await setup("/profile");
     act(() => {
