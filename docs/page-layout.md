@@ -11,7 +11,9 @@ Page tokens live in `src/shared/styles/tokens.css`, layout rules in `shell.css`:
 - Heading row: minimum 44px to accommodate the unchanged BackButton.
 - All header returns use `shared/ui/BackButton.tsx` through `Page`, including
   custom `onBack` actions in PvE. Use one 44px control with `--control` background, a 22px SVG,
-  and an 8px header gap (4px on mobile, with shared -8px inline header margins).
+  and a 16px header gap (`--page-related-gap`) on mobile and desktop.
+  Header margins stay zero: the back control aligns with the content inset.
+  Long titles wrap naturally; never reduce spacing or use negative margins to force one line.
   Do not override its background or header gutters by
   page ID. Hover, pressed and keyboard focus retain visible feedback.
 - Header to content: `.page-content` owns 20px/24px padding, never margins.

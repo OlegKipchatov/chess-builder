@@ -54,15 +54,26 @@ try{
   await page.goto(url+'#/history');await page.locator('#archive .page-header-start button').waitFor();
   const backAppearance=async()=>page.locator('.page-header-start button').evaluate(button=>{const style=getComputedStyle(button),rect=button.getBoundingClientRect(),svg=button.querySelector('svg').getBoundingClientRect();return {width:rect.width,height:rect.height,x:rect.x,background:style.backgroundColor,radius:style.borderRadius,iconWidth:svg.width,iconHeight:svg.height,gap:getComputedStyle(button.closest('.page-header')).columnGap};});
   const listBack=await backAppearance();assert.equal(listBack.width,44);assert.equal(listBack.height,44);assert.notEqual(listBack.background,'rgba(0, 0, 0, 0)');
+  assert.equal(listBack.gap,'16px','Header preserves the documented spacing');
+  const assertHeaderGeometry=async()=>{
+    const geometry=await page.locator('.page-header').evaluate(header=>{const button=header.querySelector('.back-button').getBoundingClientRect(),title=header.querySelector('h1').getBoundingClientRect(),content=header.parentElement.querySelector('.page-content').getBoundingClientRect();return {gap:title.left-button.right,inset:button.left-content.left,titleRight:title.right,headerRight:header.getBoundingClientRect().right};});
+    assert.equal(geometry.gap,16,'Title has a 16px gap after the back control');
+    assert.equal(geometry.inset,0,'Back control aligns with page content');
+    assert.ok(geometry.titleRight<=geometry.headerRight+1,'Wrapped title stays inside header');
+  };
+  await assertHeaderGeometry();
+  for(const route of ['statistics','faq']){
+    await page.goto(url+'#/'+route);await page.locator('.page-header .back-button').waitFor();
+    await assertHeaderGeometry();
+    await page.screenshot({path:`/tmp/gacha-${route}-header-${width}.png`,fullPage:true});
+  }
+  await page.goto(url+'#/history');await page.locator('#archive .back-button').waitFor();
   await page.locator('[data-archive="unavailable"]').click();await page.locator('#board').waitFor();assert.equal(await page.locator('#archive-review-actions').isVisible(),false);
   await page.getByLabel('Назад',{exact:true}).click();await page.locator('[data-archive="old"]').click();await page.locator('#archive-analysis').waitFor();assert.equal(await page.locator('#archive-analysis').isVisible(),true,'Old games with complete data remain eligible');
   assert.equal(await page.locator('#analysis h1').innerText(),'История партии');
   assert.deepEqual(await backAppearance(),listBack,'List and detail share the same back control and header gutter');
-  if(width>=390){
-    const heading=await page.locator('#analysis h1').evaluate(node=>{const style=getComputedStyle(node),rect=node.getBoundingClientRect(),header=node.closest('.page-header');return {height:rect.height,width:rect.width,lineHeight:style.lineHeight,font:style.font,columns:getComputedStyle(header).gridTemplateColumns,gap:getComputedStyle(header).columnGap,viewport:innerWidth};});
-    await page.screenshot({path:`/tmp/gacha-history-heading-${width}.png`,fullPage:true});
-    assert.ok(heading.height<=parseFloat(heading.lineHeight)+1,`History heading fits one line: ${JSON.stringify(heading)}`);
-  }
+  await assertHeaderGeometry();
+  await page.screenshot({path:`/tmp/gacha-history-heading-${width}.png`,fullPage:true});
   assert.equal(await page.locator('#archive-heading-actions #export-pgn svg').count(),1);
   assert.equal(await page.locator('#archive-heading-actions #export-pgn').innerText(),'');
   assert.equal(await page.locator('#match-points').innerText(),'0 очков');

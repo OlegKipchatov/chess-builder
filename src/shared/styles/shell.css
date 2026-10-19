@@ -262,7 +262,7 @@ main:has(> #app-nav[hidden]):not(:has(#pve-nav)) {
 .tab > .page-header {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  column-gap: 8px;
+  column-gap: var(--page-related-gap);
   row-gap: var(--page-meta-gap);
   margin: 0;
   padding: 0;
@@ -270,12 +270,6 @@ main:has(> #app-nav[hidden]):not(:has(#pve-nav)) {
 .tab > .page-header > .page-header-start {
   grid-column: 1;
   grid-row: 1;
-}
-@media (max-width: 760px) {
-  .tab > .page-header:has(> .page-header-start > .back-button) {
-    margin-inline: -8px;
-    column-gap: 4px;
-  }
 }
 .tab > .page-header > .page-header-content {
   grid-column: 2;
