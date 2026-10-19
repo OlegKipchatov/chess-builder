@@ -163,6 +163,11 @@ const HuntGame = ({ mode }: { mode: "timed" | "endless" }) => {
           legal={legal.map((m) => m.to)}
           last={run.lastMove}
           disabled={run.phase !== "awaitingPlayer"}
+          moves={run.phase === "awaitingPlayer" ? playerMoves(run) : []}
+          onMove={(from, to) => {
+            hunt.move({ from, to });
+            setSelected(null);
+          }}
           onSquare={(square) => {
             if (selected && legal.some((m) => m.to === square)) {
               hunt.move({ from: selected, to: square });

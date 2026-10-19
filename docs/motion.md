@@ -90,3 +90,26 @@ sheetReturn easing and no bounce. A short downward drag retains Standard (200ms)
 Dismissal starts from the current dragged offset using Exit (180ms); no jump to
 zero. A new modal step, resize, cancellation or unmount resets transient motion.
 Reduced motion retains direct manipulation, with immediate return/dismissal.
+
+## Board drag and drop
+
+Use dnd-kit's DragOverlay for direct pointer/touch movement, with no transition
+or auto-scroll. Do not replay the dragged piece's source-to-target travel after
+an accepted ordinary move. Keep the castling rook's animation and all three PvE
+combat stages. A cancelled or invalid drop restores the unchanged position
+immediately. Reduced motion retains direct manipulation and skips presentation.
+
+A valid ordinary drop keeps the piece at the destination while its asynchronous
+move is being persisted. Transfer from DragOverlay to MovingPiece without a
+source-square frame; commit removes the temporary target without another
+animation. A rejected move or cancelled promotion restores the source.
+
+The pending ordinary drop also owns the last-move highlight: show its source
+and destination immediately, suppress stale selection/legal markers, and retain
+them through saving. Commit hands off to the recorded move; rejection restores
+the previous highlight. Never flash the previous move between drop and commit.
+
+Autochess preparation and each battle use separate capture contexts. Switching
+contexts clears capture ghosts and material labels without remounting the board;
+revealing an opponent or replacing setup IDs with battle IDs is not a capture.
+Actual captures within the same battle retain their normal feedback.

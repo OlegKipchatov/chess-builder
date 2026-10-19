@@ -29,7 +29,7 @@ const rank = (color: Color, front = false) =>
   color === "w" ? (front ? "2" : "1") : front ? "7" : "8";
 export const placementSquares = (type: PieceSymbol, color: Color) =>
   [..."abcdefgh"].flatMap((file) =>
-    (color === "w" ? [1, 2, 3, 4] : [8, 7, 6, 5])
+    (color === "w" ? [1, 2, 3] : [8, 7, 6])
       .filter((row) => type !== "p" || (row !== 1 && row !== 8))
       .map((row) => file + row),
   );
@@ -123,12 +123,12 @@ export const placementError = (run: AutoRun, id: string, square: string) => {
     occupant = run.army.find(
       (other) => other.square === square && other.id !== id,
     );
-  if (
-    !piece ||
-    !placementSquares(piece.type, run.color).includes(square) ||
-    (occupant && piece.square)
-  )
-    return "";
+  if (!piece) return "Фигура не найдена";
+  if (!placementSquares(piece.type, run.color).includes(square))
+    return piece.type === "p" && (square[1] === "1" || square[1] === "8")
+      ? "Пешку нельзя поставить на крайний ряд"
+      : "Расставьте фигуры на трёх ближайших рядах";
+  if (occupant && piece.square) return "Клетка занята";
   const proposed = run.army.map((other) =>
     other.id === id
       ? { ...other, square }
@@ -1109,7 +1109,45 @@ export const nextRound = (run: AutoRun): AutoRun => {
       startingBudget(next),
     );
   next.color = color;
+  next.army = fitDeployment(next.army, color);
   return next;
+};
+// Accept the previous deployment area when loading saved runs, then relocate
+// only out-of-area pieces during preparation. Active battle FENs stay intact.
+const legacyPlacementSquares = (type: PieceSymbol, color: Color) =>
+  [..."abcdefgh"].flatMap((file) =>
+    (color === "w" ? [1, 2, 3, 4] : [8, 7, 6, 5])
+      .filter((row) => type !== "p" || (row !== 1 && row !== 8))
+      .map((row) => file + row),
+  );
+const fitDeployment = (army: AutoPiece[], color: Color) => {
+  const occupied = new Set(
+    army
+      .filter(
+        (piece) =>
+          piece.square &&
+          placementSquares(piece.type, color).includes(piece.square),
+      )
+      .map((piece) => piece.square),
+  );
+  return army.map((piece) => {
+    if (
+      !piece.square ||
+      placementSquares(piece.type, color).includes(piece.square)
+    )
+      return piece;
+    const square = placementSquares(piece.type, color)
+      .filter((target) => !occupied.has(target))
+      .sort((a, b) => {
+        const distance = (target: string) =>
+          Math.abs(target.charCodeAt(0) - piece.square!.charCodeAt(0)) +
+          Math.abs(Number(target[1]) - Number(piece.square![1]));
+        return distance(a) - distance(b);
+      })[0];
+    if (!square) throw Error("Недостаточно места для сохранённой армии");
+    occupied.add(square);
+    return { ...piece, square };
+  });
 };
 export const restoreAutoRun = (value: string | null): AutoRun | null => {
   if (!value) return null;
@@ -1140,7 +1178,9 @@ export const restoreAutoRun = (value: string | null): AutoRun | null => {
         typeof piece.id !== "string" ||
         !(piece.type in PRICES) ||
         (piece.square !== null &&
-          !placementSquares(piece.type, run.color).includes(piece.square!)),
+          !legacyPlacementSquares(piece.type, run.color).includes(
+            piece.square!,
+          )),
     ) ||
     new Set(run.army.map((piece) => piece.id)).size !== run.army.length ||
     run.army.filter((piece) => piece.type === "k").length !== 1
@@ -1193,7 +1233,9 @@ export const restoreAutoRun = (value: string | null): AutoRun | null => {
       run.opponent.some(
         (piece) =>
           !(piece.type in PRICES) ||
-          !placementSquares(piece.type, enemyColor).includes(piece.square!),
+          !legacyPlacementSquares(piece.type, enemyColor).includes(
+            piece.square!,
+          ),
       ) ||
       new Set(run.opponent.map((piece) => piece.square)).size !==
         run.opponent.length ||
@@ -1215,7 +1257,7 @@ export const restoreAutoRun = (value: string | null): AutoRun | null => {
         ? JSON.stringify(identity(run.opponent)) ===
             JSON.stringify(identity(expected)) &&
           run.opponent.every((piece) =>
-            placementSquares(
+            legacyPlacementSquares(
               piece.type,
               run.color === "w" ? "b" : "w",
             ).includes(piece.square!),
@@ -1315,5 +1357,9 @@ export const restoreAutoRun = (value: string | null): AutoRun | null => {
   }
   if (reserve.length > AUTO.reserveSlots && !run.legacyReserveOverflow)
     throw Error("Повреждён резерв");
+  if (run.phase === "preparation") {
+    run.army = fitDeployment(run.army, run.color);
+    run.opponent = fitDeployment(run.opponent, run.color === "w" ? "b" : "w");
+  }
   return settleReserve(run);
 };

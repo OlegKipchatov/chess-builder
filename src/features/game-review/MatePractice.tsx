@@ -64,44 +64,56 @@ export const MatePractice = ({
       selected && game ? game.moves({ square: selected, verbose: true }) : [];
   const submit = async (token: string) => {
     const owned = controller.current;
-    if (!owned || busy) return;
+    if (!owned || busy) return false;
     setBusy(true);
     setSelected(null);
     setHint(null);
     const promise = owned.submit(token);
     setSnapshot(owned.getSnapshot());
     const next = await promise;
-    if (controller.current !== owned) return;
+    if (controller.current !== owned) return false;
     setSnapshot(next);
     setBusy(false);
+    return next.state === "correct" || next.state === "success";
+  };
+  const move = (from: Square, square: Square) => {
+    if (!game || snapshot.state !== "awaitMove" || busy) return false;
+    const moves = game
+      .moves({ square: from, verbose: true })
+      .filter((move) => move.to === square);
+    if (moves.length) {
+      if (moves.some((move) => move.promotion))
+        return new Promise<boolean>((resolve) =>
+          show({
+            title: "Превращение пешки",
+            onClose: () => resolve(false),
+            body: (
+              <div className="promotion-options">
+                {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (
+                  <button
+                    key={type}
+                    aria-label={PIECE_NAMES[type]}
+                    onClick={() => {
+                      show(null);
+                      resolve(submit(from + square + type));
+                    }}
+                  >
+                    <Piece type={type} color={game.turn()} />
+                  </button>
+                ))}
+              </div>
+            ),
+          }),
+        );
+      return submit(from + square);
+    }
+    return false;
   };
   const choose = (square: Square) => {
     if (!game || snapshot.state !== "awaitMove" || busy) return;
-    const moves = legal.filter((move) => move.to === square);
-    if (selected && moves.length) {
-      const from = selected;
-      if (moves.some((move) => move.promotion))
-        show({
-          title: "Превращение пешки",
-          body: (
-            <div className="promotion-options">
-              {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (
-                <button
-                  key={type}
-                  aria-label={PIECE_NAMES[type]}
-                  onClick={() => {
-                    show(null);
-                    void submit(from + square + type);
-                  }}
-                >
-                  <Piece type={type} color={game.turn()} />
-                </button>
-              ))}
-            </div>
-          ),
-        });
-      else void submit(from + square);
-    } else setSelected(game.get(square)?.color === game.turn() ? square : null);
+    if (selected && legal.some((move) => move.to === square))
+      move(selected, square);
+    else setSelected(game.get(square)?.color === game.turn() ? square : null);
   };
   return (
     <div
@@ -123,6 +135,12 @@ export const MatePractice = ({
             last={game.history({ verbose: true }).at(-1)}
             disabled={busy || snapshot.state !== "awaitMove"}
             onSquare={choose}
+            moves={
+              !busy && snapshot.state === "awaitMove"
+                ? game.moves({ verbose: true })
+                : []
+            }
+            onMove={move}
           />
         )}
       </div>

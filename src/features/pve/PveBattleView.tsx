@@ -79,6 +79,18 @@ export const PveBattleView = ({
             : null
         }
         disabled={locked}
+        animateDraggedMove
+        moves={
+          locked
+            ? []
+            : visual.units
+                .filter((unit) => unit.color === "w" && unit.hp > 0)
+                .flatMap((unit) => movesFor(visual, unit))
+        }
+        onMove={(from, to) => {
+          void battle.move({ from, to });
+          setSelected(null);
+        }}
         onSquare={(square) => {
           if (own?.color === "w" && legal.some((move) => move.to === square)) {
             void battle.move({ from: own.square, to: square });

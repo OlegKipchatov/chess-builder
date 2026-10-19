@@ -153,33 +153,44 @@ export const GamePage = () => {
   useEffect(() => {
     presentResult();
   }, [final]);
-  const activate = (square: Square) => {
-    if (!canMove) return;
-    const target = legal.filter((move) => move.to === square);
-    if (selected && target.length) {
-      const from = selected;
+  const move = (from: Square, square: Square) => {
+    if (!canMove) return false;
+    const target = board
+      .moves({ square: from, verbose: true })
+      .filter((move) => move.to === square);
+    if (target.length) {
       setSelected(null);
       if (target.some((move) => move.promotion))
-        show({
-          title: "Превращение пешки",
-          body: (
-            <div className="promotion-options">
-              {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (
-                <button
-                  key={type}
-                  aria-label={PIECE_NAMES[type]}
-                  onClick={() => {
-                    show(null);
-                    void session.move(from, square, type);
-                  }}
-                >
-                  <Piece type={type} color={board.turn()} />
-                </button>
-              ))}
-            </div>
-          ),
-        });
-      else void session.move(from, square);
+        return new Promise<boolean>((resolve) =>
+          show({
+            title: "Превращение пешки",
+            onClose: () => resolve(false),
+            body: (
+              <div className="promotion-options">
+                {(["q", "r", "b", "n"] as PieceSymbol[]).map((type) => (
+                  <button
+                    key={type}
+                    aria-label={PIECE_NAMES[type]}
+                    onClick={() => {
+                      show(null);
+                      resolve(session.move(from, square, type));
+                    }}
+                  >
+                    <Piece type={type} color={board.turn()} />
+                  </button>
+                ))}
+              </div>
+            ),
+          }),
+        );
+      return session.move(from, square);
+    }
+    return false;
+  };
+  const activate = (square: Square) => {
+    if (!canMove) return;
+    if (selected && legal.some((move) => move.to === square)) {
+      move(selected, square);
       return;
     }
     setSelected(
@@ -358,6 +369,8 @@ export const GamePage = () => {
               feedback={session.view.cursor === null}
               disabled={!canMove}
               onSquare={activate}
+              moves={canMove ? board.moves({ verbose: true }) : []}
+              onMove={move}
             />
             <MoveNavigation
               cursor={session.view.cursor ?? live.history().length}

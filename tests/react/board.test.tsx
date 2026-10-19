@@ -110,6 +110,58 @@ describe("React chessboard parity", () => {
     view.unmount();
     expect(cancel).toHaveBeenCalledTimes(1);
   });
+  it("does not show captures when preparation becomes a battle, but keeps real battle captures", () => {
+    const game = scene("1. e4 d5");
+    const battlePieces = chessPieces(game);
+    const view = render(
+      <Chessboard
+        equipped={equipped}
+        feedback
+        captureContext="preparation"
+        pieces={battlePieces
+          .filter((piece) => piece.color === "w")
+          .map((piece) => ({ ...piece, id: `army:${piece.id}` }))}
+      />,
+    );
+    const cells = [...view.container.querySelectorAll("[data-square]")];
+    view.rerender(
+      <Chessboard
+        equipped={equipped}
+        feedback
+        captureContext="battle:1"
+        pieces={battlePieces}
+      />,
+    );
+    expect(view.container.querySelector(".capture-material")).toBeNull();
+    expect(view.container.querySelectorAll(".moving-piece")).toHaveLength(
+      battlePieces.length,
+    );
+    expect([...view.container.querySelectorAll("[data-square]")]).toEqual(
+      cells,
+    );
+    game.move("exd5");
+    view.rerender(
+      <Chessboard
+        equipped={equipped}
+        feedback
+        captureContext="battle:1"
+        pieces={chessPieces(game)}
+      />,
+    );
+    expect(view.container.querySelector(".capture-material")).toHaveTextContent(
+      "+1",
+    );
+    view.rerender(
+      <Chessboard
+        equipped={equipped}
+        feedback={false}
+        captureContext="preparation"
+        pieces={battlePieces.filter((piece) => piece.color === "w")}
+      />,
+    );
+    expect(view.container.querySelector(".capture-material")).toBeNull();
+    view.unmount();
+  });
   it("selection keeps last move, capture targets and check distinct", () => {
     const game = scene("1. e4 d5"),
       view = render(

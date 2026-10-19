@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
-import {AUTO,compositionIssue,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../src/domain/autochess/autochess.ts';
+import {AUTO,compositionIssue,reservePieces,purchaseError,armyCapacity,PRICES,planOpponent,advanceOpponent,arrangeOpponent,placementError,placementSquares,opponentFor,createAutoRun as createModernRun,buyRandomPiece,upgradeShop,purchasePrice,levelPrice,shopOdds,salePrice,roundIncome,buyPiece,sellPiece,placePiece,setupError,setupFen,beginBattle,battleGame,battleResult,completeBattle,nextRound,restoreAutoRun,seriesFinished} from '../src/domain/autochess/autochess.ts';
 import {createBattleController} from '../src/services/engines/autochess-battle.ts';
 import {createAutoplayEngine} from '../src/services/engines/autochess-engine.ts';
 import {benchPiece} from '../src/domain/autochess/autochess.ts';
@@ -104,12 +104,12 @@ test('placement is deterministic, valid for either colour and independent of ene
   assert.ok(arranged.every(piece=>placementSquares(piece.type,color).includes(piece.square)));
   assert.deepEqual(arrangeOpponent(army,color),arranged);
   assert.ok(army.every(piece=>piece.square===null));
-  assert.equal(arranged[0].square[1],color==='w'?'1':'8');
+  assert.ok((color==='w'?['1','2']:['8','7']).includes(arranged[0].square[1]),'king stays sheltered behind the front rank in the narrower deployment area');
  }
 });
 test('setup avoids the back-rank mate pattern with either colour',()=>{
  const enemy=[['k','d8'],['n','b7'],['b','c7'],['p','d7'],['p','e7'],['n','f7']];
- const player=[['k','d1'],['r','g1'],['r','h1'],['p','a4'],['p','b4'],['n','c3'],['n','d3'],['n','e3']];
+ const player=[['k','d1'],['r','g1'],['r','h1'],['p','a3'],['p','b3'],['n','c3'],['n','d3'],['n','e3']];
  for(const color of ['w','b']){
   const pieces=rows=>rows.map(([type,square],i)=>({id:String(i),type,paid:i,square:color==='w'?square:'abcdefgh'[7-'abcdefgh'.indexOf(square[0])]+(9-Number(square[1]))}));
   const run={color,army:pieces(player),opponent:pieces(enemy)};
@@ -226,7 +226,8 @@ test('opponents spend equal budget and every round restores bought army',()=>{
 test('placement validates ranks, pending purchases and castling rights',()=>{
  let run=buyPiece({...createAutoRun('one'),version:1,reserve:12},'p');assert.equal(setupError(run),'');
  const id=run.army.at(-1).id;assert.equal(placePiece(run,id,run.color==='w'?'a5':'a4'),run);
- assert.notEqual(placePiece(run,id,run.color==='w'?'a4':'a5'),run);
+ assert.equal(placePiece(run,id,run.color==='w'?'a4':'a5'),run);
+ assert.notEqual(placePiece(run,id,run.color==='w'?'a3':'a6'),run);
  assert.equal(placePiece(run,id,run.color==='w'?'a1':'a8'),run);
  run=placePiece(run,id,run.color==='w'?'a2':'a7');assert.equal(setupError(run),'');
  run=buyPiece(run,'r');run=placePiece(run,run.army.at(-1).id,run.color==='w'?'h1':'h8');
@@ -373,4 +374,28 @@ test('pending old result credits the old amount once to both sides',()=>{
  const next=nextRound(run);assert.equal(next.reserve-run.reserve,5);
  assert.equal(next.opponentProgress.income-run.opponentProgress.income,2);
  assert.deepEqual(restoreAutoRun(JSON.stringify(next)),next);
+});
+
+test('deployment targets reject occupied squares and every rank beyond the nearest three',()=>{
+ for(const color of ['w','b']) {
+  const run={...createModernRun('deployment'),color,army:[{id:'king',type:'k',square:color==='w'?'e1':'e8'},{id:'pawn',type:'p',square:color==='w'?'a2':'a7'}]};
+  for(const file of 'abcdefgh')for(let rank=1;rank<=8;rank++) {
+   const square=file+rank;
+   const allowed=(color==='w'?[2,3]:[6,7]).includes(rank);
+   assert.equal(!placementError(run,'pawn',square),allowed);
+  }
+  assert.ok(placementError(run,'king',run.army[1].square));
+ }
+});
+test('old fourth-rank preparations migrate without losing pieces or reserve slots',()=>{
+ let run=buyRandomPiece(createModernRun('old-deployment'));
+ const pawn=run.army.find(piece=>piece.type==='p');
+ assert.ok(pawn);
+ pawn.square=run.color==='w'?'a4':'a5';
+ delete pawn.reserveSlot;
+ const restored=restoreAutoRun(JSON.stringify(run));
+ assert.equal(restored.army.length,run.army.length);
+ assert.deepEqual(restored.army.map(p=>[p.id,p.type,p.paid]),run.army.map(p=>[p.id,p.type,p.paid]));
+ assert.ok(placementSquares('p',run.color).includes(restored.army.find(p=>p.id===pawn.id).square));
+ assert.equal(restored.reserve,run.reserve);
 });
